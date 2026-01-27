@@ -1,20 +1,28 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Arbitrage Stream
 
 Real-time arbitrage opportunity alerts via Server-Sent Events (SSE).
 
 ```
-GET /api/v1/stream/arbitrage
+GET /api/v1/stream/opportunities
 ```
 
-> **Note:** This endpoint requires **Pro** tier or higher.
+<Callout type="warning">
+This endpoint requires:
+- **Pro tier or higher** for arbitrage detection
+- **WebSocket add-on** ($99/mo) for streaming access
+</Callout>
+
+See [EV Stream](/streaming/ev-stream) for the combined opportunities endpoint that includes both +EV and arbitrage alerts.
 
 ## Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sports` | string | all | Filter by sports |
+| `league` | string | all | Filter by league |
 | `min_profit` | number | `0.5` | Minimum profit percentage to alert |
-| `api_key` | string | - | API key (alternative to `X-API-Key` header) |
+| `api_key` | string | - | API key (for browser EventSource) |
 
 ## Event Types
 
@@ -25,14 +33,14 @@ Current arbitrage opportunities on connection.
 ```json
 {
   "type": "initial",
-  "timestamp": "2024-01-21T02:40:00.000Z",
+  "timestamp": "2026-01-26T02:40:00.000Z",
   "data": {
-    "opportunities": [...],
-    "summary": {
-      "count": 3,
-      "avgProfit": 1.5,
-      "maxProfit": 2.8
-    }
+    "arbitrage": [...]
+  },
+  "meta": {
+    "arbCount": 3,
+    "avgProfit": 1.5,
+    "maxProfit": 2.8
   }
 }
 ```
@@ -44,47 +52,50 @@ New arbitrage opportunity detected.
 ```json
 {
   "type": "arbitrage",
-  "timestamp": "2024-01-21T02:40:30.000Z",
+  "timestamp": "2026-01-26T02:40:30.000Z",
   "data": {
-    "opportunities": [
-      {
-        "eventName": "LAL Lakers @ GSW Warriors",
-        "marketType": "moneyline",
-        "profitPercent": 2.3,
-        "legs": [
-          { "sportsbook": "draftkings", "selection": "LAL Lakers", "odds": 145, "stakePercent": 42.5 },
-          { "sportsbook": "pinnacle", "selection": "GSW Warriors", "odds": -135, "stakePercent": 57.5 }
-        ]
-      }
+    "eventId": "33483200",
+    "eventName": "LAL Lakers @ GSW Warriors",
+    "sport": "nba",
+    "marketType": "moneyline",
+    "profitPercent": 2.3,
+    "impliedTotal": 0.9775,
+    "legs": [
+      { "sportsbook": "draftkings", "selection": "LAL Lakers", "odds": 145, "decimalOdds": 2.45, "stakePercent": 42.5 },
+      { "sportsbook": "pinnacle", "selection": "GSW Warriors", "odds": -135, "decimalOdds": 1.74, "stakePercent": 57.5 }
     ],
-    "triggeredBy": "draftkings"
+    "detectedAt": "2026-01-26T02:40:30.000Z"
   }
 }
 ```
 
-### Example Request
+## Example Requests
 
-
-```javascript JavaScript
-const url = 'https://sharpapi.io/api/v1/stream/arbitrage?min_profit=1.0&api_key=YOUR_KEY';
+<Tabs items={['JavaScript', 'Python']}>
+  <Tabs.Tab>
+```javascript
+const url = 'https://api.sharpapi.io/api/v1/stream/opportunities?min_profit=1.0&api_key=YOUR_KEY';
 const eventSource = new EventSource(url);
 
 eventSource.addEventListener('arbitrage', (e) => {
-  const { opportunities } = JSON.parse(e.data).data;
+  const arb = JSON.parse(e.data).data;
 
-  opportunities.forEach(arb => {
-    console.log(`💰 ${arb.profitPercent}% arb on ${arb.eventName}`);
+  console.log(`${arb.profitPercent}% arb on ${arb.eventName}`);
 
-    arb.legs.forEach(leg => {
-      console.log(`  → ${leg.sportsbook}: ${leg.selection} @ ${leg.odds} (${leg.stakePercent}%)`);
-    });
+  arb.legs.forEach(leg => {
+    console.log(`  ${leg.sportsbook}: ${leg.selection} @ ${leg.odds} (${leg.stakePercent}%)`);
   });
 });
 ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import json
+import sseclient
+import requests
 
-```python Python
 def stream_arbitrage(api_key, min_profit=1.0):
-    url = f'https://sharpapi.io/api/v1/stream/arbitrage?min_profit={min_profit}'
+    url = f'https://api.sharpapi.io/api/v1/stream/opportunities?min_profit={min_profit}'
     headers = {'X-API-Key': api_key}
 
     response = requests.get(url, headers=headers, stream=True)
@@ -93,13 +104,15 @@ def stream_arbitrage(api_key, min_profit=1.0):
     for event in client.events():
         if event.event == 'arbitrage':
             data = json.loads(event.data)
-            for arb in data['data']['opportunities']:
-                print(f"💰 {arb['profitPercent']}% profit: {arb['eventName']}")
-                for leg in arb['legs']:
-                    print(f"  {leg['sportsbook']}: {leg['selection']} ({leg['stakePercent']}%)")
+            arb = data['data']
+            print(f"{arb['profitPercent']}% profit: {arb['eventName']}")
+            for leg in arb['legs']:
+                print(f"  {leg['sportsbook']}: {leg['selection']} ({leg['stakePercent']}%)")
+
+stream_arbitrage('YOUR_KEY', min_profit=1.0)
 ```
-
-
+  </Tabs.Tab>
+</Tabs>
 
 ## Speed Matters
 
@@ -109,35 +122,63 @@ Arbitrage opportunities disappear quickly. Use streaming to:
 2. **Auto-calculate stakes** - Ready-to-use stake percentages
 3. **Act fast** - Have your sportsbook accounts ready
 
-> **Warning:**
-  Arbs typically last seconds to minutes. By the time you see it, it may already be closing. Automation is key.
-
+<Callout type="warning">
+Arbs typically last seconds to minutes. By the time you see it, it may already be closing. Automation is key.
+</Callout>
 
 ## Example: Auto-Betting Integration
 
 ```javascript
 // Pseudocode for automated arbitrage betting
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream/opportunities?min_profit=2.0&api_key=YOUR_KEY'
+);
+
 eventSource.addEventListener('arbitrage', async (e) => {
-  const { opportunities } = JSON.parse(e.data).data;
+  const arb = JSON.parse(e.data).data;
 
-  for (const arb of opportunities) {
-    // Only act on high-profit arbs
-    if (arb.profitPercent < 2.0) continue;
+  // Only act on high-profit arbs
+  if (arb.profitPercent < 2.0) return;
 
-    // Calculate actual stakes
-    const totalStake = 1000; // $1000 total
-    const bets = arb.legs.map(leg => ({
-      sportsbook: leg.sportsbook,
-      selection: leg.selection,
-      stake: totalStake * (leg.stakePercent / 100)
-    }));
+  // Calculate actual stakes
+  const totalStake = 1000; // $1000 total
+  const bets = arb.legs.map(leg => ({
+    sportsbook: leg.sportsbook,
+    selection: leg.selection,
+    stake: totalStake * (leg.stakePercent / 100)
+  }));
 
-    // Place bets (implement your own betting API calls)
-    for (const bet of bets) {
-      await placeBet(bet.sportsbook, bet.selection, bet.stake);
-    }
-
-    console.log(`Placed ${arb.profitPercent}% arb: $${arb.profitPercent * 10} profit`);
+  // Place bets (implement your own betting API calls)
+  for (const bet of bets) {
+    await placeBet(bet.sportsbook, bet.selection, bet.stake);
   }
+
+  const profit = totalStake * (arb.profitPercent / 100);
+  console.log(`Placed ${arb.profitPercent}% arb: $${profit.toFixed(2)} profit`);
 });
 ```
+
+## Stake Calculation
+
+The `stakePercent` values are pre-calculated for optimal profit:
+
+**Example with $1000 total stake on a 2.3% arb:**
+
+| Leg | Stake % | Amount | Odds | Payout |
+|-----|---------|--------|------|--------|
+| LAL @ DraftKings | 42.5% | $425 | +145 | $1,041.25 |
+| GSW @ Pinnacle | 57.5% | $575 | -135 | $1,001.30 |
+
+**Guaranteed profit: ~$23 (2.3%)**
+
+## Arb Expiration
+
+Opportunities expire when:
+
+1. One or more books update their odds
+2. The market closes (game starts)
+3. Betting limits are reached
+
+<Callout type="info">
+Higher profit arbs often expire faster as they represent larger market inefficiencies.
+</Callout>

@@ -1,22 +1,35 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Combined Stream
 
-Unified SSE stream for all opportunity types.
+Unified SSE stream for all opportunity types - odds, +EV, and arbitrage in a single connection.
 
 ```
-GET /api/v1/stream/combined
+GET /api/v1/stream/opportunities
 ```
 
-## Authentication
+<Callout type="warning">
+This endpoint requires:
+- **Pro tier or higher** for +EV and arbitrage detection
+- **WebSocket add-on** ($99/mo) for streaming access
+</Callout>
 
-Requires API key. **Sharp tier required.**
+## Why Use Combined Stream?
+
+1. **Single connection**: All opportunities in one stream
+2. **Lower latency**: No switching between streams
+3. **Simplified code**: One event handler for everything
+4. **Efficient**: Reduces API calls and connection overhead
 
 ## Query Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `sports` | string | No | all | Comma-separated sports |
-| `min_ev` | number | No | 2.0 | Minimum EV percentage |
-| `min_arb` | number | No | 0.5 | Minimum arbitrage profit |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `league` | string | all | Filter by league |
+| `sportsbook` | string | all | Filter by sportsbook |
+| `min_ev` | number | 2.0 | Minimum EV percentage |
+| `min_profit` | number | 0.5 | Minimum arbitrage profit |
+| `api_key` | string | - | API key (for browser EventSource) |
 
 ## Event Types
 
@@ -24,8 +37,8 @@ Requires API key. **Sharp tier required.**
 |------|-------------|
 | `connected` | Connection established |
 | `initial` | Initial snapshot of all opportunities |
-| `ev_update` | New or updated EV opportunity |
-| `arbitrage_update` | New or updated arbitrage |
+| `ev_opportunity` | New or updated EV opportunity |
+| `arbitrage` | New or updated arbitrage |
 | `heartbeat` | Keep-alive (every 30 seconds) |
 | `error` | Error notification |
 
@@ -35,25 +48,25 @@ All messages follow this structure:
 
 ```json
 {
-  "type": "ev_update",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "type": "ev_opportunity",
+  "timestamp": "2026-01-26T10:30:00.000Z",
   "data": { ... }
 }
 ```
 
-### Example Connection
+## Example Requests
 
-```bash cURL
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
 curl -N -H "X-API-Key: YOUR_API_KEY" \
-  "https://sharpapi.io/api/v1/stream/combined?sports=nba&min_ev=3.0"
+  "https://api.sharpapi.io/api/v1/stream/opportunities?league=nba&min_ev=3.0"
 ```
-
-```javascript JavaScript
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
 const eventSource = new EventSource(
-  'https://sharpapi.io/api/v1/stream/combined?sports=nba&min_ev=3.0',
-  {
-    headers: { 'X-API-Key': 'YOUR_API_KEY' }
-  }
+  'https://api.sharpapi.io/api/v1/stream/opportunities?league=nba&min_ev=3.0&api_key=YOUR_KEY'
 );
 
 eventSource.onmessage = (event) => {
@@ -64,13 +77,13 @@ eventSource.onmessage = (event) => {
       console.log('Connected with config:', message.data.config);
       break;
     case 'initial':
-      console.log('EV opportunities:', message.data.ev.count);
-      console.log('Arbitrage opportunities:', message.data.arbitrage.count);
+      console.log('EV opportunities:', message.meta.evCount);
+      console.log('Arbitrage opportunities:', message.meta.arbCount);
       break;
-    case 'ev_update':
+    case 'ev_opportunity':
       handleEVUpdate(message.data);
       break;
-    case 'arbitrage_update':
+    case 'arbitrage':
       handleArbUpdate(message.data);
       break;
     case 'heartbeat':
@@ -81,21 +94,21 @@ eventSource.onmessage = (event) => {
 
 eventSource.onerror = (error) => {
   console.error('Stream error:', error);
-  // Implement reconnection logic
 };
 ```
-
-```python Python
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
 import requests
 import json
 
-def stream_combined(api_key, sports=None, min_ev=2.0):
+def stream_combined(api_key, league=None, min_ev=2.0):
     params = {'min_ev': min_ev}
-    if sports:
-        params['sports'] = ','.join(sports)
+    if league:
+        params['league'] = league
 
     response = requests.get(
-        'https://sharpapi.io/api/v1/stream/combined',
+        'https://api.sharpapi.io/api/v1/stream/opportunities',
         headers={'X-API-Key': api_key},
         params=params,
         stream=True
@@ -109,23 +122,27 @@ def stream_combined(api_key, sports=None, min_ev=2.0):
                 yield data
 
 # Usage
-for message in stream_combined('YOUR_API_KEY', ['nba', 'nfl'], 3.0):
+for message in stream_combined('YOUR_API_KEY', league='nba', min_ev=3.0):
     print(f"[{message['type']}]", message.get('data', ''))
 ```
+  </Tabs.Tab>
+</Tabs>
+
+## Event Examples
 
 ### Connected Event
 
 ```json
 {
   "type": "connected",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "timestamp": "2026-01-26T10:30:00.000Z",
   "data": {
     "config": {
-      "sports": ["nba"],
+      "league": "nba",
       "minEV": 3.0,
-      "minArb": 0.5
+      "minProfit": 0.5
     },
-    "tier": "sharp",
+    "tier": "pro",
     "maxStreams": 10
   }
 }
@@ -136,99 +153,82 @@ for message in stream_combined('YOUR_API_KEY', ['nba', 'nfl'], 3.0):
 ```json
 {
   "type": "initial",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "timestamp": "2026-01-26T10:30:00.000Z",
   "data": {
-    "ev": {
-      "count": 12,
-      "opportunities": [
-        {
-          "eventId": "evt_nba_lal_bos_20240115",
-          "eventName": "Los Angeles Lakers @ Boston Celtics",
-          "evPercent": 4.5,
-          "kellyPercent": 2.1,
-          "sportsbook": "draftkings",
-          "selection": "Lakers +6.5"
-        }
-      ]
-    },
-    "arbitrage": {
-      "count": 2,
-      "opportunities": [
-        {
-          "eventId": "evt_nfl_dal_phi_20240115",
-          "eventName": "Dallas Cowboys @ Philadelphia Eagles",
-          "profitPercent": 1.8,
-          "marketType": "moneyline"
-        }
-      ]
-    }
+    "ev": [
+      {
+        "eventId": "33483153",
+        "eventName": "Los Angeles Lakers @ Boston Celtics",
+        "evPercent": 4.5,
+        "kellyPercent": 2.1,
+        "sportsbook": "draftkings",
+        "selection": "Lakers +6.5"
+      }
+    ],
+    "arbitrage": [
+      {
+        "eventId": "33483200",
+        "eventName": "Dallas Cowboys @ Philadelphia Eagles",
+        "profitPercent": 1.8,
+        "marketType": "moneyline"
+      }
+    ]
+  },
+  "meta": {
+    "evCount": 12,
+    "arbCount": 2
   }
 }
 ```
 
-### EV Update Event
+### EV Opportunity Event
 
 ```json
 {
-  "type": "ev_update",
-  "timestamp": "2024-01-15T10:30:15.000Z",
+  "type": "ev_opportunity",
+  "timestamp": "2026-01-26T10:30:15.000Z",
   "data": {
-    "count": 13,
-    "opportunities": [
-      {
-        "eventId": "evt_nba_gsw_den_20240115",
-        "eventName": "Golden State Warriors @ Denver Nuggets",
-        "evPercent": 5.2,
-        "kellyPercent": 2.8,
-        "sportsbook": "fanduel",
-        "selection": "Warriors ML"
-      }
-    ]
+    "eventId": "33483250",
+    "eventName": "Golden State Warriors @ Denver Nuggets",
+    "sport": "nba",
+    "evPercent": 5.2,
+    "kellyPercent": 2.8,
+    "sportsbook": "fanduel",
+    "selection": "Warriors ML",
+    "odds": 145,
+    "sharpOdds": 130,
+    "sharpBook": "pinnacle",
+    "detectedAt": "2026-01-26T10:30:15.000Z"
   }
 }
 ```
 
-### Arbitrage Update Event
+### Arbitrage Event
 
 ```json
 {
-  "type": "arbitrage_update",
-  "timestamp": "2024-01-15T10:30:20.000Z",
+  "type": "arbitrage",
+  "timestamp": "2026-01-26T10:30:20.000Z",
   "data": {
-    "count": 3,
-    "opportunities": [
-      {
-        "eventId": "evt_nba_bos_mia_20240115",
-        "eventName": "Boston Celtics @ Miami Heat",
-        "profitPercent": 2.1,
-        "marketType": "spread",
-        "legs": [
-          { "book": "draftkings", "selection": "Celtics -4.5" },
-          { "book": "betmgm", "selection": "Heat +5.5" }
-        ]
-      }
-    ]
+    "eventId": "33483300",
+    "eventName": "Boston Celtics @ Miami Heat",
+    "sport": "nba",
+    "profitPercent": 2.1,
+    "marketType": "spread",
+    "legs": [
+      { "sportsbook": "draftkings", "selection": "Celtics -4.5", "odds": -105, "stakePercent": 52.5 },
+      { "sportsbook": "betmgm", "selection": "Heat +5.5", "odds": -105, "stakePercent": 47.5 }
+    ],
+    "detectedAt": "2026-01-26T10:30:20.000Z"
   }
 }
 ```
-
-## Why Use Combined Stream?
-
-1. **Single connection**: All opportunities in one stream
-2. **Lower latency**: No switching between streams
-3. **Simplified code**: One event handler for everything
-4. **Efficient**: Reduces API calls and connections
 
 ## Best Practices
 
 1. **Reconnection**: Implement exponential backoff
-2. **Heartbeat monitoring**: Reconnect if no message for 45 seconds
-3. **Deduplication**: Track seen opportunity IDs
-4. **Rate awareness**: Stream counts against concurrent limit
-5. **Clean disconnection**: Close stream when done
 
 ```javascript
-// Reconnection with exponential backoff
 let retries = 0;
 const maxRetries = 5;
 
@@ -250,3 +250,21 @@ function connect() {
   };
 }
 ```
+
+2. **Heartbeat monitoring**: Reconnect if no message for 45 seconds
+3. **Deduplication**: Track seen opportunity IDs
+4. **Rate awareness**: Stream counts against concurrent limit
+5. **Clean disconnection**: Close stream when done
+
+## Connection Limits
+
+Each open stream counts against your concurrent stream limit:
+
+| Add-on | Max Streams |
+|--------|-------------|
+| WebSocket ($99/mo) | 10 |
+| Enterprise | Custom |
+
+<Callout type="info">
+The combined stream is the most efficient way to receive all opportunities while only using one stream slot.
+</Callout>

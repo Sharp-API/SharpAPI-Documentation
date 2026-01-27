@@ -1,0 +1,186 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Schedule
+
+Get the schedule of upcoming and live events.
+
+## Endpoints
+
+```
+GET /api/v1/schedule
+GET /api/v1/schedule/live
+```
+
+## Schedule - Upcoming Events
+
+Get all upcoming events with optional filtering.
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter by sport (e.g., `nba`, `nfl`) |
+| `league` | string | all | Filter by league |
+| `date` | string | today | Filter by date (ISO format or `today`, `tomorrow`) |
+| `days` | number | 1 | Number of days to include (max 7) |
+
+### Example Request
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/schedule?sport=nba&days=3" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/schedule?sport=nba&days=3',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+console.log(`${data.length} upcoming NBA games`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/schedule',
+    params={'sport': 'nba', 'days': 3},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()['data']
+print(f"{len(data)} upcoming NBA games")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "eventId": "33483153",
+      "sport": "nba",
+      "league": "NBA",
+      "homeTeam": "PHI 76ers",
+      "awayTeam": "PHO Suns",
+      "startTime": "2026-01-26T19:00:00Z",
+      "status": "upcoming",
+      "venue": "Wells Fargo Center",
+      "broadcast": ["ESPN", "TNT"]
+    },
+    {
+      "eventId": "33483200",
+      "sport": "nba",
+      "league": "NBA",
+      "homeTeam": "MIA Heat",
+      "awayTeam": "BOS Celtics",
+      "startTime": "2026-01-26T20:30:00Z",
+      "status": "upcoming",
+      "venue": "Kaseya Center",
+      "broadcast": ["NBA TV"]
+    }
+  ],
+  "meta": {
+    "count": 2,
+    "total": 15,
+    "dateRange": {
+      "start": "2026-01-26",
+      "end": "2026-01-28"
+    },
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+## Live Events
+
+Get all currently live events.
+
+```
+GET /api/v1/schedule/live
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter by sport |
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/schedule/live" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "eventId": "33483100",
+      "sport": "nba",
+      "league": "NBA",
+      "homeTeam": "LAL Lakers",
+      "awayTeam": "GSW Warriors",
+      "startTime": "2026-01-26T15:00:00Z",
+      "status": "live",
+      "score": {
+        "home": 78,
+        "away": 82
+      },
+      "period": "Q3",
+      "clock": "4:32"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 1,
+    "updated": "2026-01-26T15:42:00Z"
+  }
+}
+```
+
+## Event Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eventId` | string | Unique event identifier |
+| `sport` | string | Sport key (e.g., `nba`) |
+| `league` | string | League name |
+| `homeTeam` | string | Home team name |
+| `awayTeam` | string | Away team name |
+| `startTime` | string | ISO 8601 start time |
+| `status` | string | `upcoming`, `live`, `ended`, `postponed` |
+| `venue` | string | Event venue (if available) |
+| `broadcast` | string[] | TV broadcast networks (if available) |
+| `score` | object | Current score (live events only) |
+| `period` | string | Current period (live events only) |
+| `clock` | string | Game clock (live events only) |
+
+## Status Values
+
+| Status | Description |
+|--------|-------------|
+| `upcoming` | Event has not started |
+| `live` | Event is in progress |
+| `ended` | Event has completed |
+| `postponed` | Event has been postponed |
+| `cancelled` | Event has been cancelled |
+
+<Callout type="info">
+Schedule data is refreshed every 5 minutes. Use the `/events` endpoint for more detailed event information.
+</Callout>
+
+## Related Endpoints
+
+- [Events](/api-reference/events) - Full event details including markets
+- [Live Events](/api-reference/events-live) - Live events with odds
+- [Odds](/api-reference/odds) - Current odds for all events

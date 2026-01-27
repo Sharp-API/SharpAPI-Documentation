@@ -1,4 +1,12 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Streaming Overview
+
+Real-time odds updates via Server-Sent Events (SSE).
+
+<Callout type="warning">
+**WebSocket Add-on Required**: Streaming requires the WebSocket add-on ($99/mo) on any paid tier. Free tier does not support streaming.
+</Callout>
 
 ## Why Streaming?
 
@@ -8,6 +16,20 @@ REST polling has a 30-60 second delay. SSE streaming delivers updates in **sub-s
 |----------|---------|----------|
 | REST polling | 30-60s | Casual browsing |
 | **SSE streaming** | < 1s | Live betting, alerts |
+
+## Requirements
+
+| Tier | Streaming Access |
+|------|------------------|
+| Free | Not available |
+| Hobby + Add-on | 10 concurrent streams |
+| Pro + Add-on | 10 concurrent streams |
+| Sharp + Add-on | 10 concurrent streams |
+| Enterprise | Included (custom limits) |
+
+<Callout type="info">
+The WebSocket add-on costs $99/mo and provides 10 concurrent SSE streams.
+</Callout>
 
 ## How SSE Works
 
@@ -25,15 +47,17 @@ Client                    Server
   |         ...             |
 ```
 
-> **Tip:** SSE automatically reconnects on disconnect. Use `Last-Event-ID` header for seamless recovery.
+<Callout type="info">
+SSE automatically reconnects on disconnect. Use `Last-Event-ID` header for seamless recovery.
+</Callout>
 
 ## Available Streams
 
-| Endpoint | Description | Tier |
-|----------|-------------|------|
-| `/stream/odds` | All odds updates | All |
-| `/stream/ev` | +EV opportunities | Pro+ |
-| `/stream/arbitrage` | Arbitrage alerts | Pro+ |
+| Endpoint | Description | Tier Requirement |
+|----------|-------------|------------------|
+| `/stream/odds` | All odds updates | WebSocket Add-on |
+| `/stream/opportunities` | +EV and arbitrage alerts | WebSocket Add-on + Pro+ |
+| `/stream/events/{eventId}` | Single event stream | WebSocket Add-on |
 
 ## Quick Start
 
@@ -41,13 +65,13 @@ Client                    Server
 
 ```javascript
 const eventSource = new EventSource(
-  'https://sharpapi.io/api/v1/stream/odds?api_key=YOUR_KEY'
+  'https://api.sharpapi.io/api/v1/stream/odds?api_key=YOUR_KEY'
 );
 
 // Initial snapshot
 eventSource.addEventListener('initial', (e) => {
-  const data = JSON.parse(e.data);
-  console.log('Initial odds:', data.data);
+  const { data } = JSON.parse(e.data);
+  console.log('Initial odds:', data.length);
 });
 
 // Live updates
@@ -73,18 +97,18 @@ eventSource.onerror = (e) => {
 import EventSource from 'eventsource';
 
 const es = new EventSource(
-  'https://sharpapi.io/api/v1/stream/odds',
+  'https://api.sharpapi.io/api/v1/stream/odds',
   { headers: { 'X-API-Key': 'YOUR_KEY' } }
 );
 
 es.addEventListener('initial', (e) => {
-  const data = JSON.parse(e.data);
-  console.log(`Received ${Object.keys(data.data).length} books`);
+  const { data } = JSON.parse(e.data);
+  console.log(`Received ${data.length} initial odds`);
 });
 
 es.addEventListener('odds_update', (e) => {
   const update = JSON.parse(e.data);
-  console.log(`${update.source}: ${update.data[update.source].length} odds`);
+  console.log(`${update.source}: ${update.data.length} odds updated`);
 });
 ```
 
@@ -95,7 +119,7 @@ import sseclient
 import requests
 import json
 
-url = 'https://sharpapi.io/api/v1/stream/odds'
+url = 'https://api.sharpapi.io/api/v1/stream/odds'
 headers = {'X-API-Key': 'YOUR_KEY'}
 
 response = requests.get(url, headers=headers, stream=True)
@@ -119,19 +143,58 @@ for event in client.events():
 | `arbitrage` | New arb found | Arbitrage with stakes |
 | `heartbeat` | Keep-alive | Timestamp only |
 
+## Filtering Streams
+
+Reduce bandwidth by filtering:
+
+```javascript
+// Only NBA from DraftKings
+const url = 'https://api.sharpapi.io/api/v1/stream/odds?league=nba&sportsbook=draftkings&api_key=YOUR_KEY';
+const es = new EventSource(url);
+```
+
+Available filters:
+- `league` - Filter by league (e.g., `nba`, `nfl`)
+- `sportsbook` - Filter by sportsbook (e.g., `draftkings`)
+- `sport` - Filter by sport
+- `live` - Only live events (`true`)
+
 ## Concurrent Stream Limits
 
-| Tier | Max Streams |
-|------|-------------|
-| Free | 1 |
-| Pro | 3 |
-| Sharp | 10 |
+| Add-on | Max Concurrent Streams |
+|--------|------------------------|
+| WebSocket ($99/mo) | 10 |
+| Enterprise | Custom |
 
-> **Warning:** Exceeding your stream limit returns a `429` error. Close unused streams to open new ones.
+<Callout type="warning">
+Exceeding your stream limit returns a `429` error. Close unused streams to open new ones.
+</Callout>
+
+## Error Handling
+
+```javascript
+eventSource.onerror = (error) => {
+  if (eventSource.readyState === EventSource.CLOSED) {
+    console.log('Stream closed permanently');
+  } else {
+    console.log('Temporary error, will reconnect...');
+  }
+};
+```
+
+### Stream Error Codes
+
+| Error | Description | Resolution |
+|-------|-------------|------------|
+| `stream_limit_exceeded` | Too many concurrent streams | Close unused streams |
+| `tier_restricted` | Stream not available on tier | Add WebSocket add-on |
+| `unauthorized` | Invalid API key | Check API key |
 
 ## Best Practices
 
-- **Handle reconnection gracefully** - EventSource auto-reconnects, but reset local state on `initial` events
-- **Process updates asynchronously** - Don't block the event handler. Queue updates for background processing
-- **Use filters to reduce bandwidth** - Pass `sports` and `books` params to receive only relevant updates
-- **Monitor heartbeats** - If you don't receive a heartbeat in 60s, the connection may be stale
+1. **Handle reconnection gracefully** - EventSource auto-reconnects, but reset local state on `initial` events
+2. **Process updates asynchronously** - Don't block the event handler. Queue updates for background processing
+3. **Use filters to reduce bandwidth** - Pass `league` and `sportsbook` params to receive only relevant updates
+4. **Monitor heartbeats** - If you don't receive a heartbeat in 60s, the connection may be stale
+5. **Close unused streams** - Each open stream counts against your limit
+6. **Handle `Last-Event-ID`** - Use this header to resume where you left off after reconnection

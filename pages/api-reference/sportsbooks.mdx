@@ -1,0 +1,249 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Sportsbooks
+
+Get list of available sportsbooks and their current status.
+
+## Endpoints
+
+```
+GET /api/v1/sportsbooks
+GET /api/v1/sportsbooks/{bookId}
+```
+
+<Callout type="info">
+These endpoints are accessible without authentication at 10 requests/minute. Authenticated requests receive higher rate limits.
+</Callout>
+
+## List All Sportsbooks
+
+### Example Request
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/sportsbooks" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/sportsbooks',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+const sharpBooks = data.filter(b => b.isSharp);
+console.log('Sharp books:', sharpBooks.map(b => b.displayName));
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/sportsbooks',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+books = response.json()['data']
+sharp_books = [b for b in books if b.get('isSharp')]
+print(f"Sharp books: {[b['displayName'] for b in sharp_books]}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "draftkings",
+      "name": "draftkings",
+      "displayName": "DraftKings",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["US"],
+      "isSharp": false,
+      "status": "active",
+      "oddsCount": 1250,
+      "lastUpdate": "2026-01-26T02:24:58.000Z"
+    },
+    {
+      "id": "pinnacle",
+      "name": "pinnacle",
+      "displayName": "Pinnacle",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["GLOBAL"],
+      "isSharp": true,
+      "status": "active",
+      "oddsCount": 980,
+      "lastUpdate": "2026-01-26T02:24:55.000Z"
+    },
+    {
+      "id": "fanduel",
+      "name": "fanduel",
+      "displayName": "FanDuel",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["US"],
+      "isSharp": false,
+      "status": "active",
+      "oddsCount": 1180,
+      "lastUpdate": "2026-01-26T02:24:50.000Z"
+    },
+    {
+      "id": "betmgm",
+      "name": "betmgm",
+      "displayName": "BetMGM",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["US"],
+      "isSharp": false,
+      "status": "active",
+      "oddsCount": 950,
+      "lastUpdate": "2026-01-26T02:24:45.000Z"
+    },
+    {
+      "id": "caesars",
+      "name": "caesars",
+      "displayName": "Caesars",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["US"],
+      "isSharp": false,
+      "status": "active",
+      "oddsCount": 920,
+      "lastUpdate": "2026-01-26T02:24:40.000Z"
+    },
+    {
+      "id": "bet365",
+      "name": "bet365",
+      "displayName": "Bet365",
+      "hasLiveOdds": true,
+      "hasPlayerProps": true,
+      "region": ["US", "UK", "EU"],
+      "isSharp": false,
+      "status": "active",
+      "oddsCount": 1100,
+      "lastUpdate": "2026-01-26T02:24:35.000Z"
+    }
+  ],
+  "meta": {
+    "count": 6,
+    "active": 6,
+    "updated": "2026-01-26T02:25:00.000Z"
+  }
+}
+```
+
+## Get Single Sportsbook
+
+```
+GET /api/v1/sportsbooks/{bookId}
+```
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/sportsbooks/draftkings" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "draftkings",
+    "name": "draftkings",
+    "displayName": "DraftKings",
+    "hasLiveOdds": true,
+    "hasPlayerProps": true,
+    "region": ["US"],
+    "isSharp": false,
+    "status": "active",
+    "oddsCount": 1250,
+    "lastUpdate": "2026-01-26T02:24:58.000Z",
+    "sports": ["nba", "nfl", "mlb", "nhl", "ncaab", "ncaaf", "soccer", "tennis"],
+    "markets": ["moneyline", "spread", "total", "player_prop", "team_prop", "game_prop"]
+  },
+  "meta": {
+    "updated": "2026-01-26T02:25:00.000Z"
+  }
+}
+```
+
+## Sportsbook Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier (use in API filters) |
+| `name` | string | Internal name |
+| `displayName` | string | Human-readable name |
+| `hasLiveOdds` | boolean | Supports live/in-play odds |
+| `hasPlayerProps` | boolean | Supports player prop markets |
+| `region` | string[] | Available regions (`US`, `UK`, `EU`, `GLOBAL`) |
+| `isSharp` | boolean | Whether book is considered sharp |
+| `status` | string | `active` or `inactive` |
+| `oddsCount` | number | Number of odds currently available |
+| `lastUpdate` | string | ISO 8601 timestamp of last data update |
+| `sports` | string[] | Supported sports (single book only) |
+| `markets` | string[] | Supported market types (single book only) |
+
+## Supported Sportsbooks
+
+### Major US Books
+| ID | Name | Live | Props |
+|----|------|------|-------|
+| `draftkings` | DraftKings | Yes | Yes |
+| `fanduel` | FanDuel | Yes | Yes |
+| `betmgm` | BetMGM | Yes | Yes |
+| `caesars` | Caesars | Yes | Yes |
+| `espnbet` | ESPN Bet | Yes | Yes |
+| `fanatics` | Fanatics | Yes | Yes |
+| `betrivers` | BetRivers | Yes | Yes |
+
+### Sharp Books
+| ID | Name | Live | Props |
+|----|------|------|-------|
+| `pinnacle` | Pinnacle | Yes | Yes |
+
+### International
+| ID | Name | Live | Props |
+|----|------|------|-------|
+| `bet365` | Bet365 | Yes | Yes |
+| `unibet` | Unibet | Yes | Yes |
+
+## Sharp vs Soft Books
+
+### Sharp Books
+- Lower vig (juice)
+- Better odds accuracy
+- Used as reference for +EV calculations
+- Examples: Pinnacle, Circa
+
+### Soft Books
+- Higher vig
+- More promotions and bonuses
+- Where +EV opportunities are found
+- Examples: DraftKings, FanDuel, BetMGM
+
+<Callout type="info">
+Sharp books (like Pinnacle) set efficient lines. Soft books often lag behind, creating +EV opportunities.
+</Callout>
+
+## Book Access by Tier
+
+| Tier | Books Available |
+|------|-----------------|
+| Free | 2 (DraftKings, FanDuel) |
+| Hobby | 5 |
+| Pro | 15 |
+| Sharp/Enterprise | All |
+
+<Callout type="warning">
+The `oddsCount` may be 0 and `lastUpdate` may be null if a sportsbook is temporarily unavailable.
+</Callout>

@@ -1,0 +1,180 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Positive Expected Value (+EV)
+
+Get current +EV betting opportunities based on sharp book reference.
+
+```
+GET /api/v1/positive-ev
+```
+
+<Callout type="warning">
+This endpoint requires **Pro** tier or higher.
+</Callout>
+
+## How +EV is Calculated
+
+SharpAPI uses Pinnacle (a sharp book) as the reference for true probability:
+
+1. Get the sharp book's odds for both sides of a market
+2. Remove the vig to calculate "fair" probability
+3. Compare soft book odds to fair probability
+4. **EV% = (fair_probability x decimal_odds - 1) x 100**
+
+<Callout type="info">
+A +3% EV means for every $100 wagered, you expect to profit $3 long-term.
+</Callout>
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sports` | string | all | Comma-separated sports filter |
+| `books` | string | all | Target sportsbooks to find +EV on (e.g., `draftkings,fanduel`) |
+| `threshold` | number | `2.0` | Minimum EV percentage to return |
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/positive-ev?threshold=3.0&books=draftkings" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/positive-ev?threshold=3.0',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+
+data.forEach(opp => {
+  console.log(`${opp.selection} @ ${opp.sportsbook}: +${opp.evPercent}% EV`);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/positive-ev',
+    params={'threshold': 3.0, 'books': 'draftkings'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+
+for opp in response.json()['data']:
+    print(f"{opp['selection']} @ {opp['sportsbook']}: +{opp['evPercent']}% EV")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": [
+    {
+      "eventId": "33483153",
+      "eventName": "PHO Suns @ PHI 76ers",
+      "sport": "nba",
+      "marketType": "spread",
+      "sportsbook": "draftkings",
+      "selection": "PHO Suns -3.5",
+      "odds": -105,
+      "decimalOdds": 1.952,
+      "sharpOdds": -115,
+      "sharpDecimalOdds": 1.87,
+      "sharpBook": "pinnacle",
+      "fairProbability": 53.5,
+      "evPercent": 4.35,
+      "kellyPercent": 2.18,
+      "detectedAt": "2026-01-26T02:14:58.000Z"
+    }
+  ],
+  "meta": {
+    "count": 12,
+    "total": 12,
+    "summary": {
+      "avgEV": 4.2,
+      "maxEV": 8.5,
+      "avgKelly": 2.1,
+      "byBook": { "draftkings": 8, "fanduel": 4 },
+      "bySport": { "nba": 7, "nfl": 5 }
+    },
+    "updated": "2026-01-26T02:15:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+```json title="403 Tier Restricted"
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "+EV detection requires Pro or Sharp tier"
+  }
+}
+```
+
+## EV Opportunity Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eventId` | string | Event identifier |
+| `eventName` | string | Readable event name |
+| `sport` | string | Sport (e.g., `nba`) |
+| `marketType` | string | Market type |
+| `sportsbook` | string | Book with +EV line |
+| `selection` | string | The bet selection |
+| `odds` | number | American odds at soft book |
+| `decimalOdds` | number | Decimal odds at soft book |
+| `sharpOdds` | number | American odds at sharp book |
+| `sharpDecimalOdds` | number | Decimal odds at sharp book |
+| `sharpBook` | string | Reference sharp book (usually `pinnacle`) |
+| `fairProbability` | number | No-vig probability (%) |
+| `evPercent` | number | Expected value (%) |
+| `kellyPercent` | number | Recommended stake (%) |
+| `detectedAt` | string | When opportunity was detected |
+
+## Kelly Criterion
+
+The `kellyPercent` field indicates optimal bet sizing based on edge:
+
+```
+Kelly % = (p x b - q) / b
+where:
+  p = probability of winning
+  q = 1 - p
+  b = decimal odds - 1
+```
+
+<Callout type="warning">
+Kelly percentages are capped at 25% for safety. Consider using fractional Kelly (1/4 or 1/2) for bankroll management.
+</Callout>
+
+## Understanding EV Thresholds
+
+| EV % | Quality | Frequency |
+|------|---------|-----------|
+| 2-3% | Low edge | Common |
+| 3-5% | Good edge | Moderate |
+| 5-8% | Strong edge | Rare |
+| 8%+ | Exceptional | Very rare |
+
+<Callout type="info">
+Higher EV opportunities may disappear faster as the market corrects.
+</Callout>
+
+## Best Practices
+
+1. **Diversify bets** - Don't put all your bankroll on one opportunity
+2. **Use fractional Kelly** - Full Kelly is too aggressive for most bettors
+3. **Track your results** - Long-term sample size matters (1000+ bets)
+4. **Understand variance** - +EV doesn't mean you'll win every bet
+5. **Consider closing line value** - Did the line move in your favor?

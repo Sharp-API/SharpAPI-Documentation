@@ -1,0 +1,225 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Account Info
+
+Get information about your account, API key, and usage.
+
+## Endpoints
+
+```
+GET /api/v1/me
+GET /api/v1/me/usage
+GET /api/v1/me/preferences
+```
+
+## Account Details
+
+Get your account and API key information.
+
+```
+GET /api/v1/me
+```
+
+### Example Request
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/me" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/me',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+console.log(`Tier: ${data.tier}, Requests remaining: ${data.limits.remaining}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/me',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()['data']
+print(f"Tier: {data['tier']}, Requests remaining: {data['limits']['remaining']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "data": {
+    "keyId": "key_abc123",
+    "tier": "pro",
+    "status": "active",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "limits": {
+      "requestsPerMinute": 300,
+      "remaining": 285,
+      "resetsAt": "2026-01-26T12:01:00Z"
+    },
+    "streaming": {
+      "enabled": true,
+      "maxConcurrent": 10,
+      "activeStreams": 2
+    },
+    "features": {
+      "odds": true,
+      "ev": true,
+      "arbitrage": true,
+      "valueBets": true,
+      "middles": true,
+      "streaming": true
+    },
+    "sportsbooks": {
+      "allowed": 15,
+      "list": ["draftkings", "fanduel", "betmgm", "caesars", "pinnacle", "..."]
+    }
+  },
+  "meta": {
+    "updated": "2026-01-26T12:00:30Z"
+  }
+}
+```
+
+## Usage Statistics
+
+Get your API usage statistics.
+
+```
+GET /api/v1/me/usage
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `today` | Time period: `today`, `week`, `month`, `all` |
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/me/usage?period=month" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "period": "month",
+    "periodStart": "2026-01-01T00:00:00Z",
+    "periodEnd": "2026-01-31T23:59:59Z",
+    "requests": {
+      "total": 45230,
+      "byEndpoint": {
+        "/odds": 25000,
+        "/positive-ev": 12500,
+        "/arbitrage": 5000,
+        "/stream/odds": 2730
+      },
+      "byDay": [
+        { "date": "2026-01-26", "count": 1520 },
+        { "date": "2026-01-25", "count": 1680 }
+      ]
+    },
+    "streaming": {
+      "totalConnections": 150,
+      "totalDuration": "48h 32m",
+      "peakConcurrent": 8
+    },
+    "rateLimitHits": 12
+  },
+  "meta": {
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+## Preferences
+
+Get and update your account preferences.
+
+```
+GET /api/v1/me/preferences
+```
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/me/preferences" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "defaultSportsbooks": ["draftkings", "fanduel", "pinnacle"],
+    "defaultSports": ["nba", "nfl"],
+    "oddsFormat": "american",
+    "timezone": "America/New_York",
+    "notifications": {
+      "email": true,
+      "rateLimitAlerts": true
+    }
+  },
+  "meta": {
+    "updated": "2026-01-20T10:00:00Z"
+  }
+}
+```
+
+## Account Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `keyId` | string | Your API key identifier |
+| `tier` | string | `free`, `hobby`, `pro`, `sharp`, `enterprise` |
+| `status` | string | `active`, `suspended`, `expired` |
+| `createdAt` | string | When your account was created |
+| `limits.requestsPerMinute` | number | Your rate limit |
+| `limits.remaining` | number | Requests remaining this minute |
+| `limits.resetsAt` | string | When the rate limit resets |
+| `streaming.enabled` | boolean | Whether streaming is enabled |
+| `streaming.maxConcurrent` | number | Max concurrent streams |
+| `streaming.activeStreams` | number | Currently active streams |
+| `features` | object | Feature access by tier |
+| `sportsbooks.allowed` | number | Number of books you can access |
+| `sportsbooks.list` | string[] | Sportsbooks you can access |
+
+## Tier Information
+
+| Tier | Requests/Min | Streams | Features |
+|------|--------------|---------|----------|
+| Free | 1 | 0 | Odds only |
+| Hobby | 120 | 10* | Odds |
+| Pro | 300 | 10* | + EV, Arb, Middles |
+| Sharp | 2,000 | 10* | All features |
+| Enterprise | Custom | Custom | All + SLA |
+
+<Callout type="info">
+*Streaming requires WebSocket add-on ($99/mo)
+</Callout>
+
+## Best Practices
+
+1. **Monitor your usage** - Check `/me/usage` regularly to avoid hitting limits
+2. **Track rate limit headers** - Use response headers for real-time limit tracking
+3. **Set up alerts** - Enable notifications for rate limit warnings
+4. **Upgrade before limits** - If you're consistently hitting limits, consider upgrading
+
+<Callout type="warning">
+If your account status is `suspended`, contact support to resolve any issues before making API requests.
+</Callout>

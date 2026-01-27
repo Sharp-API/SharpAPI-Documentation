@@ -2,10 +2,17 @@
   "overview": "Overview",
   "---Discovery": {
     "type": "separator",
-    "title": "Discovery"
+    "title": "Reference Data"
   },
   "sports": "Sports",
   "leagues": "Leagues",
+  "sportsbooks": "Sportsbooks",
+  "markets": "Markets",
+  "---Schedule": {
+    "type": "separator",
+    "title": "Schedule & Events"
+  },
+  "schedule": "Schedule",
   "events": "Events",
   "events-live": "Live Events",
   "events-by-id": "Event Details",
@@ -25,14 +32,13 @@
     "type": "separator",
     "title": "Opportunities"
   },
-  "ev": "Expected Value",
+  "positive-ev": "Positive EV",
   "arbitrage": "Arbitrage",
   "value-bets": "Value Bets",
   "middles": "Middles",
-  "---Reference": {
+  "---Account": {
     "type": "separator",
-    "title": "Reference"
+    "title": "Account"
   },
-  "books": "Sportsbooks",
-  "user-stats": "User Stats"
+  "me": "Account Info"
 }

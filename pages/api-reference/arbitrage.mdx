@@ -1,3 +1,5 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Arbitrage
 
 Get current arbitrage opportunities across sportsbooks.
@@ -6,7 +8,9 @@ Get current arbitrage opportunities across sportsbooks.
 GET /api/v1/arbitrage
 ```
 
-> **Note:** This endpoint requires **Pro** tier or higher.
+<Callout type="warning">
+This endpoint requires **Pro** tier or higher.
+</Callout>
 
 ## How Arbitrage Works
 
@@ -17,83 +21,86 @@ Arbitrage occurs when the combined implied probability across books is less than
 3. **If total < 100%, arbitrage exists**
 4. Profit % = (100 / total) - 100
 
-> **Tip:**
-  A 2% arbitrage means guaranteed $2 profit per $100 wagered, regardless of outcome.
-
+<Callout type="info">
+A 2% arbitrage means guaranteed $2 profit per $100 wagered, regardless of outcome.
+</Callout>
 
 ## Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sports` | string | all | Comma-separated sports filter |
+| `sports` | string | all | Comma-separated sports filter (e.g., `nba,nfl`) |
 | `min_profit` | number | `0.5` | Minimum profit percentage to return |
-| `api_key` | string | - | API key (alternative to `X-API-Key` header) |
+| `format` | string | `json` | Response format: `json` or `csv` |
 
-## Response
+## Response Formats
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | Whether the request succeeded |
-| `timestamp` | string | ISO 8601 timestamp |
-| `summary` | object | Summary statistics for arbitrage opportunities |
-| `opportunities` | array | Array of arbitrage opportunities with stake calculations |
+### JSON Format (Default)
 
+Returns structured JSON with full details about each opportunity.
 
-### Example Request
+### CSV Format
 
+Returns a downloadable CSV file for import into spreadsheets. Add `?format=csv` to your request.
 
-```bash cURL
-curl -X GET "https://sharpapi.io/api/v1/arbitrage?min_profit=1.0" \
-  -H "X-API-Key: YOUR_API_KEY"
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/arbitrage?format=csv" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -o arbitrage.csv
 ```
 
-```javascript JavaScript
+CSV columns: `event_id`, `event_name`, `sport`, `market_type`, `profit_percent`, `leg1_book`, `leg1_selection`, `leg1_odds`, `leg1_stake_percent`, `leg2_book`, `leg2_selection`, `leg2_odds`, `leg2_stake_percent`, `detected_at`
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/arbitrage?min_profit=1.0" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
 const response = await fetch(
-  'https://sharpapi.io/api/v1/arbitrage?min_profit=1.0',
+  'https://api.sharpapi.io/api/v1/arbitrage?min_profit=1.0',
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 );
-const { opportunities } = await response.json();
+const { data, meta } = await response.json();
 
-opportunities.forEach(arb => {
+data.forEach(arb => {
   console.log(`${arb.eventName}: ${arb.profitPercent}% guaranteed profit`);
   arb.legs.forEach(leg => {
     console.log(`  ${leg.sportsbook}: ${leg.selection} @ ${leg.odds} (${leg.stakePercent}%)`);
   });
 });
 ```
-
-```python Python
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
 import requests
 
 response = requests.get(
-    'https://sharpapi.io/api/v1/arbitrage',
+    'https://api.sharpapi.io/api/v1/arbitrage',
     params={'min_profit': 1.0},
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 
-for arb in response.json()['opportunities']:
+for arb in response.json()['data']:
     print(f"{arb['eventName']}: {arb['profitPercent']}% profit")
     for leg in arb['legs']:
         print(f"  {leg['sportsbook']}: {leg['selection']} - stake {leg['stakePercent']}%")
 ```
+  </Tabs.Tab>
+</Tabs>
 
+## Response
 
+### Success (200)
 
-### Response
-
-
-```json 200
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-21T02:20:00.000Z",
-  "summary": {
-    "count": 5,
-    "avgProfit": 1.8,
-    "maxProfit": 3.2,
-    "byMarket": { "moneyline": 3, "spread": 2 },
-    "bySport": { "nba": 3, "nhl": 2 }
-  },
-  "opportunities": [
+  "data": [
     {
       "eventId": "33483200",
       "eventName": "BOS Celtics @ MIA Heat",
@@ -117,13 +124,33 @@ for arb in response.json()['opportunities']:
           "stakePercent": 40.83
         }
       ],
-      "detectedAt": "2024-01-21T02:19:55.000Z"
+      "detectedAt": "2026-01-26T02:19:55.000Z"
     }
-  ]
+  ],
+  "meta": {
+    "count": 5,
+    "total": 5,
+    "summary": {
+      "avgProfit": 1.8,
+      "maxProfit": 3.2,
+      "byMarket": { "moneyline": 3, "spread": 2 },
+      "bySport": { "nba": 3, "nhl": 2 }
+    },
+    "updated": "2026-01-26T02:20:00.000Z"
+  }
 }
 ```
 
+### Error Responses
 
+```json title="403 Tier Restricted"
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Arbitrage detection requires Pro or Sharp tier"
+  }
+}
+```
 
 ## Calculating Stakes
 
@@ -138,9 +165,9 @@ The `stakePercent` values tell you how to split your bankroll:
 
 **Guaranteed profit: ~$21.50 (2.15%)**
 
-> **Warning:**
-  Sportsbooks may limit or ban accounts that consistently place arbitrage bets. Use at your own risk.
-
+<Callout type="warning">
+Sportsbooks may limit or ban accounts that consistently place arbitrage bets. Use at your own risk.
+</Callout>
 
 ## Arbitrage Schema
 
@@ -148,11 +175,22 @@ The `stakePercent` values tell you how to split your bankroll:
 |-------|------|-------------|
 | `eventId` | string | Event identifier |
 | `eventName` | string | Readable event name |
+| `sport` | string | Sport (e.g., `nba`) |
 | `marketType` | string | Market type |
 | `profitPercent` | number | Guaranteed profit (%) |
-| `impliedTotal` | number | Combined implied probability |
+| `impliedTotal` | number | Combined implied probability (< 1.0 = arb exists) |
 | `legs` | array | Individual bets to place |
 | `legs[].sportsbook` | string | Sportsbook for this leg |
 | `legs[].selection` | string | Selection to bet |
 | `legs[].odds` | number | American odds |
+| `legs[].decimalOdds` | number | Decimal odds |
 | `legs[].stakePercent` | number | % of total stake |
+| `detectedAt` | string | When opportunity was detected |
+
+## Best Practices
+
+1. **Act quickly** - Arbitrage opportunities disappear fast (seconds to minutes)
+2. **Round bet amounts** - Odd amounts ($591.70) may trigger limits
+3. **Vary your betting patterns** - Consistent arb betting attracts attention
+4. **Use streaming** - Real-time alerts via SSE let you react faster
+5. **Consider execution risk** - Odds may change between legs

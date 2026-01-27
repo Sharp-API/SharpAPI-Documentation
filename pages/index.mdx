@@ -1,3 +1,5 @@
+import { Cards, Card, Callout } from 'nextra/components'
+
 # Welcome to SharpAPI
 
 SharpAPI is a real-time sports betting odds aggregation platform that provides:
@@ -7,6 +9,16 @@ SharpAPI is a real-time sports betting odds aggregation platform that provides:
 - **Arbitrage Alerts** - Cross-book arbitrage detection with optimal stake calculations
 - **SSE Streaming** - Server-Sent Events for real-time push notifications
 
+## Base URL
+
+```
+https://api.sharpapi.io/api/v1
+```
+
+<Callout type="info">
+All API requests should use `api.sharpapi.io` as the base URL.
+</Callout>
+
 ## Why SharpAPI?
 
 | Feature | SharpAPI | Competitors |
@@ -15,6 +27,17 @@ SharpAPI is a real-time sports betting odds aggregation platform that provides:
 | +EV detection | Automated | Manual |
 | Arbitrage w/ stakes | Optimal sizing | Detection only |
 | Sharp book reference | Pinnacle | Varies |
+
+## Pricing
+
+| Tier | Price | Req/Min | Features |
+|------|-------|---------|----------|
+| **Free** | $0/mo | 1 | Odds, Schedule |
+| **Hobby** | $79/mo | 120 | Odds, Schedule |
+| **Pro** | $229/mo | 300 | + EV, Arbitrage, Middles |
+| **Sharp** | $399/mo | 2,000 | All + Priority Support |
+
+Streaming requires WebSocket add-on ($99/mo). See [Pricing](/pricing) for details.
 
 ## Supported Sportsbooks
 
@@ -26,7 +49,6 @@ SharpAPI is a real-time sports betting odds aggregation platform that provides:
 - ESPN Bet
 - Fanatics
 - BetRivers
-- PointsBet
 
 ### Sharp Books
 - Pinnacle (reference for +EV calculations)
@@ -43,6 +65,46 @@ SharpAPI is a real-time sports betting odds aggregation platform that provides:
 
 ## Quick Links
 
-- [Get API Key](https://sharpapi.io/signup) - Sign up for free
-- [Quickstart](/quickstart) - First API call in 2 minutes
-- [API Reference](/api-reference/overview) - Full endpoint documentation
+<Cards>
+  <Card title="Get API Key" href="https://sharpapi.io/signup">
+    Sign up for free
+  </Card>
+  <Card title="Quick Start" href="/quickstart">
+    First API call in 2 minutes
+  </Card>
+  <Card title="API Reference" href="/api-reference/overview">
+    Full endpoint documentation
+  </Card>
+  <Card title="Pricing" href="/pricing">
+    Compare plans and features
+  </Card>
+</Cards>
+
+## Key Endpoints
+
+| Endpoint | Description | Tier |
+|----------|-------------|------|
+| `GET /odds` | Current odds snapshot | All |
+| `GET /odds/best` | Best odds across books | All |
+| `GET /schedule` | Upcoming events | All |
+| `GET /events` | Event details | All |
+| `GET /positive-ev` | +EV opportunities | Pro+ |
+| `GET /arbitrage` | Arbitrage opportunities | Pro+ |
+| `GET /stream/odds` | Real-time odds stream | Add-on |
+
+## Authentication
+
+Pass your API key using one of these methods:
+
+```bash
+# Header (recommended)
+curl -H "X-API-Key: sk_live_xxx" https://api.sharpapi.io/api/v1/odds
+
+# Bearer token
+curl -H "Authorization: Bearer sk_live_xxx" https://api.sharpapi.io/api/v1/odds
+
+# Query parameter (for SSE)
+curl "https://api.sharpapi.io/api/v1/stream/odds?api_key=sk_live_xxx"
+```
+
+See [Authentication](/authentication) for details.

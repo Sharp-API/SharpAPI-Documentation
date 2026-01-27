@@ -1,21 +1,27 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # EV Stream
 
 Real-time +EV opportunity alerts via Server-Sent Events (SSE).
 
 ```
-GET /api/v1/stream/ev
+GET /api/v1/stream/opportunities
 ```
 
-> **Note:** This endpoint requires **Pro** tier or higher.
+<Callout type="warning">
+This endpoint requires:
+- **Pro tier or higher** for +EV detection
+- **WebSocket add-on** ($99/mo) for streaming access
+</Callout>
 
 ## Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sports` | string | all | Filter by sports |
-| `books` | string | all | Target sportsbooks for +EV detection |
+| `league` | string | all | Filter by league |
+| `sportsbook` | string | all | Target sportsbooks for +EV detection |
 | `threshold` | number | `2.0` | Minimum EV percentage to alert |
-| `api_key` | string | - | API key (alternative to `X-API-Key` header) |
+| `api_key` | string | - | API key (for browser EventSource) |
 
 ## Event Types
 
@@ -26,14 +32,16 @@ Current +EV opportunities on connection.
 ```json
 {
   "type": "initial",
-  "timestamp": "2024-01-21T02:35:00.000Z",
+  "timestamp": "2026-01-26T02:35:00.000Z",
   "data": {
-    "opportunities": [...],
-    "summary": {
-      "count": 5,
-      "avgEV": 3.2,
-      "maxEV": 6.5
-    }
+    "ev": [...],
+    "arbitrage": [...]
+  },
+  "meta": {
+    "evCount": 5,
+    "arbCount": 2,
+    "avgEV": 3.2,
+    "maxEV": 6.5
   }
 }
 ```
@@ -45,83 +53,177 @@ New +EV opportunity detected.
 ```json
 {
   "type": "ev_opportunity",
-  "timestamp": "2024-01-21T02:35:30.000Z",
+  "timestamp": "2026-01-26T02:35:30.000Z",
   "data": {
-    "opportunities": [
-      {
-        "eventName": "BOS Celtics @ MIA Heat",
-        "sportsbook": "draftkings",
-        "selection": "BOS Celtics -4.5",
-        "odds": -105,
-        "sharpOdds": -115,
-        "evPercent": 4.2,
-        "kellyPercent": 2.1
-      }
-    ],
-    "triggeredBy": "draftkings"
+    "eventName": "BOS Celtics @ MIA Heat",
+    "sport": "nba",
+    "sportsbook": "draftkings",
+    "selection": "BOS Celtics -4.5",
+    "odds": -105,
+    "decimalOdds": 1.952,
+    "sharpOdds": -115,
+    "sharpBook": "pinnacle",
+    "fairProbability": 53.5,
+    "evPercent": 4.2,
+    "kellyPercent": 2.1,
+    "detectedAt": "2026-01-26T02:35:30.000Z"
   }
 }
 ```
 
-### Example Request
+### `arbitrage`
 
+New arbitrage opportunity detected.
 
-```javascript JavaScript
-const url = 'https://sharpapi.io/api/v1/stream/ev?threshold=3.0&api_key=YOUR_KEY';
+```json
+{
+  "type": "arbitrage",
+  "timestamp": "2026-01-26T02:36:00.000Z",
+  "data": {
+    "eventName": "LAL Lakers @ GSW Warriors",
+    "sport": "nba",
+    "marketType": "moneyline",
+    "profitPercent": 2.15,
+    "legs": [
+      { "sportsbook": "draftkings", "selection": "LAL Lakers", "odds": -145, "stakePercent": 59.17 },
+      { "sportsbook": "pinnacle", "selection": "GSW Warriors", "odds": 155, "stakePercent": 40.83 }
+    ],
+    "detectedAt": "2026-01-26T02:36:00.000Z"
+  }
+}
+```
+
+### `heartbeat`
+
+Keep-alive signal every 30 seconds.
+
+```json
+{
+  "type": "heartbeat",
+  "timestamp": "2026-01-26T02:37:00.000Z"
+}
+```
+
+## Example Requests
+
+<Tabs items={['JavaScript', 'Python']}>
+  <Tabs.Tab>
+```javascript
+const url = 'https://api.sharpapi.io/api/v1/stream/opportunities?threshold=3.0&api_key=YOUR_KEY';
 const eventSource = new EventSource(url);
 
 eventSource.addEventListener('ev_opportunity', (e) => {
-  const { data } = JSON.parse(e.data);
+  const opp = JSON.parse(e.data).data;
 
-  data.opportunities.forEach(opp => {
-    // Alert on high-value opportunities
-    if (opp.evPercent >= 5) {
-      notify(`🔥 ${opp.evPercent}% EV on ${opp.selection} @ ${opp.sportsbook}`);
-    }
-  });
+  // Alert on high-value opportunities
+  if (opp.evPercent >= 5) {
+    notify(`High EV: ${opp.evPercent}% on ${opp.selection} @ ${opp.sportsbook}`);
+  }
+});
+
+eventSource.addEventListener('arbitrage', (e) => {
+  const arb = JSON.parse(e.data).data;
+
+  notify(`Arbitrage: ${arb.profitPercent}% on ${arb.eventName}`);
 });
 ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import json
+import sseclient
+import requests
 
-```python Python
-def stream_ev_alerts(api_key, threshold=3.0):
-    url = f'https://sharpapi.io/api/v1/stream/ev?threshold={threshold}'
+def stream_opportunities(api_key, threshold=3.0):
+    url = f'https://api.sharpapi.io/api/v1/stream/opportunities?threshold={threshold}'
     headers = {'X-API-Key': api_key}
 
     response = requests.get(url, headers=headers, stream=True)
     client = sseclient.SSEClient(response)
 
     for event in client.events():
+        data = json.loads(event.data)
+
         if event.event == 'ev_opportunity':
-            data = json.loads(event.data)
-            for opp in data['data']['opportunities']:
-                print(f"🎯 +{opp['evPercent']}% EV: {opp['selection']} @ {opp['sportsbook']}")
+            opp = data['data']
+            print(f"+{opp['evPercent']}% EV: {opp['selection']} @ {opp['sportsbook']}")
+
+        elif event.event == 'arbitrage':
+            arb = data['data']
+            print(f"Arb: {arb['profitPercent']}% on {arb['eventName']}")
+
+stream_opportunities('YOUR_KEY', threshold=3.0)
 ```
-
-
+  </Tabs.Tab>
+</Tabs>
 
 ## Use Case: Alert Bot
 
-```javascript
-// Discord/Telegram alert bot
-eventSource.addEventListener('ev_opportunity', async (e) => {
-  const { opportunities } = JSON.parse(e.data).data;
+Send notifications to Discord, Telegram, or Slack:
 
-  for (const opp of opportunities) {
-    if (opp.evPercent >= 5) {
-      await sendAlert({
-        title: `🔥 High EV Alert`,
-        description: `${opp.selection} @ ${opp.sportsbook}`,
-        fields: [
-          { name: 'EV', value: `+${opp.evPercent}%` },
-          { name: 'Odds', value: opp.odds },
-          { name: 'Kelly', value: `${opp.kellyPercent}%` }
-        ]
-      });
-    }
-  }
+```javascript
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream/opportunities?threshold=5.0&api_key=YOUR_KEY'
+);
+
+eventSource.addEventListener('ev_opportunity', async (e) => {
+  const opp = JSON.parse(e.data).data;
+
+  await sendDiscordWebhook({
+    embeds: [{
+      title: `+${opp.evPercent}% EV Alert`,
+      description: `${opp.selection} @ ${opp.sportsbook}`,
+      fields: [
+        { name: 'Event', value: opp.eventName, inline: true },
+        { name: 'Odds', value: String(opp.odds), inline: true },
+        { name: 'Kelly', value: `${opp.kellyPercent}%`, inline: true }
+      ],
+      color: opp.evPercent >= 5 ? 0xff0000 : 0x00ff00
+    }]
+  });
+});
+
+eventSource.addEventListener('arbitrage', async (e) => {
+  const arb = JSON.parse(e.data).data;
+
+  const legText = arb.legs.map(l =>
+    `${l.sportsbook}: ${l.selection} @ ${l.odds} (${l.stakePercent}%)`
+  ).join('\n');
+
+  await sendDiscordWebhook({
+    embeds: [{
+      title: `Arbitrage: ${arb.profitPercent}% Profit`,
+      description: arb.eventName,
+      fields: [
+        { name: 'Legs', value: legText }
+      ],
+      color: 0x00ff00
+    }]
+  });
 });
 ```
 
-> **Tip:**
-  Set a higher `threshold` (e.g., 5.0) to reduce noise and only get high-confidence alerts.
+<Callout type="info">
+Set a higher `threshold` (e.g., 5.0) to reduce noise and only get high-confidence alerts.
+</Callout>
 
+## Opportunity Lifecycle
+
+Opportunities can appear and disappear quickly as odds change:
+
+1. **New** - `ev_opportunity` or `arbitrage` event fires
+2. **Updated** - Same opportunity fires again with new values
+3. **Expired** - Opportunity disappears (odds corrected)
+
+<Callout type="warning">
+Opportunities often last only seconds to minutes. Use streaming for the fastest alerts.
+</Callout>
+
+## Error Handling
+
+```javascript
+eventSource.onerror = (error) => {
+  console.log('Stream error:', error);
+  // EventSource auto-reconnects, but you may want to track disconnections
+};
+```

@@ -1,93 +1,199 @@
+import { Callout, Tabs, Steps } from 'nextra/components'
+
 # Quick Start
 
 Get started with SharpAPI in 2 minutes.
 
-## Get Your API Key
+## Base URL
+
+```
+https://api.sharpapi.io/api/v1
+```
+
+<Callout type="warning">
+Always use `api.sharpapi.io` - not `sharpapi.io` - for API requests.
+</Callout>
+
+<Steps>
+
+### Get Your API Key
 
 1. **Sign Up** - Create a free account at [sharpapi.io/signup](https://sharpapi.io/signup)
 2. **Get Your Key** - Copy your API key from the dashboard. It starts with `sk_live_` or `sk_test_`
 3. **Make Your First Call** - Use the examples below to fetch live odds
 
-## Your First API Call
+### Your First API Call
 
-### cURL
-
+<Tabs items={['cURL', 'JavaScript', 'Python', 'TypeScript']}>
+  <Tabs.Tab>
 ```bash
-curl -X GET "https://sharpapi.io/api/v1/odds" \
+curl -X GET "https://api.sharpapi.io/api/v1/odds" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
-
-### JavaScript
-
+  </Tabs.Tab>
+  <Tabs.Tab>
 ```javascript
-const response = await fetch('https://sharpapi.io/api/v1/odds', {
+const response = await fetch('https://api.sharpapi.io/api/v1/odds', {
   headers: {
     'X-API-Key': 'YOUR_API_KEY'
   }
 });
 
-const data = await response.json();
-console.log(`Found ${data.count} odds from ${data.books.length} books`);
+const { data, meta } = await response.json();
+console.log(`Found ${meta.count} odds`);
 ```
-
-### Python
-
+  </Tabs.Tab>
+  <Tabs.Tab>
 ```python
 import requests
 
 response = requests.get(
-    'https://sharpapi.io/api/v1/odds',
+    'https://api.sharpapi.io/api/v1/odds',
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 
 data = response.json()
-print(f"Found {data['count']} odds from {len(data['books'])} books")
+print(f"Found {data['meta']['count']} odds")
 ```
-
-### TypeScript
-
+  </Tabs.Tab>
+  <Tabs.Tab>
 ```typescript
 import { SharpApiClient } from '@sharpapi/client';
 
 const client = new SharpApiClient('YOUR_API_KEY');
-const odds = await client.getOdds();
+const { data, meta } = await client.getOdds();
 
-console.log(`Found ${odds.count} odds`);
+console.log(`Found ${meta.count} odds`);
 ```
+  </Tabs.Tab>
+</Tabs>
 
-## Example Response
+### Example Response
 
 ```json
 {
-  "success": true,
-  "timestamp": "2024-01-21T02:10:37.846Z",
-  "count": 3095,
-  "books": ["draftkings", "pinnacle"],
-  "data": {
-    "draftkings": [
-      {
-        "id": "draftkings_33483153_moneyline_PHO",
-        "sportsbook": "draftkings",
-        "sport": "nba",
-        "homeTeam": "PHI 76ers",
-        "awayTeam": "PHO Suns",
-        "marketType": "moneyline",
-        "selection": "PHO Suns",
-        "odds": {
-          "american": -150,
-          "decimal": 1.67,
-          "probability": 0.60
-        },
-        "isLive": false
-      }
-    ]
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sport": "nba",
+      "homeTeam": "PHI 76ers",
+      "awayTeam": "PHO Suns",
+      "marketType": "moneyline",
+      "selection": "PHO Suns",
+      "odds": {
+        "american": -150,
+        "decimal": 1.67,
+        "probability": 0.60
+      },
+      "isLive": false
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 3095,
+    "updated": "2026-01-26T02:10:37.846Z"
   }
 }
 ```
 
+</Steps>
+
+## Filter Your Results
+
+Add query parameters to narrow down results:
+
+```bash
+# Get NBA odds from DraftKings only
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get only live events
+curl "https://api.sharpapi.io/api/v1/odds?live=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get main markets only (moneyline, spread, total)
+curl "https://api.sharpapi.io/api/v1/odds?main=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Find Value Bets
+
+Once you have a Pro subscription, you can find +EV opportunities:
+
+```bash
+curl "https://api.sharpapi.io/api/v1/positive-ev?threshold=3.0" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "eventName": "PHO Suns @ PHI 76ers",
+      "sportsbook": "draftkings",
+      "selection": "PHO Suns -3.5",
+      "odds": -105,
+      "sharpOdds": -115,
+      "evPercent": 4.35,
+      "kellyPercent": 2.18
+    }
+  ],
+  "meta": {
+    "count": 12,
+    "summary": {
+      "avgEV": 4.2,
+      "maxEV": 8.5
+    }
+  }
+}
+```
+
+## Real-time Streaming
+
+For the fastest updates, use SSE streaming (requires WebSocket add-on):
+
+```javascript
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream/odds?api_key=YOUR_KEY'
+);
+
+eventSource.addEventListener('initial', (e) => {
+  const { data } = JSON.parse(e.data);
+  console.log('Initial snapshot:', data.length, 'odds');
+});
+
+eventSource.addEventListener('odds_update', (e) => {
+  const update = JSON.parse(e.data);
+  console.log('Update from:', update.source);
+});
+```
+
 ## Next Steps
 
-- [Get +EV Bets](/api-reference/ev) - Find positive expected value opportunities
+- [Get +EV Bets](/api-reference/positive-ev) - Find positive expected value opportunities
 - [Find Arbitrage](/api-reference/arbitrage) - Detect risk-free profit opportunities
 - [Stream Live](/streaming/overview) - Real-time updates via SSE
 - [Rate Limits](/authentication#rate-limits) - Understand usage limits
+- [Pricing](/pricing) - Compare plans and features
+
+## Common Issues
+
+<Callout type="error" emoji="!">
+**Error: 401 Unauthorized**
+
+Make sure you're using the correct API key and it's properly formatted in the header.
+</Callout>
+
+<Callout type="error" emoji="!">
+**Error: 429 Rate Limited**
+
+You've exceeded your rate limit. Wait for the `retry_after` seconds or upgrade your plan.
+</Callout>
+
+<Callout type="error" emoji="!">
+**Error: 403 Tier Restricted**
+
+This endpoint requires a higher tier. Check the [Pricing](/pricing) page for tier features.
+</Callout>

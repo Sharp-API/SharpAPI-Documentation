@@ -1,23 +1,63 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# API Reference Overview
 
 ## Base URL
 
 ```
-https://sharpapi.io/api/v1
+https://api.sharpapi.io/api/v1
 ```
+
+<Callout type="warning">
+Always use `api.sharpapi.io` as the base URL, not `sharpapi.io`.
+</Callout>
 
 ## Request Format
 
 - All requests use HTTPS
-- Authentication via `X-API-Key` header or `api_key` query param
-- Request bodies (where applicable) use JSON
+- Authentication via `X-API-Key` header, `Authorization: Bearer` header, or `api_key` query param
+- Request bodies (where applicable) use JSON with `Content-Type: application/json`
 
 ## Response Format
 
+All responses follow a consistent envelope format:
+
 ```json
 {
-  "success": true,
-  "timestamp": "2024-01-21T12:00:00.000Z",
-  "data": { ... }
+  "data": [...],
+  "meta": {
+    "count": 50,
+    "total": 234,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true
+    },
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+### Single Resource Response
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
 }
 ```
 
@@ -25,24 +65,69 @@ https://sharpapi.io/api/v1
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `sports` | string | Comma-separated: `nba,nfl,nhl` |
-| `books` | string | Comma-separated: `draftkings,pinnacle` |
+| `sportsbook` | string | Filter by sportsbook: `draftkings`, `pinnacle`, etc. |
+| `league` | string | Filter by league: `nba`, `nfl`, `nhl`, etc. |
+| `sport` | string | Filter by sport |
+| `live` | boolean | Filter for live events only |
+| `limit` | number | Max results per page (default: 50, max: 100) |
+| `offset` | number | Pagination offset |
 
-## Endpoints
+## Endpoints Summary
 
+### Reference Data (Public at 10 req/min)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/sports` | List all sports |
+| GET | `/sports/{id}` | Get sport details |
+| GET | `/leagues` | List all leagues |
+| GET | `/leagues/{id}` | Get league details |
+| GET | `/sportsbooks` | List all sportsbooks |
+| GET | `/sportsbooks/{id}` | Get sportsbook details |
+| GET | `/markets` | List all market types |
+
+### Schedule & Events
+| Method | Endpoint | Description | Tier |
+|--------|----------|-------------|------|
+| GET | `/schedule` | Upcoming events | All |
+| GET | `/schedule/live` | Live events | All |
+| GET | `/events` | List events | All |
+| GET | `/events/search?q=` | Search events | All |
+| GET | `/events/{id}` | Event details | All |
+| GET | `/events/{id}/markets` | Event markets | All |
+
+### Odds
 | Method | Endpoint | Description | Tier |
 |--------|----------|-------------|------|
 | GET | `/odds` | Current odds snapshot | All |
-| GET | `/ev` | +EV opportunities | Pro+ |
+| GET | `/odds/best` | Best odds across books | All |
+| GET | `/odds/comparison` | Compare across books | All |
+| POST | `/odds/multi` | Batch odds (10-50 events) | Pro+ |
+
+### Opportunities
+| Method | Endpoint | Description | Tier |
+|--------|----------|-------------|------|
+| GET | `/positive-ev` | +EV opportunities | Pro+ |
 | GET | `/arbitrage` | Arbitrage opportunities | Pro+ |
-| GET | `/books` | Available sportsbooks | All |
-| GET | `/stream/odds` | Real-time odds (SSE) | All |
-| GET | `/stream/ev` | Live +EV alerts (SSE) | Pro+ |
-| GET | `/stream/arbitrage` | Live arb alerts (SSE) | Pro+ |
+| GET | `/value-bets` | Value betting opportunities | Pro+ |
+| GET | `/middles` | Middle opportunities | Pro+ |
+
+### Streaming (Requires WebSocket Add-on)
+| Method | Endpoint | Description | Tier |
+|--------|----------|-------------|------|
+| GET | `/stream/odds` | Real-time odds stream | Add-on |
+| GET | `/stream/opportunities` | +EV and arb alerts | Add-on + Pro+ |
+| GET | `/stream/events/{id}` | Single event stream | Add-on |
+
+### Account
+| Method | Endpoint | Description | Tier |
+|--------|----------|-------------|------|
+| GET | `/me` | Account info | All |
+| GET | `/me/usage` | Usage statistics | All |
+| GET | `/me/preferences` | Account preferences | All |
 
 ## Odds Formats
 
-All odds include three formats:
+All odds include three formats in every response:
 
 ```json
 {
@@ -53,3 +138,45 @@ All odds include three formats:
   }
 }
 ```
+
+| Format | Example | Description |
+|--------|---------|-------------|
+| American | -110, +150 | Standard US format |
+| Decimal | 1.909, 2.50 | Multiplier format |
+| Probability | 0.5238 | Implied probability |
+
+## Rate Limit Headers
+
+All responses include rate limit information:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1703123456789
+```
+
+## Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `unauthorized` | 401 | Missing or invalid API key |
+| `forbidden` | 403 | Feature requires higher tier |
+| `rate_limited` | 429 | Too many requests |
+| `tier_restricted` | 403 | Endpoint not available on your tier |
+| `invalid_request` | 400 | Malformed request |
+| `not_found` | 404 | Resource not found |
+| `upstream_error` | 502 | Temporary data fetch issue |
+| `internal_error` | 500 | Server error |
+
+## Tier Limits
+
+| Tier | Price | Req/Min | Streams* | Data Delay | Features |
+|------|-------|---------|----------|------------|----------|
+| Free | $0/mo | 1 | 0 | 60s | Odds, Schedule |
+| Hobby | $79/mo | 120 | 10 | Real-time | Odds, Schedule |
+| Pro | $229/mo | 300 | 10 | Real-time | + EV, Arb, Middles |
+| Sharp | $399/mo | 2,000 | 10 | Real-time | + Priority Support |
+
+<Callout type="info">
+*Streaming requires WebSocket add-on ($99/mo) on paid tiers.
+</Callout>

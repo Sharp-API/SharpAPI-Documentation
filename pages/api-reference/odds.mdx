@@ -1,3 +1,5 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Odds
 
 Get a snapshot of current odds from all sportsbooks.
@@ -8,22 +10,33 @@ GET /api/v1/odds
 
 ## Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sports` | string | Comma-separated sports filter. Example: `nba,nfl,nhl` |
-| `books` | string | Comma-separated sportsbooks filter. Example: `draftkings,pinnacle` |
-| `api_key` | string | API key (alternative to `X-API-Key` header) |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sportsbook` | string | all | Filter by sportsbook (e.g., `draftkings`, `pinnacle`) |
+| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
+| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`) |
+| `live` | boolean | false | Return only live/in-play events |
+| `main` | boolean | false | Return only main markets (moneyline, spread, total) |
 
+## Response Format
 
-## Response
+All responses follow the standard SharpAPI envelope format:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | Whether the request succeeded |
-| `timestamp` | string | ISO 8601 timestamp of the response |
-| `count` | number | Total number of odds returned |
-| `books` | string[] | List of sportsbooks with data |
-| `data` | object | Odds grouped by sportsbook |
+```json
+{
+  "data": [...],
+  "meta": {
+    "count": 50,
+    "total": 234,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true
+    },
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
 
 ## Rate Limit Headers
 
@@ -35,100 +48,113 @@ All responses include rate limit information:
 | `X-RateLimit-Remaining` | Requests remaining in current window |
 | `X-RateLimit-Reset` | Unix timestamp when limit resets |
 
+## Example Requests
 
-### Example Request
-
-
-```bash cURL
-curl -X GET "https://sharpapi.io/api/v1/odds?sports=nba" \
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
-
-```javascript JavaScript
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
 const response = await fetch(
-  'https://sharpapi.io/api/v1/odds?sports=nba',
+  'https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings',
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 );
-const data = await response.json();
+const { data, meta } = await response.json();
+console.log(`Received ${meta.count} odds`);
 ```
-
-```python Python
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
 import requests
 
 response = requests.get(
-    'https://sharpapi.io/api/v1/odds',
-    params={'sports': 'nba'},
+    'https://api.sharpapi.io/api/v1/odds',
+    params={'league': 'nba', 'sportsbook': 'draftkings'},
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 data = response.json()
+print(f"Found {data['meta']['count']} odds")
 ```
+  </Tabs.Tab>
+</Tabs>
 
+## Response
 
+### Success (200)
 
-### Response
-
-
-```json 200
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-21T02:10:37.846Z",
-  "count": 3095,
-  "books": ["draftkings", "pinnacle"],
-  "data": {
-    "draftkings": [
-      {
-        "id": "draftkings_33483153_moneyline_PHO",
-        "sportsbook": "draftkings",
-        "sportsbookDisplayName": "DraftKings",
-        "eventId": "33483153",
-        "sport": "nba",
-        "league": "NBA",
-        "homeTeam": "PHI 76ers",
-        "awayTeam": "PHO Suns",
-        "marketType": "moneyline",
-        "selection": "PHO Suns",
-        "selectionType": "away",
-        "odds": {
-          "american": -150,
-          "decimal": 1.667,
-          "probability": 0.60
-        },
-        "line": null,
-        "eventStartTime": "2024-01-21T19:00:00Z",
-        "timestamp": "2024-01-21T02:10:24.125Z",
-        "isLive": false,
-        "status": "upcoming"
-      }
-    ],
-    "pinnacle": [...]
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sportsbookDisplayName": "DraftKings",
+      "eventId": "33483153",
+      "sport": "nba",
+      "league": "NBA",
+      "homeTeam": "PHI 76ers",
+      "awayTeam": "PHO Suns",
+      "marketType": "moneyline",
+      "selection": "PHO Suns",
+      "selectionType": "away",
+      "odds": {
+        "american": -150,
+        "decimal": 1.667,
+        "probability": 0.60
+      },
+      "line": null,
+      "eventStartTime": "2026-01-26T19:00:00Z",
+      "timestamp": "2026-01-26T02:10:24.125Z",
+      "isLive": false,
+      "status": "upcoming"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 3095,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true
+    },
+    "updated": "2026-01-26T02:10:37.846Z"
   }
 }
 ```
 
-```json 401
+### Error Responses
+
+```json title="401 Unauthorized"
 {
-  "error": "Invalid API key",
-  "code": "invalid_api_key"
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid API key"
+  }
 }
 ```
 
-```json 429
+```json title="429 Rate Limited"
 {
-  "error": "Rate limit exceeded",
-  "code": "rate_limit_exceeded",
-  "retry_after": 45,
-  "upgrade_url": "https://sharpapi.io/pricing"
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
 }
 ```
 
-```json 500
+```json title="500 Internal Error"
 {
-  "error": "Failed to fetch odds",
-  "code": "internal_error"
+  "error": {
+    "code": "internal_error",
+    "message": "Failed to fetch odds"
+  }
 }
 ```
-
-
 
 ## Odds Object Schema
 
@@ -136,15 +162,26 @@ data = response.json()
 |-------|------|-------------|
 | `id` | string | Unique odds identifier |
 | `sportsbook` | string | Sportsbook ID (e.g., `draftkings`) |
+| `sportsbookDisplayName` | string | Human-readable book name |
 | `eventId` | string | Event identifier |
 | `sport` | string | Sport (e.g., `nba`, `nfl`) |
 | `league` | string | League name |
 | `homeTeam` | string | Home team name |
 | `awayTeam` | string | Away team name |
-| `marketType` | string | `moneyline`, `spread`, `total` |
+| `marketType` | string | `moneyline`, `spread`, `total`, `player_prop`, etc. |
 | `selection` | string | The selection (team name or Over/Under) |
+| `selectionType` | string | `home`, `away`, `over`, `under` |
 | `odds.american` | number | American odds (-110, +150) |
 | `odds.decimal` | number | Decimal odds (1.909) |
 | `odds.probability` | number | Implied probability (0.52) |
 | `line` | number? | Spread/total line value |
+| `eventStartTime` | string | ISO 8601 event start time |
+| `timestamp` | string | When odds were last updated |
 | `isLive` | boolean | Whether event is live |
+| `status` | string | `upcoming`, `live`, `ended` |
+
+## Related Endpoints
+
+- [Best Odds](/api-reference/odds-best) - Get the best odds across all books
+- [Odds Comparison](/api-reference/odds-comparison) - Compare odds across books for an event
+- [Live Events](/api-reference/events-live) - Get currently live events

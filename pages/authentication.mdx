@@ -1,26 +1,52 @@
+import { Callout, Tabs } from 'nextra/components'
+
 # Authentication
 
-## API Keys
+All API requests require authentication via an API key. Your key starts with `sk_` followed by `live_` or `test_`.
 
-All API requests require authentication via an API key. You can pass your key in two ways:
+## Authentication Methods
 
-### Header (Recommended)
+SharpAPI supports three authentication methods, listed in priority order:
 
-```bash
-curl -H "X-API-Key: sk_live_your_key" https://sharpapi.io/api/v1/odds
-```
+### 1. X-API-Key Header (Recommended)
 
-### Query Parameter
+The most secure method for server-side applications.
 
 ```bash
-curl "https://sharpapi.io/api/v1/odds?api_key=sk_live_your_key"
+curl -H "X-API-Key: sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/odds
 ```
 
-> **Warning:** Never expose your API key in client-side code. Use a backend proxy for browser applications.
+### 2. Authorization Bearer Header
+
+Standard OAuth-style bearer token format.
+
+```bash
+curl -H "Authorization: Bearer sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/odds
+```
+
+### 3. Query Parameter
+
+Useful for SSE streaming in browsers where you cannot set custom headers.
+
+```bash
+curl "https://api.sharpapi.io/api/v1/stream/odds?api_key=sk_live_your_key"
+```
+
+<Callout type="warning">
+**Security Warning:** Never expose your API key in client-side code or public repositories. Use a backend proxy for browser applications.
+</Callout>
+
+## Getting Your API Key
+
+1. **Sign Up** - Create an account at [sharpapi.io/signup](https://sharpapi.io/signup)
+2. **Access Dashboard** - Log in to your dashboard
+3. **Copy Key** - Your API key is displayed on the main dashboard
 
 ## Test Keys
 
-For development, use these test keys:
+For development and testing, use test keys that don't count against your quota:
 
 | Key | Tier | Use Case |
 |-----|------|----------|
@@ -28,37 +54,37 @@ For development, use these test keys:
 | `sk_test_pro` | Pro | Full feature access |
 | `sk_test_sharp` | Sharp | Unlimited testing |
 
-> **Note:** Test keys return real data but don't count against your quota.
+<Callout type="info">
+Test keys return real data but are rate-limited and don't affect your billing.
+</Callout>
 
 ## Subscription Tiers
 
-### Free - $0/month
-- 100 requests/minute
-- 1 concurrent stream
-- Odds endpoint only
-- 5 second data delay
+| Tier | Price | Requests/Min | Data Delay | Key Features |
+|------|-------|--------------|------------|--------------|
+| **Free** | $0/mo | 1 | 60s | Odds, Schedule |
+| **Hobby** | $79/mo | 120 | Real-time | Odds, Schedule |
+| **Pro** | $229/mo | 300 | Real-time | + EV, Arbitrage, Middles |
+| **Sharp** | $399/mo | 2,000 | Real-time | + Priority Support |
+| **Enterprise** | Custom | Custom | Real-time | + SLA |
 
-### Pro - $49/month
-- 1,000 requests/minute
-- 3 concurrent streams
-- +EV & Arbitrage access
-- Real-time data
-
-### Sharp - $199/month
-- Unlimited requests
-- 10 concurrent streams
-- All features + webhooks
-- Priority support
+See [Pricing](/pricing) for full details.
 
 ## Rate Limits
 
 Rate limits are enforced per API key. Current limits are returned in response headers:
 
 ```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
 X-RateLimit-Reset: 1705804800
 ```
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per minute for your tier |
+| `X-RateLimit-Remaining` | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when limit resets |
 
 ### Rate Limit Response
 
@@ -66,31 +92,83 @@ When exceeded, you'll receive a `429` response:
 
 ```json
 {
-  "error": "Rate limit exceeded",
-  "code": "rate_limit_exceeded",
-  "retry_after": 45,
-  "upgrade_url": "https://sharpapi.io/pricing"
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
 }
 ```
 
-> **Tip:** Use the `retry_after` value to implement exponential backoff.
+<Callout type="info">
+Use the `retry_after` value (in seconds) to implement exponential backoff.
+</Callout>
 
 ## Feature Access by Tier
 
-| Feature | Free | Pro | Sharp |
-|---------|------|-----|-------|
-| `GET /odds` | Yes | Yes | Yes |
-| `GET /books` | Yes | Yes | Yes |
-| `GET /ev` | No | Yes | Yes |
-| `GET /arbitrage` | No | Yes | Yes |
-| `GET /stream/*` | 1 stream | 3 streams | 10 streams |
-| Webhooks | No | No | Yes |
+| Feature | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| `GET /odds` | Yes | Yes | Yes | Yes | Yes |
+| `GET /odds/best` | Yes | Yes | Yes | Yes | Yes |
+| `GET /schedule` | Yes | Yes | Yes | Yes | Yes |
+| `GET /events` | Yes | Yes | Yes | Yes | Yes |
+| `GET /sportsbooks` | Yes | Yes | Yes | Yes | Yes |
+| `GET /positive-ev` | No | No | Yes | Yes | Yes |
+| `GET /arbitrage` | No | No | Yes | Yes | Yes |
+| `GET /value-bets` | No | No | Yes | Yes | Yes |
+| `GET /middles` | No | No | Yes | Yes | Yes |
+| `GET /me` | Yes | Yes | Yes | Yes | Yes |
+| Streaming* | No | Yes | Yes | Yes | Yes |
+
+<Callout>
+*Streaming requires the WebSocket add-on ($99/mo) on any paid tier.
+</Callout>
+
+## Public Reference Endpoints
+
+The following reference data endpoints are accessible without authentication at 10 requests/minute:
+
+- `GET /api/v1/sports` - List all sports
+- `GET /api/v1/sports/{sportId}` - Get sport details
+- `GET /api/v1/leagues` - List all leagues
+- `GET /api/v1/leagues/{leagueId}` - Get league details
+- `GET /api/v1/sportsbooks` - List all sportsbooks
+- `GET /api/v1/sportsbooks/{bookId}` - Get sportsbook details
+- `GET /api/v1/markets` - List all market types
+
+Authenticated requests receive higher rate limits based on your subscription tier.
 
 ## Error Codes
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `invalid_api_key` | 401 | API key missing or invalid |
-| `expired_api_key` | 401 | API key has expired |
-| `feature_not_available` | 403 | Feature requires higher tier |
-| `rate_limit_exceeded` | 429 | Too many requests |
+| `unauthorized` | 401 | API key missing or invalid |
+| `forbidden` | 403 | Feature requires higher tier |
+| `rate_limited` | 429 | Too many requests |
+| `tier_restricted` | 403 | Endpoint not available on your tier |
+| `invalid_request` | 400 | Malformed request parameters |
+| `not_found` | 404 | Resource not found |
+| `upstream_error` | 502 | Temporary issue fetching data |
+| `internal_error` | 500 | Server error |
+
+### Error Response Format
+
+All errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid API key",
+    "retry_after": null
+  }
+}
+```
+
+## Best Practices
+
+1. **Store keys securely** - Use environment variables, never commit to version control
+2. **Use server-side requests** - Never expose keys in client-side JavaScript
+3. **Implement retry logic** - Handle `429` errors with exponential backoff
+4. **Monitor usage** - Check `/me/usage` endpoint to track consumption
+5. **Rotate keys regularly** - Generate new keys periodically for security

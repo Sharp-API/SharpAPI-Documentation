@@ -4,7 +4,7 @@ import { DocsThemeConfig } from 'nextra-theme-docs';
 
 const config: DocsThemeConfig = {
   logo: (
-    <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <Link href="https://sharpapi.io" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <img src="/logo.svg" alt="SharpAPI" width={24} height={24} />
       <span style={{ fontWeight: 700 }}>SharpAPI</span>
     </Link>

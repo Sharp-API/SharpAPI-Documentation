@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-01-24T18:01:25Z",
+  "base_url": "https://sharpapi.io/api/v1",
+  "user_tier": "unknown",
+  "summary": {
+    "total": 27,
+    "passed": 5,
+    "failed": 22,
+    "skipped": 1
+  },
+  "failed_endpoints": [
+    "GET /sports - List all sports - Expected status 200, got 404",
+    "GET /leagues - List leagues - Expected status 200, got 404",
+    "GET /leagues?sport=nba - List NBA leagues - Expected status 200, got 404",
+    "GET /events - List events - Expected status 200, got 404",
+    "GET /events?limit=10 - List events with pagination - Expected status 200, got 404",
+    "GET /events/live - Live events only - Expected status 200, got 404",
+    "GET /events/search?q=lakers - Search events - Expected status 200, got 404",
+    "GET /odds - Current odds snapshot - Expected status 200, got 502",
+    "GET /odds?sports=nba - NBA odds - Expected status 200, got 502",
+    "GET /odds/best - Best odds - Expected status 200, got 404",
+    "GET /markets/types - Market types list - Expected status 200, got 404",
+    "GET /markets/player-props - Player props - Expected status 200, got 404",
+    "GET /markets/alternates - Alternate lines - Expected status 200, got 404",
+    "GET /markets/active - Active markets summary - Expected status 200, got 404",
+    "GET /ev - Expected value opportunities - Expected status 200, got 502",
+    "GET /ev?min_ev=3.0 - EV with filter - Expected status 200, got 502",
+    "GET /arbitrage - Arbitrage opportunities - Expected status 200, got 404",
+    "GET /arbitrage?min_profit=0.5 - Arbitrage with filter - Expected status 200, got 404",
+    "GET /value-bets - Value bets - Expected status 200, got 404",
+    "GET /middles - Middle opportunities - Expected status 200, got 404",
+    "GET /books - List sportsbooks - Expected status 200, got 404",
+    "GET /user/stats - User statistics - Expected status 200, got 404"
+  ],
+  "skipped_endpoints": [
+    "GET /events/{eventId} - No event ID available"
+  ]
+}

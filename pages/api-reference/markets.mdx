@@ -1,0 +1,219 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Markets
+
+Get available market types and their configurations.
+
+```
+GET /api/v1/markets
+```
+
+<Callout type="info">
+This endpoint is accessible without authentication at 10 requests/minute. Authenticated requests receive higher rate limits.
+</Callout>
+
+## Example Request
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/markets" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/markets',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+console.log('Available markets:', data.map(m => m.id));
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/markets',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+markets = response.json()['data']
+print(f"Available markets: {[m['id'] for m in markets]}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "moneyline",
+      "name": "Moneyline",
+      "description": "Bet on which team wins the game",
+      "category": "main",
+      "hasLine": false,
+      "selectionTypes": ["home", "away"],
+      "sports": ["nba", "nfl", "mlb", "nhl", "ncaab", "ncaaf", "soccer"]
+    },
+    {
+      "id": "spread",
+      "name": "Point Spread",
+      "description": "Bet on the margin of victory",
+      "category": "main",
+      "hasLine": true,
+      "selectionTypes": ["home", "away"],
+      "sports": ["nba", "nfl", "ncaab", "ncaaf"]
+    },
+    {
+      "id": "total",
+      "name": "Total (Over/Under)",
+      "description": "Bet on the combined score",
+      "category": "main",
+      "hasLine": true,
+      "selectionTypes": ["over", "under"],
+      "sports": ["nba", "nfl", "mlb", "nhl", "ncaab", "ncaaf", "soccer"]
+    },
+    {
+      "id": "player_prop",
+      "name": "Player Props",
+      "description": "Bet on individual player performance",
+      "category": "prop",
+      "hasLine": true,
+      "selectionTypes": ["over", "under"],
+      "sports": ["nba", "nfl", "mlb", "nhl"]
+    },
+    {
+      "id": "team_prop",
+      "name": "Team Props",
+      "description": "Bet on team-specific outcomes",
+      "category": "prop",
+      "hasLine": true,
+      "selectionTypes": ["over", "under", "yes", "no"],
+      "sports": ["nba", "nfl", "mlb", "nhl"]
+    },
+    {
+      "id": "game_prop",
+      "name": "Game Props",
+      "description": "Bet on game-specific outcomes",
+      "category": "prop",
+      "hasLine": false,
+      "selectionTypes": ["yes", "no"],
+      "sports": ["nba", "nfl", "mlb", "nhl"]
+    },
+    {
+      "id": "first_half",
+      "name": "First Half",
+      "description": "Bet on first half outcomes",
+      "category": "period",
+      "hasLine": true,
+      "selectionTypes": ["home", "away", "over", "under"],
+      "sports": ["nba", "nfl", "ncaab", "ncaaf"]
+    },
+    {
+      "id": "first_quarter",
+      "name": "First Quarter",
+      "description": "Bet on first quarter outcomes",
+      "category": "period",
+      "hasLine": true,
+      "selectionTypes": ["home", "away", "over", "under"],
+      "sports": ["nba", "nfl"]
+    }
+  ],
+  "meta": {
+    "count": 8,
+    "categories": ["main", "prop", "period"],
+    "updated": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+## Market Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique market identifier (use in API filters) |
+| `name` | string | Human-readable name |
+| `description` | string | Brief description of the market |
+| `category` | string | `main`, `prop`, `period`, `live` |
+| `hasLine` | boolean | Whether this market has a line value |
+| `selectionTypes` | string[] | Possible selection types |
+| `sports` | string[] | Sports that support this market |
+
+## Market Categories
+
+### Main Markets
+
+Core betting markets available for most events:
+
+| Market | Description | Line |
+|--------|-------------|------|
+| `moneyline` | Pick the winner | No |
+| `spread` | Point spread / handicap | Yes |
+| `total` | Over/Under combined score | Yes |
+
+### Prop Markets
+
+Player, team, and game proposition bets:
+
+| Market | Description | Line |
+|--------|-------------|------|
+| `player_prop` | Individual player stats | Yes |
+| `team_prop` | Team-specific outcomes | Yes |
+| `game_prop` | Game-specific outcomes | No |
+
+### Period Markets
+
+First half, first quarter, and other period-based bets:
+
+| Market | Description | Line |
+|--------|-------------|------|
+| `first_half` | 1H moneyline/spread/total | Yes |
+| `first_quarter` | 1Q moneyline/spread/total | Yes |
+| `second_half` | 2H moneyline/spread/total | Yes |
+
+## Selection Types
+
+| Type | Used In | Description |
+|------|---------|-------------|
+| `home` | Moneyline, Spread | Home team wins/covers |
+| `away` | Moneyline, Spread | Away team wins/covers |
+| `over` | Total, Props | Over the line |
+| `under` | Total, Props | Under the line |
+| `yes` | Game Props | Event occurs |
+| `no` | Game Props | Event does not occur |
+
+## Using Markets in Filters
+
+Filter odds by market type using the `market` query parameter:
+
+```bash
+# Get only moneyline odds
+curl "https://api.sharpapi.io/api/v1/odds?market=moneyline"
+
+# Get only spread and total (main markets)
+curl "https://api.sharpapi.io/api/v1/odds?main=true"
+
+# Get player props only
+curl "https://api.sharpapi.io/api/v1/odds?market=player_prop"
+```
+
+## Market Availability by Sport
+
+| Sport | ML | Spread | Total | Props | Period |
+|-------|----|----|-------|-------|--------|
+| NBA | Yes | Yes | Yes | Yes | Yes |
+| NFL | Yes | Yes | Yes | Yes | Yes |
+| MLB | Yes | Yes | Yes | Yes | Yes |
+| NHL | Yes | Yes | Yes | Yes | Yes |
+| NCAAB | Yes | Yes | Yes | Limited | Yes |
+| NCAAF | Yes | Yes | Yes | Limited | Yes |
+| Soccer | Yes | Yes | Yes | Limited | Limited |
+| Tennis | Yes | No | Yes | Limited | No |
+
+<Callout type="info">
+Market availability may vary by sportsbook and event. Use the `/events/{eventId}/markets` endpoint to see which markets are available for a specific event.
+</Callout>

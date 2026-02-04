@@ -1,0 +1,117 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run - validate without deploying
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+  deploy-preview:
+    name: Deploy Preview
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: inputs.dry_run != true
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.preview_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: npm install --global vercel@latest
+
+      - run: vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+
+      - run: vercel build --token=$VERCEL_TOKEN
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=$VERCEL_TOKEN)
+          echo "preview_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+          echo "## Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
+
+  health-check:
+    name: Health Check
+    needs: deploy-preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: inputs.dry_run != true
+    steps:
+      - name: Wait and check health
+        run: |
+          sleep 30
+          PREVIEW_URL="${{ needs.deploy-preview.outputs.preview_url }}"
+          for i in 1 2 3 4 5; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL" --max-time 30)
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $HTTP_STATUS)"
+              echo "## Health Check" >> $GITHUB_STEP_SUMMARY
+              echo "**Status**: Passed" >> $GITHUB_STEP_SUMMARY
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $HTTP_STATUS, retrying..."
+            sleep 10
+          done
+          echo "Health check FAILED"
+          exit 1
+
+  dry-run-summary:
+    name: Dry Run Summary
+    needs: validate
+    runs-on: ubuntu-latest
+    if: inputs.dry_run == true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      - run: |
+          echo "=== DRY RUN MODE ==="
+          echo "Would deploy dev branch to Vercel Preview"
+          echo "## Dry Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Validation passed. Would deploy to Vercel Preview." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Recent commits:" >> $GITHUB_STEP_SUMMARY
+          git log --oneline -10 >> $GITHUB_STEP_SUMMARY

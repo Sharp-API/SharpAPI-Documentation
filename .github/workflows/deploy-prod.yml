@@ -1,0 +1,194 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run - validate without deploying
+        required: false
+        default: false
+        type: boolean
+      rollback:
+        description: Rollback to previous deployment
+        required: false
+        default: false
+        type: boolean
+      rollback_deployment_url:
+        description: Specific deployment URL to promote (optional)
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  PRODUCTION_URL: https://docs.sharpapi.io
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: inputs.rollback != true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+  backup-deployment:
+    name: Backup Current Deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      previous_deployment: ${{ steps.backup.outputs.deployment_url }}
+    steps:
+      - run: npm install --global vercel@latest
+
+      - name: Get current production deployment
+        id: backup
+        run: |
+          CURRENT=$(vercel ls --prod --token=$VERCEL_TOKEN 2>/dev/null | grep -E "https://" | head -1 | awk '{print $2}' || echo "")
+          echo "deployment_url=$CURRENT" >> $GITHUB_OUTPUT
+          echo "Previous deployment: $CURRENT"
+          echo "## Backup" >> $GITHUB_STEP_SUMMARY
+          echo "**Previous deployment**: $CURRENT" >> $GITHUB_STEP_SUMMARY
+
+  deploy-production:
+    name: Deploy Production
+    needs: [validate, backup-deployment]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: inputs.dry_run != true && inputs.rollback != true
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.deployment_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: npm install --global vercel@latest
+
+      - run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+
+      - run: vercel build --prod --token=$VERCEL_TOKEN
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN)
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to production: $DEPLOYMENT_URL"
+          echo "## Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: ${{ env.PRODUCTION_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment**: $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
+
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: inputs.rollback == true
+    steps:
+      - run: npm install --global vercel@latest
+
+      - name: Determine rollback target
+        id: target
+        run: |
+          if [ -n "${{ inputs.rollback_deployment_url }}" ]; then
+            echo "target_url=${{ inputs.rollback_deployment_url }}" >> $GITHUB_OUTPUT
+            echo "Rolling back to specified deployment: ${{ inputs.rollback_deployment_url }}"
+          else
+            PREVIOUS=$(vercel ls --prod --token=$VERCEL_TOKEN 2>/dev/null | grep -E "https://" | sed -n '2p' | awk '{print $2}')
+            echo "target_url=$PREVIOUS" >> $GITHUB_OUTPUT
+            echo "Rolling back to previous deployment: $PREVIOUS"
+          fi
+
+      - name: Promote deployment
+        run: |
+          vercel promote "${{ steps.target.outputs.target_url }}" --token=$VERCEL_TOKEN --yes
+          echo "## Rollback" >> $GITHUB_STEP_SUMMARY
+          echo "**Promoted**: ${{ steps.target.outputs.target_url }}" >> $GITHUB_STEP_SUMMARY
+
+  health-check:
+    name: Health Check
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: inputs.dry_run != true && inputs.rollback != true
+    steps:
+      - name: Wait and check health
+        run: |
+          sleep 45
+          URL="${{ env.PRODUCTION_URL }}"
+          for i in 1 2 3 4 5; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" --max-time 30)
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "$URL - OK (HTTP $HTTP_STATUS)"
+              echo "## Health Check" >> $GITHUB_STEP_SUMMARY
+              echo "**Status**: Passed" >> $GITHUB_STEP_SUMMARY
+              exit 0
+            fi
+            echo "Attempt $i: $URL returned HTTP $HTTP_STATUS, retrying..."
+            sleep 15
+          done
+          echo "::error::Health check failed! Run: gh workflow run deploy-prod.yml -f rollback=true"
+          exit 1
+
+  health-check-rollback:
+    name: Health Check (Rollback)
+    needs: rollback
+    runs-on: ubuntu-latest
+    if: inputs.rollback == true
+    steps:
+      - run: |
+          sleep 30
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ env.PRODUCTION_URL }}" --max-time 30)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Rollback successful"
+            echo "## Rollback Health Check" >> $GITHUB_STEP_SUMMARY
+            echo "**Status**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Rollback health check failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+  dry-run-summary:
+    name: Dry Run Summary
+    needs: backup-deployment
+    runs-on: ubuntu-latest
+    if: inputs.dry_run == true && inputs.rollback != true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      - run: |
+          echo "=== DRY RUN MODE ==="
+          echo "Would deploy main branch to Vercel Production"
+          echo "Previous deployment: ${{ needs.backup-deployment.outputs.previous_deployment }}"
+          echo "## Dry Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Validation passed. Would deploy to Vercel Production." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Previous deployment**: ${{ needs.backup-deployment.outputs.previous_deployment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Recent commits:" >> $GITHUB_STEP_SUMMARY
+          git log --oneline -10 >> $GITHUB_STEP_SUMMARY

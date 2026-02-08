@@ -2,10 +2,10 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Streaming Overview
 
-Real-time odds and opportunity updates via Server-Sent Events (SSE).
+Real-time odds and opportunity updates via **SSE** or **WebSocket**.
 
 <Callout type="info">
-For full API documentation including all event types, query parameters, and detailed examples, see the [Stream API Reference](/api-reference/stream).
+SharpAPI offers two streaming protocols: **[SSE (Server-Sent Events)](/api-reference/stream)** over HTTP and **[WebSocket](/api-reference/websocket)** for bidirectional communication. Both deliver the same real-time data — choose based on your use case.
 </Callout>
 
 ## Why Streaming?
@@ -16,13 +16,14 @@ REST polling introduces a 30-60 second delay between odds changes and your appli
 |----------|---------|-----------|----------|
 | REST polling | 30-60s | High (full payload each poll) | Casual browsing, dashboards |
 | **SSE streaming** | < 1s | Low (only deltas) | Live betting, alerts, automated systems |
+| **WebSocket** | < 1s | Low (only deltas) | Bidirectional comms, dynamic filter updates |
 
 ### Key Benefits
 
 - **Sub-second latency** -- Odds updates arrive as soon as they are detected
 - **Lower bandwidth** -- Only changed data is sent, not full snapshots on every poll
-- **Automatic reconnection** -- SSE reconnects natively with `Last-Event-ID` replay
-- **Simple protocol** -- Works over standard HTTP, no WebSocket upgrade needed
+- **Two protocols** -- SSE for simplicity, WebSocket for bidirectional control
+- **Automatic reconnection** -- SSE reconnects natively; WebSocket with simple retry logic
 
 ## How SSE Works
 
@@ -156,6 +157,21 @@ for event in client.events():
 | `heartbeat` | Keep-alive sent every 30 seconds |
 | `error` | Recoverable error (connection stays open) |
 
+## SSE vs WebSocket
+
+| Feature | SSE | WebSocket |
+|---------|-----|-----------|
+| Protocol | HTTP (one-way) | `ws://` / `wss://` (bidirectional) |
+| Endpoint | `GET /api/v1/stream` | `wss://ws.sharpapi.io/ws` |
+| Filter updates | Reconnect with new params | Send `subscribe` message |
+| Reconnection | Automatic (`Last-Event-ID`) | Manual (with backoff) |
+| Browser support | Native `EventSource` | Native `WebSocket` |
+| Best for | Simple consumers, SSR | Dynamic filters, two-way comms |
+
+Both protocols deliver the same event types and data payloads.
+
 ## Full API Reference
 
-For complete documentation including all query parameters, detailed event payloads, reconnection handling, concurrent stream management, and error codes, see the [Stream API Reference](/api-reference/stream).
+- **[SSE Stream API Reference](/api-reference/stream)** -- Query parameters, event payloads, reconnection
+- **[WebSocket API Reference](/api-reference/websocket)** -- Connection lifecycle, message protocol, close codes
+- **[WebSocket Streaming Guide](/streaming/websocket)** -- Quick start, reconnection patterns, best practices

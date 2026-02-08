@@ -35,7 +35,8 @@
     "type": "separator",
     "title": "Streaming"
   },
-  "stream": "Unified Stream",
+  "stream": "SSE Stream",
+  "websocket": "WebSocket Stream",
   "---Account": {
     "type": "separator",
     "title": "Account"

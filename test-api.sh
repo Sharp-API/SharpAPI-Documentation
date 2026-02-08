@@ -340,11 +340,8 @@ main() {
     echo "=========================================="
     
     # Streaming Endpoints (SSE)
-    test_stream_endpoint "/stream/odds" "GET /stream/odds - Real-time odds stream" "all"
-    test_stream_endpoint "/stream/odds?sports=nba" "GET /stream/odds?sports=nba - NBA odds stream" "all"
-    test_stream_endpoint "/stream/ev" "GET /stream/ev - EV opportunities stream" "pro+"
-    test_stream_endpoint "/stream/arbitrage" "GET /stream/arbitrage - Arbitrage stream" "pro+"
-    test_stream_endpoint "/stream/combined" "GET /stream/combined - Combined stream" "sharp"
+    test_stream_endpoint "/v1/stream" "GET /v1/stream - Real-time unified stream" "all"
+    test_stream_endpoint "/v1/stream?sports=nba" "GET /v1/stream?sports=nba - NBA stream" "all"
     
     echo ""
     echo "=========================================="

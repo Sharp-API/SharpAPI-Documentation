@@ -1,0 +1,374 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# +EV Opportunities
+
+Find positive expected value betting opportunities across all sportsbooks.
+
+```
+GET /api/v1/opportunities/ev
+```
+
+<Callout type="info">
+This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. Use `?include=scoring` for the extended fields that were previously available in `/value-bets`.
+</Callout>
+
+## Authentication
+
+Requires API key. **Pro tier or higher required.** Your account must have the `ev` feature enabled.
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
+| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | all | Filter by sportsbook (e.g., `draftkings`, `fanduel`) |
+| `min_ev` | number | 0 | Minimum EV percentage threshold |
+| `max_ev` | number | none | Maximum EV percentage threshold |
+| `live` | boolean | false | Filter for live/in-play events only |
+| `include` | string | none | Set to `scoring` to add confidence, Kelly, and edge fields |
+| `limit` | integer | 50 | Results per page (max 200) |
+| `offset` | integer | 0 | Pagination offset |
+
+### Filtering Multiple Values
+
+Use comma-separated values for multi-select filters:
+
+```
+?sportsbook=draftkings,fanduel&league=nba,nfl
+```
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Basic EV opportunities for NBA
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&min_ev=2" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# With scoring fields included
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&include=scoring" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&min_ev=2',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+console.log(`Found ${meta.count} +EV opportunities`);
+console.log(`Average EV: ${meta.summary.avg_ev}%`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/ev',
+    params={
+        'league': 'nba',
+        'min_ev': 2,
+        'include': 'scoring'
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+for opp in data['data']:
+    print(f"{opp['selection']} @ {opp['sportsbook']}: {opp['ev_percent']}% EV")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "ev_dk_nba_33483153_ml_PHO",
+      "game_id": "evt_nba_phi_pho_20260208",
+      "ev_percent": 4.2,
+      "odds_american": -105,
+      "no_vig_odds": -118,
+      "selection": "PHO Suns",
+      "market": "moneyline",
+      "sportsbook": "draftkings",
+      "game": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_live": false,
+      "market_width": 3.2,
+      "detected_at": "2026-02-08T14:22:10.456Z"
+    }
+  ],
+  "meta": {
+    "count": 12,
+    "total": 12,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-02-08T14:22:10.456Z",
+    "filters": {
+      "league": "nba",
+      "min_ev": 2
+    },
+    "summary": {
+      "count": 12,
+      "avg_ev": 3.8,
+      "max_ev": 7.1,
+      "by_sportsbook": {
+        "draftkings": 5,
+        "fanduel": 4,
+        "betmgm": 3
+      },
+      "by_sport": {
+        "basketball": 12
+      }
+    }
+  }
+}
+```
+
+### With `include=scoring`
+
+When you pass `?include=scoring`, each item in the `data` array includes additional scoring fields:
+
+```json
+{
+  "data": [
+    {
+      "id": "ev_dk_nba_33483153_ml_PHO",
+      "game_id": "evt_nba_phi_pho_20260208",
+      "ev_percent": 4.2,
+      "odds_american": -105,
+      "no_vig_odds": -118,
+      "selection": "PHO Suns",
+      "market": "moneyline",
+      "sportsbook": "draftkings",
+      "game": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_live": false,
+      "market_width": 3.2,
+      "detected_at": "2026-02-08T14:22:10.456Z",
+      "confidence": "high",
+      "kelly_percent": 2.1,
+      "edge_percent": 4.2,
+      "combined_score": 87.5,
+      "fair_probability": 0.541
+    }
+  ],
+  "meta": { "..." : "..." }
+}
+```
+
+### Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 298
+X-RateLimit-Reset: 1707401000
+X-Tier: pro
+X-Data-Delay: 0
+X-Request-Id: req_abc123def456
+```
+
+### Error Responses
+
+```json title="401 Unauthorized"
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://sharpapi.io/docs/authentication"
+  }
+}
+```
+
+```json title="403 Feature Required"
+{
+  "error": {
+    "code": "feature_required",
+    "message": "The 'ev' feature is required. Upgrade to Pro or higher.",
+    "docs": "https://sharpapi.io/docs/pricing"
+  }
+}
+```
+
+```json title="429 Rate Limited"
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "docs": "https://sharpapi.io/docs/api-reference/overview"
+  }
+}
+```
+
+## Response Fields
+
+### Core Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique opportunity identifier |
+| `game_id` | string | Associated game/event identifier |
+| `ev_percent` | number | Expected value as a percentage (e.g., `4.2` = 4.2% EV) |
+| `odds_american` | number | Current American odds at the sportsbook |
+| `no_vig_odds` | number | Fair (no-vig) American odds derived from the sharp line |
+| `selection` | string | The selection (team name, Over/Under, player, etc.) |
+| `market` | string | Market type (`moneyline`, `spread`, `total`, `player_prop`) |
+| `sportsbook` | string | Sportsbook offering these odds |
+| `game` | string | Human-readable game name |
+| `sport` | string | Sport identifier |
+| `league` | string | League identifier |
+| `home_team` | string | Home team name |
+| `away_team` | string | Away team name |
+| `start_time` | string | ISO 8601 event start time |
+| `is_live` | boolean | Whether the event is currently live |
+| `market_width` | number | Width of the market (vig indicator) |
+| `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
+
+### Scoring Fields (with `include=scoring`)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `confidence` | string | Confidence level: `low`, `medium`, or `high` |
+| `kelly_percent` | number | Kelly criterion optimal stake as a percentage of bankroll |
+| `edge_percent` | number | Calculated edge over the sportsbook |
+| `combined_score` | number | Weighted composite score (0-100) combining EV, confidence, and market factors |
+| `fair_probability` | number | Fair probability derived from the sharp line (0.0 to 1.0) |
+
+### Meta Summary Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `summary.count` | number | Total opportunities matching filters |
+| `summary.avg_ev` | number | Average EV across all results |
+| `summary.max_ev` | number | Highest EV found |
+| `summary.by_sportsbook` | object | Opportunity count per sportsbook |
+| `summary.by_sport` | object | Opportunity count per sport |
+
+---
+
+## Understanding Expected Value
+
+Expected Value (EV) measures the average profit or loss per bet over time. A **positive EV (+EV)** bet means you have a mathematical edge over the sportsbook.
+
+```
+EV% = (fair_probability x decimal_odds - 1) x 100
+```
+
+Where:
+- `fair_probability` = No-vig probability derived from the sharp book (Pinnacle)
+- `decimal_odds` = The decimal odds offered by the soft book
+
+### How SharpAPI Calculates EV
+
+SharpAPI uses **Pinnacle** (a sharp book with efficient odds) as the source of truth for fair probability.
+
+**Step 1: Get the sharp book odds**
+
+```
+Pinnacle: Team A -115 / Team B +105
+```
+
+**Step 2: Remove the vig to find fair probability**
+
+```javascript
+// Implied probabilities (with vig)
+probA = 1 / 1.87 = 0.535  // -115 in decimal = 1.87
+probB = 1 / 2.05 = 0.488  // +105 in decimal = 2.05
+total = 1.023              // 2.3% vig
+
+// No-vig (fair) probabilities
+fairProbA = 0.535 / 1.023 = 0.523 (52.3%)
+fairProbB = 0.488 / 1.023 = 0.477 (47.7%)
+```
+
+**Step 3: Compare to a soft book**
+
+```
+DraftKings: Team A -105 (decimal 1.952)
+Fair probability: 52.3%
+
+EV% = (0.523 x 1.952 - 1) x 100
+EV% = +2.1%
+```
+
+A +2.1% EV means you expect to profit $2.10 for every $100 wagered on this bet over time.
+
+### Why This Works
+
+| Book Type | Characteristics |
+|-----------|----------------|
+| **Sharp (Pinnacle)** | Low vig, efficient odds, accurate probabilities |
+| **Soft (DraftKings, FanDuel, BetMGM)** | Higher vig, slower to adjust, exploitable |
+
+When soft books are slow to update their odds after a market move, their implied probability deviates from reality, creating a +EV opportunity.
+
+## EV Thresholds
+
+| EV % | Quality | Suggested Action |
+|------|---------|------------------|
+| < 0% | Negative EV | Avoid |
+| 0 - 2% | Marginal | Only viable at high volume |
+| **2 - 5%** | **Good** | Standard profitable threshold |
+| **5%+** | **Excellent** | High confidence opportunities |
+
+<Callout type="info">
+We recommend setting `min_ev=2` for most use cases. Marginal EV (below 2%) can be eroded by line movement before you place the bet.
+</Callout>
+
+## Kelly Criterion
+
+The `kelly_percent` field (available with `include=scoring`) tells you the optimal fraction of your bankroll to wager according to the Kelly criterion:
+
+```
+Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1)
+```
+
+### Kelly Sizing Guide
+
+| Kelly % | Risk Level | Recommendation |
+|---------|------------|----------------|
+| < 1% | Low | Small edge, consider skipping |
+| 1 - 3% | Moderate | Standard bet size |
+| 3 - 5% | Aggressive | Strong edge, but size carefully |
+| 5%+ | Very aggressive | Excellent edge; consider fractional Kelly (half or quarter) |
+
+<Callout type="warning">
+**Variance Warning:** +EV does not guarantee profit on every bet. Over 100 bets at 5% EV, actual results can range widely. The edge only materializes over hundreds or thousands of bets. Never bet more than you can afford to lose.
+</Callout>
+
+## Best Practices
+
+1. **Set a minimum EV threshold** - Use `min_ev=2` or higher to focus on meaningful edges
+2. **Use Kelly sizing** - Pass `include=scoring` and use `kelly_percent` to determine bet size
+3. **Filter by confidence** - Prioritize `high` confidence opportunities
+4. **Monitor `market_width`** - Narrow markets (low width) indicate more efficient pricing and more reliable EV calculations
+5. **Act quickly** - +EV opportunities are fleeting; lines move fast
+6. **Track your results** - Log every bet and compare actual ROI to expected EV over time
+7. **Use fractional Kelly** - Most professionals use quarter or half Kelly to reduce variance
+
+## Related Endpoints
+
+- [Arbitrage Opportunities](/api-reference/opportunities-arbitrage) - Guaranteed profit across books
+- [Middles](/api-reference/opportunities-middles) - Line discrepancy opportunities
+- [Best Odds](/api-reference/odds-best) - Find the best price across all books
+- [EV Calculation Concepts](/concepts/ev-calculation) - Deep dive into the math

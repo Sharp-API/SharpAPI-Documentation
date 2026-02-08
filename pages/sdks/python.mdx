@@ -75,7 +75,7 @@ import sseclient
 import requests
 
 def stream_odds(api_key: str, sports: Optional[List[str]] = None):
-    url = 'https://sharpapi.io/api/v1/stream/odds'
+    url = 'https://sharpapi.io/v1/stream'
     params = {'sports': ','.join(sports)} if sports else {}
     headers = {'X-API-Key': api_key}
 

@@ -1018,7 +1018,7 @@ Server-Sent Events (SSE) provide real-time updates without polling.
 Connection Example (JavaScript):
 ```javascript
 const eventSource = new EventSource(
-  'https://sharpapi.io/api/v1/stream/odds?sports=nba',
+  'https://sharpapi.io/v1/stream?sports=nba',
   { headers: { 'X-API-Key': 'sk_your_key' } }
 );
 
@@ -1036,7 +1036,7 @@ eventSource.onerror = (error) => {
 Connection Example (curl):
 ```bash
 curl -N -H "X-API-Key: sk_test_pro" \
-  "https://sharpapi.io/api/v1/stream/odds?sports=nba"
+  "https://sharpapi.io/v1/stream?sports=nba"
 ```
 
 Message Format:
@@ -1047,112 +1047,34 @@ data: {"type":"heartbeat","timestamp":"2024-01-15T10:30:30.000Z"}
 ```
 
 --------------------------------------------------------------------------------
-GET /stream/odds
+GET /v1/stream
 --------------------------------------------------------------------------------
-Real-time odds updates via Server-Sent Events.
+Unified real-time stream for odds, +EV, and arbitrage updates via Server-Sent Events.
 
-Authentication: Required (any tier)
-Stream Limit: Per tier (Free: 1, Pro: 3, Sharp: 10)
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                   |
-|-----------|--------|----------|---------|-------------------------------|
-| sports    | string | No       | all     | Comma-separated sports        |
-| books     | string | No       | all     | Comma-separated sportsbooks   |
-
-Event Types:
-- connected: Initial connection acknowledgment
-- initial: Full snapshot of current odds
-- odds_update: Incremental odds changes
-- heartbeat: Keep-alive (every 30 seconds)
-- error: Error notification
-
-Example:
-```bash
-curl -N -H "X-API-Key: sk_test_free" \
-  "https://sharpapi.io/api/v1/stream/odds?sports=nba,nfl"
-```
-
---------------------------------------------------------------------------------
-GET /stream/ev
---------------------------------------------------------------------------------
-Real-time +EV opportunity alerts.
-
-Authentication: Required (Pro+ tier)
-Stream Limit: Per tier
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                   |
-|-----------|--------|----------|---------|-------------------------------|
-| sports    | string | No       | all     | Comma-separated sports        |
-| min_ev    | number | No       | 2.0     | Minimum EV threshold          |
-
-Event Types:
-- connected: Connection with config confirmation
-- initial: Current EV opportunities snapshot
-- ev_update: New or updated EV opportunity
-- ev_expired: EV opportunity no longer valid
-- heartbeat: Keep-alive
-
-Example:
-```bash
-curl -N -H "X-API-Key: sk_test_pro" \
-  "https://sharpapi.io/api/v1/stream/ev?sports=nba&min_ev=3.0"
-```
-
---------------------------------------------------------------------------------
-GET /stream/arbitrage
---------------------------------------------------------------------------------
-Real-time arbitrage opportunity alerts.
-
-Authentication: Required (Pro+ tier)
-Stream Limit: Per tier
+Authentication: Required (any tier with WebSocket add-on)
+Stream Limit: 10 concurrent
 
 Query Parameters:
 | Parameter  | Type   | Required | Default | Description                   |
 |------------|--------|----------|---------|-------------------------------|
 | sports     | string | No       | all     | Comma-separated sports        |
-| min_profit | number | No       | 0.5     | Minimum profit percentage     |
+| books      | string | No       | all     | Comma-separated sportsbooks   |
+| min_ev     | number | No       | 2.0     | Minimum EV percentage         |
+| min_profit | number | No       | 0.5     | Minimum arbitrage profit      |
 
 Event Types:
-- connected: Connection acknowledgment
-- initial: Current arbitrage opportunities
-- arb_update: New or updated arbitrage
-- arb_expired: Arbitrage no longer valid
-- heartbeat: Keep-alive
+- connected: Initial connection acknowledgment
+- initial: Full snapshot of current odds and opportunities
+- odds_update: Incremental odds changes
+- ev_opportunity: New or updated +EV opportunity
+- arbitrage: New or updated arbitrage opportunity
+- heartbeat: Keep-alive (every 30 seconds)
+- error: Error notification
 
 Example:
 ```bash
 curl -N -H "X-API-Key: sk_test_pro" \
-  "https://sharpapi.io/api/v1/stream/arbitrage?min_profit=1.0"
-```
-
---------------------------------------------------------------------------------
-GET /stream/combined
---------------------------------------------------------------------------------
-Unified stream with all opportunity types.
-
-Authentication: Required (Sharp tier only)
-Stream Limit: 10 concurrent
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                   |
-|-----------|--------|----------|---------|-------------------------------|
-| sports    | string | No       | all     | Comma-separated sports        |
-| min_ev    | number | No       | 2.0     | Minimum EV percentage         |
-| min_arb   | number | No       | 0.5     | Minimum arbitrage profit      |
-
-Event Types:
-- connected: Connection with configuration
-- initial: Snapshot of all opportunities
-- ev_update: EV opportunity update
-- arbitrage_update: Arbitrage update
-- heartbeat: Keep-alive
-
-Example:
-```bash
-curl -N -H "X-API-Key: sk_test_sharp" \
-  "https://sharpapi.io/api/v1/stream/combined?sports=nba&min_ev=3.0"
+  "https://sharpapi.io/v1/stream?sports=nba,nfl"
 ```
 
 ================================================================================
@@ -1423,7 +1345,7 @@ function createOddsStream(sports, callbacks) {
   const baseDelay = 1000;
 
   function connect() {
-    const url = new URL(`${SHARP_API_BASE}/stream/odds`);
+    const url = new URL(`${SHARP_API_BASE}/v1/stream`);
     if (sports.length) url.searchParams.set('sports', sports.join(','));
 
     const eventSource = new EventSource(url, {
@@ -1502,7 +1424,7 @@ def stream_arbitrage(sports=None, min_profit=0.5, callback=None):
     if sports:
         params['sports'] = ','.join(sports)
 
-    url = f'{SHARP_API_BASE}/stream/arbitrage'
+    url = f'{SHARP_API_BASE}/v1/stream'
     response = requests.get(
         url,
         headers={'X-API-Key': API_KEY},
@@ -1545,7 +1467,7 @@ curl -H "X-API-Key: $SHARP_API_KEY" \
 
 # Stream odds updates (use -N for no-buffer)
 curl -N -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/api/v1/stream/odds?sports=nba"
+  "https://sharpapi.io/v1/stream?sports=nba"
 
 # Get usage statistics
 curl -H "X-API-Key: $SHARP_API_KEY" \

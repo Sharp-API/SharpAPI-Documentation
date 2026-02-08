@@ -691,45 +691,23 @@
         }
       }
     },
-    "/stream/odds": {
+    "/v1/stream": {
       "get": {
         "tags": ["Streaming"],
-        "summary": "Stream odds updates",
-        "description": "Server-Sent Events stream of real-time odds updates.",
-        "operationId": "streamOdds",
+        "summary": "Unified real-time stream",
+        "description": "Server-Sent Events stream of real-time odds, +EV, and arbitrage updates.",
+        "operationId": "stream",
         "parameters": [
           {
             "name": "sports",
             "in": "query",
             "description": "Comma-separated sports filter",
             "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "SSE stream",
-            "content": {
-              "text/event-stream": {
-                "schema": { "$ref": "#/components/schemas/OddsStreamEvent" }
-              }
-            }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "429": { "$ref": "#/components/responses/RateLimited" }
-        }
-      }
-    },
-    "/stream/ev": {
-      "get": {
-        "tags": ["Streaming"],
-        "summary": "Stream EV opportunities",
-        "description": "Server-Sent Events stream of +EV opportunities. Requires Pro tier.",
-        "operationId": "streamEV",
-        "parameters": [
           {
-            "name": "sports",
+            "name": "books",
             "in": "query",
-            "description": "Comma-separated sports filter",
+            "description": "Comma-separated sportsbooks filter",
             "schema": { "type": "string" }
           },
           {
@@ -737,81 +715,11 @@
             "in": "query",
             "description": "Minimum EV percentage",
             "schema": { "type": "number", "default": 2.0 }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "SSE stream",
-            "content": {
-              "text/event-stream": {
-                "schema": { "$ref": "#/components/schemas/EVStreamEvent" }
-              }
-            }
-          },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/TierRequired" },
-          "429": { "$ref": "#/components/responses/RateLimited" }
-        }
-      }
-    },
-    "/stream/arbitrage": {
-      "get": {
-        "tags": ["Streaming"],
-        "summary": "Stream arbitrage opportunities",
-        "description": "Server-Sent Events stream of arbitrage opportunities. Requires Pro tier.",
-        "operationId": "streamArbitrage",
-        "parameters": [
-          {
-            "name": "sports",
-            "in": "query",
-            "description": "Comma-separated sports filter",
-            "schema": { "type": "string" }
           },
           {
             "name": "min_profit",
             "in": "query",
-            "description": "Minimum profit percentage",
-            "schema": { "type": "number", "default": 0.5 }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "SSE stream",
-            "content": {
-              "text/event-stream": {
-                "schema": { "$ref": "#/components/schemas/ArbitrageStreamEvent" }
-              }
-            }
-          },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/TierRequired" },
-          "429": { "$ref": "#/components/responses/RateLimited" }
-        }
-      }
-    },
-    "/stream/combined": {
-      "get": {
-        "tags": ["Streaming"],
-        "summary": "Stream all opportunities",
-        "description": "Unified SSE stream with EV, arbitrage, and odds updates. Requires Sharp tier.",
-        "operationId": "streamCombined",
-        "parameters": [
-          {
-            "name": "sports",
-            "in": "query",
-            "description": "Comma-separated sports filter",
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "min_ev",
-            "in": "query",
-            "description": "Minimum EV percentage",
-            "schema": { "type": "number", "default": 2.0 }
-          },
-          {
-            "name": "min_arb",
-            "in": "query",
-            "description": "Minimum arbitrage profit",
+            "description": "Minimum arbitrage profit percentage",
             "schema": { "type": "number", "default": 0.5 }
           }
         ],
@@ -825,7 +733,6 @@
             }
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/TierRequired" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         }
       }

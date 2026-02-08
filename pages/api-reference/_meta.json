@@ -1,6 +1,6 @@
 {
   "overview": "Overview",
-  "---Discovery": {
+  "---Reference": {
     "type": "separator",
     "title": "Reference Data"
   },
@@ -8,37 +8,44 @@
   "leagues": "Leagues",
   "sportsbooks": "Sportsbooks",
   "markets": "Markets",
-  "---Schedule": {
-    "type": "separator",
-    "title": "Schedule & Events"
-  },
-  "schedule": "Schedule",
-  "events": "Events",
-  "events-live": "Live Events",
-  "events-by-id": "Event Details",
-  "events-search": "Event Search",
   "---Odds": {
     "type": "separator",
     "title": "Odds"
   },
-  "odds": "Odds",
+  "odds": "Odds Snapshot",
   "odds-best": "Best Odds",
-  "---Markets": {
+  "odds-comparison": "Odds Comparison",
+  "odds-batch": "Batch Odds",
+  "---Events": {
     "type": "separator",
-    "title": "Markets"
+    "title": "Events"
   },
-  "player-props": "Player Props",
+  "events": "Events",
+  "events-by-id": "Event Details",
+  "events-odds": "Event Odds",
+  "events-markets": "Event Markets",
   "---Opportunities": {
     "type": "separator",
     "title": "Opportunities"
   },
-  "positive-ev": "Positive EV",
-  "arbitrage": "Arbitrage",
-  "value-bets": "Value Bets",
-  "middles": "Middles",
+  "opportunities-ev": "+EV Opportunities",
+  "opportunities-arbitrage": "Arbitrage",
+  "opportunities-middles": "Middles",
+  "---Streaming": {
+    "type": "separator",
+    "title": "Streaming"
+  },
+  "stream": "Unified Stream",
   "---Account": {
     "type": "separator",
     "title": "Account"
   },
-  "me": "Account Info"
+  "account": "Account Info",
+  "account-usage": "Usage Stats",
+  "account-keys": "API Key Management",
+  "---Internal": {
+    "type": "separator",
+    "title": "Internal"
+  },
+  "health": "Health Check"
 }

@@ -2,62 +2,59 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Streaming Overview
 
-Real-time odds updates via Server-Sent Events (SSE).
+Real-time odds and opportunity updates via Server-Sent Events (SSE).
 
-<Callout type="warning">
-**WebSocket Add-on Required**: Streaming requires the WebSocket add-on ($99/mo) on any paid tier. Free tier does not support streaming.
+<Callout type="info">
+For full API documentation including all event types, query parameters, and detailed examples, see the [Stream API Reference](/api-reference/stream).
 </Callout>
 
 ## Why Streaming?
 
-REST polling has a 30-60 second delay. SSE streaming delivers updates in **sub-second** latency.
+REST polling introduces a 30-60 second delay between odds changes and your application seeing them. SSE streaming delivers updates in **sub-second** latency directly to your application as they happen.
 
-| Approach | Latency | Use Case |
-|----------|---------|----------|
-| REST polling | 30-60s | Casual browsing |
-| **SSE streaming** | < 1s | Live betting, alerts |
+| Approach | Latency | Bandwidth | Use Case |
+|----------|---------|-----------|----------|
+| REST polling | 30-60s | High (full payload each poll) | Casual browsing, dashboards |
+| **SSE streaming** | < 1s | Low (only deltas) | Live betting, alerts, automated systems |
+
+### Key Benefits
+
+- **Sub-second latency** -- Odds updates arrive as soon as they are detected
+- **Lower bandwidth** -- Only changed data is sent, not full snapshots on every poll
+- **Automatic reconnection** -- SSE reconnects natively with `Last-Event-ID` replay
+- **Simple protocol** -- Works over standard HTTP, no WebSocket upgrade needed
+
+## How SSE Works
+
+Server-Sent Events is a W3C standard for server-to-client streaming over HTTP:
+
+```
+Client                           Server
+  |                                |
+  |--- GET /api/v1/stream ------->|
+  |                                |
+  |<-- event: connected ----------|  Stream established
+  |<-- event: snapshot -----------|  Full current state
+  |<-- event: odds:update --------|  Delta update
+  |<-- event: odds:update --------|  Delta update
+  |<-- event: ev:detected --------|  Opportunity found
+  |<-- event: heartbeat ----------|  Keep-alive (every 30s)
+  |         ...                    |
+```
+
+<Callout type="info">
+SSE automatically reconnects on disconnect. The server uses `Last-Event-ID` to replay any events you missed.
+</Callout>
 
 ## Requirements
 
 | Tier | Streaming Access |
 |------|------------------|
 | Free | Not available |
-| Hobby + Add-on | 10 concurrent streams |
-| Pro + Add-on | 10 concurrent streams |
-| Sharp + Add-on | 10 concurrent streams |
+| Hobby + Add-on ($99/mo) | 10 concurrent streams |
+| Pro + Add-on ($99/mo) | 10 concurrent streams |
+| Sharp + Add-on ($99/mo) | 10 concurrent streams |
 | Enterprise | Included (custom limits) |
-
-<Callout type="info">
-The WebSocket add-on costs $99/mo and provides 10 concurrent SSE streams.
-</Callout>
-
-## How SSE Works
-
-Server-Sent Events (SSE) is a standard for server-to-client streaming over HTTP:
-
-```
-Client                    Server
-  |                         |
-  |--- GET /stream/odds --->|
-  |                         |
-  |<-- event: initial ------|
-  |<-- event: odds_update --|
-  |<-- event: odds_update --|
-  |<-- event: heartbeat ----|
-  |         ...             |
-```
-
-<Callout type="info">
-SSE automatically reconnects on disconnect. Use `Last-Event-ID` header for seamless recovery.
-</Callout>
-
-## Available Streams
-
-| Endpoint | Description | Tier Requirement |
-|----------|-------------|------------------|
-| `/stream/odds` | All odds updates | WebSocket Add-on |
-| `/stream/opportunities` | +EV and arbitrage alerts | WebSocket Add-on + Pro+ |
-| `/stream/events/{eventId}` | Single event stream | WebSocket Add-on |
 
 ## Quick Start
 
@@ -65,50 +62,56 @@ SSE automatically reconnects on disconnect. Use `Last-Event-ID` header for seaml
 
 ```javascript
 const eventSource = new EventSource(
-  'https://api.sharpapi.io/api/v1/stream/odds?api_key=YOUR_KEY'
+  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba&api_key=YOUR_KEY'
 );
 
-// Initial snapshot
-eventSource.addEventListener('initial', (e) => {
-  const { data } = JSON.parse(e.data);
-  console.log('Initial odds:', data.length);
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id } = JSON.parse(e.data);
+  console.log('Stream connected:', stream_id);
 });
 
-// Live updates
-eventSource.addEventListener('odds_update', (e) => {
+eventSource.addEventListener('snapshot', (e) => {
+  const { odds } = JSON.parse(e.data);
+  console.log('Initial snapshot:', odds.length, 'odds');
+});
+
+eventSource.addEventListener('odds:update', (e) => {
   const update = JSON.parse(e.data);
-  console.log('Update from:', update.source);
+  console.log('Update from:', update.sportsbook);
 });
 
-// Heartbeat (every 30s)
+eventSource.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV: ${opp.selection} at ${opp.ev_percent}% EV`);
+});
+
 eventSource.addEventListener('heartbeat', () => {
   console.log('Connection alive');
 });
 
-// Handle errors
-eventSource.onerror = (e) => {
+eventSource.onerror = () => {
   console.log('Connection lost, auto-reconnecting...');
 };
 ```
 
 ### Node.js
 
-```typescript
+```javascript
 import EventSource from 'eventsource';
 
 const es = new EventSource(
-  'https://api.sharpapi.io/api/v1/stream/odds',
+  'https://api.sharpapi.io/api/v1/stream?channel=odds&league=nba',
   { headers: { 'X-API-Key': 'YOUR_KEY' } }
 );
 
-es.addEventListener('initial', (e) => {
-  const { data } = JSON.parse(e.data);
-  console.log(`Received ${data.length} initial odds`);
+es.addEventListener('snapshot', (e) => {
+  const { odds } = JSON.parse(e.data);
+  console.log(`Received ${odds.length} initial odds`);
 });
 
-es.addEventListener('odds_update', (e) => {
+es.addEventListener('odds:update', (e) => {
   const update = JSON.parse(e.data);
-  console.log(`${update.source}: ${update.data.length} odds updated`);
+  console.log(`${update.sportsbook}: ${update.markets.length} markets updated`);
 });
 ```
 
@@ -119,82 +122,40 @@ import sseclient
 import requests
 import json
 
-url = 'https://api.sharpapi.io/api/v1/stream/odds'
+url = 'https://api.sharpapi.io/api/v1/stream'
+params = {'channel': 'all', 'league': 'nba'}
 headers = {'X-API-Key': 'YOUR_KEY'}
 
-response = requests.get(url, headers=headers, stream=True)
+response = requests.get(url, params=params, headers=headers, stream=True)
 client = sseclient.SSEClient(response)
 
 for event in client.events():
-    if event.event == 'initial':
-        print('Got initial snapshot')
-    elif event.event == 'odds_update':
-        data = json.loads(event.data)
-        print(f'Update from {data["source"]}')
+    data = json.loads(event.data) if event.data else {}
+
+    if event.event == 'connected':
+        print(f"Stream {data['stream_id']} connected")
+    elif event.event == 'snapshot':
+        print(f"Snapshot: {len(data.get('odds', []))} odds")
+    elif event.event == 'odds:update':
+        print(f"{data['sportsbook']}: odds updated")
+    elif event.event == 'ev:detected':
+        print(f"+EV: {data['selection']} at {data['ev_percent']}%")
 ```
 
 ## Event Types
 
-| Event | Description | Payload |
-|-------|-------------|---------|
-| `initial` | Full snapshot on connect | All current odds |
-| `odds_update` | Odds changed | Updated odds for one book |
-| `ev_opportunity` | New +EV found | EV opportunity details |
-| `arbitrage` | New arb found | Arbitrage with stakes |
-| `heartbeat` | Keep-alive | Timestamp only |
+| Event | Description |
+|-------|-------------|
+| `connected` | Stream established, returns stream ID and active filters |
+| `snapshot` | Full data dump of current odds and/or opportunities |
+| `odds:update` | Odds changed for a sportsbook |
+| `ev:detected` | New +EV opportunity found |
+| `ev:expired` | +EV opportunity no longer available |
+| `arb:detected` | New arbitrage opportunity found |
+| `arb:expired` | Arbitrage opportunity no longer available |
+| `heartbeat` | Keep-alive sent every 30 seconds |
+| `error` | Recoverable error (connection stays open) |
 
-## Filtering Streams
+## Full API Reference
 
-Reduce bandwidth by filtering:
-
-```javascript
-// Only NBA from DraftKings
-const url = 'https://api.sharpapi.io/api/v1/stream/odds?league=nba&sportsbook=draftkings&api_key=YOUR_KEY';
-const es = new EventSource(url);
-```
-
-Available filters:
-- `league` - Filter by league (e.g., `nba`, `nfl`)
-- `sportsbook` - Filter by sportsbook (e.g., `draftkings`)
-- `sport` - Filter by sport
-- `live` - Only live events (`true`)
-
-## Concurrent Stream Limits
-
-| Add-on | Max Concurrent Streams |
-|--------|------------------------|
-| WebSocket ($99/mo) | 10 |
-| Enterprise | Custom |
-
-<Callout type="warning">
-Exceeding your stream limit returns a `429` error. Close unused streams to open new ones.
-</Callout>
-
-## Error Handling
-
-```javascript
-eventSource.onerror = (error) => {
-  if (eventSource.readyState === EventSource.CLOSED) {
-    console.log('Stream closed permanently');
-  } else {
-    console.log('Temporary error, will reconnect...');
-  }
-};
-```
-
-### Stream Error Codes
-
-| Error | Description | Resolution |
-|-------|-------------|------------|
-| `stream_limit_exceeded` | Too many concurrent streams | Close unused streams |
-| `tier_restricted` | Stream not available on tier | Add WebSocket add-on |
-| `unauthorized` | Invalid API key | Check API key |
-
-## Best Practices
-
-1. **Handle reconnection gracefully** - EventSource auto-reconnects, but reset local state on `initial` events
-2. **Process updates asynchronously** - Don't block the event handler. Queue updates for background processing
-3. **Use filters to reduce bandwidth** - Pass `league` and `sportsbook` params to receive only relevant updates
-4. **Monitor heartbeats** - If you don't receive a heartbeat in 60s, the connection may be stale
-5. **Close unused streams** - Each open stream counts against your limit
-6. **Handle `Last-Event-ID`** - Use this header to resume where you left off after reconnection
+For complete documentation including all query parameters, detailed event payloads, reconnection handling, concurrent stream management, and error codes, see the [Stream API Reference](/api-reference/stream).

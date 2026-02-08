@@ -90,7 +90,7 @@ Streaming requires WebSocket add-on ($99/mo). See [Pricing](/pricing) for detail
 | `GET /events` | Event details | All |
 | `GET /positive-ev` | +EV opportunities | Pro+ |
 | `GET /arbitrage` | Arbitrage opportunities | Pro+ |
-| `GET /stream/odds` | Real-time odds stream | Add-on |
+| `GET /v1/stream` | Real-time odds stream | Add-on |
 
 ## Authentication
 
@@ -104,7 +104,7 @@ curl -H "X-API-Key: sk_live_xxx" https://api.sharpapi.io/api/v1/odds
 curl -H "Authorization: Bearer sk_live_xxx" https://api.sharpapi.io/api/v1/odds
 
 # Query parameter (for SSE)
-curl "https://api.sharpapi.io/api/v1/stream/odds?api_key=sk_live_xxx"
+curl "https://api.sharpapi.io/v1/stream?api_key=sk_live_xxx"
 ```
 
 See [Authentication](/authentication) for details.

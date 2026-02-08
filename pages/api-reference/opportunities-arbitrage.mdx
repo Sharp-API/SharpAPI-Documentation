@@ -1,0 +1,302 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Arbitrage Opportunities
+
+Find guaranteed-profit arbitrage opportunities across sportsbooks.
+
+```
+GET /api/v1/opportunities/arbitrage
+```
+
+## Authentication
+
+Requires API key. **Pro tier or higher required.**
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
+| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
+| `min_profit` | number | 0.5 | Minimum profit percentage (e.g., `1.0` = 1%) |
+| `limit` | integer | 50 | Results per page (max 200) |
+| `offset` | integer | 0 | Pagination offset |
+
+### Filtering Multiple Values
+
+Use comma-separated values for multi-select filters:
+
+```
+?sport=basketball,football&league=nba,nfl
+```
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/arbitrage?league=nba&min_profit=1" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/arbitrage?league=nba&min_profit=1',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+
+for (const arb of data) {
+  console.log(`${arb.event_name}: ${arb.profit_percent}% profit`);
+  for (const leg of arb.legs) {
+    console.log(`  ${leg.sportsbook}: ${leg.selection} @ ${leg.odds} (${leg.stake_percent}%)`);
+  }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/arbitrage',
+    params={'league': 'nba', 'min_profit': 1},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+
+for arb in data['data']:
+    print(f"{arb['event_name']}: {arb['profit_percent']}% profit")
+    for leg in arb['legs']:
+        print(f"  {leg['sportsbook']}: {leg['selection']} @ {leg['odds']} ({leg['stake_percent']}%)")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": [
+    {
+      "event_id": "evt_nba_lal_bos_20260208",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "sport": "basketball",
+      "market_type": "moneyline",
+      "profit_percent": 1.83,
+      "implied_total": 98.2,
+      "legs": [
+        {
+          "sportsbook": "draftkings",
+          "selection": "Los Angeles Lakers",
+          "odds": 145,
+          "decimal_odds": 2.45,
+          "stake_percent": 41.5
+        },
+        {
+          "sportsbook": "pinnacle",
+          "selection": "Boston Celtics",
+          "odds": -135,
+          "decimal_odds": 1.74,
+          "stake_percent": 58.5
+        }
+      ],
+      "detected_at": "2026-02-08T14:22:10.456Z"
+    }
+  ],
+  "meta": {
+    "count": 3,
+    "total": 3,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-02-08T14:22:10.456Z",
+    "filters": {
+      "league": "nba",
+      "min_profit": 1
+    }
+  }
+}
+```
+
+### Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 297
+X-RateLimit-Reset: 1707401000
+X-Tier: pro
+X-Data-Delay: 0
+X-Request-Id: req_arb789xyz012
+```
+
+### Error Responses
+
+```json title="401 Unauthorized"
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://sharpapi.io/docs/authentication"
+  }
+}
+```
+
+```json title="403 Tier Required"
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Arbitrage detection requires Pro tier or higher",
+    "docs": "https://sharpapi.io/docs/pricing"
+  }
+}
+```
+
+```json title="429 Rate Limited"
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "docs": "https://sharpapi.io/docs/api-reference/overview"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `event_id` | string | Event identifier |
+| `event_name` | string | Human-readable event name |
+| `sport` | string | Sport identifier |
+| `market_type` | string | Market type (`moneyline`, `spread`, `total`) |
+| `profit_percent` | number | Guaranteed profit as a percentage (e.g., `1.83` = 1.83%) |
+| `implied_total` | number | Sum of implied probabilities across all legs (below 100 = arb exists) |
+| `legs` | array | Array of bet legs that form the arbitrage |
+| `detected_at` | string | ISO 8601 timestamp when the arb was first detected |
+
+### Leg Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sportsbook` | string | Sportsbook for this leg |
+| `selection` | string | The selection (team name, Over/Under, etc.) |
+| `odds` | number | American odds for this leg |
+| `decimal_odds` | number | Decimal odds for this leg |
+| `stake_percent` | number | Percentage of total stake to place on this leg |
+
+---
+
+## How Arbitrage Works
+
+Arbitrage exploits price differences between sportsbooks to guarantee a profit regardless of the outcome. When the combined implied probabilities across all legs of a market total less than 100%, an arbitrage opportunity exists.
+
+### The Core Principle
+
+```
+Book A: Team X +150 (implied 40.0%)
+Book B: Team Y -130 (implied 56.5%)
+Total implied: 96.5% < 100% = ARBITRAGE
+```
+
+When the total is below 100%, you can bet proportionally on every outcome and guarantee a profit.
+
+### Profit Calculation
+
+```
+Profit % = (100 / implied_total) - 100
+```
+
+Using the example above:
+
+```
+Profit % = (100 / 96.5) - 100 = 3.63%
+```
+
+This means for every $1,000 wagered, you are guaranteed approximately $36.30 in profit.
+
+### Calculating Optimal Stakes
+
+To guarantee equal returns regardless of outcome, allocate stakes proportionally:
+
+```javascript
+// Decimal odds: Team X = 2.50, Team Y = 1.77
+const impliedX = 1 / 2.50;  // 0.400
+const impliedY = 1 / 1.77;  // 0.565
+const total = impliedX + impliedY;  // 0.965
+
+const stakeX = impliedX / total;  // 41.5% of bankroll
+const stakeY = impliedY / total;  // 58.5% of bankroll
+```
+
+### Full Stake Example
+
+**Total bankroll for this arb: $1,000**
+
+| Leg | Stake | Odds | Payout if Wins |
+|-----|-------|------|----------------|
+| Team X @ DraftKings | $415 | +150 | $1,037.50 |
+| Team Y @ Pinnacle | $585 | -130 | $1,035.00 |
+
+**Guaranteed profit: ~$35-38 (3.5-3.8%) regardless of outcome.**
+
+## Three-Way Arbitrage
+
+Sports like soccer and hockey have three-way markets (home/draw/away), which can also produce arbitrage:
+
+```
+Home Win:  +200 (33.3%)
+Draw:      +250 (28.6%)
+Away Win:  +180 (35.7%)
+Total implied: 97.6% -> 2.4% arbitrage profit
+```
+
+The same stake calculation applies -- divide each leg's implied probability by the total to determine the stake allocation.
+
+## Why Arbs Exist
+
+1. **Timing differences** - Sportsbooks update odds at different speeds
+2. **Differing opinions** - Books have different risk models and exposure
+3. **Promotions** - Boosted odds from one book create artificial gaps
+4. **Errors** - Occasionally, a book posts incorrect odds
+
+## Best Practices
+
+<Callout type="warning">
+**Account Risk:** Sportsbooks actively monitor for arbitrage activity. Accounts that exclusively place arb bets may be limited or restricted. Consider mixing arbitrage bets with recreational activity.
+</Callout>
+
+1. **Act fast** - Arb windows are often short-lived (seconds to minutes)
+2. **Round your stakes** - A bet of $47.32 looks suspicious; round to $50
+3. **Use pre-calculated stakes** - The `stake_percent` field gives you optimal allocation
+4. **Verify odds before placing** - Always confirm the odds at the sportsbook have not moved
+5. **Start with larger arbs** - Focus on `min_profit=1` or higher to account for line movement
+6. **Track the `implied_total`** - Lower totals mean larger guaranteed profits
+7. **Diversify sportsbooks** - Spreading activity across many books reduces individual account risk
+
+## Arb vs +EV Betting
+
+| Aspect | Arbitrage | +EV Betting |
+|--------|-----------|-------------|
+| Risk | Zero (guaranteed profit) | Variance exists |
+| Profit per bet | 1-3% typical | 2-10% edge |
+| Account risk | High (limits likely) | Lower |
+| Capital required | High (bet both sides) | Lower |
+| Sustainability | Limited by account health | Long-term viable |
+
+<Callout type="info">
+Many experienced bettors prefer +EV betting over arbitrage because accounts last longer and the expected edges are often larger. See the [+EV Opportunities](/api-reference/opportunities-ev) endpoint for details.
+</Callout>
+
+## Related Endpoints
+
+- [+EV Opportunities](/api-reference/opportunities-ev) - Positive expected value bets
+- [Middles](/api-reference/opportunities-middles) - Line discrepancy opportunities
+- [Arbitrage Concepts](/concepts/arbitrage) - Detailed arbitrage theory
+- [Arbitrage Scanner Example](/examples/arbitrage-scanner) - Build a real-time scanner

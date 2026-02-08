@@ -31,7 +31,7 @@ curl -H "Authorization: Bearer sk_live_your_key" \
 Useful for SSE streaming in browsers where you cannot set custom headers.
 
 ```bash
-curl "https://api.sharpapi.io/api/v1/stream/odds?api_key=sk_live_your_key"
+curl "https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key"
 ```
 
 <Callout type="warning">
@@ -62,8 +62,8 @@ Test keys return real data but are rate-limited and don't affect your billing.
 
 | Tier | Price | Requests/Min | Data Delay | Key Features |
 |------|-------|--------------|------------|--------------|
-| **Free** | $0/mo | 1 | 60s | Odds, Schedule |
-| **Hobby** | $79/mo | 120 | Real-time | Odds, Schedule |
+| **Free** | $0/mo | 12 | 60s | Odds, Events |
+| **Hobby** | $79/mo | 120 | Real-time | Odds, Events |
 | **Pro** | $229/mo | 300 | Real-time | + EV, Arbitrage, Middles |
 | **Sharp** | $399/mo | 2,000 | Real-time | + Priority Support |
 | **Enterprise** | Custom | Custom | Real-time | + SLA |
@@ -94,14 +94,14 @@ When exceeded, you'll receive a `429` response:
 {
   "error": {
     "code": "rate_limited",
-    "message": "Rate limit exceeded",
-    "retry_after": 45
+    "message": "Rate limit exceeded. Upgrade your plan or wait before retrying.",
+    "docs": "https://sharpapi.io/docs/authentication#rate-limits"
   }
 }
 ```
 
 <Callout type="info">
-Use the `retry_after` value (in seconds) to implement exponential backoff.
+Implement exponential backoff when you receive a `429` response. Check `X-RateLimit-Reset` for when the window resets.
 </Callout>
 
 ## Feature Access by Tier
@@ -110,18 +110,22 @@ Use the `retry_after` value (in seconds) to implement exponential backoff.
 |---------|------|-------|-----|-------|------------|
 | `GET /odds` | Yes | Yes | Yes | Yes | Yes |
 | `GET /odds/best` | Yes | Yes | Yes | Yes | Yes |
-| `GET /schedule` | Yes | Yes | Yes | Yes | Yes |
+| `GET /odds/comparison` | Yes | Yes | Yes | Yes | Yes |
+| `POST /odds/batch` | Yes | Yes | Yes | Yes | Yes |
 | `GET /events` | Yes | Yes | Yes | Yes | Yes |
-| `GET /sportsbooks` | Yes | Yes | Yes | Yes | Yes |
-| `GET /positive-ev` | No | No | Yes | Yes | Yes |
-| `GET /arbitrage` | No | No | Yes | Yes | Yes |
-| `GET /value-bets` | No | No | Yes | Yes | Yes |
-| `GET /middles` | No | No | Yes | Yes | Yes |
-| `GET /me` | Yes | Yes | Yes | Yes | Yes |
-| Streaming* | No | Yes | Yes | Yes | Yes |
+| `GET /events/:eventId` | Yes | Yes | Yes | Yes | Yes |
+| `GET /events/:eventId/odds` | Yes | Yes | Yes | Yes | Yes |
+| `GET /events/:eventId/markets` | Yes | Yes | Yes | Yes | Yes |
+| `GET /opportunities/ev` | No | No | Yes | Yes | Yes |
+| `GET /opportunities/arbitrage` | No | No | Yes | Yes | Yes |
+| `GET /opportunities/middles` | No | No | Yes | Yes | Yes |
+| `GET /stream` | No | Add-on | Add-on | Add-on | Yes |
+| `GET /account` | Yes | Yes | Yes | Yes | Yes |
+| `GET /account/usage` | Yes | Yes | Yes | Yes | Yes |
+| `GET /account/keys` | Yes | Yes | Yes | Yes | Yes |
 
 <Callout>
-*Streaming requires the WebSocket add-on ($99/mo) on any paid tier.
+Streaming requires the WebSocket add-on ($99/mo) on any paid tier. Enterprise includes streaming at no extra cost.
 </Callout>
 
 ## Public Reference Endpoints
@@ -131,10 +135,10 @@ The following reference data endpoints are accessible without authentication at 
 - `GET /api/v1/sports` - List all sports
 - `GET /api/v1/sports/{sportId}` - Get sport details
 - `GET /api/v1/leagues` - List all leagues
-- `GET /api/v1/leagues/{leagueId}` - Get league details
 - `GET /api/v1/sportsbooks` - List all sportsbooks
 - `GET /api/v1/sportsbooks/{bookId}` - Get sportsbook details
 - `GET /api/v1/markets` - List all market types
+- `GET /api/v1/health` - Health check
 
 Authenticated requests receive higher rate limits based on your subscription tier.
 
@@ -159,8 +163,8 @@ All errors follow a consistent format:
 {
   "error": {
     "code": "unauthorized",
-    "message": "Invalid API key",
-    "retry_after": null
+    "message": "Invalid API key. Check that your key is correct and active.",
+    "docs": "https://sharpapi.io/docs/authentication"
   }
 }
 ```
@@ -170,5 +174,5 @@ All errors follow a consistent format:
 1. **Store keys securely** - Use environment variables, never commit to version control
 2. **Use server-side requests** - Never expose keys in client-side JavaScript
 3. **Implement retry logic** - Handle `429` errors with exponential backoff
-4. **Monitor usage** - Check `/me/usage` endpoint to track consumption
-5. **Rotate keys regularly** - Generate new keys periodically for security
+4. **Monitor usage** - Check the `/account/usage` endpoint to track consumption
+5. **Rotate keys regularly** - Use the `/account/keys/:keyId/rotate` endpoint periodically for security

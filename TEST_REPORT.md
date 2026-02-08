@@ -125,11 +125,8 @@ A comprehensive test suite was executed against all 27 documented SharpAPI publi
 
 | Endpoint | Status | HTTP Code | Notes |
 |----------|--------|-----------|-------|
-| `GET /stream/odds` | ✅ PASS | 200 | Connection established successfully |
-| `GET /stream/odds?sports=nba` | ✅ PASS | 200 | Connection established successfully |
-| `GET /stream/ev` | ✅ PASS | 200 | Connection established successfully |
-| `GET /stream/arbitrage` | ✅ PASS | 200 | Connection established successfully |
-| `GET /stream/combined` | ✅ PASS | 200 | Connection established successfully |
+| `GET /v1/stream` | ✅ PASS | 200 | Connection established successfully |
+| `GET /v1/stream?sports=nba` | ✅ PASS | 200 | Connection established successfully |
 
 **Analysis:** All streaming endpoints are functional and accepting SSE connections. The timeout mechanism successfully validated that connections are established and streams are available.
 

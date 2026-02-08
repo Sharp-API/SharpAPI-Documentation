@@ -77,22 +77,29 @@ console.log(`Found ${meta.count} odds`);
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
       "sport": "nba",
-      "homeTeam": "PHI 76ers",
-      "awayTeam": "PHO Suns",
-      "marketType": "moneyline",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
       "selection": "PHO Suns",
       "odds": {
         "american": -150,
         "decimal": 1.67,
         "probability": 0.60
       },
-      "isLive": false
+      "is_live": false
     }
   ],
   "meta": {
     "count": 1,
     "total": 3095,
-    "updated": "2026-01-26T02:10:37.846Z"
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {}
   }
 }
 ```
@@ -122,7 +129,7 @@ curl "https://api.sharpapi.io/api/v1/odds?main=true" \
 Once you have a Pro subscription, you can find +EV opportunities:
 
 ```bash
-curl "https://api.sharpapi.io/api/v1/positive-ev?threshold=3.0" \
+curl "https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
@@ -131,20 +138,36 @@ Response:
 {
   "data": [
     {
-      "eventName": "PHO Suns @ PHI 76ers",
+      "opportunity_id": "opp_x1y2z3",
+      "event_name": "PHO Suns @ PHI 76ers",
       "sportsbook": "draftkings",
       "selection": "PHO Suns -3.5",
-      "odds": -105,
-      "sharpOdds": -115,
-      "evPercent": 4.35,
-      "kellyPercent": 2.18
+      "odds": {
+        "american": -105,
+        "decimal": 1.952,
+        "probability": 0.512
+      },
+      "sharp_odds": {
+        "american": -115,
+        "decimal": 1.870,
+        "probability": 0.535
+      },
+      "ev_percent": 4.35,
+      "kelly_percent": 2.18
     }
   ],
   "meta": {
     "count": 12,
-    "summary": {
-      "avgEV": 4.2,
-      "maxEV": 8.5
+    "total": 12,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {
+      "min_ev": 3.0
     }
   }
 }
@@ -156,24 +179,34 @@ For the fastest updates, use SSE streaming (requires WebSocket add-on):
 
 ```javascript
 const eventSource = new EventSource(
-  'https://api.sharpapi.io/api/v1/stream/odds?api_key=YOUR_KEY'
+  'https://api.sharpapi.io/api/v1/stream?channel=all&api_key=YOUR_KEY'
 );
 
-eventSource.addEventListener('initial', (e) => {
-  const { data } = JSON.parse(e.data);
-  console.log('Initial snapshot:', data.length, 'odds');
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id } = JSON.parse(e.data);
+  console.log('Stream connected:', stream_id);
 });
 
-eventSource.addEventListener('odds_update', (e) => {
+eventSource.addEventListener('snapshot', (e) => {
+  const { odds } = JSON.parse(e.data);
+  console.log('Initial snapshot:', odds.length, 'odds');
+});
+
+eventSource.addEventListener('odds:update', (e) => {
   const update = JSON.parse(e.data);
-  console.log('Update from:', update.source);
+  console.log('Update from:', update.sportsbook);
+});
+
+eventSource.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV found: ${opp.selection} at ${opp.ev_percent}% EV`);
 });
 ```
 
 ## Next Steps
 
-- [Get +EV Bets](/api-reference/positive-ev) - Find positive expected value opportunities
-- [Find Arbitrage](/api-reference/arbitrage) - Detect risk-free profit opportunities
+- [Get +EV Bets](/api-reference/opportunities-ev) - Find positive expected value opportunities
+- [Find Arbitrage](/api-reference/opportunities-arbitrage) - Detect risk-free profit opportunities
 - [Stream Live](/streaming/overview) - Real-time updates via SSE
 - [Rate Limits](/authentication#rate-limits) - Understand usage limits
 - [Pricing](/pricing) - Compare plans and features
@@ -189,7 +222,7 @@ Make sure you're using the correct API key and it's properly formatted in the he
 <Callout type="error" emoji="!">
 **Error: 429 Rate Limited**
 
-You've exceeded your rate limit. Wait for the `retry_after` seconds or upgrade your plan.
+You've exceeded your rate limit. Wait for the reset time indicated in `X-RateLimit-Reset` or upgrade your plan.
 </Callout>
 
 <Callout type="error" emoji="!">

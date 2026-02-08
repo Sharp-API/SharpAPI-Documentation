@@ -1,0 +1,347 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Unified Stream
+
+`GET /api/v1/stream` -- Real-time odds and opportunity updates via Server-Sent Events (SSE).
+
+<Callout type="warning">
+**Requires WebSocket Add-on** ($99/mo) on any paid tier, or Enterprise (included). Free tier does not support streaming.
+</Callout>
+
+## Authentication
+
+Pass your API key via header or query parameter:
+
+```bash
+# Header (recommended for server-side)
+curl -H "X-API-Key: sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/stream
+
+# Query param (required for browser EventSource)
+https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
+```
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `channel` | string | `odds` | What to stream: `odds`, `opportunities`, or `all` |
+| `sportsbook` | string | - | Filter by sportsbook(s), comma-separated |
+| `sport` | string | - | Filter by sport(s), comma-separated |
+| `league` | string | - | Filter by league(s), comma-separated |
+| `event` | string | - | Filter by event ID(s), comma-separated |
+| `market` | string | - | Filter by market type(s), comma-separated |
+| `min_ev` | number | - | Minimum EV percentage for opportunity events |
+| `min_profit` | number | - | Minimum profit percentage for arbitrage events |
+| `api_key` | string | - | API key (alternative to header auth for browser `EventSource`) |
+
+### Channel Options
+
+| Channel | Events Delivered | Use Case |
+|---------|-----------------|----------|
+| `odds` | `snapshot`, `odds:update`, `heartbeat` | Track odds movements |
+| `opportunities` | `snapshot`, `ev:detected`, `ev:expired`, `arb:detected`, `arb:expired`, `heartbeat` | Alert on +EV and arbitrage |
+| `all` | All event types | Full real-time picture |
+
+## SSE Event Types
+
+### `connected`
+
+Sent immediately when the stream is established.
+
+```
+event: connected
+data: {"stream_id":"str_a1b2c3","filters":{"channel":"all","league":"nba"},"reconnected":false}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `stream_id` | string | Unique stream identifier |
+| `filters` | object | Echo of active filters |
+| `reconnected` | boolean | `true` if this is a reconnection via `Last-Event-ID` |
+
+### `snapshot`
+
+Full data dump sent after `connected`. Contains all current odds or opportunities matching your filters.
+
+```
+event: snapshot
+id: evt_00001
+data: {"odds":[...],"opportunities":[...],"timestamp":"2026-01-26T02:10:37.846Z"}
+```
+
+### `odds:update`
+
+Fired when odds change for a sportsbook. Only sent on `odds` or `all` channels.
+
+```
+event: odds:update
+id: evt_00042
+data: {"sportsbook":"draftkings","sport":"nba","league":"nba","event_id":"evt_abc123","home_team":"PHI 76ers","away_team":"PHO Suns","markets":[{"market_type":"moneyline","selections":[{"name":"PHO Suns","odds":{"american":-155,"decimal":1.645,"probability":0.608}}]}],"timestamp":"2026-01-26T02:10:38.123Z"}
+```
+
+### `ev:detected`
+
+A new positive expected value opportunity has been found. Only sent on `opportunities` or `all` channels.
+
+```
+event: ev:detected
+id: evt_00043
+data: {"opportunity_id":"opp_x1y2z3","event_id":"evt_abc123","sportsbook":"draftkings","selection":"PHO Suns -3.5","odds":{"american":-105,"decimal":1.952,"probability":0.512},"sharp_odds":{"american":-115,"decimal":1.870,"probability":0.535},"ev_percent":4.35,"kelly_percent":2.18,"timestamp":"2026-01-26T02:10:38.500Z"}
+```
+
+### `ev:expired`
+
+A previously detected +EV opportunity is no longer available.
+
+```
+event: ev:expired
+id: evt_00044
+data: {"opportunity_id":"opp_x1y2z3","reason":"odds_moved","timestamp":"2026-01-26T02:10:39.100Z"}
+```
+
+### `arb:detected`
+
+A new arbitrage opportunity has been found. Only sent on `opportunities` or `all` channels.
+
+```
+event: arb:detected
+id: evt_00045
+data: {"opportunity_id":"opp_a1b2c3","event_id":"evt_abc123","legs":[{"sportsbook":"draftkings","selection":"PHO Suns ML","odds":{"american":+150,"decimal":2.50,"probability":0.40}},{"sportsbook":"fanduel","selection":"PHI 76ers ML","odds":{"american":-130,"decimal":1.769,"probability":0.565}}],"profit_percent":2.8,"stakes":{"leg_1":0.414,"leg_2":0.586},"timestamp":"2026-01-26T02:10:38.700Z"}
+```
+
+### `arb:expired`
+
+A previously detected arbitrage opportunity is no longer available.
+
+```
+event: arb:expired
+id: evt_00046
+data: {"opportunity_id":"opp_a1b2c3","reason":"odds_moved","timestamp":"2026-01-26T02:10:39.500Z"}
+```
+
+### `heartbeat`
+
+Keep-alive sent every 30 seconds. If you do not receive a heartbeat within 60 seconds, the connection may be stale.
+
+```
+event: heartbeat
+data: {"timestamp":"2026-01-26T02:11:07.846Z"}
+```
+
+### `error`
+
+Recoverable error on the stream. The connection remains open.
+
+```
+event: error
+data: {"code":"upstream_error","message":"Temporary issue fetching DraftKings data. Will retry."}
+```
+
+## Reconnection
+
+SSE supports automatic reconnection via the `Last-Event-ID` header. Each event includes an `id` field. When the client reconnects, it sends the last received `id` and the server replays any missed events.
+
+```javascript
+// Browsers handle this automatically with EventSource.
+// For custom clients, set the header on reconnect:
+const headers = {
+  'X-API-Key': 'YOUR_KEY',
+  'Last-Event-ID': 'evt_00042'
+};
+```
+
+<Callout type="info">
+Browser `EventSource` handles `Last-Event-ID` automatically. No extra code needed for reconnection in browsers.
+</Callout>
+
+## Code Examples
+
+<Tabs items={['Browser', 'Node.js', 'Python']}>
+  <Tabs.Tab>
+```javascript
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba&api_key=YOUR_KEY'
+);
+
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id, filters } = JSON.parse(e.data);
+  console.log(`Stream ${stream_id} connected with filters:`, filters);
+});
+
+eventSource.addEventListener('snapshot', (e) => {
+  const { odds, opportunities } = JSON.parse(e.data);
+  console.log(`Snapshot: ${odds?.length ?? 0} odds, ${opportunities?.length ?? 0} opportunities`);
+});
+
+eventSource.addEventListener('odds:update', (e) => {
+  const update = JSON.parse(e.data);
+  console.log(`${update.sportsbook}: odds updated for ${update.away_team} @ ${update.home_team}`);
+});
+
+eventSource.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV found: ${opp.selection} at ${opp.ev_percent}% EV`);
+});
+
+eventSource.addEventListener('arb:detected', (e) => {
+  const arb = JSON.parse(e.data);
+  console.log(`Arb found: ${arb.profit_percent}% profit`);
+});
+
+eventSource.addEventListener('heartbeat', () => {
+  console.log('Connection alive');
+});
+
+eventSource.onerror = () => {
+  console.log('Connection lost, auto-reconnecting...');
+};
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+import EventSource from 'eventsource';
+
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba',
+  { headers: { 'X-API-Key': 'YOUR_KEY' } }
+);
+
+es.addEventListener('connected', (e) => {
+  const { stream_id, reconnected } = JSON.parse(e.data);
+  console.log(`Stream ${stream_id} connected (reconnected: ${reconnected})`);
+});
+
+es.addEventListener('snapshot', (e) => {
+  const data = JSON.parse(e.data);
+  console.log(`Received snapshot: ${data.odds?.length ?? 0} odds`);
+});
+
+es.addEventListener('odds:update', (e) => {
+  const update = JSON.parse(e.data);
+  console.log(`${update.sportsbook}: ${update.markets.length} markets updated`);
+});
+
+es.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV: ${opp.selection} — ${opp.ev_percent}% EV (Kelly: ${opp.kelly_percent}%)`);
+});
+
+es.addEventListener('arb:detected', (e) => {
+  const arb = JSON.parse(e.data);
+  console.log(`Arb: ${arb.profit_percent}% across ${arb.legs.length} legs`);
+});
+
+es.addEventListener('ev:expired', (e) => {
+  const { opportunity_id, reason } = JSON.parse(e.data);
+  console.log(`EV expired: ${opportunity_id} (${reason})`);
+});
+
+es.addEventListener('arb:expired', (e) => {
+  const { opportunity_id, reason } = JSON.parse(e.data);
+  console.log(`Arb expired: ${opportunity_id} (${reason})`);
+});
+
+es.onerror = (err) => {
+  console.error('Stream error:', err.message);
+};
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import sseclient
+import requests
+import json
+
+url = 'https://api.sharpapi.io/api/v1/stream'
+params = {
+    'channel': 'all',
+    'league': 'nba',
+}
+headers = {'X-API-Key': 'YOUR_KEY'}
+
+response = requests.get(url, params=params, headers=headers, stream=True)
+client = sseclient.SSEClient(response)
+
+for event in client.events():
+    data = json.loads(event.data) if event.data else {}
+
+    if event.event == 'connected':
+        print(f"Stream {data['stream_id']} connected")
+
+    elif event.event == 'snapshot':
+        odds = data.get('odds', [])
+        opps = data.get('opportunities', [])
+        print(f"Snapshot: {len(odds)} odds, {len(opps)} opportunities")
+
+    elif event.event == 'odds:update':
+        print(f"{data['sportsbook']}: odds updated for {data['event_id']}")
+
+    elif event.event == 'ev:detected':
+        print(f"+EV: {data['selection']} at {data['ev_percent']}% EV")
+
+    elif event.event == 'ev:expired':
+        print(f"EV expired: {data['opportunity_id']}")
+
+    elif event.event == 'arb:detected':
+        print(f"Arb: {data['profit_percent']}% profit")
+
+    elif event.event == 'arb:expired':
+        print(f"Arb expired: {data['opportunity_id']}")
+
+    elif event.event == 'heartbeat':
+        print('Heartbeat received')
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Concurrent Stream Limits
+
+Each open SSE connection counts as one stream against your limit.
+
+| Plan | Max Concurrent Streams |
+|------|------------------------|
+| WebSocket Add-on ($99/mo) | 10 |
+| Enterprise | Custom |
+
+<Callout type="warning">
+Exceeding your stream limit returns a `429` error with code `stream_limit_exceeded`. Close unused streams before opening new ones.
+</Callout>
+
+### Managing Streams
+
+- Each unique `GET /api/v1/stream` connection counts as one stream
+- Closing the HTTP connection (or calling `eventSource.close()`) frees the slot immediately
+- Use broader filters on fewer streams rather than many narrow streams
+- The `connected` event payload includes your `stream_id` for tracking
+
+## Error Handling
+
+### Stream-Level Errors
+
+Errors sent as SSE events are recoverable -- the connection stays open:
+
+```
+event: error
+data: {"code":"upstream_error","message":"Temporary issue fetching data. Will retry."}
+```
+
+### Connection-Level Errors
+
+These close the connection. Handle them in `onerror`:
+
+| Error Code | HTTP Status | Description | Resolution |
+|------------|-------------|-------------|------------|
+| `stream_limit_exceeded` | 429 | Too many concurrent streams | Close unused streams |
+| `tier_restricted` | 403 | Streaming not available on your tier | Add WebSocket add-on |
+| `unauthorized` | 401 | Invalid API key | Check your API key |
+| `invalid_request` | 400 | Invalid filter parameters | Check query params |
+
+## Best Practices
+
+1. **Use filters to reduce bandwidth** -- Pass `league`, `sportsbook`, and `channel` params to receive only what you need
+2. **Handle reconnection gracefully** -- `EventSource` auto-reconnects, but reset local state when you receive a new `snapshot` event
+3. **Process updates asynchronously** -- Do not block the event handler; queue updates for background processing
+4. **Monitor heartbeats** -- If no heartbeat arrives within 60 seconds, consider the connection stale and reconnect
+5. **Close unused streams** -- Each open stream counts against your concurrent limit
+6. **Use `Last-Event-ID`** -- Enables the server to replay missed events after a reconnection

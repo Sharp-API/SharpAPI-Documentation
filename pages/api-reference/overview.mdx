@@ -2,6 +2,8 @@ import { Callout, Tabs } from 'nextra/components'
 
 # API Reference Overview
 
+Complete reference for the SharpAPI v1 REST API. All endpoints return JSON and follow consistent conventions for authentication, filtering, pagination, and error handling.
+
 ## Base URL
 
 ```
@@ -17,113 +19,234 @@ Always use `api.sharpapi.io` as the base URL, not `sharpapi.io`.
 - All requests use HTTPS
 - Authentication via `X-API-Key` header, `Authorization: Bearer` header, or `api_key` query param
 - Request bodies (where applicable) use JSON with `Content-Type: application/json`
+- All field names are `snake_case`
+
+## Endpoint Summary
+
+SharpAPI exposes 25 routes across 5 namespaces plus reference and health endpoints.
+
+### Odds
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/odds` | Yes | Free |
+| `GET` | `/api/v1/odds/best` | Yes | Free |
+| `GET` | `/api/v1/odds/comparison` | Yes | Free |
+| `POST` | `/api/v1/odds/batch` | Yes | Free |
+
+### Events
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/events` | Yes | Free |
+| `GET` | `/api/v1/events/:eventId` | Yes | Free |
+| `GET` | `/api/v1/events/:eventId/odds` | Yes | Free |
+| `GET` | `/api/v1/events/:eventId/markets` | Yes | Free |
+
+### Opportunities
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/opportunities/ev` | Yes | Pro |
+| `GET` | `/api/v1/opportunities/arbitrage` | Yes | Pro |
+| `GET` | `/api/v1/opportunities/middles` | Yes | Pro |
+
+### Streaming
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/stream` | Yes | Add-on |
+
+### Account
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/account` | Yes | Free |
+| `GET` | `/api/v1/account/usage` | Yes | Free |
+| `GET` | `/api/v1/account/keys` | Yes | Free |
+| `POST` | `/api/v1/account/keys` | Yes | Free |
+| `DELETE` | `/api/v1/account/keys/:keyId` | Yes | Free |
+| `POST` | `/api/v1/account/keys/:keyId/rotate` | Yes | Free |
+
+### Reference Data (Public)
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/sports` | No | - |
+| `GET` | `/api/v1/sports/:sportId` | No | - |
+| `GET` | `/api/v1/leagues` | No | - |
+| `GET` | `/api/v1/sportsbooks` | No | - |
+| `GET` | `/api/v1/sportsbooks/:bookId` | No | - |
+| `GET` | `/api/v1/markets` | No | - |
+
+### Health
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/health` | No | - |
 
 ## Response Format
 
-All responses follow a consistent envelope format:
+### Success Envelope
+
+All successful responses wrap data in a consistent envelope:
 
 ```json
 {
-  "data": [...],
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sport": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "odds": {
+        "american": -150,
+        "decimal": 1.67,
+        "probability": 0.60
+      },
+      "is_live": false
+    }
+  ],
   "meta": {
-    "count": 50,
-    "total": 234,
+    "count": 1,
+    "total": 3095,
     "pagination": {
       "limit": 50,
       "offset": 0,
-      "has_more": true
+      "has_more": true,
+      "next_offset": 50
     },
-    "updated": "2026-01-26T12:00:00Z"
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {
+      "sportsbook": "draftkings",
+      "league": "nba"
+    }
   }
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| `data` | Array of results (or single object for detail endpoints) |
+| `meta.count` | Number of items returned in this response |
+| `meta.total` | Total matching items across all pages |
+| `meta.pagination.limit` | Maximum items per page (default: 50, max: 100) |
+| `meta.pagination.offset` | Current offset into results |
+| `meta.pagination.has_more` | Whether more results exist beyond this page |
+| `meta.pagination.next_offset` | Offset value to use for the next page |
+| `meta.updated_at` | ISO 8601 timestamp of when the data was last refreshed |
+| `meta.filters` | Echo of the filters applied to this request |
 
 ### Single Resource Response
 
 ```json
 {
-  "data": { ... },
+  "data": {
+    "id": "evt_abc123",
+    "sport": "nba",
+    "home_team": "PHI 76ers",
+    "away_team": "PHO Suns",
+    "start_time": "2026-01-26T19:00:00Z"
+  },
   "meta": {
-    "updated": "2026-01-26T12:00:00Z"
+    "updated_at": "2026-01-26T02:10:37.846Z"
   }
 }
 ```
 
-### Error Response
+### Error Envelope
+
+All errors follow a consistent format:
 
 ```json
 {
   "error": {
     "code": "rate_limited",
-    "message": "Rate limit exceeded",
-    "retry_after": 45
+    "message": "Rate limit exceeded. Upgrade your plan or wait 45 seconds.",
+    "docs": "https://sharpapi.io/docs/authentication#rate-limits"
   }
 }
 ```
 
-## Common Query Parameters
+| Field | Description |
+|-------|-------------|
+| `error.code` | Machine-readable error code |
+| `error.message` | Human-readable description |
+| `error.docs` | Link to relevant documentation |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sportsbook` | string | Filter by sportsbook: `draftkings`, `pinnacle`, etc. |
-| `league` | string | Filter by league: `nba`, `nfl`, `nhl`, etc. |
-| `sport` | string | Filter by sport |
-| `live` | boolean | Filter for live events only |
-| `limit` | number | Max results per page (default: 50, max: 100) |
-| `offset` | number | Pagination offset |
+## Standard Response Headers
 
-## Endpoints Summary
+Every API response includes these headers:
 
-### Reference Data (Public at 10 req/min)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/sports` | List all sports |
-| GET | `/sports/{id}` | Get sport details |
-| GET | `/leagues` | List all leagues |
-| GET | `/leagues/{id}` | Get league details |
-| GET | `/sportsbooks` | List all sportsbooks |
-| GET | `/sportsbooks/{id}` | Get sportsbook details |
-| GET | `/markets` | List all market types |
+| Header | Example | Description |
+|--------|---------|-------------|
+| `X-RateLimit-Limit` | `300` | Maximum requests per minute for your tier |
+| `X-RateLimit-Remaining` | `299` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | `1705804800` | Unix timestamp when the rate limit resets |
+| `X-Tier` | `pro` | Your current subscription tier |
+| `X-Data-Delay` | `0` | Data delay in seconds (`60` for Free, `0` for paid tiers) |
+| `X-Request-Id` | `req_a1b2c3d4` | Unique request identifier for debugging and support |
 
-### Schedule & Events
-| Method | Endpoint | Description | Tier |
-|--------|----------|-------------|------|
-| GET | `/schedule` | Upcoming events | All |
-| GET | `/schedule/live` | Live events | All |
-| GET | `/events` | List events | All |
-| GET | `/events/search?q=` | Search events | All |
-| GET | `/events/{id}` | Event details | All |
-| GET | `/events/{id}/markets` | Event markets | All |
+<Callout type="info">
+Include the `X-Request-Id` value when contacting support about a specific request.
+</Callout>
 
-### Odds
-| Method | Endpoint | Description | Tier |
-|--------|----------|-------------|------|
-| GET | `/odds` | Current odds snapshot | All |
-| GET | `/odds/best` | Best odds across books | All |
-| GET | `/odds/comparison` | Compare across books | All |
-| POST | `/odds/multi` | Batch odds (10-50 events) | Pro+ |
+## Tier Comparison
 
-### Opportunities
-| Method | Endpoint | Description | Tier |
-|--------|----------|-------------|------|
-| GET | `/positive-ev` | +EV opportunities | Pro+ |
-| GET | `/arbitrage` | Arbitrage opportunities | Pro+ |
-| GET | `/value-bets` | Value betting opportunities | Pro+ |
-| GET | `/middles` | Middle opportunities | Pro+ |
+| Feature | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| **Sportsbooks** | 2 (DK, FD) | 5 | 15 | All | All |
+| **Data Delay** | 60s | 0s | 0s | 0s | 0s |
+| **Requests/min** | 12 | 120 | 300 | 2,000 | Custom |
+| **Pinnacle** | No | No | Yes | Yes | Yes |
+| **EV / Arb / Middles** | No | No | Yes | Yes | Yes |
+| **Streaming** | No | Add-on | Add-on | Add-on | Included |
+| **Batch max events** | 10 | 10 | 50 | 50 | 100 |
 
-### Streaming (Requires WebSocket Add-on)
-| Method | Endpoint | Description | Tier |
-|--------|----------|-------------|------|
-| GET | `/stream/odds` | Real-time odds stream | Add-on |
-| GET | `/stream/opportunities` | +EV and arb alerts | Add-on + Pro+ |
-| GET | `/stream/events/{id}` | Single event stream | Add-on |
+<Callout>
+Streaming requires the WebSocket add-on ($99/mo) on paid tiers. Enterprise includes streaming at no extra cost.
+</Callout>
 
-### Account
-| Method | Endpoint | Description | Tier |
-|--------|----------|-------------|------|
-| GET | `/me` | Account info | All |
-| GET | `/me/usage` | Usage statistics | All |
-| GET | `/me/preferences` | Account preferences | All |
+## Filtering
+
+All list endpoints support filtering via query parameters. Filters use **singular parameter names** and accept **comma-separated values** for multi-select.
+
+### Filter Parameters
+
+| Parameter | Type | Example | Description |
+|-----------|------|---------|-------------|
+| `sportsbook` | string | `draftkings,fanduel` | Filter by one or more sportsbooks |
+| `sport` | string | `basketball,football` | Filter by sport |
+| `league` | string | `nba,nfl` | Filter by league |
+| `market` | string | `moneyline,spread` | Filter by market type |
+| `event` | string | `evt_abc123` | Filter by event ID |
+| `live` | boolean | `true` | Only live/in-progress events |
+| `main` | boolean | `true` | Only main markets (moneyline, spread, total) |
+| `limit` | number | `25` | Results per page (default: 50, max: 100) |
+| `offset` | number | `50` | Pagination offset |
+
+### Examples
+
+```bash
+# Multiple sportsbooks (comma-separated)
+curl "https://api.sharpapi.io/api/v1/odds?sportsbook=draftkings,fanduel" \
+  -H "X-API-Key: YOUR_KEY"
+
+# Combine filters
+curl "https://api.sharpapi.io/api/v1/odds?league=nba,nhl&sportsbook=pinnacle&live=true" \
+  -H "X-API-Key: YOUR_KEY"
+
+# Paginate through results
+curl "https://api.sharpapi.io/api/v1/odds?limit=25&offset=50" \
+  -H "X-API-Key: YOUR_KEY"
+```
+
+<Callout type="info">
+Parameter names are always **singular** (`sportsbook`, not `sportsbooks`). Use commas to pass multiple values: `sportsbook=draftkings,fanduel`.
+</Callout>
 
 ## Odds Formats
 
@@ -143,17 +266,7 @@ All odds include three formats in every response:
 |--------|---------|-------------|
 | American | -110, +150 | Standard US format |
 | Decimal | 1.909, 2.50 | Multiplier format |
-| Probability | 0.5238 | Implied probability |
-
-## Rate Limit Headers
-
-All responses include rate limit information:
-
-```
-X-RateLimit-Limit: 300
-X-RateLimit-Remaining: 299
-X-RateLimit-Reset: 1703123456789
-```
+| Probability | 0.5238 | Implied probability (0 to 1) |
 
 ## Error Codes
 
@@ -163,20 +276,7 @@ X-RateLimit-Reset: 1703123456789
 | `forbidden` | 403 | Feature requires higher tier |
 | `rate_limited` | 429 | Too many requests |
 | `tier_restricted` | 403 | Endpoint not available on your tier |
-| `invalid_request` | 400 | Malformed request |
+| `invalid_request` | 400 | Malformed request parameters |
 | `not_found` | 404 | Resource not found |
 | `upstream_error` | 502 | Temporary data fetch issue |
 | `internal_error` | 500 | Server error |
-
-## Tier Limits
-
-| Tier | Price | Req/Min | Streams* | Data Delay | Features |
-|------|-------|---------|----------|------------|----------|
-| Free | $0/mo | 1 | 0 | 60s | Odds, Schedule |
-| Hobby | $79/mo | 120 | 10 | Real-time | Odds, Schedule |
-| Pro | $229/mo | 300 | 10 | Real-time | + EV, Arb, Middles |
-| Sharp | $399/mo | 2,000 | 10 | Real-time | + Priority Support |
-
-<Callout type="info">
-*Streaming requires WebSocket add-on ($99/mo) on paid tiers.
-</Callout>

@@ -1,0 +1,123 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# WebSocket Streaming
+
+Real-time odds and opportunity updates via WebSocket at `wss://ws.sharpapi.io`.
+
+<Callout type="info">
+For full API documentation including all message types, schemas, and close codes, see the [WebSocket API Reference](/api-reference/websocket).
+</Callout>
+
+## SSE vs WebSocket
+
+SharpAPI offers two streaming protocols. Both deliver the same data at the same speed.
+
+| | SSE | WebSocket |
+|-|-----|-----------|
+| **URL** | `https://api.sharpapi.io/api/v1/stream` | `wss://ws.sharpapi.io` |
+| **Direction** | Server → Client | Bidirectional |
+| **Update filters** | Reconnect required | Send `subscribe` message |
+| **Reconnection** | Automatic (`Last-Event-ID`) | Manual (implement backoff) |
+| **Best for** | Simple consumers, browsers | Interactive apps, dashboards |
+
+**Choose SSE** if you set filters once and just want data to flow.
+**Choose WebSocket** if you need to change filters on the fly or prefer a bidirectional protocol.
+
+## Quick Start
+
+### 1. Connect
+
+```javascript
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&sportsbook=draftkings&league=nba'
+);
+```
+
+### 2. Handle Messages
+
+```javascript
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'connected':
+      console.log(msg.message);        // "Welcome to SharpAPI real-time odds stream"
+      break;
+    case 'initial':
+      console.log('Snapshot:', msg.data); // Full current odds by sportsbook
+      break;
+    case 'odds_update':
+      console.log(msg.source, msg.data); // Incremental update from one book
+      break;
+    case 'ev:detected':
+      console.log('+EV:', msg.data);     // New +EV opportunities (Pro+)
+      break;
+  }
+};
+```
+
+### 3. Keep Alive
+
+```javascript
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+```
+
+### 4. Update Filters (No Reconnect Needed)
+
+```javascript
+ws.send(JSON.stringify({
+  type: 'subscribe',
+  filters: { sportsbooks: ['fanduel', 'betmgm'], leagues: ['nfl'] }
+}));
+```
+
+## Message Flow
+
+On connect you receive three messages in order:
+
+1. **`connected`** -- Welcome message with your tier and feature flags
+2. **`subscribed`** -- Confirmation of active filters
+3. **`initial`** -- Full snapshot of current odds (and opportunities for Pro+)
+
+After that, you receive incremental updates:
+
+- **`odds_update`** -- Odds changed for a sportsbook (every ~2 seconds)
+- **`ev:detected` / `ev:expired`** -- +EV opportunities found or gone (Pro+)
+- **`arb:detected` / `arb:expired`** -- Arbitrage found or gone (Pro+)
+- **`heartbeat`** -- Server keepalive every 30 seconds
+
+## Reconnection
+
+Unlike SSE, WebSocket does not auto-reconnect. Implement exponential backoff:
+
+```javascript
+let reconnectDelay = 1000;
+
+ws.onclose = (event) => {
+  if (event.code === 1000) return; // intentional close
+
+  setTimeout(() => {
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    connect(); // your connection function
+  }, reconnectDelay);
+};
+```
+
+Reset `reconnectDelay` to `1000` on successful connection.
+
+## Close Codes
+
+| Code | Meaning | Action |
+|------|---------|--------|
+| `1000` | Normal close | No action needed |
+| `4001` | Bad or missing API key | Fix your API key |
+| `4003` | No streaming access | Purchase WebSocket add-on |
+| `4029` | Too many connections | Close unused connections first |
+
+## Full API Reference
+
+For complete documentation including all message schemas, error handling, and multi-language examples, see the [WebSocket API Reference](/api-reference/websocket).

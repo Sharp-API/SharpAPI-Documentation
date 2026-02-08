@@ -1,0 +1,504 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# WebSocket Stream
+
+`wss://ws.sharpapi.io` -- Real-time odds and opportunity updates via WebSocket.
+
+<Callout type="warning">
+**Requires WebSocket Add-on** ($99/mo) on any paid tier, or Enterprise (included). Free tier does not support streaming.
+</Callout>
+
+## Why WebSocket?
+
+WebSocket provides a persistent, full-duplex connection. Compared to SSE:
+
+| Feature | SSE (`/api/v1/stream`) | WebSocket (`ws.sharpapi.io`) |
+|---------|------------------------|------------------------------|
+| Direction | Server → Client only | Bidirectional |
+| Reconnection | Automatic (`Last-Event-ID`) | Client-managed |
+| Filters | Set once via query params | Update anytime via `subscribe` message |
+| Protocol | HTTP/1.1 streaming | WebSocket (RFC 6455) |
+| Browser support | Native `EventSource` | Native `WebSocket` |
+
+Both protocols deliver the same data at the same latency. Choose WebSocket when you need to change filters without reconnecting.
+
+## Authentication
+
+Pass your API key as a query parameter on the connection URL:
+
+```
+wss://ws.sharpapi.io?api_key=sk_live_your_key
+```
+
+You can also pass initial filters as query parameters:
+
+```
+wss://ws.sharpapi.io?api_key=sk_live_your_key&sportsbook=draftkings,fanduel&league=nba
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `api_key` | string | **Required.** Your API key |
+| `sportsbook` | string | Filter by sportsbook(s), comma-separated |
+| `league` | string | Filter by league(s), comma-separated |
+
+## Connection Lifecycle
+
+```
+Client                                Server
+  |                                      |
+  |--- WS Upgrade GET /ws?api_key=xxx →|
+  |                                      |  Auth + acquire stream slot
+  |← connected -------------------------|  Welcome message
+  |← subscribed ------------------------|  Filter confirmation
+  |← initial ---------------------------|  Full odds snapshot
+  |                                      |
+  |← odds_update -----------------------|  Incremental update
+  |← ev:detected -----------------------|  +EV opportunity found
+  |← heartbeat -------------------------|  Keep-alive (every 30s)
+  |                                      |
+  |--- { type: "ping" } →              |
+  |← pong ------------------------------|
+  |                                      |
+  |--- { type: "subscribe", filters } →|  Update filters
+  |← subscribed ------------------------|  New filters confirmed
+  |                                      |
+  |--- close -------------------------→|  Normal close (1000)
+```
+
+## Message Protocol
+
+### Client → Server
+
+**`subscribe`** -- Set or update filters (sent automatically on connect if filters were passed as query params).
+
+```json
+{
+  "type": "subscribe",
+  "filters": {
+    "sportsbooks": ["draftkings", "fanduel"],
+    "leagues": ["nba"]
+  }
+}
+```
+
+**`ping`** -- Keepalive. Send every 25 seconds to prevent timeouts.
+
+```json
+{ "type": "ping" }
+```
+
+### Server → Client
+
+#### `connected`
+
+Sent immediately after successful authentication.
+
+```json
+{
+  "type": "connected",
+  "message": "Welcome to SharpAPI real-time odds stream",
+  "stream_id": "ws_mle3husw_ezoyvp",
+  "tier": "pro",
+  "features": { "ev": true, "arbitrage": true },
+  "timestamp": "2026-02-08T18:47:17.559Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `stream_id` | string | Unique connection identifier |
+| `tier` | string | Your subscription tier |
+| `features` | object | Which opportunity types you can receive |
+
+#### `subscribed`
+
+Confirms your active filters.
+
+```json
+{
+  "type": "subscribed",
+  "sportsbooks": ["draftkings", "fanduel"],
+  "leagues": ["nba"],
+  "timestamp": "2026-02-08T18:47:17.561Z"
+}
+```
+
+#### `initial`
+
+Full snapshot of current odds (and opportunities if your tier supports them).
+
+```json
+{
+  "type": "initial",
+  "data": {
+    "draftkings": [ /* NormalizedOdds[] */ ],
+    "fanduel": [ /* NormalizedOdds[] */ ]
+  },
+  "ev": [ /* EVOpportunity[] (Pro+ only) */ ],
+  "arbitrage": [ /* ArbitrageOpportunity[] (Pro+ only) */ ],
+  "timestamp": "2026-02-08T18:47:17.800Z"
+}
+```
+
+#### `odds_update`
+
+Incremental odds update from a single sportsbook.
+
+```json
+{
+  "type": "odds_update",
+  "data": [ /* NormalizedOdds[] */ ],
+  "source": "draftkings",
+  "timestamp": "2026-02-08T18:47:19.123Z"
+}
+```
+
+#### `ev:detected`
+
+New +EV opportunity found. Pro tier or higher only.
+
+```json
+{
+  "type": "ev:detected",
+  "data": [
+    {
+      "eventId": "32825-35775-2026-02-08",
+      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "marketType": "player_points",
+      "sportsbook": "draftkings",
+      "selection": "Tyrese Haliburton Over 22.5",
+      "odds": -110,
+      "evPercent": 4.35,
+      "detectedAt": "2026-02-08T18:47:20.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:20.000Z"
+}
+```
+
+#### `ev:expired`
+
+Previously detected +EV opportunity is no longer available.
+
+```json
+{
+  "type": "ev:expired",
+  "data": {
+    "expired": [
+      "32825-35775-2026-02-08:draftkings:Tyrese Haliburton Over 22.5"
+    ]
+  },
+  "timestamp": "2026-02-08T18:47:25.000Z"
+}
+```
+
+#### `arb:detected`
+
+New arbitrage opportunity found. Pro tier or higher only.
+
+```json
+{
+  "type": "arb:detected",
+  "data": [
+    {
+      "eventId": "32825-35775-2026-02-08",
+      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "marketType": "moneyline",
+      "profitPercent": 2.8,
+      "legs": [ /* ArbitrageLeg[] */ ],
+      "detectedAt": "2026-02-08T18:47:21.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:21.000Z"
+}
+```
+
+#### `arb:expired`
+
+Previously detected arbitrage opportunity is no longer available.
+
+```json
+{
+  "type": "arb:expired",
+  "data": {
+    "expired": [
+      "32825-35775-2026-02-08:moneyline"
+    ]
+  },
+  "timestamp": "2026-02-08T18:47:26.000Z"
+}
+```
+
+#### `heartbeat`
+
+Keep-alive sent every 30 seconds.
+
+```json
+{
+  "type": "heartbeat",
+  "timestamp": "2026-02-08T18:48:17.559Z"
+}
+```
+
+#### `pong`
+
+Response to a client `ping`.
+
+```json
+{
+  "type": "pong",
+  "timestamp": "2026-02-08T18:47:42.000Z"
+}
+```
+
+#### `error`
+
+Error notification. The connection may remain open (for non-fatal errors) or close (for auth/limit errors).
+
+```json
+{
+  "type": "error",
+  "code": "unknown_type",
+  "message": "Unknown message type: foobar"
+}
+```
+
+## Close Codes
+
+| Code | Meaning | Resolution |
+|------|---------|------------|
+| `1000` | Normal close | Client or server initiated clean close |
+| `4001` | Authentication failure | Check your API key |
+| `4003` | No streaming access | Add WebSocket add-on ($99/mo) or upgrade to Enterprise |
+| `4029` | Stream limit exceeded | Close unused connections (max 10 concurrent) |
+
+## Code Examples
+
+<Tabs items={['Browser', 'Node.js', 'Python', 'TypeScript SDK']}>
+  <Tabs.Tab>
+```javascript
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&league=nba'
+);
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'connected':
+      console.log(msg.message, '| tier:', msg.tier);
+      break;
+    case 'subscribed':
+      console.log('Filters:', msg.sportsbooks, msg.leagues);
+      break;
+    case 'initial':
+      const books = Object.keys(msg.data);
+      console.log(`Snapshot: ${books.length} books`);
+      break;
+    case 'odds_update':
+      console.log(`${msg.source}: ${msg.data.length} odds updated`);
+      break;
+    case 'ev:detected':
+      msg.data.forEach(ev =>
+        console.log(`+EV: ${ev.selection} at ${ev.evPercent}%`)
+      );
+      break;
+    case 'heartbeat':
+      break; // silent keepalive
+  }
+};
+
+ws.onclose = (event) => {
+  console.log(`Closed: ${event.code} ${event.reason}`);
+};
+
+// Send ping every 25s to keep alive
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+
+// Update filters without reconnecting
+function updateFilters(sportsbooks, leagues) {
+  ws.send(JSON.stringify({
+    type: 'subscribe',
+    filters: { sportsbooks, leagues }
+  }));
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+import WebSocket from 'ws';
+
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&sportsbook=draftkings,fanduel'
+);
+
+ws.on('message', (raw) => {
+  const msg = JSON.parse(raw.toString());
+
+  if (msg.type === 'connected') {
+    console.log(msg.message);
+    console.log('Tier:', msg.tier, '| Features:', msg.features);
+  }
+  else if (msg.type === 'initial') {
+    for (const [book, odds] of Object.entries(msg.data)) {
+      console.log(`${book}: ${odds.length} odds`);
+    }
+  }
+  else if (msg.type === 'odds_update') {
+    console.log(`${msg.source}: ${msg.data.length} odds updated`);
+  }
+  else if (msg.type === 'ev:detected') {
+    msg.data.forEach(ev =>
+      console.log(`+EV: ${ev.selection} — ${ev.evPercent}% EV`)
+    );
+  }
+  else if (msg.type === 'ev:expired') {
+    console.log(`EV expired: ${msg.data.expired.length} opportunities`);
+  }
+});
+
+ws.on('close', (code, reason) => {
+  console.log(`Closed: ${code} ${reason}`);
+  if (code !== 1000) {
+    // Reconnect logic here
+  }
+});
+
+// Keepalive
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import json
+import websocket
+import threading
+import time
+
+API_KEY = "YOUR_KEY"
+URL = f"wss://ws.sharpapi.io?api_key={API_KEY}&league=nba"
+
+def on_message(ws, raw):
+    msg = json.loads(raw)
+    msg_type = msg["type"]
+
+    if msg_type == "connected":
+        print(f'{msg["message"]} | tier: {msg["tier"]}')
+    elif msg_type == "initial":
+        for book, odds in msg["data"].items():
+            print(f"  {book}: {len(odds)} odds")
+    elif msg_type == "odds_update":
+        print(f'{msg["source"]}: {len(msg["data"])} odds updated')
+    elif msg_type == "ev:detected":
+        for ev in msg["data"]:
+            print(f'+EV: {ev["selection"]} at {ev["evPercent"]}%')
+    elif msg_type == "heartbeat":
+        pass  # silent keepalive
+
+def on_close(ws, code, reason):
+    print(f"Closed: {code} {reason}")
+
+def on_open(ws):
+    # Start ping thread
+    def ping():
+        while ws.sock and ws.sock.connected:
+            ws.send(json.dumps({"type": "ping"}))
+            time.sleep(25)
+    threading.Thread(target=ping, daemon=True).start()
+
+ws = websocket.WebSocketApp(URL,
+    on_message=on_message,
+    on_close=on_close,
+    on_open=on_open)
+
+ws.run_forever()
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```typescript
+import { SharpAPI } from '@sharpapi/client';
+
+const api = new SharpAPI('YOUR_KEY');
+
+const stream = api.stream.oddsWs({
+  sportsbook: ['draftkings', 'fanduel'],
+  league: ['nba'],
+});
+
+stream.on('connected', ({ message, tier }) => {
+  console.log(message, '| tier:', tier);
+});
+
+stream.on('initial', ({ data }) => {
+  console.log('Snapshot received');
+});
+
+stream.on('odds_update', ({ data, source }) => {
+  console.log(`${source}: ${data.length} odds updated`);
+});
+
+stream.on('ev:detected', ({ data }) => {
+  data.forEach(ev =>
+    console.log(`+EV: ${ev.selection} at ${ev.evPercent}%`)
+  );
+});
+
+stream.on('error', ({ message }) => {
+  console.error('Error:', message);
+});
+
+stream.connect();
+
+// Update filters later without reconnecting
+stream.updateFilters({
+  sportsbooks: ['pinnacle'],
+  leagues: ['nfl'],
+});
+
+// Disconnect when done
+// stream.disconnect();
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Concurrent Stream Limits
+
+Each open WebSocket connection counts as one stream against your limit.
+
+| Plan | Max Concurrent Streams |
+|------|------------------------|
+| WebSocket Add-on ($99/mo) | 10 |
+| Enterprise | Custom |
+
+<Callout type="warning">
+Exceeding your stream limit closes the connection with code `4029`. Close unused connections before opening new ones.
+</Callout>
+
+## Best Practices
+
+1. **Send pings every 25 seconds** -- The server sends heartbeats every 30s, but explicit pings prevent proxy/firewall timeouts
+2. **Use filters** -- Pass `sportsbook` and `league` params to receive only what you need
+3. **Update filters via `subscribe`** -- No need to reconnect when changing what you track
+4. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
+5. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...)
+6. **Process the `initial` message** -- It contains the full current state. Subsequent `odds_update` messages are incremental deltas
+7. **Close unused connections** -- Each connection counts against your 10-stream limit
+
+## Related
+
+- [SSE Stream API Reference](/api-reference/stream) -- Server-Sent Events alternative
+- [Streaming Overview](/streaming/overview) -- Concepts and comparison
+- [WebSocket Streaming Guide](/streaming/websocket) -- Getting started guide

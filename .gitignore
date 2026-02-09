@@ -5,3 +5,4 @@ out/
 .vercel
 .env*.local
 .claude/
+tsconfig.tsbuildinfo

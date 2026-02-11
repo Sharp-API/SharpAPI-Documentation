@@ -51,11 +51,11 @@ const response = await fetch(
 const { data } = await response.json();
 
 data.markets.forEach(market => {
-  console.log(`\n${market.market_type} (Hold: ${(market.hold.best_available * 100).toFixed(1)}%)`);
+  console.log(`\n${market.market_type} (Hold: ${market.hold.best_available.toFixed(1)}%)`);
   market.selections.forEach(sel => {
     console.log(`  ${sel.selection}: Best ${sel.best_odds} at ${sel.best_book}, Worst ${sel.worst_odds} at ${sel.worst_book}`);
     for (const [book, odds] of Object.entries(sel.books)) {
-      console.log(`    ${book}: ${odds.odds.american}`);
+      console.log(`    ${book}: ${odds.odds_american}`);
     }
   });
 });
@@ -76,13 +76,13 @@ event = result['data']
 print(f"{event['event_name']}")
 
 for market in event['markets']:
-    hold = market['hold']['best_available'] * 100
+    hold = market['hold']['best_available']
     print(f"\n  {market['market_type']} (Hold: {hold:.1f}%)")
 
     for sel in market['selections']:
         print(f"    {sel['selection']}: Best {sel['best_odds']} at {sel['best_book']}")
         for book, odds in sel['books'].items():
-            print(f"      {book}: {odds['odds']['american']}")
+            print(f"      {book}: {odds['odds_american']}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -94,23 +94,23 @@ for market in event['markets']:
 ```json
 {
   "data": {
-    "event_id": "33483153",
+    "event_id": "nba_suns_76ers_2026-01-26",
     "event_name": "PHO Suns @ PHI 76ers",
     "sport": "basketball",
-    "league": "nba",
-    "home_team": "PHI 76ers",
-    "away_team": "PHO Suns",
-    "event_start_time": "2026-01-26T19:00:00Z",
+    "league": "NBA",
+    "start_time": "2026-01-26T19:00:00Z",
+    "is_live": false,
+    "books_available": 4,
     "markets": [
       {
         "market_type": "moneyline",
         "hold": {
-          "best_available": 0.027,
+          "best_available": 2.7,
           "by_book": {
-            "draftkings": 0.035,
-            "fanduel": 0.036,
-            "betmgm": 0.047,
-            "pinnacle": 0.039
+            "draftkings": 3.5,
+            "fanduel": 3.6,
+            "betmgm": 4.7,
+            "pinnacle": 3.9
           }
         },
         "selections": [
@@ -120,19 +120,23 @@ for market in event['markets']:
             "line": null,
             "books": {
               "fanduel": {
-                "odds": { "american": -145, "decimal": 1.690, "probability": 0.592 },
+                "odds_american": -145,
+                "odds_decimal": 1.690,
                 "timestamp": "2026-01-26T02:10:20.000Z"
               },
               "draftkings": {
-                "odds": { "american": -150, "decimal": 1.667, "probability": 0.600 },
+                "odds_american": -150,
+                "odds_decimal": 1.667,
                 "timestamp": "2026-01-26T02:10:24.000Z"
               },
               "betmgm": {
-                "odds": { "american": -155, "decimal": 1.645, "probability": 0.608 },
+                "odds_american": -155,
+                "odds_decimal": 1.645,
                 "timestamp": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
-                "odds": { "american": -148, "decimal": 1.676, "probability": 0.597 },
+                "odds_american": -148,
+                "odds_decimal": 1.676,
                 "timestamp": "2026-01-26T02:10:15.000Z"
               }
             },
@@ -148,19 +152,23 @@ for market in event['markets']:
             "line": null,
             "books": {
               "draftkings": {
-                "odds": { "american": 130, "decimal": 2.300, "probability": 0.435 },
+                "odds_american": 130,
+                "odds_decimal": 2.300,
                 "timestamp": "2026-01-26T02:10:24.000Z"
               },
               "fanduel": {
-                "odds": { "american": 125, "decimal": 2.250, "probability": 0.444 },
+                "odds_american": 125,
+                "odds_decimal": 2.250,
                 "timestamp": "2026-01-26T02:10:20.000Z"
               },
               "betmgm": {
-                "odds": { "american": 128, "decimal": 2.280, "probability": 0.439 },
+                "odds_american": 128,
+                "odds_decimal": 2.280,
                 "timestamp": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
-                "odds": { "american": 126, "decimal": 2.260, "probability": 0.442 },
+                "odds_american": 126,
+                "odds_decimal": 2.260,
                 "timestamp": "2026-01-26T02:10:15.000Z"
               }
             },
@@ -175,11 +183,8 @@ for market in event['markets']:
     ]
   },
   "meta": {
-    "updated_at": "2026-01-26T02:10:30.000Z",
-    "filters": {
-      "event": "33483153",
-      "market": "moneyline"
-    }
+    "market_filter": null,
+    "updated_at": "2026-01-26T02:10:30.000Z"
   }
 }
 ```
@@ -204,12 +209,12 @@ The response `data` is a single event object (not an array) containing nested ma
 | Field | Type | Description |
 |-------|------|-------------|
 | `event_id` | string | Event identifier |
-| `event_name` | string | Event display name |
+| `event_name` | string | Event display name (e.g., `"Away Team @ Home Team"`) |
 | `sport` | string | Sport slug |
 | `league` | string | League slug |
-| `home_team` | string | Home team name |
-| `away_team` | string | Away team name |
-| `event_start_time` | string | ISO 8601 event start time |
+| `start_time` | string | ISO 8601 event start time |
+| `is_live` | boolean | Whether the event is currently live |
+| `books_available` | number | Number of sportsbooks with odds for this event |
 | `markets` | array | Array of market comparisons |
 
 ### Market Object
@@ -218,8 +223,8 @@ The response `data` is a single event object (not an array) containing nested ma
 |-------|------|-------------|
 | `market_type` | string | Market type (e.g., `moneyline`, `spread`, `total`) |
 | `hold` | object | Market hold (overround) calculations |
-| `hold.best_available` | number | Hold using best odds across all books per selection |
-| `hold.by_book` | object | Hold for each individual sportsbook (keyed by book ID) |
+| `hold.best_available` | number | Hold percentage using best odds across all books per selection |
+| `hold.by_book` | object | Hold percentage for each individual sportsbook (keyed by book ID) |
 | `selections` | array | Array of selections within this market |
 
 ### Selection Object
@@ -242,25 +247,23 @@ Each entry in the `books` object:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `odds` | object | Odds in all three formats |
-| `odds.american` | number | American odds |
-| `odds.decimal` | number | Decimal odds |
-| `odds.probability` | number | Implied probability |
+| `odds_american` | number | American odds |
+| `odds_decimal` | number | Decimal odds |
 | `timestamp` | string | When this book's odds were last updated |
 
 ## Understanding Hold
 
 The `hold` field on each market shows the bookmaker's built-in margin:
 
-- **`best_available`**: The hold if you shop for the best odds on each selection. This is the "true" market efficiency from a bettor's perspective.
-- **`by_book`**: The hold at each individual sportsbook. Higher hold = more margin taken by the book.
+- **`best_available`**: The hold (%) if you shop for the best odds on each selection. This is the "true" market efficiency from a bettor's perspective.
+- **`by_book`**: The hold (%) at each individual sportsbook. Higher hold = more margin taken by the book.
 
-| Hold | Interpretation |
-|------|---------------|
-| < 2% | Very efficient market (sharp books) |
-| 2-5% | Normal market |
-| 5-8% | High margin (typical for props) |
-| > 8% | Very high margin |
+| Hold (%) | Interpretation |
+|----------|---------------|
+| < 2 | Very efficient market (sharp books) |
+| 2-5 | Normal market |
+| 5-8 | High margin (typical for props) |
+| > 8 | Very high margin |
 
 ## Understanding the `spread` Field
 

@@ -76,22 +76,23 @@ console.log(`Found ${meta.count} odds`);
     {
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
-      "sport": "nba",
+      "sportsbook_name": "DraftKings",
+      "sport": "basketball",
       "home_team": "PHI 76ers",
       "away_team": "PHO Suns",
       "market_type": "moneyline",
       "selection": "PHO Suns",
-      "odds": {
-        "american": -150,
-        "decimal": 1.67,
-        "probability": 0.60
-      },
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "probability": 0.60,
       "is_live": false
     }
   ],
   "meta": {
     "count": 1,
     "total": 3095,
+    "books_available": ["draftkings", "fanduel"],
+    "books_returned": ["draftkings"],
     "pagination": {
       "limit": 50,
       "offset": 0,
@@ -120,7 +121,7 @@ curl "https://api.sharpapi.io/api/v1/odds?live=true" \
   -H "X-API-Key: YOUR_API_KEY"
 
 # Get main markets only (moneyline, spread, total)
-curl "https://api.sharpapi.io/api/v1/odds?main=true" \
+curl "https://api.sharpapi.io/api/v1/odds?market=moneyline,spread,total" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 

@@ -2,7 +2,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Odds Comparison
 
-Compare odds for the same selection across multiple sportsbooks. Results are grouped by event, market, and selection so you can see every book's odds side by side in a single response.
+Compare odds for a specific event across multiple sportsbooks. Results are organized by market and selection, with hold calculations and best/worst book identification for each selection.
 
 ```
 GET /api/v1/odds/comparison
@@ -20,16 +20,12 @@ The sportsbooks included in the comparison depend on your tier's book access. Fr
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sport` | string | all | Filter by sport (e.g., `basketball`) |
-| `league` | string | all | Filter by league (e.g., `nba`) |
+| `event` | string | **required** | Event ID to compare odds for |
 | `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`) |
-| `event` | string | - | Filter by event ID |
-| `sportsbook` | string | all | Comma-separated sportsbook IDs to compare |
-| `limit` | integer | 50 | Max comparison groups per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `sportsbook` | string | all | Comma-separated sportsbook IDs to include |
 
 <Callout type="warning">
-For best results, use the `event` parameter to compare odds for a specific event. Without it, results are paginated across all events and can be large.
+The `event` parameter is **required**. This endpoint returns a detailed comparison for a single event.
 </Callout>
 
 ## Example Requests
@@ -37,12 +33,12 @@ For best results, use the `event` parameter to compare odds for a specific event
 <Tabs items={['cURL', 'JavaScript', 'Python']}>
   <Tabs.Tab>
 ```bash
-# Compare moneyline odds for a specific NBA event across all books
-curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=moneyline" \
+# Compare all odds for a specific NBA event
+curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153" \
   -H "X-API-Key: YOUR_API_KEY"
 
-# Compare spread odds across specific books
-curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?league=nba&market=spread&sportsbook=draftkings,fanduel,pinnacle" \
+# Compare only moneyline odds
+curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=moneyline" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
@@ -52,13 +48,15 @@ const response = await fetch(
   'https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=moneyline',
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 );
-const { data, meta } = await response.json();
+const { data } = await response.json();
 
-data.forEach(group => {
-  console.log(`\n${group.event_name} - ${group.market_type} - ${group.selection}`);
-  group.books.forEach(book => {
-    const arrow = book.is_best ? ' <-- BEST' : '';
-    console.log(`  ${book.sportsbook}: ${book.odds.american}${arrow}`);
+data.markets.forEach(market => {
+  console.log(`\n${market.market_type} (Hold: ${(market.hold.best_available * 100).toFixed(1)}%)`);
+  market.selections.forEach(sel => {
+    console.log(`  ${sel.selection}: Best ${sel.best_odds} at ${sel.best_book}, Worst ${sel.worst_odds} at ${sel.worst_book}`);
+    for (const [book, odds] of Object.entries(sel.books)) {
+      console.log(`    ${book}: ${odds.odds.american}`);
+    }
   });
 });
 ```
@@ -69,19 +67,22 @@ import requests
 
 response = requests.get(
     'https://api.sharpapi.io/api/v1/odds/comparison',
-    params={
-        'event': '33483153',
-        'market': 'moneyline'
-    },
+    params={'event': '33483153', 'market': 'moneyline'},
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 result = response.json()
 
-for group in result['data']:
-    print(f"\n{group['event_name']} - {group['market_type']} - {group['selection']}")
-    for book in group['books']:
-        best = " <-- BEST" if book['is_best'] else ""
-        print(f"  {book['sportsbook']}: {book['odds']['american']}{best}")
+event = result['data']
+print(f"{event['event_name']}")
+
+for market in event['markets']:
+    hold = market['hold']['best_available'] * 100
+    print(f"\n  {market['market_type']} (Hold: {hold:.1f}%)")
+
+    for sel in market['selections']:
+        print(f"    {sel['selection']}: Best {sel['best_odds']} at {sel['best_book']}")
+        for book, odds in sel['books'].items():
+            print(f"      {book}: {odds['odds']['american']}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -92,149 +93,88 @@ for group in result['data']:
 
 ```json
 {
-  "data": [
-    {
-      "event_id": "33483153",
-      "event_name": "PHO Suns @ PHI 76ers",
-      "sport": "basketball",
-      "league": "nba",
-      "home_team": "PHI 76ers",
-      "away_team": "PHO Suns",
-      "market_type": "moneyline",
-      "selection": "PHO Suns",
-      "selection_type": "away",
-      "line": null,
-      "books": [
-        {
-          "sportsbook": "fanduel",
-          "odds": {
-            "american": -145,
-            "decimal": 1.690,
-            "probability": 0.592
-          },
-          "line": null,
-          "is_best": true,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:20.000Z"
+  "data": {
+    "event_id": "33483153",
+    "event_name": "PHO Suns @ PHI 76ers",
+    "sport": "basketball",
+    "league": "nba",
+    "home_team": "PHI 76ers",
+    "away_team": "PHO Suns",
+    "event_start_time": "2026-01-26T19:00:00Z",
+    "markets": [
+      {
+        "market_type": "moneyline",
+        "hold": {
+          "best_available": 0.027,
+          "by_book": {
+            "draftkings": 0.035,
+            "fanduel": 0.036,
+            "betmgm": 0.047,
+            "pinnacle": 0.039
+          }
         },
-        {
-          "sportsbook": "draftkings",
-          "odds": {
-            "american": -150,
-            "decimal": 1.667,
-            "probability": 0.600
+        "selections": [
+          {
+            "selection": "PHO Suns",
+            "selection_type": "away",
+            "line": null,
+            "books": {
+              "fanduel": {
+                "odds": { "american": -145, "decimal": 1.690, "probability": 0.592 },
+                "timestamp": "2026-01-26T02:10:20.000Z"
+              },
+              "draftkings": {
+                "odds": { "american": -150, "decimal": 1.667, "probability": 0.600 },
+                "timestamp": "2026-01-26T02:10:24.000Z"
+              },
+              "betmgm": {
+                "odds": { "american": -155, "decimal": 1.645, "probability": 0.608 },
+                "timestamp": "2026-01-26T02:10:18.000Z"
+              },
+              "pinnacle": {
+                "odds": { "american": -148, "decimal": 1.676, "probability": 0.597 },
+                "timestamp": "2026-01-26T02:10:15.000Z"
+              }
+            },
+            "best_book": "fanduel",
+            "best_odds": -145,
+            "worst_book": "betmgm",
+            "worst_odds": -155,
+            "spread": 1.6
           },
-          "line": null,
-          "is_best": false,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:24.000Z"
-        },
-        {
-          "sportsbook": "betmgm",
-          "odds": {
-            "american": -155,
-            "decimal": 1.645,
-            "probability": 0.608
-          },
-          "line": null,
-          "is_best": false,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:18.000Z"
-        },
-        {
-          "sportsbook": "pinnacle",
-          "odds": {
-            "american": -148,
-            "decimal": 1.676,
-            "probability": 0.597
-          },
-          "line": null,
-          "is_best": false,
-          "is_sharp": true,
-          "timestamp": "2026-01-26T02:10:15.000Z"
-        }
-      ],
-      "best_book": "fanduel",
-      "book_count": 4,
-      "spread": 10,
-      "event_start_time": "2026-01-26T19:00:00Z"
-    },
-    {
-      "event_id": "33483153",
-      "event_name": "PHO Suns @ PHI 76ers",
-      "sport": "basketball",
-      "league": "nba",
-      "home_team": "PHI 76ers",
-      "away_team": "PHO Suns",
-      "market_type": "moneyline",
-      "selection": "PHI 76ers",
-      "selection_type": "home",
-      "line": null,
-      "books": [
-        {
-          "sportsbook": "draftkings",
-          "odds": {
-            "american": 130,
-            "decimal": 2.300,
-            "probability": 0.435
-          },
-          "line": null,
-          "is_best": true,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:24.000Z"
-        },
-        {
-          "sportsbook": "fanduel",
-          "odds": {
-            "american": 125,
-            "decimal": 2.250,
-            "probability": 0.444
-          },
-          "line": null,
-          "is_best": false,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:20.000Z"
-        },
-        {
-          "sportsbook": "betmgm",
-          "odds": {
-            "american": 128,
-            "decimal": 2.280,
-            "probability": 0.439
-          },
-          "line": null,
-          "is_best": false,
-          "is_sharp": false,
-          "timestamp": "2026-01-26T02:10:18.000Z"
-        },
-        {
-          "sportsbook": "pinnacle",
-          "odds": {
-            "american": 126,
-            "decimal": 2.260,
-            "probability": 0.442
-          },
-          "line": null,
-          "is_best": false,
-          "is_sharp": true,
-          "timestamp": "2026-01-26T02:10:15.000Z"
-        }
-      ],
-      "best_book": "draftkings",
-      "book_count": 4,
-      "spread": 5,
-      "event_start_time": "2026-01-26T19:00:00Z"
-    }
-  ],
+          {
+            "selection": "PHI 76ers",
+            "selection_type": "home",
+            "line": null,
+            "books": {
+              "draftkings": {
+                "odds": { "american": 130, "decimal": 2.300, "probability": 0.435 },
+                "timestamp": "2026-01-26T02:10:24.000Z"
+              },
+              "fanduel": {
+                "odds": { "american": 125, "decimal": 2.250, "probability": 0.444 },
+                "timestamp": "2026-01-26T02:10:20.000Z"
+              },
+              "betmgm": {
+                "odds": { "american": 128, "decimal": 2.280, "probability": 0.439 },
+                "timestamp": "2026-01-26T02:10:18.000Z"
+              },
+              "pinnacle": {
+                "odds": { "american": 126, "decimal": 2.260, "probability": 0.442 },
+                "timestamp": "2026-01-26T02:10:15.000Z"
+              }
+            },
+            "best_book": "draftkings",
+            "best_odds": 130,
+            "worst_book": "fanduel",
+            "worst_odds": 125,
+            "spread": 0.9
+          }
+        ]
+      }
+    ]
+  },
   "meta": {
-    "count": 2,
-    "total": 2,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": false,
-      "next_offset": null
-    },
     "updated_at": "2026-01-26T02:10:30.000Z",
     "filters": {
       "event": "33483153",
@@ -255,9 +195,11 @@ X-Data-Delay: 0
 X-Request-Id: req_comp_456abc
 ```
 
-## Comparison Group Schema
+## Response Schema
 
-Each item in the `data` array represents one selection (e.g., "PHO Suns moneyline") with all available books:
+The response `data` is a single event object (not an array) containing nested markets and selections.
+
+### Event Object
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -267,47 +209,74 @@ Each item in the `data` array represents one selection (e.g., "PHO Suns moneylin
 | `league` | string | League slug |
 | `home_team` | string | Home team name |
 | `away_team` | string | Away team name |
-| `market_type` | string | Market type |
-| `selection` | string | Selection name |
-| `selection_type` | string | `home`, `away`, `over`, `under` |
-| `line` | number \| null | Line value (for spreads/totals) |
-| `books` | array | Array of sportsbook odds for this selection |
-| `best_book` | string | Sportsbook ID with the best odds |
-| `book_count` | integer | Number of books with odds for this selection |
-| `spread` | number | Difference in American odds between best and worst book |
 | `event_start_time` | string | ISO 8601 event start time |
+| `markets` | array | Array of market comparisons |
 
-### Book Object
-
-Each entry in the `books` array:
+### Market Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sportsbook` | string | Sportsbook ID |
+| `market_type` | string | Market type (e.g., `moneyline`, `spread`, `total`) |
+| `hold` | object | Market hold (overround) calculations |
+| `hold.best_available` | number | Hold using best odds across all books per selection |
+| `hold.by_book` | object | Hold for each individual sportsbook (keyed by book ID) |
+| `selections` | array | Array of selections within this market |
+
+### Selection Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `selection` | string | Selection name (e.g., team name, Over/Under) |
+| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `line` | number \| null | Line value (for spreads/totals) |
+| `books` | object | Odds from each sportsbook (keyed by book ID) |
+| `best_book` | string | Sportsbook ID with the best odds |
+| `best_odds` | number | Best American odds value |
+| `worst_book` | string | Sportsbook ID with the worst odds |
+| `worst_odds` | number | Worst American odds value |
+| `spread` | number | Difference in implied probability (%) between best and worst book |
+
+### Book Odds Object
+
+Each entry in the `books` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
 | `odds` | object | Odds in all three formats |
 | `odds.american` | number | American odds |
 | `odds.decimal` | number | Decimal odds |
 | `odds.probability` | number | Implied probability |
-| `line` | number \| null | Line at this sportsbook |
-| `is_best` | boolean | Whether this is the best available odds |
-| `is_sharp` | boolean | Whether this is a sharp book (e.g., Pinnacle) |
 | `timestamp` | string | When this book's odds were last updated |
+
+## Understanding Hold
+
+The `hold` field on each market shows the bookmaker's built-in margin:
+
+- **`best_available`**: The hold if you shop for the best odds on each selection. This is the "true" market efficiency from a bettor's perspective.
+- **`by_book`**: The hold at each individual sportsbook. Higher hold = more margin taken by the book.
+
+| Hold | Interpretation |
+|------|---------------|
+| < 2% | Very efficient market (sharp books) |
+| 2-5% | Normal market |
+| 5-8% | High margin (typical for props) |
+| > 8% | Very high margin |
 
 ## Understanding the `spread` Field
 
-The `spread` field shows the difference in American odds between the best and worst sportsbook for a given selection. A higher spread indicates more variance across books, which often signals line shopping opportunities.
+The `spread` on each selection represents the difference in implied probability between the best and worst sportsbook for that selection. A higher spread indicates more variance across books.
 
 | Spread | Interpretation |
 |--------|---------------|
-| 0-5 | Books are tightly aligned |
-| 5-15 | Normal variance, moderate shopping value |
-| 15+ | Significant discrepancy, strong shopping value |
+| < 1% | Books are tightly aligned |
+| 1-3% | Normal variance, moderate shopping value |
+| > 3% | Significant discrepancy, strong shopping value |
 
 ## Use Cases
 
 ### Line Shopping
 
-Find the best price before placing a bet by comparing all books at once:
+Find the best price before placing a bet by comparing all books:
 
 ```bash
 curl "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=spread" \
@@ -318,12 +287,13 @@ curl "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=sprea
 
 Look for books that haven't updated recently by checking each book's `timestamp`. A book with stale odds may be slow to adjust, creating temporary value.
 
-### Tracking Consensus
+### Market Efficiency
 
-When most books agree on a line but one is an outlier, the outlier may be mispriced or may have received sharp action first.
+Compare `hold.best_available` vs individual book holds. A large gap means line shopping is particularly valuable for this market.
 
 ## Related Endpoints
 
 - [Odds Snapshot](/api-reference/odds) - Get raw odds from individual sportsbooks
-- [Best Odds](/api-reference/odds-best) - Get just the best odds with sharp reference
+- [Best Odds](/api-reference/odds-best) - Get just the best odds with consensus and hold
+- [Odds Delta](/api-reference/odds-delta) - Get only odds that changed since a given timestamp
 - [Batch Odds](/api-reference/odds-batch) - Fetch comparison data for multiple events at once

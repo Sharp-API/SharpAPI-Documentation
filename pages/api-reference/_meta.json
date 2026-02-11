@@ -13,9 +13,15 @@
     "title": "Odds"
   },
   "odds": "Odds Snapshot",
+  "odds-delta": "Odds Delta",
   "odds-best": "Best Odds",
   "odds-comparison": "Odds Comparison",
   "odds-batch": "Batch Odds",
+  "---Teams": {
+    "type": "separator",
+    "title": "Teams"
+  },
+  "teams": "Teams",
   "---Events": {
     "type": "separator",
     "title": "Events"

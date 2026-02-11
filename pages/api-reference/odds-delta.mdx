@@ -1,0 +1,212 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Odds Delta
+
+Get only the odds that have changed since a given timestamp. This endpoint returns the same odds format as `/odds` but filtered to items updated after your `since` value, making it ideal for polling clients that want incremental updates without re-fetching the full snapshot.
+
+```
+GET /api/v1/odds/delta
+```
+
+## Authentication
+
+Requires API key. Available to **all tiers**.
+
+<Callout type="info">
+Use the `server_time` from each response as the `since` value for your next request. This ensures you never miss updates and never receive duplicates.
+</Callout>
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `since` | string | **required** | ISO 8601 timestamp. Only return odds updated after this time (e.g., `2026-02-11T12:00:00Z`) |
+| `sportsbook` | string | all | Comma-separated sportsbook IDs (e.g., `draftkings,fanduel`) |
+| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
+| `league` | string | all | Filter by league (e.g., `nba`, `nfl`) |
+| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`) |
+| `event` | string | - | Filter by event ID |
+| `live` | boolean | false | Return only live/in-play events |
+| `sort` | string | - | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
+| `fields` | string | all | Comma-separated field names to include (e.g., `id,sportsbook,odds_american`) |
+| `min_odds` | number | - | Minimum American odds filter (e.g., `-110`) |
+| `max_odds` | number | - | Maximum American odds filter (e.g., `+200`) |
+| `limit` | integer | 50 | Max results per page (max 200) |
+| `offset` | integer | 0 | Pagination offset |
+
+<Callout type="warning">
+The `since` parameter is **required**. Omitting it returns a `400 invalid_request` error.
+</Callout>
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Get all odds changes in the last 30 seconds
+curl -X GET "https://api.sharpapi.io/api/v1/odds/delta?since=2026-02-11T12:00:00Z&league=nba" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+let since = new Date(Date.now() - 30000).toISOString();
+
+async function pollDelta() {
+  const response = await fetch(
+    `https://api.sharpapi.io/api/v1/odds/delta?since=${since}&league=nba`,
+    { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+  );
+  const { data, meta } = await response.json();
+
+  console.log(`${data.length} odds changed, books updated: ${meta.books_changed.join(', ')}`);
+
+  // Use server_time as the next since value
+  since = meta.server_time;
+}
+
+// Poll every 5 seconds
+setInterval(pollDelta, 5000);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+import time
+from datetime import datetime, timezone, timedelta
+
+since = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+
+while True:
+    response = requests.get(
+        'https://api.sharpapi.io/api/v1/odds/delta',
+        params={'since': since, 'league': 'nba'},
+        headers={'X-API-Key': 'YOUR_API_KEY'}
+    )
+    result = response.json()
+
+    print(f"{len(result['data'])} odds changed")
+    print(f"Books updated: {result['meta']['books_changed']}")
+
+    # Use server_time as the next since value
+    since = result['meta']['server_time']
+    time.sleep(5)
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sportsbook_name": "DraftKings",
+      "event_id": "33483153",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "selection_type": "away",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "probability": 0.60,
+      "line": null,
+      "event_start_time": "2026-02-11T19:00:00Z",
+      "timestamp": "2026-02-11T12:00:15.125Z",
+      "is_live": false,
+      "status": "upcoming"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 1,
+    "server_time": "2026-02-11T12:00:20.000Z",
+    "books_changed": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "filters": {
+      "since": "2026-02-11T12:00:00Z",
+      "league": "nba"
+    }
+  }
+}
+```
+
+### Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1737853200
+X-Tier: pro
+X-Data-Delay: 0
+X-Request-Id: req_delta_abc123
+```
+
+### Error Responses
+
+```json title="400 Missing since parameter"
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The 'since' parameter is required for the delta endpoint",
+    "docs": "https://sharpapi.io/docs/api-reference/odds-delta"
+  }
+}
+```
+
+```json title="401 Unauthorized"
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://sharpapi.io/docs/authentication"
+  }
+}
+```
+
+## Delta Response Schema
+
+The `data` array contains the same odds objects as the [`/odds`](/api-reference/odds) endpoint. Only odds updated after the `since` timestamp are included.
+
+The `meta` object includes two additional fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `meta.server_time` | string | ISO 8601 server timestamp. Use as the `since` value for your next request |
+| `meta.books_changed` | array | List of sportsbook IDs that had updates in this delta |
+
+## Polling Pattern
+
+The recommended polling pattern uses `server_time` to chain requests:
+
+1. Make an initial request with `since` set to a recent timestamp
+2. Read `meta.server_time` from the response
+3. Use that `server_time` as the `since` value in your next request
+4. Repeat on your desired interval (e.g., every 5 seconds)
+
+This ensures:
+- **No gaps** - `server_time` is the server's clock, so you won't miss updates due to clock drift
+- **No duplicates** - each delta window is non-overlapping
+- **Minimal payload** - only changed odds are returned
+
+<Callout type="info">
+If no odds have changed since your `since` timestamp, the response will have an empty `data` array and `count: 0`. This is normal and expected during quiet periods.
+</Callout>
+
+## Related Endpoints
+
+- [Odds Snapshot](/api-reference/odds) - Get the full current odds snapshot
+- [SSE Stream](/api-reference/stream) - Real-time push updates via Server-Sent Events
+- [WebSocket Stream](/api-reference/websocket) - Real-time push updates via WebSocket

@@ -48,7 +48,7 @@ const { data, meta } = await response.json();
 data.forEach(item => {
   console.log(
     `${item.selection}: Best ${item.best_odds.american} at ${item.best_book}` +
-    ` | Consensus: ${item.consensus_odds.american} | Hold: ${(item.market_hold * 100).toFixed(1)}%`
+    ` | Consensus: ${item.consensus_odds.american} | Hold: ${item.market_hold.toFixed(1)}%`
   );
 });
 ```
@@ -68,7 +68,7 @@ for item in result['data']:
     best = item['best_odds']['american']
     book = item['best_book']
     consensus = item['consensus_odds']['american']
-    hold = item['market_hold'] * 100
+    hold = item['market_hold']
     print(f"{item['selection']}: Best {best} at {book} (Consensus: {consensus}, Hold: {hold:.1f}%)")
 ```
   </Tabs.Tab>
@@ -101,7 +101,7 @@ for item in result['data']:
         "decimal": 1.926,
         "probability": 0.519
       },
-      "market_hold": 0.042,
+      "market_hold": 4.2,
       "all_books": [
         {
           "book": "fanduel",
@@ -207,17 +207,17 @@ X-Request-Id: req_best_789xyz
 | `consensus_odds.american` | number | Consensus American odds |
 | `consensus_odds.decimal` | number | Consensus decimal odds |
 | `consensus_odds.probability` | number | Consensus implied probability |
-| `market_hold` | number | Market hold (overround) as a decimal (e.g., `0.042` = 4.2%) |
+| `market_hold` | number | Market hold (overround) as a percentage (e.g., `4.2` = 4.2%) |
 | `all_books` | array | All sportsbooks' odds for this selection |
 | `all_books[].book` | string | Sportsbook ID |
 | `all_books[].odds` | object | Odds object (`american`, `decimal`) |
-| `all_books[].edge` | number | Edge over the worst available odds (as decimal) |
+| `all_books[].edge` | number | Edge over the worst available odds (percentage points) |
 | `all_books[].line` | number \| null | Line at this sportsbook |
 | `all_books[].timestamp` | string | When this book's odds were last updated |
 | `timestamp` | string | ISO 8601 timestamp of the best odds determination |
 
 <Callout type="info">
-The `market_hold` field represents the bookmaker's built-in margin (overround). A hold of `0.042` means the combined implied probabilities across all outcomes sum to 104.2%. Lower hold = more efficient market.
+The `market_hold` field represents the bookmaker's built-in margin (overround) as a percentage. A hold of `4.2` means the combined implied probabilities across all outcomes sum to 104.2%. Lower hold = more efficient market.
 </Callout>
 
 <Callout type="info">

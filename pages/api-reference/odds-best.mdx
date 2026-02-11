@@ -2,7 +2,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Best Odds
 
-Get the best available odds for each selection across all sportsbooks. This endpoint compares odds from every book available on your tier and returns the most favorable line for each selection, along with a sharp (Pinnacle) reference when available.
+Get the best available odds for each selection across all sportsbooks. This endpoint compares odds from every book available on your tier and returns the most favorable line for each selection, along with consensus odds and market hold calculations.
 
 ```
 GET /api/v1/odds/best
@@ -13,7 +13,7 @@ GET /api/v1/odds/best
 Requires API key. Available to **all tiers**.
 
 <Callout type="info">
-Best Odds is available on all tiers, including Free. The sportsbooks compared depend on your tier's book access (Free compares DraftKings and FanDuel; Pro+ includes Pinnacle sharp reference).
+Best Odds is available on all tiers, including Free. The sportsbooks compared depend on your tier's book access (Free compares DraftKings and FanDuel; Pro+ includes Pinnacle).
 </Callout>
 
 ## Query Parameters
@@ -24,6 +24,7 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 | `league` | string | all | Filter by league (e.g., `nba`, `nfl`) |
 | `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`) |
 | `event` | string | - | Filter by event ID |
+| `live` | boolean | false | Return only live/in-play events |
 | `limit` | integer | 50 | Max results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset |
 
@@ -47,7 +48,7 @@ const { data, meta } = await response.json();
 data.forEach(item => {
   console.log(
     `${item.selection}: Best ${item.best_odds.american} at ${item.best_book}` +
-    (item.sharp_odds ? ` (Sharp: ${item.sharp_odds.american})` : '')
+    ` | Consensus: ${item.consensus_odds.american} | Hold: ${(item.market_hold * 100).toFixed(1)}%`
   );
 });
 ```
@@ -66,8 +67,9 @@ result = response.json()
 for item in result['data']:
     best = item['best_odds']['american']
     book = item['best_book']
-    sharp = item.get('sharp_odds', {}).get('american', 'N/A')
-    print(f"{item['selection']}: Best {best} at {book} (Sharp: {sharp})")
+    consensus = item['consensus_odds']['american']
+    hold = item['market_hold'] * 100
+    print(f"{item['selection']}: Best {best} at {book} (Consensus: {consensus}, Hold: {hold:.1f}%)")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -94,38 +96,42 @@ for item in result['data']:
         "probability": 0.512
       },
       "best_book": "fanduel",
-      "all_books": [
-        {
-          "sportsbook": "fanduel",
-          "odds": { "american": -105, "decimal": 1.952, "probability": 0.512 },
-          "line": -6.5,
-          "timestamp": "2026-01-26T10:30:00.000Z"
-        },
-        {
-          "sportsbook": "draftkings",
-          "odds": { "american": -110, "decimal": 1.909, "probability": 0.524 },
-          "line": -6.5,
-          "timestamp": "2026-01-26T10:29:55.000Z"
-        },
-        {
-          "sportsbook": "betmgm",
-          "odds": { "american": -108, "decimal": 1.926, "probability": 0.519 },
-          "line": -6.5,
-          "timestamp": "2026-01-26T10:29:50.000Z"
-        },
-        {
-          "sportsbook": "pinnacle",
-          "odds": { "american": -108, "decimal": 1.926, "probability": 0.519 },
-          "line": -6.5,
-          "timestamp": "2026-01-26T10:29:45.000Z"
-        }
-      ],
-      "sharp_odds": {
+      "consensus_odds": {
         "american": -108,
         "decimal": 1.926,
         "probability": 0.519
       },
-      "sharp_book": "pinnacle",
+      "market_hold": 0.042,
+      "all_books": [
+        {
+          "book": "fanduel",
+          "odds": { "american": -105, "decimal": 1.952 },
+          "edge": 0.007,
+          "line": -6.5,
+          "timestamp": "2026-01-26T10:30:00.000Z"
+        },
+        {
+          "book": "draftkings",
+          "odds": { "american": -110, "decimal": 1.909 },
+          "edge": 0.0,
+          "line": -6.5,
+          "timestamp": "2026-01-26T10:29:55.000Z"
+        },
+        {
+          "book": "betmgm",
+          "odds": { "american": -108, "decimal": 1.926 },
+          "edge": 0.003,
+          "line": -6.5,
+          "timestamp": "2026-01-26T10:29:50.000Z"
+        },
+        {
+          "book": "pinnacle",
+          "odds": { "american": -108, "decimal": 1.926 },
+          "edge": 0.003,
+          "line": -6.5,
+          "timestamp": "2026-01-26T10:29:45.000Z"
+        }
+      ],
       "timestamp": "2026-01-26T10:30:00.000Z"
     }
   ],
@@ -197,17 +203,25 @@ X-Request-Id: req_best_789xyz
 | `best_odds.decimal` | number | Best decimal odds |
 | `best_odds.probability` | number | Implied probability of best odds |
 | `best_book` | string | Sportsbook ID with the best odds |
+| `consensus_odds` | object | Average odds across all books for this selection |
+| `consensus_odds.american` | number | Consensus American odds |
+| `consensus_odds.decimal` | number | Consensus decimal odds |
+| `consensus_odds.probability` | number | Consensus implied probability |
+| `market_hold` | number | Market hold (overround) as a decimal (e.g., `0.042` = 4.2%) |
 | `all_books` | array | All sportsbooks' odds for this selection |
-| `all_books[].sportsbook` | string | Sportsbook ID |
-| `all_books[].odds` | object | Odds object (american, decimal, probability) |
+| `all_books[].book` | string | Sportsbook ID |
+| `all_books[].odds` | object | Odds object (`american`, `decimal`) |
+| `all_books[].edge` | number | Edge over the worst available odds (as decimal) |
 | `all_books[].line` | number \| null | Line at this sportsbook |
 | `all_books[].timestamp` | string | When this book's odds were last updated |
-| `sharp_odds` | object \| null | Pinnacle (sharp) reference odds, `null` if unavailable |
-| `sharp_book` | string \| null | Sharp reference book (always `"pinnacle"` when present) |
 | `timestamp` | string | ISO 8601 timestamp of the best odds determination |
 
 <Callout type="info">
-The `sharp_odds` and `sharp_book` fields are only populated when Pinnacle odds are available for your tier (Pro and above). On Free and Hobby tiers, these fields will be `null`.
+The `market_hold` field represents the bookmaker's built-in margin (overround). A hold of `0.042` means the combined implied probabilities across all outcomes sum to 104.2%. Lower hold = more efficient market.
+</Callout>
+
+<Callout type="info">
+Pinnacle is commonly used as the sharp reference. When Pinnacle is available in `all_books`, you can identify it by `book: "pinnacle"` and compare its odds to soft books to find +EV opportunities.
 </Callout>
 
 ## Why Best Odds Matter
@@ -235,12 +249,13 @@ Over 1,000 bets at a 52% win rate:
 | -110 | **+$18 profit** |
 | -105 | **+$80 profit** |
 
-### 3. Sharp Reference
+### 3. Consensus & Hold
 
-Comparing soft book odds against the Pinnacle (sharp) line helps you identify when a sportsbook is offering +EV (positive expected value). If DraftKings has -105 while Pinnacle has -108, the DraftKings line may carry positive expected value.
+The `consensus_odds` field shows the market average, helping you identify when a book is offering better-than-market odds. The `market_hold` tells you how efficient the market is -- lower hold means the odds are closer to "true" probabilities.
 
 ## Related Endpoints
 
 - [Odds Snapshot](/api-reference/odds) - Get raw odds from individual sportsbooks
+- [Odds Delta](/api-reference/odds-delta) - Get only odds that changed since a given timestamp
 - [Odds Comparison](/api-reference/odds-comparison) - Compare odds side by side across books
 - [Sportsbooks](/api-reference/sportsbooks) - See which books are available and their status

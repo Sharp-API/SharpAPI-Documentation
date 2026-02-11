@@ -23,13 +23,14 @@ Always use `api.sharpapi.io` as the base URL, not `sharpapi.io`.
 
 ## Endpoint Summary
 
-SharpAPI exposes 25 routes across 5 namespaces plus reference and health endpoints.
+SharpAPI exposes 27 routes across 5 namespaces plus reference and health endpoints.
 
 ### Odds
 
 | Method | Path | Auth | Min Tier |
 |--------|------|------|----------|
 | `GET` | `/api/v1/odds` | Yes | Free |
+| `GET` | `/api/v1/odds/delta` | Yes | Free |
 | `GET` | `/api/v1/odds/best` | Yes | Free |
 | `GET` | `/api/v1/odds/comparison` | Yes | Free |
 | `POST` | `/api/v1/odds/batch` | Yes | Free |
@@ -78,6 +79,7 @@ SharpAPI exposes 25 routes across 5 namespaces plus reference and health endpoin
 | `GET` | `/api/v1/sportsbooks` | No | - |
 | `GET` | `/api/v1/sportsbooks/:bookId` | No | - |
 | `GET` | `/api/v1/markets` | No | - |
+| `GET` | `/api/v1/teams` | No | - |
 
 ### Health
 
@@ -97,16 +99,15 @@ All successful responses wrap data in a consistent envelope:
     {
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
-      "sport": "nba",
+      "sportsbook_name": "DraftKings",
+      "sport": "basketball",
       "home_team": "PHI 76ers",
       "away_team": "PHO Suns",
       "market_type": "moneyline",
       "selection": "PHO Suns",
-      "odds": {
-        "american": -150,
-        "decimal": 1.67,
-        "probability": 0.60
-      },
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "probability": 0.60,
       "is_live": false
     }
   ],
@@ -133,7 +134,7 @@ All successful responses wrap data in a consistent envelope:
 | `data` | Array of results (or single object for detail endpoints) |
 | `meta.count` | Number of items returned in this response |
 | `meta.total` | Total matching items across all pages |
-| `meta.pagination.limit` | Maximum items per page (default: 50, max: 100) |
+| `meta.pagination.limit` | Maximum items per page (default: 50, max: 200) |
 | `meta.pagination.offset` | Current offset into results |
 | `meta.pagination.has_more` | Whether more results exist beyond this page |
 | `meta.pagination.next_offset` | Offset value to use for the next page |
@@ -224,8 +225,12 @@ All list endpoints support filtering via query parameters. Filters use **singula
 | `market` | string | `moneyline,spread` | Filter by market type |
 | `event` | string | `evt_abc123` | Filter by event ID |
 | `live` | boolean | `true` | Only live/in-progress events |
-| `main` | boolean | `true` | Only main markets (moneyline, spread, total) |
-| `limit` | number | `25` | Results per page (default: 50, max: 100) |
+| `sort` | string | `-odds_american` | Sort field with optional `-` prefix for descending |
+| `fields` | string | `id,sportsbook,odds_american` | Comma-separated fields to include in response |
+| `min_odds` | number | `-110` | Minimum American odds filter |
+| `max_odds` | number | `200` | Maximum American odds filter |
+| `group_by` | string | `event` | Group results by field |
+| `limit` | number | `25` | Results per page (default: 50, max: 200) |
 | `offset` | number | `50` | Pagination offset |
 
 ### Examples
@@ -250,23 +255,21 @@ Parameter names are always **singular** (`sportsbook`, not `sportsbooks`). Use c
 
 ## Odds Formats
 
-All odds include three formats in every response:
+All odds are returned as flat fields on each odds object:
 
 ```json
 {
-  "odds": {
-    "american": -110,
-    "decimal": 1.909,
-    "probability": 0.5238
-  }
+  "odds_american": -110,
+  "odds_decimal": 1.909,
+  "probability": 0.5238
 }
 ```
 
-| Format | Example | Description |
-|--------|---------|-------------|
-| American | -110, +150 | Standard US format |
-| Decimal | 1.909, 2.50 | Multiplier format |
-| Probability | 0.5238 | Implied probability (0 to 1) |
+| Field | Example | Description |
+|-------|---------|-------------|
+| `odds_american` | -110, +150 | Standard US format |
+| `odds_decimal` | 1.909, 2.50 | Multiplier format |
+| `probability` | 0.5238 | Implied probability (0 to 1) |
 
 ## Error Codes
 

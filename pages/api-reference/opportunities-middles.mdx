@@ -121,6 +121,7 @@ for middle in data['data']:
       "guaranteed_roi": null,
       "key_numbers": [3, 7],
       "key_number_probability": 0.242,
+      "is_live": false,
       "is_player_prop": false,
       "player_name": null,
       "stat_category": null,
@@ -212,6 +213,7 @@ X-Request-Id: req_mid456abc789
 | `guaranteed_roi` | number\|null | Worst-case ROI% when guaranteed (null otherwise) |
 | `key_numbers` | number[] | Key numbers in middle range (e.g., NFL 3, 7) |
 | `key_number_probability` | number | Combined probability of key numbers only |
+| `is_live` | boolean | Whether the game is currently in-play |
 | `is_player_prop` | boolean | Whether this is a player prop middle |
 | `player_name` | string\|null | Player name (if player prop) |
 | `stat_category` | string\|null | Stat type (if player prop, e.g., `points`, `rebounds`) |

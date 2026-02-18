@@ -13,17 +13,11 @@ jobs:
       - name: Create tracking issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ github.event.client_payload.source_repo }}
+          CHANGED: ${{ github.event.client_payload.changed_files }}
+          COMMIT: ${{ github.event.client_payload.commit }}
         run: |
-          SOURCE="${{ github.event.client_payload.source_repo }}"
-          CHANGED="${{ github.event.client_payload.changed_files }}"
-          COMMIT="${{ github.event.client_payload.commit }}"
-
-          gh issue create \
-            --repo "${{ github.repository }}" \
-            --title "Upstream API endpoint change from ${SOURCE}" \
-            --label "upstream,docs-update" \
-            --body "$(cat <<'EOF'
-          ## Upstream API Endpoint Change
+          BODY="## Upstream API Endpoint Change
 
           **Source repo**: ${SOURCE}
           **Commit**: ${COMMIT}
@@ -40,12 +34,16 @@ jobs:
 
           ### Context
 
-          This issue was auto-created by a `repository_dispatch` event from **${SOURCE}**.
+          This issue was auto-created by a \`repository_dispatch\` event from **${SOURCE}**.
           API route handlers were modified, which may require documentation updates.
 
-          If no action is needed, close this issue with a comment explaining why.
-          EOF
-          )" 2>/dev/null || echo "Issue creation failed (labels may not exist yet)"
+          If no action is needed, close this issue with a comment explaining why."
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Upstream API endpoint change from ${SOURCE}" \
+            --label "upstream,docs-update" \
+            --body "$BODY" || echo "::warning::Issue creation failed"
 
       - name: Log to summary
         run: |

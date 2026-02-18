@@ -1,0 +1,55 @@
+name: Handle Upstream API Endpoint Change
+
+on:
+  repository_dispatch:
+    types: [upstream-api-endpoint-change]
+
+jobs:
+  create-review-issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Create tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SOURCE="${{ github.event.client_payload.source_repo }}"
+          CHANGED="${{ github.event.client_payload.changed_files }}"
+          COMMIT="${{ github.event.client_payload.commit }}"
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Upstream API endpoint change from ${SOURCE}" \
+            --label "upstream,docs-update" \
+            --body "$(cat <<'EOF'
+          ## Upstream API Endpoint Change
+
+          **Source repo**: ${SOURCE}
+          **Commit**: ${COMMIT}
+          **Changed files**: ${CHANGED}
+
+          ### Review Checklist
+
+          - [ ] Check if API reference docs need updating for changed endpoints
+          - [ ] Verify request/response examples still match actual API behavior
+          - [ ] Update any new query parameters or headers
+          - [ ] Add documentation for any new endpoints
+          - [ ] Update SDK examples if affected
+          - [ ] Test code examples against live API
+
+          ### Context
+
+          This issue was auto-created by a `repository_dispatch` event from **${SOURCE}**.
+          API route handlers were modified, which may require documentation updates.
+
+          If no action is needed, close this issue with a comment explaining why.
+          EOF
+          )" 2>/dev/null || echo "Issue creation failed (labels may not exist yet)"
+
+      - name: Log to summary
+        run: |
+          echo "## Upstream Notification Received" >> $GITHUB_STEP_SUMMARY
+          echo "**Source**: ${{ github.event.client_payload.source_repo }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Changed files**: ${{ github.event.client_payload.changed_files }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.event.client_payload.commit }}" >> $GITHUB_STEP_SUMMARY

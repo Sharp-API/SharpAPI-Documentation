@@ -141,7 +141,7 @@ jobs:
           sleep 45
           URL="${{ env.PRODUCTION_URL }}"
           for i in 1 2 3 4 5; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" --max-time 30)
+            HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "$URL" --max-time 30)
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "$URL - OK (HTTP $HTTP_STATUS)"
               echo "## Health Check" >> $GITHUB_STEP_SUMMARY
@@ -162,7 +162,7 @@ jobs:
     steps:
       - run: |
           sleep 30
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ env.PRODUCTION_URL }}" --max-time 30)
+          HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "${{ env.PRODUCTION_URL }}" --max-time 30)
           if [ "$HTTP_STATUS" = "200" ]; then
             echo "Rollback successful"
             echo "## Rollback Health Check" >> $GITHUB_STEP_SUMMARY

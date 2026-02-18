@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [upstream-api-endpoint-change]
 
+permissions:
+  issues: write
+
 jobs:
   create-review-issue:
     runs-on: self-hosted

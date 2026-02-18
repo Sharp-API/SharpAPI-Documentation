@@ -85,7 +85,7 @@ jobs:
           sleep 30
           PREVIEW_URL="${{ needs.deploy-preview.outputs.preview_url }}"
           for i in 1 2 3 4 5; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL" --max-time 30)
+            HTTP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" "$PREVIEW_URL" --max-time 30)
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "Health check passed (HTTP $HTTP_STATUS)"
               echo "## Health Check" >> $GITHUB_STEP_SUMMARY

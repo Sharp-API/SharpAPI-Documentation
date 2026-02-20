@@ -1,0 +1,216 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Middles Summary
+
+Get aggregate statistics for current middle opportunities without the full list. Uses the same underlying data as the [Middles](/api-reference/opportunities-middles) endpoint.
+
+```
+GET /api/v1/opportunities/middles/summary
+```
+
+## Authentication
+
+Requires API key. **Pro tier or higher required.**
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
+| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/middles/summary?league=nfl" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/middles/summary?league=nfl',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+
+console.log(`Total middles: ${data.total}`);
+console.log(`Positive EV: ${data.positive_ev_count}`);
+console.log(`Guaranteed profit: ${data.guaranteed_profit_count}`);
+console.log(`With key numbers: ${data.has_key_numbers_count}`);
+console.log(`Avg EV: $${data.avg_ev}, Avg probability: ${(data.avg_probability * 100).toFixed(1)}%`);
+
+if (data.best_ev) {
+  console.log(`Best EV: $${data.best_ev.ev} (${data.best_ev.sport} ${data.best_ev.market})`);
+}
+
+console.log('By sport:', data.by_sport);
+console.log('By market:', data.by_market);
+console.log('By sportsbook:', data.by_sportsbook);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/middles/summary',
+    params={'league': 'nfl'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+result = response.json()
+data = result['data']
+
+print(f"Total middles: {data['total']}")
+print(f"Positive EV: {data['positive_ev_count']}")
+print(f"Guaranteed profit: {data['guaranteed_profit_count']}")
+print(f"With key numbers: {data['has_key_numbers_count']}")
+print(f"Avg EV: ${data['avg_ev']}, Avg size: {data['avg_middle_size']} pts")
+
+if data['best_ev']:
+    print(f"Best EV: ${data['best_ev']['ev']} ({data['best_ev']['sport']} {data['best_ev']['market']})")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": {
+    "total": 47,
+    "positive_ev_count": 38,
+    "guaranteed_profit_count": 2,
+    "player_prop_count": 12,
+    "by_sport": {
+      "football": 18,
+      "basketball": 15,
+      "hockey": 8,
+      "baseball": 6
+    },
+    "by_market": {
+      "point_spread": 22,
+      "total_points": 13,
+      "player_points": 7,
+      "player_rebounds": 5
+    },
+    "by_sportsbook": {
+      "draftkings": 34,
+      "fanduel": 31,
+      "betmgm": 22,
+      "caesars": 18,
+      "bet365": 15
+    },
+    "avg_middle_size": 1.8,
+    "avg_probability": 0.1245,
+    "avg_ev": 4.72,
+    "best_ev": {
+      "ev": 31.52,
+      "sport": "football",
+      "market": "point_spread"
+    },
+    "has_key_numbers_count": 14
+  },
+  "meta": {
+    "source": "cache",
+    "filters": {
+      "sport": null,
+      "league": ["nfl"]
+    },
+    "updated_at": "2026-02-17T19:45:30Z"
+  }
+}
+```
+
+### Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 296
+X-RateLimit-Reset: 1707401000
+X-Tier: pro
+X-Data-Delay: 0
+X-Request-Id: req_msum789def
+```
+
+### Error Responses
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://sharpapi.io/docs/authentication"
+  }
+}
+```
+
+***403 Tier Required***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Middles detection requires Pro tier or higher",
+    "docs": "https://sharpapi.io/docs/pricing"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total` | integer | Total number of current middles |
+| `positive_ev_count` | integer | Middles with positive expected value |
+| `guaranteed_profit_count` | integer | Middles that are also arbitrage opportunities |
+| `player_prop_count` | integer | Middles on player prop markets |
+| `by_sport` | object | Count of middles per sport |
+| `by_market` | object | Count of middles per market type |
+| `by_sportsbook` | object | Count of middles per sportsbook (each book in a middle is counted) |
+| `avg_middle_size` | number | Average middle gap size in points |
+| `avg_probability` | number | Average probability of middles hitting |
+| `avg_ev` | number | Average expected value per $100 wagered |
+| `best_ev` | object\|null | Highest EV opportunity summary |
+| `best_ev.ev` | number | EV in dollars per $100 wagered |
+| `best_ev.sport` | string | Sport of the best EV middle |
+| `best_ev.market` | string | Market type of the best EV middle |
+| `has_key_numbers_count` | integer | Middles containing sport-specific key numbers |
+
+## Use Cases
+
+### Dashboard Overview
+
+Use the summary endpoint to power dashboard widgets showing middle opportunity counts, breakdowns, and averages without fetching the full list.
+
+### Polling vs Full Fetch
+
+Poll the summary endpoint at shorter intervals to detect when new opportunities appear, then fetch the full [Middles](/api-reference/opportunities-middles) endpoint only when the count changes.
+
+```javascript
+// Poll summary every 10 seconds
+let lastCount = 0;
+setInterval(async () => {
+  const summary = await fetchMiddlesSummary();
+  if (summary.data.total !== lastCount) {
+    lastCount = summary.data.total;
+    const middles = await fetchMiddles(); // Full fetch
+    updateUI(middles);
+  }
+}, 10000);
+```
+
+<Callout type="info">
+The summary endpoint is cached for 10 seconds and counts toward your rate limit the same as the full middles endpoint.
+</Callout>
+
+## Related Endpoints
+
+- [Middles](/api-reference/opportunities-middles) — Full list of middle opportunities
+- [+EV Opportunities](/api-reference/opportunities-ev) — Positive expected value bets
+- [Arbitrage Opportunities](/api-reference/opportunities-arbitrage) — Guaranteed profit opportunities
+- [SSE Stream](/api-reference/stream) — Real-time `middles:detected` and `middles:expired` events

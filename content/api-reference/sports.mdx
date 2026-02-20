@@ -1,0 +1,236 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Sports
+
+Get a list of all available sports with their leagues and event counts.
+
+## Endpoints
+
+```
+GET /api/v1/sports
+GET /api/v1/sports/{sportId}
+```
+
+<Callout type="info">
+These are **public endpoints** -- no authentication required. Unauthenticated requests are rate-limited to 10 requests/minute. Authenticated requests receive your tier's full rate limit.
+</Callout>
+
+## List All Sports
+
+### Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# No API key required
+curl -X GET "https://api.sharpapi.io/api/v1/sports"
+
+# With API key for higher rate limits
+curl -X GET "https://api.sharpapi.io/api/v1/sports" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+// No API key required for public reference endpoints
+const response = await fetch('https://api.sharpapi.io/api/v1/sports');
+const { data, meta } = await response.json();
+
+data.forEach(sport => {
+  console.log(`${sport.display_name}: ${sport.event_count} events (${sport.live_event_count} live)`);
+  console.log(`  Leagues: ${sport.leagues.join(', ')}`);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+# No API key required
+response = requests.get('https://api.sharpapi.io/api/v1/sports')
+result = response.json()
+
+for sport in result['data']:
+    print(f"{sport['display_name']}: {sport['event_count']} events ({sport['live_event_count']} live)")
+    print(f"  Leagues: {', '.join(sport['leagues'])}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "basketball",
+      "name": "basketball",
+      "display_name": "Basketball",
+      "leagues": ["nba", "ncaab", "wnba"],
+      "event_count": 42,
+      "live_event_count": 3
+    },
+    {
+      "id": "football",
+      "name": "football",
+      "display_name": "Football",
+      "leagues": ["nfl", "ncaaf"],
+      "event_count": 28,
+      "live_event_count": 1
+    },
+    {
+      "id": "hockey",
+      "name": "hockey",
+      "display_name": "Hockey",
+      "leagues": ["nhl"],
+      "event_count": 15,
+      "live_event_count": 2
+    },
+    {
+      "id": "baseball",
+      "name": "baseball",
+      "display_name": "Baseball",
+      "leagues": ["mlb"],
+      "event_count": 0,
+      "live_event_count": 0
+    },
+    {
+      "id": "soccer",
+      "name": "soccer",
+      "display_name": "Soccer",
+      "leagues": ["epl", "la_liga", "serie_a", "bundesliga", "mls"],
+      "event_count": 35,
+      "live_event_count": 4
+    },
+    {
+      "id": "tennis",
+      "name": "tennis",
+      "display_name": "Tennis",
+      "leagues": ["atp", "wta"],
+      "event_count": 18,
+      "live_event_count": 6
+    },
+    {
+      "id": "mma",
+      "name": "mma",
+      "display_name": "MMA",
+      "leagues": ["ufc"],
+      "event_count": 12,
+      "live_event_count": 0
+    },
+    {
+      "id": "golf",
+      "name": "golf",
+      "display_name": "Golf",
+      "leagues": ["pga"],
+      "event_count": 4,
+      "live_event_count": 1
+    }
+  ],
+  "meta": {
+    "count": 8,
+    "total": 8,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T12:00:00Z",
+    "filters": {}
+  }
+}
+```
+
+## Get Single Sport
+
+```
+GET /api/v1/sports/{sportId}
+```
+
+Retrieve details for a specific sport by its ID.
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "basketball",
+    "name": "basketball",
+    "display_name": "Basketball",
+    "leagues": ["nba", "ncaab", "wnba"],
+    "event_count": 42,
+    "live_event_count": 3
+  },
+  "meta": {
+    "updated_at": "2026-01-26T12:00:00Z"
+  }
+}
+```
+
+### Error Response
+
+***404 Not Found***
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Sport 'cricket' not found",
+    "docs": "https://sharpapi.io/docs/api-reference/sports"
+  }
+}
+```
+
+## Sport Object Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Sport identifier (lowercase, use in API filters) |
+| `name` | string | Sport name (lowercase) |
+| `display_name` | string | Human-readable display name |
+| `leagues` | string[] | League IDs within this sport |
+| `event_count` | integer | Total events currently available with odds |
+| `live_event_count` | integer | Events currently live/in-play |
+
+## Available Sports
+
+| ID | Display Name | Popular Leagues |
+|----|-------------|-----------------|
+| `basketball` | Basketball | NBA, NCAAB, WNBA |
+| `football` | Football | NFL, NCAAF |
+| `hockey` | Hockey | NHL |
+| `baseball` | Baseball | MLB |
+| `soccer` | Soccer | EPL, La Liga, Serie A, Bundesliga, MLS |
+| `tennis` | Tennis | ATP, WTA |
+| `mma` | MMA | UFC |
+| `golf` | Golf | PGA |
+
+<Callout type="info">
+The `event_count` and `live_event_count` values are dynamic and change based on current schedules. Off-season sports will show 0 events.
+</Callout>
+
+## Using Sports in Filters
+
+Use the sport `id` as a filter parameter on other endpoints:
+
+```bash
+# Get odds for basketball only
+curl "https://api.sharpapi.io/api/v1/odds?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get events for multiple sports
+curl "https://api.sharpapi.io/api/v1/events?sport=basketball,football" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Related Endpoints
+
+- [Leagues](/api-reference/leagues) - List leagues with optional sport filter
+- [Odds Snapshot](/api-reference/odds) - Filter odds by sport
+- [Events](/api-reference/events) - Filter events by sport

@@ -140,7 +140,7 @@ for book in result['data']:
       "status": "active",
       "odds_count": 980,
       "last_update": "2026-01-26T02:24:55.000Z",
-      "requires_tier": "pro"
+      "requires_tier": "sharp"
     },
     {
       "id": "bet365",
@@ -300,12 +300,12 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 |------|-----------------|----------------------|
 | **Free** | 2 | DraftKings, FanDuel |
 | **Hobby** | 5 | + BetMGM, Caesars, ESPN Bet |
-| **Pro** | 15 | + Pinnacle, Bet365, BetRivers, Fanatics, and more |
+| **Pro** | 15 | + Bet365, BetRivers, Fanatics, and more |
 | **Sharp** | All | All available sportsbooks |
 | **Enterprise** | All | All available sportsbooks |
 
 <Callout type="warning">
-**Pinnacle** requires **Pro tier or higher**. Pinnacle is a sharp book whose efficient lines are used as the reference for +EV calculations. Requesting Pinnacle odds on Free or Hobby tier will return a `403 tier_restricted` error.
+**Pinnacle** and other sharp books require **Sharp tier or higher**. Pinnacle is a sharp book whose efficient lines are used as the reference for +EV calculations. Requesting Pinnacle odds on Free, Hobby, or Pro tier will return a `403 tier_restricted` error.
 </Callout>
 
 ### Understanding `requires_tier`
@@ -335,7 +335,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
-| `pinnacle` | Pinnacle | Yes | Yes | **Pro** |
+| `pinnacle` | Pinnacle | Yes | Yes | **Sharp** |
 
 ### International
 

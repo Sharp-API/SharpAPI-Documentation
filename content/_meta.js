@@ -1,0 +1,11 @@
+export default {
+  index: "Introduction",
+  quickstart: "Quick Start",
+  authentication: "Authentication",
+  pricing: "Pricing",
+  "api-reference": "API Reference",
+  streaming: "Streaming",
+  concepts: "Core Concepts",
+  sdks: "SDKs",
+  examples: "Examples",
+}

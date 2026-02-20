@@ -196,7 +196,7 @@ X-Request-Id: req_abc123def456
 {
   "error": {
     "code": "tier_restricted",
-    "message": "Sportsbook 'pinnacle' requires Pro tier or higher",
+    "message": "Sportsbook 'pinnacle' requires Sharp tier or higher",
     "docs": "https://sharpapi.io/docs/pricing"
   }
 }
@@ -345,12 +345,12 @@ The sportsbooks included in your odds results depend on your subscription tier:
 |------|-----------------|----------------------|
 | **Free** | 2 | DraftKings, FanDuel |
 | **Hobby** | 5 | + BetMGM, Caesars, ESPN Bet |
-| **Pro** | 15 | + Pinnacle, Bet365, BetRivers, Fanatics, and more |
+| **Pro** | 15 | + Bet365, BetRivers, Fanatics, and more |
 | **Sharp** | All | All available sportsbooks |
 | **Enterprise** | All | All available sportsbooks |
 
 <Callout type="warning">
-**Pinnacle** (sharp book) requires **Pro tier or higher**. Requesting `sportsbook=pinnacle` on a Free or Hobby tier will return a `403 tier_restricted` error.
+**Pinnacle** (sharp book) requires **Sharp tier or higher**. Requesting `sportsbook=pinnacle` on a Free, Hobby, or Pro tier will return a `403 tier_restricted` error.
 </Callout>
 
 ## Filtering Examples

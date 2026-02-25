@@ -3,6 +3,7 @@ import { Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PostHogProvider } from '../components/PostHogProvider'
 
 import 'nextra-theme-docs/style.css'
 import '../styles/globals.css'
@@ -67,27 +68,29 @@ export default async function RootLayout({ children }) {
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head color={{ hue: 210 }} />
       <body>
-        <Layout
-          pageMap={await getPageMap()}
-          sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
-          toc={{ backToTop: true }}
-          feedback={{ content: null }}
-          editLink={null}
-          navbar={
-            <Navbar
-              logo={logo}
-              children={navbarExtra}
-            />
-          }
-          footer={
-            <Footer>
-              {new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp
-              bettors.
-            </Footer>
-          }
-        >
-          {children}
-        </Layout>
+        <PostHogProvider>
+          <Layout
+            pageMap={await getPageMap()}
+            sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
+            toc={{ backToTop: true }}
+            feedback={{ content: null }}
+            editLink={null}
+            navbar={
+              <Navbar
+                logo={logo}
+                children={navbarExtra}
+              />
+            }
+            footer={
+              <Footer>
+                {new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp
+                bettors.
+              </Footer>
+            }
+          >
+            {children}
+          </Layout>
+        </PostHogProvider>
       </body>
     </html>
   )

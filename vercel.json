@@ -2,5 +2,10 @@
   "buildCommand": "pnpm install && pnpm build",
   "outputDirectory": "out",
   "framework": null,
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- pages/ styles/ theme.config.tsx next.config.mjs package.json"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ pages/ styles/ theme.config.tsx next.config.mjs package.json vercel.json",
+  "rewrites": [
+    { "source": "/ingest/static/:path*", "destination": "https://us-assets.i.posthog.com/static/:path*" },
+    { "source": "/ingest/:path*", "destination": "https://us.i.posthog.com/:path*" },
+    { "source": "/ingest/decide", "destination": "https://us.i.posthog.com/decide" }
+  ]
 }

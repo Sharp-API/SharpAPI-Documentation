@@ -30,10 +30,10 @@ Pass your API key as a query parameter on the connection URL:
 wss://ws.sharpapi.io?api_key=sk_live_your_key
 ```
 
-You can also pass initial filters as query parameters:
+You can also pass initial filters and channel subscriptions as query parameters:
 
 ```
-wss://ws.sharpapi.io?api_key=sk_live_your_key&sportsbook=draftkings,fanduel&league=nba
+wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sportsbook=draftkings,fanduel&league=nba
 ```
 
 ### Query Parameters
@@ -41,48 +41,62 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key&sportsbook=draftkings,fanduel&leag
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `api_key` | string | **Required.** Your API key |
+| `channels` | string | Subscribe to specific data channels, comma-separated. Valid values: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to receive all tier-allowed data. |
 | `sportsbook` | string | Filter by sportsbook(s), comma-separated |
 | `league` | string | Filter by league(s), comma-separated |
+
+<Callout type="info">
+**Use channels to reduce payload size.** Without `channels`, the server sends all opportunity types plus the full odds dump. If you only need low-hold data, connect with `channels=low_hold` to skip EV, arbitrage, middles, and raw odds entirely.
+</Callout>
 
 ## Connection Lifecycle
 
 ```
-Client                                Server
-  |                                      |
-  |--- WS Upgrade GET /ws?api_key=xxx →|
-  |                                      |  Auth + acquire stream slot
-  |← connected -------------------------|  Welcome message
-  |← subscribed ------------------------|  Filter confirmation
-  |← initial ---------------------------|  Full odds snapshot
-  |                                      |
-  |← odds_update -----------------------|  Incremental update
-  |← ev:detected -----------------------|  +EV opportunity found
-  |← heartbeat -------------------------|  Keep-alive (every 30s)
-  |                                      |
-  |--- { type: "ping" } →              |
-  |← pong ------------------------------|
-  |                                      |
-  |--- { type: "subscribe", filters } →|  Update filters
-  |← subscribed ------------------------|  New filters confirmed
-  |                                      |
-  |--- close -------------------------→|  Normal close (1000)
+Client                                         Server
+  |                                               |
+  |--- WS Upgrade ?api_key=xxx&channels=ev,odds →|
+  |                                               |  Auth + acquire stream slot
+  |← connected ----------------------------------|  Welcome (tier, features, channels)
+  |← subscribed ---------------------------------|  Filter confirmation
+  |← opportunities_snapshot (ev) ----------------|  EV opportunities
+  |← initial (draftkings) -----------------------|  Odds per sportsbook
+  |← initial (fanduel) --------------------------|  (chunked by book)
+  |← snapshot_complete --------------------------|  All initial data sent
+  |                                               |
+  |← odds_update --------------------------------|  Incremental odds update
+  |← ev:detected --------------------------------|  +EV opportunity found
+  |← heartbeat ----------------------------------|  Keep-alive (every 30s)
+  |                                               |
+  |--- { type: "ping" } →                       |
+  |← pong ---------------------------------------|
+  |                                               |
+  |--- { type: "subscribe", channels, filters } →|  Update channels/filters
+  |← subscribed ---------------------------------|  New subscription confirmed
+  |                                               |
+  |--- close ----------------------------------→|  Normal close (1000)
 ```
 
 ## Message Protocol
 
 ### Client → Server
 
-**`subscribe`** -- Set or update filters (sent automatically on connect if filters were passed as query params).
+**`subscribe`** -- Set or update channels and filters. Sent automatically on connect if passed as query params.
 
 ```json
 {
   "type": "subscribe",
+  "channels": ["ev", "odds"],
   "filters": {
     "sportsbooks": ["draftkings", "fanduel"],
     "leagues": ["nba"]
   }
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channels` | string[] | Optional. Data channels to subscribe to: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to keep current channels. |
+| `filters` | object | Optional. Sportsbook and league filters. |
 
 **`ping`** -- Keepalive. Send every 25 seconds to prevent timeouts.
 
@@ -102,7 +116,8 @@ Sent immediately after successful authentication.
   "message": "Welcome to SharpAPI real-time odds stream",
   "stream_id": "ws_mle3husw_ezoyvp",
   "tier": "pro",
-  "features": { "ev": true, "arbitrage": true },
+  "features": { "ev": true, "arbitrage": true, "middles": true, "low_hold": true },
+  "channels": ["ev", "odds"],
   "timestamp": "2026-02-08T18:47:17.559Z"
 }
 ```
@@ -111,35 +126,75 @@ Sent immediately after successful authentication.
 |-------|------|-------------|
 | `stream_id` | string | Unique connection identifier |
 | `tier` | string | Your subscription tier |
-| `features` | object | Which opportunity types you can receive |
+| `features` | object | Which opportunity types your tier supports |
+| `channels` | string[] \| null | Active channel subscriptions, or `null` if receiving all tier-allowed data |
 
 #### `subscribed`
 
-Confirms your active filters.
+Confirms your active channels and filters.
 
 ```json
 {
   "type": "subscribed",
+  "channels": ["ev", "odds"],
   "sportsbooks": ["draftkings", "fanduel"],
   "leagues": ["nba"],
   "timestamp": "2026-02-08T18:47:17.561Z"
 }
 ```
 
+#### `opportunities_snapshot`
+
+Snapshot of opportunities for a single channel type. Sent once per subscribed opportunity channel during the initial data load. Only includes the opportunity type you subscribed to.
+
+```json
+{
+  "type": "opportunities_snapshot",
+  "ev": [
+    {
+      "eventId": "32825-35775-2026-02-08",
+      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "marketType": "player_points",
+      "sportsbook": "draftkings",
+      "selection": "Tyrese Haliburton Over 22.5",
+      "odds": -110,
+      "evPercent": 4.35,
+      "detectedAt": "2026-02-08T18:47:20.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:17.700Z"
+}
+```
+
+The top-level key matches the channel type: `ev`, `arbitrage`, `middles`, or `low_hold`. Each snapshot message contains only one type.
+
 #### `initial`
 
-Full snapshot of current odds (and opportunities if your tier supports them).
+Per-sportsbook odds snapshot. Sent once per sportsbook when the `odds` channel is subscribed. Requires the `odds` channel.
 
 ```json
 {
   "type": "initial",
   "data": {
-    "draftkings": [ /* NormalizedOdds[] */ ],
-    "fanduel": [ /* NormalizedOdds[] */ ]
+    "draftkings": [ /* NormalizedOdds[] */ ]
   },
-  "ev": [ /* EVOpportunity[] (Pro+ only) */ ],
-  "arbitrage": [ /* ArbitrageOpportunity[] (Pro+ only) */ ],
   "timestamp": "2026-02-08T18:47:17.800Z"
+}
+```
+
+<Callout type="info">
+Odds are chunked by sportsbook — you will receive one `initial` message per book. If you don't need raw odds, omit the `odds` channel to skip this entirely.
+</Callout>
+
+#### `snapshot_complete`
+
+Signals that all initial snapshots (opportunities + odds) have been sent. Safe to hide loading states after receiving this.
+
+```json
+{
+  "type": "snapshot_complete",
+  "timestamp": "2026-02-08T18:47:18.000Z"
 }
 ```
 
@@ -234,6 +289,90 @@ Previously detected arbitrage opportunity is no longer available.
 }
 ```
 
+#### `middles:detected`
+
+New middle opportunity found. Requires `middles` channel.
+
+```json
+{
+  "type": "middles:detected",
+  "data": [
+    {
+      "id": "abc123",
+      "eventId": "32825-35775-2026-02-08",
+      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "marketType": "player_points",
+      "selection1": { "book": "draftkings", "selection": "Over 22.5", "odds": -110 },
+      "selection2": { "book": "fanduel", "selection": "Under 23.5", "odds": -105 },
+      "middleProbability": 0.12,
+      "expectedValue": 3.5,
+      "qualityScore": 85,
+      "detectedAt": "2026-02-08T18:47:22.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:22.000Z"
+}
+```
+
+#### `middles:expired`
+
+Previously detected middle opportunity is no longer available.
+
+```json
+{
+  "type": "middles:expired",
+  "data": {
+    "expired": ["abc123"]
+  },
+  "timestamp": "2026-02-08T18:47:27.000Z"
+}
+```
+
+#### `low_hold:detected`
+
+New low-hold opportunity found. Requires `low_hold` channel.
+
+```json
+{
+  "type": "low_hold:detected",
+  "data": [
+    {
+      "hash_id": "def456",
+      "hold_id": "32825:moneyline:0",
+      "hold_percentage": 1.2,
+      "normalized_market": "moneyline",
+      "game_id": "32825-35775-2026-02-08",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "is_live": false,
+      "all_books": ["draftkings", "fanduel"],
+      "side1": { "selection": "Indiana Pacers", "price": -108, "books": ["draftkings"] },
+      "side2": { "selection": "Toronto Raptors", "price": 110, "books": ["fanduel"] },
+      "timestamp": 1707414442
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:22.000Z"
+}
+```
+
+#### `low_hold:expired`
+
+Previously detected low-hold opportunity is no longer available.
+
+```json
+{
+  "type": "low_hold:expired",
+  "data": {
+    "expired": ["def456"]
+  },
+  "timestamp": "2026-02-08T18:47:28.000Z"
+}
+```
+
 #### `heartbeat`
 
 Keep-alive sent every 30 seconds.
@@ -282,8 +421,9 @@ Error notification. The connection may remain open (for non-fatal errors) or clo
 <Tabs items={['Browser', 'Node.js', 'Python', 'TypeScript SDK']}>
   <Tabs.Tab>
 ```javascript
+// Subscribe to EV opportunities + odds only (skip middles, low_hold, arbitrage)
 const ws = new WebSocket(
-  'wss://ws.sharpapi.io?api_key=YOUR_KEY&league=nba'
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&league=nba'
 );
 
 ws.onmessage = (event) => {
@@ -291,14 +431,20 @@ ws.onmessage = (event) => {
 
   switch (msg.type) {
     case 'connected':
-      console.log(msg.message, '| tier:', msg.tier);
+      console.log(msg.message, '| tier:', msg.tier, '| channels:', msg.channels);
       break;
     case 'subscribed':
-      console.log('Filters:', msg.sportsbooks, msg.leagues);
+      console.log('Channels:', msg.channels, '| Filters:', msg.sportsbooks, msg.leagues);
+      break;
+    case 'opportunities_snapshot':
+      if (msg.ev) console.log(`EV snapshot: ${msg.ev.length} opportunities`);
       break;
     case 'initial':
       const books = Object.keys(msg.data);
-      console.log(`Snapshot: ${books.length} books`);
+      console.log(`Odds snapshot: ${books.length} books`);
+      break;
+    case 'snapshot_complete':
+      console.log('All initial data received');
       break;
     case 'odds_update':
       console.log(`${msg.source}: ${msg.data.length} odds updated`);
@@ -324,10 +470,11 @@ setInterval(() => {
   }
 }, 25000);
 
-// Update filters without reconnecting
-function updateFilters(sportsbooks, leagues) {
+// Update channels and filters without reconnecting
+function updateSubscription(channels, sportsbooks, leagues) {
   ws.send(JSON.stringify({
     type: 'subscribe',
+    channels,
     filters: { sportsbooks, leagues }
   }));
 }
@@ -337,8 +484,9 @@ function updateFilters(sportsbooks, leagues) {
 ```javascript
 import WebSocket from 'ws';
 
+// Subscribe to low-hold only — no odds dump, no EV/arb/middles
 const ws = new WebSocket(
-  'wss://ws.sharpapi.io?api_key=YOUR_KEY&sportsbook=draftkings,fanduel'
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=low_hold'
 );
 
 ws.on('message', (raw) => {
@@ -346,23 +494,19 @@ ws.on('message', (raw) => {
 
   if (msg.type === 'connected') {
     console.log(msg.message);
-    console.log('Tier:', msg.tier, '| Features:', msg.features);
+    console.log('Tier:', msg.tier, '| Channels:', msg.channels);
   }
-  else if (msg.type === 'initial') {
-    for (const [book, odds] of Object.entries(msg.data)) {
-      console.log(`${book}: ${odds.length} odds`);
-    }
+  else if (msg.type === 'opportunities_snapshot' && msg.low_hold) {
+    console.log(`Low-hold snapshot: ${msg.low_hold.length} opportunities`);
   }
-  else if (msg.type === 'odds_update') {
-    console.log(`${msg.source}: ${msg.data.length} odds updated`);
+  else if (msg.type === 'snapshot_complete') {
+    console.log('Initial data complete');
   }
-  else if (msg.type === 'ev:detected') {
-    msg.data.forEach(ev =>
-      console.log(`+EV: ${ev.selection} — ${ev.evPercent}% EV`)
-    );
+  else if (msg.type === 'low_hold:detected') {
+    console.log(`+${msg.data.length} low-hold opportunities`);
   }
-  else if (msg.type === 'ev:expired') {
-    console.log(`EV expired: ${msg.data.expired.length} opportunities`);
+  else if (msg.type === 'low_hold:expired') {
+    console.log(`-${msg.data.expired.length} low-hold expired`);
   }
 });
 
@@ -389,22 +533,24 @@ import threading
 import time
 
 API_KEY = "YOUR_KEY"
-URL = f"wss://ws.sharpapi.io?api_key={API_KEY}&league=nba"
+# Subscribe to middles channel only
+URL = f"wss://ws.sharpapi.io?api_key={API_KEY}&channels=middles&league=nba"
 
 def on_message(ws, raw):
     msg = json.loads(raw)
     msg_type = msg["type"]
 
     if msg_type == "connected":
-        print(f'{msg["message"]} | tier: {msg["tier"]}')
-    elif msg_type == "initial":
-        for book, odds in msg["data"].items():
-            print(f"  {book}: {len(odds)} odds")
-    elif msg_type == "odds_update":
-        print(f'{msg["source"]}: {len(msg["data"])} odds updated')
-    elif msg_type == "ev:detected":
-        for ev in msg["data"]:
-            print(f'+EV: {ev["selection"]} at {ev["evPercent"]}%')
+        print(f'{msg["message"]} | tier: {msg["tier"]} | channels: {msg["channels"]}')
+    elif msg_type == "opportunities_snapshot" and "middles" in msg:
+        print(f'Middles snapshot: {len(msg["middles"])} opportunities')
+    elif msg_type == "snapshot_complete":
+        print("Initial data complete")
+    elif msg_type == "middles:detected":
+        for m in msg["data"]:
+            print(f'Middle: {m["eventName"]} — EV {m.get("expectedValue", "?")}%')
+    elif msg_type == "middles:expired":
+        print(f'Expired: {len(msg["data"]["expired"])} middles')
     elif msg_type == "heartbeat":
         pass  # silent keepalive
 
@@ -434,16 +580,22 @@ import { SharpAPI } from '@sharpapi/client';
 const api = new SharpAPI('YOUR_KEY');
 
 const stream = api.stream.oddsWs({
+  channels: ['ev', 'odds'],
   sportsbook: ['draftkings', 'fanduel'],
   league: ['nba'],
 });
 
-stream.on('connected', ({ message, tier }) => {
-  console.log(message, '| tier:', tier);
+stream.on('connected', ({ message, tier, channels }) => {
+  console.log(message, '| tier:', tier, '| channels:', channels);
 });
 
-stream.on('initial', ({ data }) => {
-  console.log('Snapshot received');
+stream.on('opportunities_snapshot', ({ ev, arbitrage, middles, low_hold }) => {
+  if (ev) console.log(`EV snapshot: ${ev.length}`);
+  if (low_hold) console.log(`Low-hold snapshot: ${low_hold.length}`);
+});
+
+stream.on('snapshot_complete', () => {
+  console.log('All initial data received');
 });
 
 stream.on('odds_update', ({ data, source }) => {
@@ -462,8 +614,9 @@ stream.on('error', ({ message }) => {
 
 stream.connect();
 
-// Update filters later without reconnecting
-stream.updateFilters({
+// Update channels and filters later without reconnecting
+stream.updateSubscription({
+  channels: ['low_hold'],
   sportsbooks: ['pinnacle'],
   leagues: ['nfl'],
 });
@@ -489,13 +642,14 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 
 ## Best Practices
 
-1. **Send pings every 25 seconds** -- The server sends heartbeats every 30s, but explicit pings prevent proxy/firewall timeouts
-2. **Use filters** -- Pass `sportsbook` and `league` params to receive only what you need
-3. **Update filters via `subscribe`** -- No need to reconnect when changing what you track
-4. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
-5. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...)
-6. **Process the `initial` message** -- It contains the full current state. Subsequent `odds_update` messages are incremental deltas
-7. **Close unused connections** -- Each connection counts against your 10-stream limit
+1. **Use channels** -- Subscribe only to the data you need. `channels=low_hold` skips the entire odds dump and other opportunity types, reducing initial payload from megabytes to kilobytes
+2. **Send pings every 25 seconds** -- The server sends heartbeats every 30s, but explicit pings prevent proxy/firewall timeouts
+3. **Use filters** -- Pass `sportsbook` and `league` params to narrow data within your subscribed channels
+4. **Update via `subscribe`** -- Change both channels and filters without reconnecting
+5. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
+6. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...)
+7. **Wait for `snapshot_complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
+8. **Close unused connections** -- Each connection counts against your 10-stream limit
 
 ## Related
 

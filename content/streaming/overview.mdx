@@ -147,13 +147,18 @@ for event in client.events():
 
 | Event | Description |
 |-------|-------------|
-| `connected` | Stream established, returns stream ID and active filters |
-| `snapshot` | Full data dump of current odds and/or opportunities |
-| `odds:update` | Odds changed for a sportsbook |
+| `connected` | Stream established, returns stream ID, active filters, and channels |
+| `snapshot` / `opportunities_snapshot` | Data dump of current odds and/or opportunities |
+| `snapshot_complete` | All initial data has been sent (WebSocket only) |
+| `odds:update` / `odds_update` | Odds changed for a sportsbook |
 | `ev:detected` | New +EV opportunity found |
 | `ev:expired` | +EV opportunity no longer available |
 | `arb:detected` | New arbitrage opportunity found |
 | `arb:expired` | Arbitrage opportunity no longer available |
+| `middles:detected` | New middle opportunity found |
+| `middles:expired` | Middle opportunity no longer available |
+| `low_hold:detected` | New low-hold opportunity found |
+| `low_hold:expired` | Low-hold opportunity no longer available |
 | `heartbeat` | Keep-alive sent every 30 seconds |
 | `error` | Recoverable error (connection stays open) |
 
@@ -162,7 +167,8 @@ for event in client.events():
 | Feature | SSE | WebSocket |
 |---------|-----|-----------|
 | Protocol | HTTP (one-way) | `ws://` / `wss://` (bidirectional) |
-| Endpoint | `GET /api/v1/stream` | `wss://ws.sharpapi.io/ws` |
+| Endpoint | `GET /api/v1/stream` | `wss://ws.sharpapi.io` |
+| Channel subscriptions | Set once via query params | Update anytime via `subscribe` message |
 | Filter updates | Reconnect with new params | Send `subscribe` message |
 | Reconnection | Automatic (`Last-Event-ID`) | Manual (with backoff) |
 | Browser support | Native `EventSource` | Native `WebSocket` |

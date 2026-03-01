@@ -33,7 +33,7 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key
 You can also pass initial filters and channel subscriptions as query parameters:
 
 ```
-wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sportsbook=draftkings,fanduel&league=nba
+wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sport=basketball&sportsbook=draftkings,fanduel&league=nba
 ```
 
 ### Query Parameters
@@ -42,6 +42,7 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sportsbook=draftk
 |-----------|------|-------------|
 | `api_key` | string | **Required.** Your API key |
 | `channels` | string | Subscribe to specific data channels, comma-separated. Valid values: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to receive all tier-allowed data. |
+| `sport` | string | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | Filter by sportsbook(s), comma-separated |
 | `league` | string | Filter by league(s), comma-separated |
 
@@ -87,6 +88,7 @@ Client                                         Server
   "type": "subscribe",
   "channels": ["ev", "odds"],
   "filters": {
+    "sports": ["basketball"],
     "sportsbooks": ["draftkings", "fanduel"],
     "leagues": ["nba"]
   }
@@ -96,7 +98,11 @@ Client                                         Server
 | Field | Type | Description |
 |-------|------|-------------|
 | `channels` | string[] | Optional. Data channels to subscribe to: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to keep current channels. |
-| `filters` | object | Optional. Sportsbook and league filters. |
+| `filters.sports` | string[] | Optional. Filter by sport(s): `basketball`, `football`, `ice_hockey`, `baseball`, `soccer`, etc. |
+| `filters.sportsbooks` | string[] | Optional. Filter by sportsbook(s). |
+| `filters.leagues` | string[] | Optional. Filter by league(s). |
+| `filters.markets` | string[] | Optional. Filter by market type(s). |
+| `filters.eventIds` | string[] | Optional. Filter by specific event ID(s). |
 
 **`ping`** -- Keepalive. Send every 25 seconds to prevent timeouts.
 
@@ -137,8 +143,11 @@ Confirms your active channels and filters.
 {
   "type": "subscribed",
   "channels": ["ev", "odds"],
+  "sports": ["basketball"],
   "sportsbooks": ["draftkings", "fanduel"],
   "leagues": ["nba"],
+  "markets": null,
+  "eventIds": null,
   "timestamp": "2026-02-08T18:47:17.561Z"
 }
 ```
@@ -423,7 +432,7 @@ Error notification. The connection may remain open (for non-fatal errors) or clo
 ```javascript
 // Subscribe to EV opportunities + odds only (skip middles, low_hold, arbitrage)
 const ws = new WebSocket(
-  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&league=nba'
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&sport=basketball&league=nba'
 );
 
 ws.onmessage = (event) => {
@@ -471,11 +480,11 @@ setInterval(() => {
 }, 25000);
 
 // Update channels and filters without reconnecting
-function updateSubscription(channels, sportsbooks, leagues) {
+function updateSubscription(channels, { sports, sportsbooks, leagues } = {}) {
   ws.send(JSON.stringify({
     type: 'subscribe',
     channels,
-    filters: { sportsbooks, leagues }
+    filters: { sports, sportsbooks, leagues }
   }));
 }
 ```
@@ -581,6 +590,7 @@ const api = new SharpAPI('YOUR_KEY');
 
 const stream = api.stream.oddsWs({
   channels: ['ev', 'odds'],
+  sport: ['basketball'],
   sportsbook: ['draftkings', 'fanduel'],
   league: ['nba'],
 });
@@ -617,6 +627,7 @@ stream.connect();
 // Update channels and filters later without reconnecting
 stream.updateSubscription({
   channels: ['low_hold'],
+  sports: ['football'],
   sportsbooks: ['pinnacle'],
   leagues: ['nfl'],
 });
@@ -644,7 +655,7 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 
 1. **Use channels** -- Subscribe only to the data you need. `channels=low_hold` skips the entire odds dump and other opportunity types, reducing initial payload from megabytes to kilobytes
 2. **Send pings every 25 seconds** -- The server sends heartbeats every 30s, but explicit pings prevent proxy/firewall timeouts
-3. **Use filters** -- Pass `sportsbook` and `league` params to narrow data within your subscribed channels
+3. **Use filters** -- Pass `sport`, `sportsbook`, and `league` params to narrow data within your subscribed channels
 4. **Update via `subscribe`** -- Change both channels and filters without reconnecting
 5. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
 6. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...)

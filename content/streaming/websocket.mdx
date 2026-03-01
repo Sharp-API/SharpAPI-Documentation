@@ -32,11 +32,13 @@ Use the `channels` parameter to subscribe only to the data you need:
 ```javascript
 // Only EV opportunities + odds — no middles, low_hold, or arbitrage
 const ws = new WebSocket(
-  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&sportsbook=draftkings&league=nba'
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&sport=basketball&sportsbook=draftkings&league=nba'
 );
 ```
 
 Available channels: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit `channels` to receive everything your tier supports.
+
+Available filters: `sport`, `sportsbook`, `league`, `market`, `event_id` — all comma-separated.
 
 ### 2. Handle Messages
 
@@ -83,7 +85,7 @@ setInterval(() => {
 ws.send(JSON.stringify({
   type: 'subscribe',
   channels: ['low_hold'],
-  filters: { sportsbooks: ['fanduel', 'betmgm'], leagues: ['nfl'] }
+  filters: { sports: ['football'], sportsbooks: ['fanduel', 'betmgm'], leagues: ['nfl'] }
 }));
 ```
 

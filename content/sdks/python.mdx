@@ -56,13 +56,13 @@ class SharpApiClient:
         if books:
             params['books'] = ','.join(books)
 
-        response = self.session.get(f'{self.BASE_URL}/ev', params=params)
+        response = self.session.get(f'{self.BASE_URL}/opportunities/ev', params=params)
         response.raise_for_status()
         return response.json()
 
     def get_arbitrage(self, min_profit: float = 0.5) -> dict:
         params = {'min_profit': min_profit}
-        response = self.session.get(f'{self.BASE_URL}/arbitrage', params=params)
+        response = self.session.get(f'{self.BASE_URL}/opportunities/arbitrage', params=params)
         response.raise_for_status()
         return response.json()
 ```
@@ -75,7 +75,7 @@ import sseclient
 import requests
 
 def stream_odds(api_key: str, sports: Optional[List[str]] = None):
-    url = 'https://sharpapi.io/v1/stream'
+    url = 'https://api.sharpapi.io/api/v1/stream'
     params = {'sports': ','.join(sports)} if sports else {}
     headers = {'X-API-Key': api_key}
 

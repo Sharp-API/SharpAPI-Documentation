@@ -20,20 +20,21 @@
 
 ### Actual Implementation (Code)
 
-| Tier | Requests/min | Streams | Data Delay | Books | Notes |
-|------|-------------|---------|------------|-------|-------|
-| **free** | 20 | 0 | 60s | 5 specific | Unkey-aligned (was 10) |
-| **starter** | 100 | 2 | 0s | 15 | Internal tier |
-| **pro** | 500 | 3 | 0s | 30 | ✅ Matches pricing |
-| **sharp** | 1000 | 10 | 0s | Unlimited | ✅ Matches pricing |
-| **enterprise** | 10000 | 50 | 0s | Unlimited | Custom per customer |
+| Tier | Requests/min | Streaming | Data Delay | Books | Notes |
+|------|-------------|-----------|------------|-------|-------|
+| **free** | 12 | No | 60s | 2 | DraftKings, FanDuel |
+| **hobby** | 120 | Add-on | 0s | 5 | ✅ Matches pricing |
+| **pro** | 300 | Add-on | 0s | 15 | ✅ Matches pricing |
+| **sharp** | 1000 | Add-on | 0s | All | ✅ Matches pricing |
+| **enterprise** | 10000 | Included | 0s | All | Custom per customer |
 
 ## ✅ Configuration Status
 
 ### Rate Limiting (✅ CORRECT)
 - **Unkey Integration**: All rate limiting handled by Unkey API
-- **Free tier**: 20 req/min (Unkey alignment, slightly higher than pricing)
-- **Pro tier**: 500 req/min ✅
+- **Free tier**: 12 req/min ✅
+- **Hobby tier**: 120 req/min ✅
+- **Pro tier**: 300 req/min ✅
 - **Sharp tier**: 1000 req/min ✅
 - **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
@@ -110,11 +111,9 @@ canConnectStream(apiKey, 'pro')  // → true (up to 3 streams)
 - **Impact**: Users get slightly better free tier than advertised
 - **Recommendation**: Update pricing page or adjust Unkey config
 
-### 2. **Missing "Hobby" Tier** ⚠️
-- **Pricing**: Has "Hobby ($29)" tier
-- **Implementation**: Has "starter" internal tier, no "hobby"
-- **Gap**: Need to map "Hobby" tier to existing "starter" limits
-- **Impact**: New signups can't select Hobby tier
+### 2. **Hobby Tier** ✅ RESOLVED
+- Hobby tier fully implemented at $79/mo, 120 req/min
+- "starter" tier removed from codebase
 
 ### 3. **Webhook Alerts** ❓
 - **Pricing**: All tiers have "Webhook alerts"
@@ -125,8 +124,8 @@ canConnectStream(apiKey, 'pro')  // → true (up to 3 streams)
 ## 🔧 Recommendations
 
 ### Immediate Actions
-1. **Update Pricing Page** - Change free tier from "10 req/min" to "20 req/min"
-2. **Add Hobby Tier Mapping** - Map pricing "Hobby" to code "starter" tier
+1. ~~Update Pricing Page~~ ✅ Done — Free tier is 12 req/min
+2. ~~Add Hobby Tier~~ ✅ Done — Hobby tier fully implemented
 3. **Webhook Implementation** - Build webhook system or remove from pricing
 
 ### Code Updates Needed

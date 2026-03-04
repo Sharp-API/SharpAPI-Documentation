@@ -16,7 +16,7 @@
 | Free | $0 | 10 | 0 | 60s | 5 | Odds |
 | Hobby | $29 | 50 | 1 | Real-time | 10 | Odds, EV, Arb, Webhooks |
 | Pro | $179 | 500 | 3 | Real-time | 30 | Odds, EV, Arb, Webhooks |
-| Sharp | $299 | 2000 | 10 | Real-time | All | Odds, EV, Arb, Webhooks |
+| Sharp | $299 | 1000 | 10 | Real-time | All | Odds, EV, Arb, Webhooks |
 
 ### Actual Implementation (Code)
 
@@ -25,7 +25,7 @@
 | **free** | 20 | 0 | 60s | 5 specific | Unkey-aligned (was 10) |
 | **starter** | 100 | 2 | 0s | 15 | Internal tier |
 | **pro** | 500 | 3 | 0s | 30 | ✅ Matches pricing |
-| **sharp** | 2000 | 10 | 0s | Unlimited | ✅ Matches pricing |
+| **sharp** | 1000 | 10 | 0s | Unlimited | ✅ Matches pricing |
 | **enterprise** | 10000 | 50 | 0s | Unlimited | Custom per customer |
 
 ## ✅ Configuration Status
@@ -34,7 +34,7 @@
 - **Unkey Integration**: All rate limiting handled by Unkey API
 - **Free tier**: 20 req/min (Unkey alignment, slightly higher than pricing)
 - **Pro tier**: 500 req/min ✅
-- **Sharp tier**: 2000 req/min ✅
+- **Sharp tier**: 1000 req/min ✅
 - **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
 ### Data Delay (✅ CORRECT)

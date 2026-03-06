@@ -100,7 +100,7 @@ for market in event['markets']:
     "league": "nba",
     "start_time": "2026-01-26T19:00:00Z",
     "is_live": false,
-    "books_available": 4,
+    "books_available": ["betmgm", "draftkings", "fanduel", "pinnacle"],
     "markets": [
       {
         "market_type": "moneyline",
@@ -214,7 +214,7 @@ The response `data` is a single event object (not an array) containing nested ma
 | `league` | string | League slug |
 | `start_time` | string | ISO 8601 event start time |
 | `is_live` | boolean | Whether the event is currently live |
-| `books_available` | number | Number of sportsbooks with odds for this event |
+| `books_available` | string[] | Sportsbook IDs with odds for this event |
 | `markets` | array | Array of market comparisons |
 
 ### Market Object

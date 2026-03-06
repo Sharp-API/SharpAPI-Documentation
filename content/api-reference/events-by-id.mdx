@@ -36,31 +36,37 @@ All responses include standard rate limit and metadata headers:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique event identifier |
+| `external_ids` | object | Map of sportsbook ID to that book's external event ID (e.g., `{ "draftkings": "12345", "fanduel": "67890" }`) |
 | `sport` | string | Sport identifier (e.g., `basketball`, `football`) |
 | `league` | string | League name (e.g., `NBA`, `NFL`) |
 | `home_team` | string | Home team name |
 | `away_team` | string | Away team name |
 | `start_time` | string | ISO 8601 event start time |
-| `status` | string | Event status: `scheduled`, `live`, `final`, `postponed`, `cancelled` |
+| `status` | string | Event status: `upcoming`, `live`, `final`, `postponed`, `cancelled` |
 | `is_live` | boolean | Whether the event is currently live |
-| `odds_count` | integer | Total number of odds lines available |
-| `markets` | object | Available markets with odds grouped by market type |
+| `books` | array | Sportsbooks covering this event, sorted by market count descending |
+| `markets` | array | Market types available for this event, sorted by selection count descending |
 
-### Markets Object
+### Books Array
 
-The `markets` field is an object where each key is a market type (e.g., `moneyline`, `spread`, `total`) and each value is an array of odds entries for that market.
+Each entry in the `books` array describes a sportsbook that has odds for this event.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `markets.{type}` | array | Array of odds entries for this market type |
-| `markets.{type}[].sportsbook` | string | Sportsbook identifier |
-| `markets.{type}[].selection` | string | Selection name (team name, Over/Under) |
-| `markets.{type}[].selection_type` | string | `home`, `away`, `over`, `under` |
-| `markets.{type}[].line` | number \| null | Line value (for spread/total markets) |
-| `markets.{type}[].odds.american` | number | American odds (e.g., -110, +150) |
-| `markets.{type}[].odds.decimal` | number | Decimal odds (e.g., 1.909) |
-| `markets.{type}[].odds.probability` | number | Implied probability (e.g., 0.5238) |
-| `markets.{type}[].timestamp` | string | When these odds were last updated |
+| `id` | string | Sportsbook identifier (e.g., `draftkings`, `pinnacle`) |
+| `name` | string | Display name of the sportsbook |
+| `market_count` | integer | Number of distinct market types this book offers for the event |
+| `last_update` | string | ISO 8601 timestamp of the most recent odds update from this book |
+
+### Markets Array
+
+Each entry in the `markets` array summarizes an available market type for this event.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | Market type identifier (e.g., `moneyline`, `spread`, `total`, `player_prop`) |
+| `selection_count` | integer | Number of distinct selections available in this market |
+| `book_count` | integer | Number of sportsbooks offering this market |
 
 ## Example Requests
 
@@ -80,7 +86,7 @@ const response = await fetch(
 );
 const { data, meta } = await response.json();
 console.log(`${data.home_team} vs ${data.away_team}`);
-console.log(`Markets: ${Object.keys(data.markets).join(', ')}`);
+console.log(`Markets: ${data.markets.map(m => m.type).join(', ')}`);
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -94,7 +100,7 @@ response = requests.get(
 )
 event = response.json()['data']
 print(f"{event['home_team']} vs {event['away_team']}")
-print(f"Markets: {list(event['markets'].keys())}")
+print(f"Markets: {[m['type'] for m in event['markets']]}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -111,121 +117,75 @@ Single-resource responses wrap the object in `data` as a single object (not an a
 {
   "data": {
     "id": "evt_nba_bos_lal_20260208",
+    "external_ids": {
+      "draftkings": "12345678",
+      "fanduel": "87654321",
+      "pinnacle": "556677889",
+      "betmgm": "ms_44556"
+    },
     "sport": "basketball",
     "league": "NBA",
     "home_team": "Boston Celtics",
     "away_team": "Los Angeles Lakers",
     "start_time": "2026-02-08T19:30:00Z",
-    "status": "scheduled",
+    "status": "upcoming",
     "is_live": false,
-    "odds_count": 48,
-    "markets": {
-      "moneyline": [
-        {
-          "sportsbook": "draftkings",
-          "selection": "Boston Celtics",
-          "selection_type": "home",
-          "line": null,
-          "odds": {
-            "american": -180,
-            "decimal": 1.556,
-            "probability": 0.643
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        },
-        {
-          "sportsbook": "draftkings",
-          "selection": "Los Angeles Lakers",
-          "selection_type": "away",
-          "line": null,
-          "odds": {
-            "american": 155,
-            "decimal": 2.55,
-            "probability": 0.392
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        },
-        {
-          "sportsbook": "pinnacle",
-          "selection": "Boston Celtics",
-          "selection_type": "home",
-          "line": null,
-          "odds": {
-            "american": -175,
-            "decimal": 1.571,
-            "probability": 0.636
-          },
-          "timestamp": "2026-02-08T12:03:00Z"
-        },
-        {
-          "sportsbook": "pinnacle",
-          "selection": "Los Angeles Lakers",
-          "selection_type": "away",
-          "line": null,
-          "odds": {
-            "american": 158,
-            "decimal": 2.58,
-            "probability": 0.388
-          },
-          "timestamp": "2026-02-08T12:03:00Z"
-        }
-      ],
-      "spread": [
-        {
-          "sportsbook": "draftkings",
-          "selection": "Boston Celtics",
-          "selection_type": "home",
-          "line": -6.5,
-          "odds": {
-            "american": -110,
-            "decimal": 1.909,
-            "probability": 0.524
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        },
-        {
-          "sportsbook": "draftkings",
-          "selection": "Los Angeles Lakers",
-          "selection_type": "away",
-          "line": 6.5,
-          "odds": {
-            "american": -110,
-            "decimal": 1.909,
-            "probability": 0.524
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        }
-      ],
-      "total": [
-        {
-          "sportsbook": "draftkings",
-          "selection": "Over",
-          "selection_type": "over",
-          "line": 224.5,
-          "odds": {
-            "american": -110,
-            "decimal": 1.909,
-            "probability": 0.524
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        },
-        {
-          "sportsbook": "draftkings",
-          "selection": "Under",
-          "selection_type": "under",
-          "line": 224.5,
-          "odds": {
-            "american": -110,
-            "decimal": 1.909,
-            "probability": 0.524
-          },
-          "timestamp": "2026-02-08T12:05:00Z"
-        }
-      ]
-    }
+    "books": [
+      {
+        "id": "draftkings",
+        "name": "DraftKings",
+        "market_count": 5,
+        "last_update": "2026-02-08T12:05:00Z"
+      },
+      {
+        "id": "fanduel",
+        "name": "FanDuel",
+        "market_count": 4,
+        "last_update": "2026-02-08T12:04:30Z"
+      },
+      {
+        "id": "pinnacle",
+        "name": "Pinnacle",
+        "market_count": 3,
+        "last_update": "2026-02-08T12:03:00Z"
+      },
+      {
+        "id": "betmgm",
+        "name": "BetMGM",
+        "market_count": 3,
+        "last_update": "2026-02-08T12:02:15Z"
+      }
+    ],
+    "markets": [
+      {
+        "type": "moneyline",
+        "selection_count": 2,
+        "book_count": 4
+      },
+      {
+        "type": "spread",
+        "selection_count": 2,
+        "book_count": 4
+      },
+      {
+        "type": "total",
+        "selection_count": 2,
+        "book_count": 3
+      },
+      {
+        "type": "player_prop",
+        "selection_count": 18,
+        "book_count": 2
+      },
+      {
+        "type": "team_total",
+        "selection_count": 4,
+        "book_count": 1
+      }
+    ]
   },
   "meta": {
-    "updated_at": "2026-02-08T12:05:00Z"
+    "event_id": "evt_nba_bos_lal_20260208"
   }
 }
 ```

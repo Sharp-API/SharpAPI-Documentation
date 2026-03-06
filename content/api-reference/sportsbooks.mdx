@@ -54,7 +54,7 @@ result = response.json()
 for book in result['data']:
     tier_note = f" (requires {book['requires_tier']})" if book['requires_tier'] else ""
     sharp_note = " [SHARP]" if book['is_sharp'] else ""
-    print(f"{book['display_name']}{sharp_note}{tier_note}: {book['odds_count']} odds")
+    print(f"{book['display_name']}{sharp_note}{tier_note}: {book['event_count']} events")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -73,7 +73,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 1250,
+      "event_count": 1250,
       "last_update": "2026-01-26T02:24:58.000Z",
       "requires_tier": null
     },
@@ -86,7 +86,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 1180,
+      "event_count": 1180,
       "last_update": "2026-01-26T02:24:50.000Z",
       "requires_tier": null
     },
@@ -99,7 +99,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 950,
+      "event_count": 950,
       "last_update": "2026-01-26T02:24:45.000Z",
       "requires_tier": "hobby"
     },
@@ -112,7 +112,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 920,
+      "event_count": 920,
       "last_update": "2026-01-26T02:24:40.000Z",
       "requires_tier": "hobby"
     },
@@ -125,7 +125,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 880,
+      "event_count": 880,
       "last_update": "2026-01-26T02:24:38.000Z",
       "requires_tier": "hobby"
     },
@@ -138,7 +138,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 760,
+      "event_count": 760,
       "last_update": "2026-01-26T02:24:30.000Z",
       "requires_tier": "pro"
     },
@@ -151,7 +151,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 640,
+      "event_count": 640,
       "last_update": "2026-01-26T02:24:22.000Z",
       "requires_tier": null
     },
@@ -161,10 +161,10 @@ for book in result['data']:
       "display_name": "Pinnacle",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["GLOBAL"],
+      "regions": ["GLOBAL"],
       "is_sharp": true,
       "status": "active",
-      "odds_count": 980,
+      "event_count": 980,
       "last_update": "2026-01-26T02:24:55.000Z",
       "requires_tier": "sharp"
     },
@@ -174,10 +174,10 @@ for book in result['data']:
       "display_name": "Bookmaker",
       "has_live_odds": true,
       "has_player_props": false,
-      "region": ["GLOBAL"],
+      "regions": ["GLOBAL"],
       "is_sharp": true,
       "status": "active",
-      "odds_count": 850,
+      "event_count": 850,
       "last_update": "2026-01-26T02:24:48.000Z",
       "requires_tier": "sharp"
     },
@@ -187,10 +187,10 @@ for book in result['data']:
       "display_name": "Bet365",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["UK", "EU", "AU"],
+      "regions": ["UK", "EU", "AU"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 1100,
+      "event_count": 1100,
       "last_update": "2026-01-26T02:24:35.000Z",
       "requires_tier": "pro"
     },
@@ -200,10 +200,10 @@ for book in result['data']:
       "display_name": "Betway",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["UK", "EU"],
+      "regions": ["UK", "EU"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 720,
+      "event_count": 720,
       "last_update": "2026-01-26T02:24:18.000Z",
       "requires_tier": null
     },
@@ -213,10 +213,10 @@ for book in result['data']:
       "display_name": "Sky Bet",
       "has_live_odds": true,
       "has_player_props": false,
-      "region": ["UK"],
+      "regions": ["UK"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 580,
+      "event_count": 580,
       "last_update": "2026-01-26T02:24:15.000Z",
       "requires_tier": null
     },
@@ -226,10 +226,10 @@ for book in result['data']:
       "display_name": "ProphetX",
       "has_live_odds": true,
       "has_player_props": false,
-      "region": ["GLOBAL"],
+      "regions": ["GLOBAL"],
       "is_sharp": true,
       "status": "active",
-      "odds_count": 310,
+      "event_count": 310,
       "last_update": "2026-01-26T02:24:12.000Z",
       "requires_tier": "sharp"
     },
@@ -239,10 +239,10 @@ for book in result['data']:
       "display_name": "Betfair",
       "has_live_odds": true,
       "has_player_props": false,
-      "region": ["UK", "EU", "AU"],
+      "regions": ["UK", "EU", "AU"],
       "is_sharp": true,
       "status": "active",
-      "odds_count": 900,
+      "event_count": 900,
       "last_update": "2026-01-26T02:24:10.000Z",
       "requires_tier": "sharp"
     },
@@ -255,7 +255,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 420,
+      "event_count": 420,
       "last_update": "2026-01-26T02:24:08.000Z",
       "requires_tier": null
     },
@@ -268,7 +268,7 @@ for book in result['data']:
       "regions": ["US"],
       "is_sharp": false,
       "status": "active",
-      "odds_count": 280,
+      "event_count": 280,
       "last_update": "2026-01-26T02:24:05.000Z",
       "requires_tier": null
     }
@@ -334,10 +334,10 @@ print(f"{book['display_name']} covers {len(book['sports'])} sports")
     "display_name": "DraftKings",
     "has_live_odds": true,
     "has_player_props": true,
-    "region": ["US"],
+    "regions": ["US"],
     "is_sharp": false,
     "status": "active",
-    "odds_count": 1250,
+    "event_count": 1250,
     "last_update": "2026-01-26T02:24:58.000Z",
     "requires_tier": null,
     "sports": ["basketball", "football", "baseball", "hockey", "soccer", "tennis", "mma", "golf"],
@@ -374,14 +374,14 @@ print(f"{book['display_name']} covers {len(book['sports'])} sports")
 | `regions` | string[] | Available regions: `US`, `UK`, `EU`, `AU`, `GLOBAL` |
 | `is_sharp` | boolean | Whether the book is considered a sharp/efficient market |
 | `status` | string | `active` or `inactive` |
-| `odds_count` | integer | Number of odds currently available |
+| `event_count` | integer | Number of events currently available |
 | `last_update` | string | ISO 8601 timestamp of last data update |
 | `requires_tier` | string \| null | Minimum tier required: `null` (free), `hobby`, `pro`, `sharp` |
 | `sports` | string[] | Supported sport IDs (single book endpoint only) |
 | `markets` | string[] | Supported market type IDs (single book endpoint only) |
 
 <Callout type="warning">
-The `odds_count` may be 0 and `last_update` may be `null` if a sportsbook is temporarily unavailable or experiencing data delays.
+The `event_count` may be 0 and `last_update` may be `null` if a sportsbook is temporarily unavailable or experiencing data delays.
 </Callout>
 
 ## Book Access by Tier

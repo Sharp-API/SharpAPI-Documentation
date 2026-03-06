@@ -95,7 +95,6 @@ for item in result['data']:
       "league": "nba",
       "market_type": "spread",
       "selection": "Boston Celtics",
-      "selection_type": "home",
       "line": -6.5,
       "best_odds": {
         "american": -105,
@@ -205,7 +204,6 @@ X-Request-Id: req_best_789xyz
 | `league` | string | League slug |
 | `market_type` | string | Market type (e.g., `moneyline`, `spread`, `total`) |
 | `selection` | string | Selection name (team name, Over/Under) |
-| `selection_type` | string | `home`, `away`, `over`, `under` |
 | `line` | number \| null | Line value (for spreads/totals) |
 | `best_odds` | object | Best odds available across all books |
 | `best_odds.american` | number | Best American odds |

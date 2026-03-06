@@ -54,7 +54,7 @@ const { data, meta } = await response.json();
 for (const arb of data) {
   console.log(`${arb.event_name}: ${arb.profit_percent}% profit`);
   for (const leg of arb.legs) {
-    console.log(`  ${leg.sportsbook}: ${leg.selection} @ ${leg.odds} (${leg.stake_percent}%)`);
+    console.log(`  ${leg.sportsbook}: ${leg.selection} @ ${leg.odds_american} (${leg.stake_percent}%)`);
   }
 }
 ```
@@ -73,7 +73,7 @@ data = response.json()
 for arb in data['data']:
     print(f"{arb['event_name']}: {arb['profit_percent']}% profit")
     for leg in arb['legs']:
-        print(f"  {leg['sportsbook']}: {leg['selection']} @ {leg['odds']} ({leg['stake_percent']}%)")
+        print(f"  {leg['sportsbook']}: {leg['selection']} @ {leg['odds_american']} ({leg['stake_percent']}%)")
 ```
   </Tabs.Tab>
 </Tabs>

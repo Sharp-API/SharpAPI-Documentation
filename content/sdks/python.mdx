@@ -1,41 +1,25 @@
+import { Callout } from 'nextra/components'
 
-> **Note:**
-  The official SDK is coming soon. For now, use the REST API directly or the example code below.
+# Python SDK
 
+<Callout type="info">
+**Note:** The official `sharpapi` package is coming soon. For now, use the REST API and SSE streaming directly with the patterns below.
+</Callout>
 
 ## Installation
 
 ```bash
-pip install sharpapi
+pip install requests sseclient-py
 ```
 
-## Quick Start
-
-```python
-from sharpapi import SharpApiClient
-
-client = SharpApiClient('YOUR_API_KEY')
-
-# Get odds
-odds = client.get_odds(sports=['nba', 'nfl'])
-
-# Get +EV opportunities
-ev_opps = client.get_ev(threshold=3.0)
-
-# Get arbitrage
-arbs = client.get_arbitrage(min_profit=1.0)
-```
-
-## Manual Implementation
-
-Until the SDK is released, use requests:
+## REST API
 
 ```python
 import requests
 from typing import Optional, List
 
 class SharpApiClient:
-    BASE_URL = 'https://sharpapi.io/api/v1'
+    BASE_URL = 'https://api.sharpapi.io/api/v1'
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -45,16 +29,16 @@ class SharpApiClient:
     def get_odds(self, sports: Optional[List[str]] = None) -> dict:
         params = {}
         if sports:
-            params['sports'] = ','.join(sports)
+            params['sport'] = ','.join(sports)
 
         response = self.session.get(f'{self.BASE_URL}/odds', params=params)
         response.raise_for_status()
         return response.json()
 
     def get_ev(self, threshold: float = 2.0, books: Optional[List[str]] = None) -> dict:
-        params = {'threshold': threshold}
+        params = {'min_ev': threshold}
         if books:
-            params['books'] = ','.join(books)
+            params['sportsbook'] = ','.join(books)
 
         response = self.session.get(f'{self.BASE_URL}/opportunities/ev', params=params)
         response.raise_for_status()
@@ -73,30 +57,82 @@ class SharpApiClient:
 import json
 import sseclient
 import requests
+from typing import Optional, List
 
 def stream_odds(api_key: str, sports: Optional[List[str]] = None):
     url = 'https://api.sharpapi.io/api/v1/stream'
-    params = {'sports': ','.join(sports)} if sports else {}
+    params = {'channel': 'all'}
+    if sports:
+        params['sport'] = ','.join(sports)
     headers = {'X-API-Key': api_key}
 
     response = requests.get(url, params=params, headers=headers, stream=True)
     client = sseclient.SSEClient(response)
 
-    for event in client.events():
-        data = json.loads(event.data)
+    # Local state — odds:update events are DELTAS, not full snapshots
+    odds_map = {}  # keyed by odds line ID
+    is_ready = False
 
-        if event.event == 'initial':
-            yield ('initial', data)
-        elif event.event == 'odds_update':
-            yield ('update', data)
+    for event in client.events():
+        data = json.loads(event.data) if event.data else {}
+
+        if event.event == 'connected':
+            reconnected = data.get('reconnected', False)
+            if reconnected:
+                odds_map.clear()  # Clear stale state on reconnect
+            print(f"Connected: stream {data['stream_id']}")
+
+        elif event.event == 'snapshot':
+            # Merge snapshot chunks into local state
+            for key, value in data.items():
+                if isinstance(value, list) and key not in ('ev', 'arbitrage', 'middles', 'low_hold'):
+                    for odds in value:
+                        odds_map[odds['id']] = odds
+
+        elif event.event == 'snapshot:complete':
+            is_ready = True
+            print(f"Ready: {data['total_odds']} odds from {', '.join(data['books'])}")
+
+        elif event.event == 'odds:update':
+            # DELTA — merge changed odds into local state
+            for book, odds_list in data.items():
+                if not isinstance(odds_list, list):
+                    continue
+                for odds in odds_list:
+                    odds_map[odds['id']] = odds
+
+        elif event.event == 'odds:removed':
+            # Delete removed odds from local state
+            for odds_id in data.get('ids', []):
+                odds_map.pop(odds_id, None)
+
+        elif event.event == 'ev:detected':
+            for opp in data:
+                if not opp.get('possibly_stale', False):
+                    print(f"+EV: {opp['selection']} {opp['ev_percent']}% on {opp['sportsbook']}")
+
+        elif event.event == 'ev:expired':
+            print(f"EV expired: {len(data['expired'])} opportunities")
+
+        elif event.event == 'arb:detected':
+            for arb in data:
+                if not arb.get('possibly_stale', False):
+                    print(f"Arb: {arb['profit_percent']}% — {arb['event_name']}")
+
+        elif event.event == 'arb:expired':
+            print(f"Arb expired: {len(data['expired'])} opportunities")
+
         elif event.event == 'heartbeat':
-            yield ('heartbeat', data)
+            pass  # silent keepalive
 
 
 # Usage
-for event_type, data in stream_odds('YOUR_KEY', sports=['nba']):
-    print(f'{event_type}: {data}')
+stream_odds('YOUR_KEY', sports=['basketball'])
 ```
+
+<Callout type="warning">
+**Critical:** `odds:update` events are **deltas** — they only contain odds that changed. Your client must maintain local state (like `odds_map` above) and merge updates into it. Treating each event as a full snapshot will produce incorrect data.
+</Callout>
 
 ## Requirements
 

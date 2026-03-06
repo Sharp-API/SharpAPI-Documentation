@@ -31,7 +31,7 @@ class ArbScanner:
         self.seen_arbs = set()
 
     def start(self):
-        url = f'https://sharpapi.io/v1/stream?min_profit={self.min_profit}'
+        url = f'https://api.sharpapi.io/api/v1/stream?channel=opportunities&min_profit={self.min_profit}'
         headers = {'X-API-Key': self.api_key}
 
         logger.info(f'Starting arb scanner (min profit: {self.min_profit}%)')

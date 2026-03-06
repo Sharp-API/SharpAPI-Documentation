@@ -38,7 +38,7 @@ discord.once('ready', () => {
 
 // EV Stream
 function startEVStream() {
-  const url = `https://sharpapi.io/v1/stream?threshold=3.0&api_key=${SHARP_API_KEY}`;
+  const url = `https://api.sharpapi.io/api/v1/stream?channel=opportunities&min_ev=3.0&api_key=${SHARP_API_KEY}`;
   const es = new EventSource(url);
 
   es.addEventListener('ev_opportunity', async (e) => {

@@ -123,6 +123,9 @@ for opp in data['data']:
       "is_player_prop": false,
       "player_name": null,
       "stat_category": null,
+      "possibly_stale": false,
+      "oldest_odds_age_seconds": null,
+      "warnings": [],
       "detected_at": "2026-02-08T14:22:10.456Z"
     }
   ],
@@ -265,6 +268,9 @@ X-Request-Id: req_abc123def456
 | `is_player_prop` | boolean | Whether this is a player prop market |
 | `player_name` | string\|null | Player name (if player prop) |
 | `stat_category` | string\|null | Stat type (if player prop, e.g., `points`, `rebounds`) |
+| `possibly_stale` | boolean | `true` if underlying odds may have moved since detection |
+| `oldest_odds_age_seconds` | number\|null | Age of the stalest odds used in the EV calculation (seconds) |
+| `warnings` | string[] | Data quality warnings (e.g., `POTENTIALLY_STALE_ODDS`, `LIVE_STALE_ODDS`) |
 | `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
 
 ### Scoring Fields (with `include=scoring`)

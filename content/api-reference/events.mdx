@@ -23,12 +23,13 @@ Requires API key via `X-API-Key` header, `Authorization: Bearer` header, or `api
 | `sport` | string | all | Filter by sport. Comma-separated for multiple (e.g., `basketball,football`) |
 | `league` | string | all | Filter by league. Comma-separated for multiple (e.g., `nba,nfl`) |
 | `sportsbook` | string | all | Filter by sportsbook (e.g., `draftkings,pinnacle`) |
-| `live` | boolean | false | When `true`, return only live/in-play events |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `has_score` | boolean | — | `true` = only events with live game state/scores |
 | `date` | string | — | Filter by date in `YYYY-MM-DD` format |
-| `team` | string | — | Filter by exact team name |
+| `team` | string | — | Filter by team name (partial match, case-insensitive, supports aliases like `lakers`) |
 | `q` | string | — | Search query matching team names or event names |
-| `limit` | integer | 50 | Results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `limit` | integer | 50 | Results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
 
 <Callout type="warning">
 Query parameters use **singular form** and comma-separated values for multiples: `sport=basketball,football`, not `sports=basketball&sports=football`.
@@ -52,15 +53,34 @@ All responses include standard rate limit and metadata headers:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique event identifier |
+| `external_ids` | object | Map of sportsbook ID to external event ID (e.g., `{"draftkings": "33483153"}`) |
 | `sport` | string | Sport identifier (e.g., `basketball`, `football`) |
-| `league` | string | League name (e.g., `NBA`, `NFL`) |
+| `league` | string | League slug (e.g., `nba`, `nfl`) |
 | `home_team` | string | Home team name |
 | `away_team` | string | Away team name |
 | `start_time` | string | ISO 8601 event start time |
-| `status` | string | Event status: `scheduled`, `live`, `final`, `postponed`, `cancelled` |
+| `status` | string | Event status: `upcoming` or `live` |
 | `is_live` | boolean | Whether the event is currently live |
-| `odds_count` | integer | Total number of odds lines available for this event |
-| `sportsbook_count` | integer | Number of sportsbooks with odds for this event |
+| `book_count` | integer | Number of sportsbooks with odds for this event |
+| `markets` | string[] | Sorted array of available market types (e.g., `["moneyline", "point_spread", "total_points"]`) |
+| `books` | string[] | Sorted array of sportsbook IDs with odds for this event |
+| `game_state` | object \| undefined | Live game state (only present for live events with scores) |
+
+#### Game State Object
+
+Included when the event is live and has score data:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `home_score` | number | Home team score |
+| `away_score` | number \| null | Away team score |
+| `period` | string \| null | Current period (e.g., `Q3`, `2nd`, `3rd Period`) |
+| `clock` | string \| null | Time remaining (e.g., `5:42`) |
+| `score_type` | string | Score type (e.g., `game_points`, `match`) |
+| `possession` | string \| null | Team with possession (`home` or `away`) |
+| `is_timeout` | boolean \| null | Whether a timeout is in progress |
+| `power_play` | string \| null | Power play info (`home` or `away`, hockey) |
+| `last_play` | string \| null | Description of last play |
 
 ## Example Requests
 
@@ -211,27 +231,36 @@ data = response.json()
   "data": [
     {
       "id": "evt_nba_bos_lal_20260208",
+      "external_ids": {
+        "draftkings": "33483200",
+        "fanduel": "nba-bos-lal-20260208"
+      },
       "sport": "basketball",
-      "league": "NBA",
+      "league": "nba",
       "home_team": "Boston Celtics",
       "away_team": "Los Angeles Lakers",
       "start_time": "2026-02-08T19:30:00Z",
-      "status": "scheduled",
+      "status": "upcoming",
       "is_live": false,
-      "odds_count": 48,
-      "sportsbook_count": 6
+      "book_count": 6,
+      "markets": ["moneyline", "point_spread", "total_points"],
+      "books": ["betmgm", "caesars", "draftkings", "fanduel"]
     },
     {
       "id": "evt_nba_gsw_mia_20260208",
+      "external_ids": {
+        "draftkings": "33483205"
+      },
       "sport": "basketball",
-      "league": "NBA",
+      "league": "nba",
       "home_team": "Golden State Warriors",
       "away_team": "Miami Heat",
       "start_time": "2026-02-08T22:00:00Z",
-      "status": "scheduled",
+      "status": "upcoming",
       "is_live": false,
-      "odds_count": 36,
-      "sportsbook_count": 5
+      "book_count": 5,
+      "markets": ["moneyline", "point_spread", "total_points"],
+      "books": ["betmgm", "draftkings", "fanduel"]
     }
   ],
   "meta": {
@@ -246,8 +275,7 @@ data = response.json()
     "updated_at": "2026-02-08T12:00:00Z",
     "filters": {
       "sport": ["basketball"],
-      "league": ["nba"],
-      "live": false
+      "league": ["nba"]
     }
   }
 }
@@ -300,7 +328,7 @@ This endpoint consolidates four previous endpoints into one:
 | `GET /events/search?q=celtics` | `GET /events?q=celtics` |
 
 <Callout type="warning">
-The previous endpoints used **camelCase** field names (`homeTeam`, `awayTeam`, `isLive`, `bookCount`). The v1 API uses **snake_case** exclusively (`home_team`, `away_team`, `is_live`, `sportsbook_count`). Update your client code accordingly.
+The previous endpoints used **camelCase** field names (`homeTeam`, `awayTeam`, `isLive`, `bookCount`). The v1 API uses **snake_case** exclusively (`home_team`, `away_team`, `is_live`, `book_count`). Update your client code accordingly.
 </Callout>
 
 ### Key changes from previous versions

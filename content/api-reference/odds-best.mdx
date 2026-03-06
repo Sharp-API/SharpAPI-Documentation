@@ -20,13 +20,20 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
-| `league` | string | all | Filter by league (e.g., `nba`, `nfl`) |
-| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`) |
-| `event` | string | - | Filter by event ID |
-| `live` | boolean | false | Return only live/in-play events |
-| `limit` | integer | 50 | Max results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g., `basketball`, `football`) |
+| `league` | string | all | Filter by league(s), comma-separated (e.g., `nba`, `nfl`) |
+| `market` | string | all | Filter by market type(s), comma-separated (e.g., `moneyline`, `spread`, `total`) |
+| `event` | string | — | Filter by event ID(s), comma-separated |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `has_score` | boolean | — | `true` = only events with game state/scores |
+| `min_odds` | number | — | Minimum American odds filter |
+| `max_odds` | number | — | Maximum American odds filter |
+| `limit` | integer | 50 | Max results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
+
+<Callout type="info">
+Stale odds (older than 5 minutes for pre-game, 1 minute for live) are automatically excluded from best-odds comparisons to prevent misleading results.
+</Callout>
 
 ## Example Requests
 

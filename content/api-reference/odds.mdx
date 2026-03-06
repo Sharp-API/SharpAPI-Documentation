@@ -20,19 +20,20 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sportsbook` | string | all | Comma-separated sportsbook IDs (e.g., `draftkings,fanduel`) |
-| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
-| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
-| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`) |
-| `event` | string | - | Filter by event ID |
-| `live` | boolean | false | Return only live/in-play events |
-| `sort` | string | - | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
+| `sportsbook` | string | tier-allowed | Comma-separated sportsbook IDs (e.g., `draftkings,fanduel`). Tier limits enforced. |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g., `basketball`, `football`). Supports category aliases. |
+| `league` | string | all | Filter by league(s), comma-separated (e.g., `nba`, `nfl`, `nhl`) |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports categories (`moneyline`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
+| `event` | string | — | Filter by event ID(s), comma-separated |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `has_score` | boolean | — | `true` = only events with game state/scores |
+| `sort` | string | — | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
 | `fields` | string | all | Comma-separated field names to include in response (e.g., `id,sportsbook,odds_american`) |
-| `min_odds` | number | - | Minimum American odds filter (e.g., `-110`) |
-| `max_odds` | number | - | Maximum American odds filter (e.g., `+200`) |
-| `group_by` | string | - | Group results by field (e.g., `event`) |
-| `limit` | integer | 50 | Max results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `min_odds` | number | — | Minimum American odds filter (e.g., `-110`) |
+| `max_odds` | number | — | Maximum American odds filter (e.g., `+200`) |
+| `group_by` | string | — | Group results by field (e.g., `event`) |
+| `limit` | integer | 50 | Max results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
 
 <Callout type="info">
 Use comma-separated values to filter by multiple sportsbooks: `sportsbook=draftkings,fanduel,betmgm`
@@ -238,6 +239,25 @@ X-Request-Id: req_abc123def456
 | `timestamp` | string | ISO 8601 timestamp when odds were last updated |
 | `is_live` | boolean | Whether the event is currently live |
 | `status` | string | `upcoming`, `live`, or `ended` |
+| `external_event_id` | string\|undefined | Sportsbook's native event ID (for deep linking) |
+| `selection_id` | string\|undefined | Sportsbook's selection/outcome ID |
+| `market_id` | string\|undefined | Sportsbook's market ID |
+
+#### Live Game State Fields
+
+These fields are included when the event is live (`is_live: true`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `home_score` | number\|null | Home team score |
+| `away_score` | number\|null | Away team score |
+| `game_period` | string\|null | Current period (e.g., `Q3`, `2nd`, `3rd Period`) |
+| `game_clock` | string\|null | Time remaining (e.g., `5:42`) |
+| `score_type` | string\|undefined | Score type (e.g., `points`, `goals`, `runs`) |
+| `possession` | string\|null | Team with possession |
+| `is_timeout` | boolean\|null | Whether a timeout is in progress |
+| `power_play` | string\|null | Power play info (hockey) |
+| `last_play` | string\|null | Description of last play |
 
 ## Sorting
 
@@ -308,14 +328,14 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
 
 ```json
 {
-  "data": {
-    "33483153": {
+  "data": [
+    {
       "event_id": "33483153",
-      "home_team": "PHI 76ers",
-      "away_team": "PHO Suns",
+      "event_name": "PHI 76ers vs PHO Suns",
       "sport": "basketball",
       "league": "nba",
-      "event_start_time": "2026-01-26T19:00:00Z",
+      "start_time": "2026-01-26T19:00:00Z",
+      "is_live": false,
       "odds": [
         {
           "id": "draftkings_33483153_moneyline_PHO",
@@ -332,10 +352,12 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
         }
       ]
     }
-  },
+  ],
   "meta": {
-    "count": 1,
-    "total": 1
+    "group_by": "event",
+    "books_available": 5,
+    "filters": { "league": "nba" },
+    "updated_at": "2026-01-26T02:10:37.846Z"
   }
 }
 ```

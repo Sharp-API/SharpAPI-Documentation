@@ -37,7 +37,7 @@ const response = await fetch('https://api.sharpapi.io/api/v1/sports');
 const { data, meta } = await response.json();
 
 data.forEach(sport => {
-  console.log(`${sport.display_name}: ${sport.eventCount} events (${sport.liveCount} live)`);
+  console.log(`${sport.display_name}: ${sport.event_count} events (${sport.live_count} live)`);
   console.log(`  Leagues: ${sport.leagues.join(', ')}`);
 });
 ```
@@ -51,7 +51,7 @@ response = requests.get('https://api.sharpapi.io/api/v1/sports')
 result = response.json()
 
 for sport in result['data']:
-    print(f"{sport['display_name']}: {sport['eventCount']} events ({sport['liveCount']} live)")
+    print(f"{sport['display_name']}: {sport['event_count']} events ({sport['live_count']} live)")
     print(f"  Leagues: {', '.join(sport['leagues'])}")
 ```
   </Tabs.Tab>
@@ -67,64 +67,64 @@ for sport in result['data']:
       "name": "basketball",
       "display_name": "Basketball",
       "leagues": ["nba", "ncaab", "wnba"],
-      "eventCount": 42,
-      "liveCount": 3
+      "event_count": 42,
+      "live_count": 3
     },
     {
       "id": "football",
       "name": "football",
       "display_name": "Football",
       "leagues": ["nfl", "ncaaf"],
-      "eventCount": 28,
-      "liveCount": 1
+      "event_count": 28,
+      "live_count": 1
     },
     {
       "id": "hockey",
       "name": "hockey",
       "display_name": "Hockey",
       "leagues": ["nhl"],
-      "eventCount": 15,
-      "liveCount": 2
+      "event_count": 15,
+      "live_count": 2
     },
     {
       "id": "baseball",
       "name": "baseball",
       "display_name": "Baseball",
       "leagues": ["mlb"],
-      "eventCount": 0,
-      "liveCount": 0
+      "event_count": 0,
+      "live_count": 0
     },
     {
       "id": "soccer",
       "name": "soccer",
       "display_name": "Soccer",
       "leagues": ["epl", "la_liga", "serie_a", "bundesliga", "mls"],
-      "eventCount": 35,
-      "liveCount": 4
+      "event_count": 35,
+      "live_count": 4
     },
     {
       "id": "tennis",
       "name": "tennis",
       "display_name": "Tennis",
       "leagues": ["atp", "wta"],
-      "eventCount": 18,
-      "liveCount": 6
+      "event_count": 18,
+      "live_count": 6
     },
     {
       "id": "mma",
       "name": "mma",
       "display_name": "MMA",
       "leagues": ["ufc"],
-      "eventCount": 12,
-      "liveCount": 0
+      "event_count": 12,
+      "live_count": 0
     },
     {
       "id": "golf",
       "name": "golf",
       "display_name": "Golf",
       "leagues": ["pga"],
-      "eventCount": 4,
-      "liveCount": 1
+      "event_count": 4,
+      "live_count": 1
     }
   ],
   "meta": {
@@ -165,8 +165,8 @@ curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
     "name": "basketball",
     "display_name": "Basketball",
     "leagues": ["nba", "ncaab", "wnba"],
-    "eventCount": 42,
-    "liveCount": 3
+    "event_count": 42,
+    "live_count": 3
   },
   "meta": {
     "updated_at": "2026-01-26T12:00:00Z"
@@ -195,8 +195,8 @@ curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
 | `name` | string | Sport name (lowercase) |
 | `display_name` | string | Human-readable display name |
 | `leagues` | string[] | League IDs within this sport |
-| `eventCount` | integer | Total events currently available with odds |
-| `liveCount` | integer | Events currently live/in-play |
+| `event_count` | integer | Total events currently available with odds |
+| `live_count` | integer | Events currently live/in-play |
 
 ## Available Sports
 
@@ -212,7 +212,7 @@ curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
 | `golf` | Golf | PGA |
 
 <Callout type="info">
-The `eventCount` and `liveCount` values are dynamic and change based on current schedules. Off-season sports will show 0 events.
+The `event_count` and `live_count` values are dynamic and change based on current schedules. Off-season sports will show 0 events.
 </Callout>
 
 ## Using Sports in Filters

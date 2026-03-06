@@ -4,5 +4,6 @@ out/
 .vercel/
 .vercel
 .env*.local
-.claude/
+.claude/settings.json
+.claude/agent-memory/
 tsconfig.tsbuildinfo

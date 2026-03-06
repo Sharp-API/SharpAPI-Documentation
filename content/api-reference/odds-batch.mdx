@@ -19,8 +19,8 @@ Send a JSON body with the following fields:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `event_ids` | string[] | **Yes** | Array of event IDs to fetch odds for |
-| `sportsbook` | string | No | Sportsbook ID filter (defaults to all available for your tier) |
-| `market` | string | No | Market type filter (defaults to all) |
+| `sportsbook` | string | No | Single sportsbook ID filter (defaults to all available for your tier) |
+| `market` | string | No | Single market type filter (defaults to all) |
 
 ### Batch Limits by Tier
 
@@ -48,8 +48,8 @@ curl -X POST "https://api.sharpapi.io/api/v1/odds/batch" \
   -H "Content-Type: application/json" \
   -d '{
     "event_ids": ["evt_nba_lal_bos_20260126", "evt_nba_gsw_mia_20260126"],
-    "sportsbook": ["draftkings", "fanduel"],
-    "market": ["moneyline", "spread"]
+    "sportsbook": "draftkings",
+    "market": "moneyline"
   }'
 ```
   </Tabs.Tab>
@@ -63,18 +63,22 @@ const response = await fetch('https://api.sharpapi.io/api/v1/odds/batch', {
   },
   body: JSON.stringify({
     event_ids: ['evt_nba_lal_bos_20260126', 'evt_nba_gsw_mia_20260126'],
-    sportsbook: ['draftkings', 'fanduel'],
-    market: ['moneyline', 'spread']
+    sportsbook: 'draftkings',
+    market: 'moneyline'
   })
 });
 
 const { data, meta } = await response.json();
 console.log(`Fetched odds for ${meta.found} of ${meta.requested} events`);
 
-// Events are already grouped
-data.forEach(event => {
+// Events are nested under data.events
+for (const event of data.events) {
   console.log(`${event.event_name}: ${event.odds.length} odds`);
-});
+}
+
+if (data.missing_events.length > 0) {
+  console.warn('Missing events:', data.missing_events);
+}
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -89,17 +93,20 @@ response = requests.post(
     },
     json={
         'event_ids': ['evt_nba_lal_bos_20260126', 'evt_nba_gsw_mia_20260126'],
-        'sportsbook': ['draftkings', 'fanduel'],
-        'market': ['moneyline', 'spread']
+        'sportsbook': 'draftkings',
+        'market': 'moneyline'
     }
 )
 result = response.json()
 meta = result['meta']
 print(f"Fetched odds for {meta['found']}/{meta['requested']} events")
 
-# Events are already grouped
-for event in result['data']:
+# Events are nested under data.events
+for event in result['data']['events']:
     print(f"\n{event['event_name']}: {len(event['odds'])} odds")
+
+if result['data']['missing_events']:
+    print(f"Missing: {result['data']['missing_events']}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -110,68 +117,72 @@ for event in result['data']:
 
 ```json
 {
-  "data": [
-    {
-      "event_id": "evt_nba_lal_bos_20260126",
-      "event_name": "Los Angeles Lakers @ Boston Celtics",
-      "sport": "basketball",
-      "league": "nba",
-      "start_time": "2026-01-26T19:30:00Z",
-      "is_live": false,
-      "odds": [
-        {
-          "sportsbook": "draftkings",
-          "market_type": "moneyline",
-          "selection": "Boston Celtics",
-          "selection_type": "home",
-          "odds_american": -210,
-          "odds_decimal": 1.476,
-          "line": null,
-          "timestamp": "2026-01-26T10:15:00.000Z"
-        },
-        {
-          "sportsbook": "fanduel",
-          "market_type": "moneyline",
-          "selection": "Boston Celtics",
-          "selection_type": "home",
-          "odds_american": -205,
-          "odds_decimal": 1.488,
-          "line": null,
-          "timestamp": "2026-01-26T10:14:55.000Z"
-        }
-      ]
-    },
-    {
-      "event_id": "evt_nba_gsw_mia_20260126",
-      "event_name": "Golden State Warriors @ Miami Heat",
-      "sport": "basketball",
-      "league": "nba",
-      "start_time": "2026-01-26T20:00:00Z",
-      "is_live": false,
-      "odds": [
-        {
-          "sportsbook": "draftkings",
-          "market_type": "moneyline",
-          "selection": "Miami Heat",
-          "selection_type": "home",
-          "odds_american": -130,
-          "odds_decimal": 1.769,
-          "line": null,
-          "timestamp": "2026-01-26T10:15:05.000Z"
-        }
-      ]
-    }
-  ],
+  "success": true,
+  "data": {
+    "events": [
+      {
+        "event_id": "evt_nba_lal_bos_20260126",
+        "event_name": "Los Angeles Lakers @ Boston Celtics",
+        "sport": "basketball",
+        "league": "nba",
+        "start_time": "2026-01-26T19:30:00Z",
+        "is_live": false,
+        "odds": [
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Boston Celtics",
+            "selection_type": "home",
+            "odds_american": -210,
+            "odds_decimal": 1.476,
+            "line": null,
+            "timestamp": "2026-01-26T10:15:00.000Z"
+          },
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Los Angeles Lakers",
+            "selection_type": "away",
+            "odds_american": 175,
+            "odds_decimal": 2.75,
+            "line": null,
+            "timestamp": "2026-01-26T10:15:00.000Z"
+          }
+        ]
+      },
+      {
+        "event_id": "evt_nba_gsw_mia_20260126",
+        "event_name": "Golden State Warriors @ Miami Heat",
+        "sport": "basketball",
+        "league": "nba",
+        "start_time": "2026-01-26T20:00:00Z",
+        "is_live": false,
+        "odds": [
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Miami Heat",
+            "selection_type": "home",
+            "odds_american": -130,
+            "odds_decimal": 1.769,
+            "line": null,
+            "timestamp": "2026-01-26T10:15:05.000Z"
+          }
+        ]
+      }
+    ],
+    "missing_events": []
+  },
   "meta": {
     "requested": 2,
     "found": 2,
     "missing": 0,
-    "missing_events": [],
     "max_batch": 50,
     "filters": {
-      "sportsbook": "draftkings,fanduel",
-      "market": "moneyline,spread"
-    }
+      "sportsbook": "draftkings",
+      "market": "moneyline"
+    },
+    "updated_at": "2026-01-26T10:15:05.000Z"
   }
 }
 ```
@@ -222,26 +233,34 @@ X-Request-Id: req_batch_abc123
 }
 ```
 
-## Meta Fields
+## Response Structure
 
-The batch response includes additional meta fields beyond the standard envelope:
+The batch response nests events and missing IDs under `data`, with counts in `meta`:
+
+### Data Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.events` | EventOdds[] | Array of event objects with nested odds |
+| `data.missing_events` | string[] | Event IDs that were not found or had no odds |
+
+### Meta Object
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `meta.requested` | integer | Number of event IDs in your request |
 | `meta.found` | integer | Number of events that had odds data |
 | `meta.missing` | integer | Number of events not found |
-| `meta.missing_events` | string[] | Event IDs that were not found or had no odds |
 | `meta.max_batch` | integer | Maximum batch size for your tier |
 | `meta.filters` | object | Applied filters (`sportsbook`, `market`) |
 
 <Callout type="info">
-If an event ID in your request has no odds (e.g., the event has ended or doesn't exist), it will appear in `missing_events` rather than causing an error. The response will still include odds for all valid events.
+If an event ID in your request has no odds (e.g., the event has ended or doesn't exist), it will appear in `data.missing_events` rather than causing an error. The response will still include odds for all valid events.
 </Callout>
 
 ## Response Schema
 
-Each item in the `data` array is an event object with nested odds:
+Each item in the `data.events` array is an event object with nested odds:
 
 ### Event Object
 
@@ -309,11 +328,11 @@ async function refreshWatchlist(eventIds) {
 
   const { data, meta } = await response.json();
 
-  if (meta.missing_events.length > 0) {
-    console.warn('Missing events:', meta.missing_events);
+  if (data.missing_events.length > 0) {
+    console.warn('Missing events:', data.missing_events);
   }
 
-  return data;
+  return data.events;
 }
 ```
 

@@ -70,7 +70,7 @@ for book in result['data']:
       "display_name": "DraftKings",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 1250,
@@ -83,7 +83,7 @@ for book in result['data']:
       "display_name": "FanDuel",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 1180,
@@ -96,7 +96,7 @@ for book in result['data']:
       "display_name": "BetMGM",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 950,
@@ -109,7 +109,7 @@ for book in result['data']:
       "display_name": "Caesars",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 920,
@@ -122,7 +122,7 @@ for book in result['data']:
       "display_name": "theScore Bet",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 880,
@@ -135,7 +135,7 @@ for book in result['data']:
       "display_name": "BetRivers",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 760,
@@ -148,7 +148,7 @@ for book in result['data']:
       "display_name": "Rebet",
       "has_live_odds": true,
       "has_player_props": true,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 640,
@@ -252,7 +252,7 @@ for book in result['data']:
       "display_name": "Polymarket",
       "has_live_odds": false,
       "has_player_props": false,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 420,
@@ -265,7 +265,7 @@ for book in result['data']:
       "display_name": "Kalshi",
       "has_live_odds": true,
       "has_player_props": false,
-      "region": ["US"],
+      "regions": ["US"],
       "is_sharp": false,
       "status": "active",
       "odds_count": 280,
@@ -371,7 +371,7 @@ print(f"{book['display_name']} covers {len(book['sports'])} sports")
 | `display_name` | string | Human-readable name |
 | `has_live_odds` | boolean | Supports live/in-play odds |
 | `has_player_props` | boolean | Supports player prop markets |
-| `region` | string[] | Available regions: `US`, `UK`, `EU`, `AU`, `GLOBAL` |
+| `regions` | string[] | Available regions: `US`, `UK`, `EU`, `AU`, `GLOBAL` |
 | `is_sharp` | boolean | Whether the book is considered a sharp/efficient market |
 | `status` | string | `active` or `inactive` |
 | `odds_count` | integer | Number of odds currently available |

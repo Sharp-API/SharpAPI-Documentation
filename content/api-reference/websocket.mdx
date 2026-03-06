@@ -246,6 +246,7 @@ Signals that all initial snapshots (opportunities + odds) have been sent. Safe t
   "seq": 10,
   "books": ["draftkings", "fanduel", "pinnacle"],
   "resumed": false,
+  "progressive": true,
   "timestamp": "2026-02-08T18:47:18.000Z"
 }
 ```
@@ -254,6 +255,7 @@ Signals that all initial snapshots (opportunities + odds) have been sent. Safe t
 |-------|------|-------------|
 | `books` | string[] | List of sportsbooks included in the initial snapshot |
 | `resumed` | boolean | `true` if this was a resume connection (no odds resent) |
+| `progressive` | boolean | `true` if odds were delivered progressively (chunked per book) |
 
 #### `odds_update`
 

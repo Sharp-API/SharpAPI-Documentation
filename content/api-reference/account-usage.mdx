@@ -2,7 +2,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Usage Stats
 
-View detailed API usage statistics for your account, including request counts by endpoint, daily breakdowns, streaming activity, and rate limit hits.
+View API usage statistics for your account, including request counts, rate limit status, and active streams.
 
 ```
 GET /api/v1/account/usage
@@ -16,41 +16,28 @@ This endpoint replaces the former `/me/usage` endpoint. The response format has 
 
 Requires API key. **Available to all tiers.**
 
-## Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `period` | string | `month` | Time period for usage data: `today`, `week`, `month`, or `all` |
-
 ## Example Requests
 
 <Tabs items={['cURL', 'JavaScript', 'Python']}>
   <Tabs.Tab>
 ```bash
-# Current month usage
-curl -X GET "https://api.sharpapi.io/api/v1/account/usage?period=month" \
-  -H "X-API-Key: YOUR_API_KEY"
-
-# Today's usage only
-curl -X GET "https://api.sharpapi.io/api/v1/account/usage?period=today" \
+curl -X GET "https://api.sharpapi.io/api/v1/account/usage" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
 const response = await fetch(
-  'https://api.sharpapi.io/api/v1/account/usage?period=week',
+  'https://api.sharpapi.io/api/v1/account/usage',
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 );
 const { data } = await response.json();
 
-console.log(`Total requests: ${data.requests.total}`);
-console.log(`Rate limit hits: ${data.rate_limit_hits}`);
-
-// Show breakdown by endpoint
-for (const [endpoint, count] of Object.entries(data.requests.by_endpoint)) {
-  console.log(`  ${endpoint}: ${count}`);
-}
+console.log(`Today: ${data.requests.today} requests`);
+console.log(`This week: ${data.requests.this_week} requests`);
+console.log(`This month: ${data.requests.this_month} requests`);
+console.log(`Rate limit remaining: ${data.requests.limit.remaining}/${data.requests.limit.per_minute} per minute`);
+console.log(`Active streams: ${data.streams.active}/${data.streams.max}`);
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -59,16 +46,14 @@ import requests
 
 response = requests.get(
     'https://api.sharpapi.io/api/v1/account/usage',
-    params={'period': 'month'},
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 usage = response.json()['data']
 
-print(f"Period: {usage['period']['start']} to {usage['period']['end']}")
-print(f"Total requests: {usage['requests']['total']}")
-
-for endpoint, count in usage['requests']['by_endpoint'].items():
-    print(f"  {endpoint}: {count}")
+print(f"Today: {usage['requests']['today']} requests")
+print(f"This month: {usage['requests']['this_month']} requests")
+print(f"Rate limit: {usage['requests']['limit']['remaining']}/{usage['requests']['limit']['per_minute']} per minute")
+print(f"Active streams: {usage['streams']['active']}/{usage['streams']['max']}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -80,42 +65,24 @@ for endpoint, count in usage['requests']['by_endpoint'].items():
 ```json
 {
   "data": {
-    "period": {
-      "name": "month",
-      "start": "2026-02-01T00:00:00Z",
-      "end": "2026-02-08T23:59:59Z"
-    },
     "requests": {
-      "total": 14523,
-      "by_endpoint": {
-        "/api/v1/odds": 8234,
-        "/api/v1/odds/best": 2145,
-        "/api/v1/opportunities/ev": 1876,
-        "/api/v1/opportunities/arbitrage": 1205,
-        "/api/v1/opportunities/middles": 412,
-        "/api/v1/events": 389,
-        "/api/v1/account": 156,
-        "/api/v1/account/usage": 52,
-        "/api/v1/health": 54
-      },
-      "by_day": [
-        { "date": "2026-02-01", "count": 1823 },
-        { "date": "2026-02-02", "count": 2105 },
-        { "date": "2026-02-03", "count": 1956 },
-        { "date": "2026-02-04", "count": 2234 },
-        { "date": "2026-02-05", "count": 1789 },
-        { "date": "2026-02-06", "count": 2012 },
-        { "date": "2026-02-07", "count": 1445 },
-        { "date": "2026-02-08", "count": 1159 }
-      ]
+      "today": 342,
+      "this_week": 2105,
+      "this_month": 14523,
+      "limit": {
+        "per_minute": 300,
+        "remaining": 287,
+        "resets_at": "2026-02-08T14:45:00.000Z"
+      }
     },
-    "streaming": {
-      "total_connections": 87,
-      "total_messages": 245892,
-      "avg_duration_seconds": 3420,
-      "peak_concurrent": 6
+    "streams": {
+      "active": 2,
+      "max": 10
     },
-    "rate_limit_hits": 3
+    "period": {
+      "start": "2026-02-01T00:00:00.000Z",
+      "end": "2026-02-28T23:59:59.000Z"
+    }
   },
   "meta": {
     "updated_at": "2026-02-08T14:50:00.123Z"
@@ -127,7 +94,7 @@ for endpoint, count in usage['requests']['by_endpoint'].items():
 
 ```
 X-RateLimit-Limit: 300
-X-RateLimit-Remaining: 295
+X-RateLimit-Remaining: 287
 X-RateLimit-Reset: 1707401400
 X-Tier: pro
 X-Data-Delay: 0
@@ -147,101 +114,69 @@ X-Request-Id: req_usage789abc
 }
 ```
 
-***400 Invalid Period***
-```json
-{
-  "error": {
-    "code": "invalid_request",
-    "message": "Invalid period. Must be one of: today, week, month, all",
-    "docs": "https://sharpapi.io/docs/api-reference/account-usage"
-  }
-}
-```
-
 ## Response Fields
-
-### Period Object
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Period identifier: `today`, `week`, `month`, or `all` |
-| `start` | string | ISO 8601 start of the reporting period |
-| `end` | string | ISO 8601 end of the reporting period |
 
 ### Requests Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `total` | number | Total API requests in the period |
-| `by_endpoint` | object | Request count broken down by endpoint path |
-| `by_day` | array | Daily request counts |
+| `today` | number | Total API requests today (UTC) |
+| `this_week` | number | Total API requests this week |
+| `this_month` | number | Total API requests this billing month |
 
-### Requests by_day Item
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `date` | string | Date in `YYYY-MM-DD` format |
-| `count` | number | Total requests on that day |
-
-### Streaming Object
+### Requests Limit Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `total_connections` | number | Total SSE connections opened in the period |
-| `total_messages` | number | Total messages sent across all streams |
-| `avg_duration_seconds` | number | Average stream connection duration in seconds |
-| `peak_concurrent` | number | Maximum concurrent streams during the period |
+| `per_minute` | number | Maximum API requests allowed per minute |
+| `remaining` | number | Requests remaining in the current rate limit window |
+| `resets_at` | string | ISO 8601 timestamp when the rate limit window resets |
 
-### Rate Limit Hits
+### Streams Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `rate_limit_hits` | number | Number of times rate limiting was triggered (HTTP 429 responses) |
+| `active` | number | Number of currently active SSE/WebSocket streams |
+| `max` | number | Maximum concurrent streams allowed (0 if streaming not enabled) |
 
-## Period Options
+### Period Object
 
-| Period | Description | Data Range |
-|--------|-------------|------------|
-| `today` | Current day (UTC) | Midnight UTC to now |
-| `week` | Current week | Last 7 days |
-| `month` | Current billing month | Start of current month to now |
-| `all` | All time | Account creation to now |
-
-<Callout type="warning">
-The `all` period may return large `by_day` arrays for long-lived accounts. Consider using `month` or `week` for routine monitoring.
-</Callout>
+| Field | Type | Description |
+|-------|------|-------------|
+| `start` | string | ISO 8601 start of the current billing month |
+| `end` | string | ISO 8601 end of the current billing month |
 
 ## Use Cases
 
-### Monitor for Rate Limit Issues
+### Monitor Rate Limit Usage
 
 ```python
 import requests
 
 response = requests.get(
     'https://api.sharpapi.io/api/v1/account/usage',
-    params={'period': 'today'},
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
 usage = response.json()['data']
 
-if usage['rate_limit_hits'] > 0:
-    print(f"WARNING: {usage['rate_limit_hits']} rate limit hits today")
-    print("Consider reducing request frequency or upgrading your tier")
+limit = usage['requests']['limit']
+usage_pct = (1 - limit['remaining'] / limit['per_minute']) * 100
+print(f"Rate limit usage: {usage_pct:.1f}%")
+print(f"Resets at: {limit['resets_at']}")
 ```
 
-### Track Endpoint Distribution
+### Check Stream Availability
 
 ```javascript
 const { data } = await fetch(
-  'https://api.sharpapi.io/api/v1/account/usage?period=month',
+  'https://api.sharpapi.io/api/v1/account/usage',
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 ).then(r => r.json());
 
-const total = data.requests.total;
-for (const [endpoint, count] of Object.entries(data.requests.by_endpoint)) {
-  const pct = ((count / total) * 100).toFixed(1);
-  console.log(`${endpoint}: ${count} (${pct}%)`);
+if (data.streams.active >= data.streams.max) {
+  console.log('All stream slots in use — close a stream before opening a new one');
+} else {
+  console.log(`${data.streams.max - data.streams.active} stream slots available`);
 }
 ```
 

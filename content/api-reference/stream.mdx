@@ -25,23 +25,31 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `channel` | string | `odds` | What to stream: `odds`, `opportunities`, or `all` |
-| `sportsbook` | string | - | Filter by sportsbook(s), comma-separated |
-| `sport` | string | - | Filter by sport(s), comma-separated |
-| `league` | string | - | Filter by league(s), comma-separated |
-| `event` | string | - | Filter by event ID(s), comma-separated |
-| `market` | string | - | Filter by market type(s), comma-separated |
-| `min_ev` | number | - | Minimum EV percentage for opportunity events |
-| `min_profit` | number | - | Minimum profit percentage for arbitrage events |
-| `api_key` | string | - | API key (alternative to header auth for browser `EventSource`) |
+| `channel` | string | `opportunities` | What to stream: `odds`, `opportunities`, or `all` |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
+| `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated |
+| `league` | string | all | Filter by league(s), comma-separated |
+| `event` | string | all | Filter by event ID(s), comma-separated |
+| `market` | string | all | Filter by market type(s), comma-separated (e.g. `moneyline`, `point_spread`, `total_points`, `player_points`) |
+| `min_ev` | number | 2.0 | Minimum EV percentage for +EV opportunity events |
+| `min_profit` | number | 0.5 | Minimum profit percentage for arbitrage and low-hold events |
+| `api_key` | string | — | API key (alternative to header auth for browser `EventSource`) |
 
 ### Channel Options
 
 | Channel | Events Delivered | Use Case |
 |---------|-----------------|----------|
-| `odds` | `snapshot`, `odds:update`, `heartbeat` | Track odds movements |
-| `opportunities` | `snapshot`, `ev:detected`, `ev:expired`, `arb:detected`, `arb:expired`, `heartbeat` | Alert on +EV and arbitrage |
+| `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Track odds movements |
+| `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alert on opportunities |
 | `all` | All event types | Full real-time picture |
+
+### Convenience Routes
+
+| Route | Equivalent To |
+|-------|---------------|
+| `GET /api/v1/stream/odds` | `/api/v1/stream?channel=odds` |
+| `GET /api/v1/stream/opportunities` | `/api/v1/stream?channel=opportunities` |
+| `GET /api/v1/stream/events/:eventId` | `/api/v1/stream?channel=odds&event=:eventId` |
 
 ## SSE Event Types
 
@@ -51,23 +59,35 @@ Sent immediately when the stream is established.
 
 ```
 event: connected
-data: {"stream_id":"str_a1b2c3","filters":{"channel":"all","league":"nba"},"reconnected":false}
+data: {"stream_id":"stream_1704960637000","channel":"all","filters":{"sportsbook":null,"sport":["basketball"],"league":["nba"],"event":null,"market":null},"reconnected":false}
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `stream_id` | string | Unique stream identifier |
+| `channel` | string | Echo of requested channel (`odds`, `opportunities`, or `all`) |
 | `filters` | object | Echo of active filters |
 | `reconnected` | boolean | `true` if this is a reconnection via `Last-Event-ID` |
+| `trial` | object \| undefined | Present if user is on a streaming trial. Contains `active`, `expires_at`, `remaining_hours`, `max_streams` |
 
 ### `snapshot`
 
-Full data dump sent after `connected`. Contains all current odds or opportunities matching your filters.
+Full data dump sent after `connected`. Contains all current odds or opportunities matching your filters. Large datasets are chunked across multiple `snapshot` events (up to 1000 items each).
 
 ```
 event: snapshot
 id: evt_00001
-data: {"odds":[...],"opportunities":[...],"timestamp":"2026-01-26T02:10:37.846Z"}
+data: {"draftkings":[...],"timestamp":"2026-01-26T02:10:37.846Z"}
+```
+
+### `snapshot:complete`
+
+Signals all initial snapshots have been sent. Safe to hide loading states after receiving this.
+
+```
+event: snapshot:complete
+id: evt_00005
+data: {"status":"ready","books":["draftkings","fanduel"],"total_odds":3200}
 ```
 
 ### `odds:update`
@@ -117,7 +137,57 @@ A previously detected arbitrage opportunity is no longer available.
 ```
 event: arb:expired
 id: evt_00046
-data: {"opportunity_id":"opp_a1b2c3","reason":"odds_moved","timestamp":"2026-01-26T02:10:39.500Z"}
+data: {"expired":["evt_abc123:moneyline:opp_a1b2c3"],"timestamp":"2026-01-26T02:10:39.500Z"}
+```
+
+### `middles:detected`
+
+A new middle opportunity has been found. Only sent on `opportunities` or `all` channels.
+
+```
+event: middles:detected
+id: evt_00047
+data: [{"hash_id":"middle_abc123","game_id":"evt_abc123","eventName":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","marketType":"player_points","selection1":{"book":"draftkings","selection":"Over 22.5","odds":-110},"selection2":{"book":"fanduel","selection":"Under 23.5","odds":-105},"middleProbability":0.12,"expectedValue":3.5,"qualityScore":85}]
+```
+
+### `middles:expired`
+
+A previously detected middle opportunity is no longer available.
+
+```
+event: middles:expired
+id: evt_00048
+data: {"expired":["middle_abc123"]}
+```
+
+### `low_hold:detected`
+
+A new low-hold opportunity has been found. Only sent on `opportunities` or `all` channels.
+
+```
+event: low_hold:detected
+id: evt_00049
+data: [{"hash_id":"lowhold_abc123","hold_id":"32825:moneyline:0","hold_percentage":1.2,"normalized_market":"moneyline","game_id":"evt_abc123","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","is_live":false,"all_books":["draftkings","fanduel"],"side1":{"selection":"PHO Suns","price":-108,"books":["draftkings"]},"side2":{"selection":"PHI 76ers","price":110,"books":["fanduel"]}}]
+```
+
+### `low_hold:expired`
+
+A previously detected low-hold opportunity is no longer available.
+
+```
+event: low_hold:expired
+id: evt_00050
+data: {"expired":["lowhold_abc123"]}
+```
+
+### `odds:removed`
+
+Odds removed by a sportsbook (e.g. market taken down, event settled). Only sent on `odds` or `all` channels.
+
+```
+event: odds:removed
+id: evt_00051
+data: {"source":"draftkings","ids":["odd_123","odd_456"],"count":2}
 ```
 
 ### `heartbeat`
@@ -165,28 +235,49 @@ const eventSource = new EventSource(
 );
 
 eventSource.addEventListener('connected', (e) => {
-  const { stream_id, filters } = JSON.parse(e.data);
-  console.log(`Stream ${stream_id} connected with filters:`, filters);
+  const { stream_id, channel, filters } = JSON.parse(e.data);
+  console.log(`Stream ${stream_id} connected (${channel}) with filters:`, filters);
 });
 
 eventSource.addEventListener('snapshot', (e) => {
-  const { odds, opportunities } = JSON.parse(e.data);
-  console.log(`Snapshot: ${odds?.length ?? 0} odds, ${opportunities?.length ?? 0} opportunities`);
+  const data = JSON.parse(e.data);
+  console.log('Snapshot chunk received');
+});
+
+eventSource.addEventListener('snapshot:complete', (e) => {
+  const { books, total_odds } = JSON.parse(e.data);
+  console.log(`Snapshot complete: ${total_odds} odds from ${books.join(', ')}`);
 });
 
 eventSource.addEventListener('odds:update', (e) => {
   const update = JSON.parse(e.data);
-  console.log(`${update.sportsbook}: odds updated for ${update.away_team} @ ${update.home_team}`);
+  const books = Object.keys(update).filter(k => k !== 'timestamp');
+  console.log(`Odds updated for: ${books.join(', ')}`);
+});
+
+eventSource.addEventListener('odds:removed', (e) => {
+  const { source, ids } = JSON.parse(e.data);
+  console.log(`${source}: ${ids.length} odds removed`);
 });
 
 eventSource.addEventListener('ev:detected', (e) => {
-  const opp = JSON.parse(e.data);
-  console.log(`+EV found: ${opp.selection} at ${opp.ev_percent}% EV`);
+  const opps = JSON.parse(e.data);
+  opps.forEach(opp => console.log(`+EV: ${opp.selection} at ${opp.ev_percentage}%`));
 });
 
 eventSource.addEventListener('arb:detected', (e) => {
-  const arb = JSON.parse(e.data);
-  console.log(`Arb found: ${arb.profit_percent}% profit`);
+  const arbs = JSON.parse(e.data);
+  arbs.forEach(arb => console.log(`Arb: ${arb.percentage}% profit`));
+});
+
+eventSource.addEventListener('middles:detected', (e) => {
+  const middles = JSON.parse(e.data);
+  middles.forEach(m => console.log(`Middle: ${m.eventName} — EV ${m.expectedValue}%`));
+});
+
+eventSource.addEventListener('low_hold:detected', (e) => {
+  const holds = JSON.parse(e.data);
+  holds.forEach(h => console.log(`Low hold: ${h.hold_percentage}%`));
 });
 
 eventSource.addEventListener('heartbeat', () => {
@@ -203,7 +294,7 @@ eventSource.onerror = () => {
 import EventSource from 'eventsource';
 
 const es = new EventSource(
-  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba',
+  'https://api.sharpapi.io/api/v1/stream?channel=all&sport=basketball&league=nba',
   { headers: { 'X-API-Key': 'YOUR_KEY' } }
 );
 
@@ -214,32 +305,47 @@ es.addEventListener('connected', (e) => {
 
 es.addEventListener('snapshot', (e) => {
   const data = JSON.parse(e.data);
-  console.log(`Received snapshot: ${data.odds?.length ?? 0} odds`);
+  console.log('Snapshot chunk received');
+});
+
+es.addEventListener('snapshot:complete', (e) => {
+  const { books, total_odds } = JSON.parse(e.data);
+  console.log(`Ready: ${total_odds} odds from ${books.join(', ')}`);
 });
 
 es.addEventListener('odds:update', (e) => {
   const update = JSON.parse(e.data);
-  console.log(`${update.sportsbook}: ${update.markets.length} markets updated`);
+  const books = Object.keys(update).filter(k => k !== 'timestamp');
+  console.log(`Odds updated: ${books.join(', ')}`);
+});
+
+es.addEventListener('odds:removed', (e) => {
+  const { source, count } = JSON.parse(e.data);
+  console.log(`${source}: ${count} odds removed`);
 });
 
 es.addEventListener('ev:detected', (e) => {
-  const opp = JSON.parse(e.data);
-  console.log(`+EV: ${opp.selection} — ${opp.ev_percent}% EV (Kelly: ${opp.kelly_percent}%)`);
-});
-
-es.addEventListener('arb:detected', (e) => {
-  const arb = JSON.parse(e.data);
-  console.log(`Arb: ${arb.profit_percent}% across ${arb.legs.length} legs`);
+  const opps = JSON.parse(e.data);
+  opps.forEach(opp =>
+    console.log(`+EV: ${opp.selection} — ${opp.ev_percentage}% EV`)
+  );
 });
 
 es.addEventListener('ev:expired', (e) => {
-  const { opportunity_id, reason } = JSON.parse(e.data);
-  console.log(`EV expired: ${opportunity_id} (${reason})`);
+  const { expired } = JSON.parse(e.data);
+  console.log(`EV expired: ${expired.length} opportunities`);
+});
+
+es.addEventListener('arb:detected', (e) => {
+  const arbs = JSON.parse(e.data);
+  arbs.forEach(arb =>
+    console.log(`Arb: ${arb.percentage}% across ${arb.legs.length} legs`)
+  );
 });
 
 es.addEventListener('arb:expired', (e) => {
-  const { opportunity_id, reason } = JSON.parse(e.data);
-  console.log(`Arb expired: ${opportunity_id} (${reason})`);
+  const { expired } = JSON.parse(e.data);
+  console.log(`Arb expired: ${expired.length} opportunities`);
 });
 
 es.onerror = (err) => {
@@ -256,6 +362,7 @@ import json
 url = 'https://api.sharpapi.io/api/v1/stream'
 params = {
     'channel': 'all',
+    'sport': 'basketball',
     'league': 'nba',
 }
 headers = {'X-API-Key': 'YOUR_KEY'}
@@ -267,30 +374,45 @@ for event in client.events():
     data = json.loads(event.data) if event.data else {}
 
     if event.event == 'connected':
-        print(f"Stream {data['stream_id']} connected")
+        print(f"Stream {data['stream_id']} connected ({data['channel']})")
 
     elif event.event == 'snapshot':
-        odds = data.get('odds', [])
-        opps = data.get('opportunities', [])
-        print(f"Snapshot: {len(odds)} odds, {len(opps)} opportunities")
+        print("Snapshot chunk received")
+
+    elif event.event == 'snapshot:complete':
+        print(f"Ready: {data['total_odds']} odds from {', '.join(data['books'])}")
 
     elif event.event == 'odds:update':
-        print(f"{data['sportsbook']}: odds updated for {data['event_id']}")
+        books = [k for k in data if k != 'timestamp']
+        print(f"Odds updated: {', '.join(books)}")
+
+    elif event.event == 'odds:removed':
+        print(f"{data['source']}: {data['count']} odds removed")
 
     elif event.event == 'ev:detected':
-        print(f"+EV: {data['selection']} at {data['ev_percent']}% EV")
+        for opp in data:
+            print(f"+EV: {opp['selection']} at {opp['ev_percentage']}%")
 
     elif event.event == 'ev:expired':
-        print(f"EV expired: {data['opportunity_id']}")
+        print(f"EV expired: {len(data['expired'])} opportunities")
 
     elif event.event == 'arb:detected':
-        print(f"Arb: {data['profit_percent']}% profit")
+        for arb in data:
+            print(f"Arb: {arb['percentage']}% profit")
 
     elif event.event == 'arb:expired':
-        print(f"Arb expired: {data['opportunity_id']}")
+        print(f"Arb expired: {len(data['expired'])} opportunities")
+
+    elif event.event == 'middles:detected':
+        for m in data:
+            print(f"Middle: {m.get('eventName', '?')} — EV {m.get('expectedValue', '?')}%")
+
+    elif event.event == 'low_hold:detected':
+        for h in data:
+            print(f"Low hold: {h['hold_percentage']}%")
 
     elif event.event == 'heartbeat':
-        print('Heartbeat received')
+        pass  # silent keepalive
 ```
   </Tabs.Tab>
 </Tabs>
@@ -339,9 +461,13 @@ These close the connection. Handle them in `onerror`:
 
 ## Best Practices
 
-1. **Use filters to reduce bandwidth** -- Pass `league`, `sportsbook`, and `channel` params to receive only what you need
-2. **Handle reconnection gracefully** -- `EventSource` auto-reconnects, but reset local state when you receive a new `snapshot` event
-3. **Process updates asynchronously** -- Do not block the event handler; queue updates for background processing
-4. **Monitor heartbeats** -- If no heartbeat arrives within 60 seconds, consider the connection stale and reconnect
-5. **Close unused streams** -- Each open stream counts against your concurrent limit
-6. **Use `Last-Event-ID`** -- Enables the server to replay missed events after a reconnection
+1. **Use the right channel** -- `channel=odds` for odds only, `channel=opportunities` for opportunities only, `channel=all` for everything
+2. **Use filters to reduce bandwidth** -- Pass `sport`, `league`, `sportsbook`, `market`, and `event` params to narrow data
+3. **Set thresholds** -- Use `min_ev` and `min_profit` to filter out low-value opportunities server-side
+4. **Wait for `snapshot:complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
+5. **Handle `odds:removed`** -- Remove odds from local state when received to avoid showing stale data
+6. **Handle reconnection gracefully** -- `EventSource` auto-reconnects, but reset local state when you receive a new `snapshot` event
+7. **Process updates asynchronously** -- Do not block the event handler; queue updates for background processing
+8. **Monitor heartbeats** -- If no heartbeat arrives within 60 seconds, consider the connection stale and reconnect
+9. **Close unused streams** -- Each open stream counts against your concurrent limit
+10. **Use `Last-Event-ID`** -- Enables the server to replay missed events after a reconnection

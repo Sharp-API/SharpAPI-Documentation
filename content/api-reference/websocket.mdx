@@ -38,13 +38,19 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sport=basketball&
 
 ### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `api_key` | string | **Required.** Your API key |
-| `channels` | string | Subscribe to specific data channels, comma-separated. Valid values: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to receive all tier-allowed data. |
-| `sport` | string | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
-| `sportsbook` | string | Filter by sportsbook(s), comma-separated |
-| `league` | string | Filter by league(s), comma-separated |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `api_key` | string | — | **Required.** Your API key |
+| `channels` | string | all | Subscribe to specific data channels, comma-separated. Valid values: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omit to receive all tier-allowed data. |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
+| `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated |
+| `league` | string | all | Filter by league(s), comma-separated |
+| `market` | string | all | Filter by market type(s), comma-separated (e.g. `moneyline`, `point_spread`, `total_points`, `player_points`) |
+| `event_id` | string | all | Filter by specific event ID(s), comma-separated |
+| `min_ev` | number | 2.0 | Minimum EV percentage for +EV opportunities |
+| `min_profit` | number | 0.5 | Minimum profit percentage for arbitrage and low-hold opportunities |
+| `resume` | boolean | false | Skip initial odds snapshot on reconnection (assumes client has previous state) |
+| `from_seq` | integer | — | Replay missed events since this global sequence number. Use with `resume` for gap-free reconnection. See [Reconnection with Replay](#reconnection-with-replay). |
 
 <Callout type="info">
 **Use channels to reduce payload size.** Without `channels`, the server sends all opportunity types plus the full odds dump. If you only need low-hold data, connect with `channels=low_hold` to skip EV, arbitrage, middles, and raw odds entirely.
@@ -90,7 +96,11 @@ Client                                         Server
   "filters": {
     "sports": ["basketball"],
     "sportsbooks": ["draftkings", "fanduel"],
-    "leagues": ["nba"]
+    "leagues": ["nba"],
+    "markets": ["moneyline", "player_points"],
+    "eventIds": ["32825-35775-2026-02-08"],
+    "min_ev": 3.0,
+    "min_profit": 1.5
   }
 }
 ```
@@ -103,6 +113,8 @@ Client                                         Server
 | `filters.leagues` | string[] | Optional. Filter by league(s). |
 | `filters.markets` | string[] | Optional. Filter by market type(s). |
 | `filters.eventIds` | string[] | Optional. Filter by specific event ID(s). |
+| `filters.min_ev` | number | Optional. Minimum EV percentage threshold (default 2.0). |
+| `filters.min_profit` | number | Optional. Minimum profit percentage for arbitrage/low-hold (default 0.5). |
 
 **`ping`** -- Keepalive. Send every 25 seconds to prevent timeouts.
 
@@ -119,21 +131,28 @@ Sent immediately after successful authentication.
 ```json
 {
   "type": "connected",
+  "seq": 1,
   "message": "Welcome to SharpAPI real-time odds stream",
   "stream_id": "ws_mle3husw_ezoyvp",
   "tier": "pro",
   "features": { "ev": true, "arbitrage": true, "middles": true, "low_hold": true },
   "channels": ["ev", "odds"],
+  "global_seq": 12847,
+  "books": { "max": -1, "allowed": null },
   "timestamp": "2026-02-08T18:47:17.559Z"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `seq` | integer | Per-connection message sequence number (increments with each message) |
 | `stream_id` | string | Unique connection identifier |
 | `tier` | string | Your subscription tier |
 | `features` | object | Which opportunity types your tier supports |
 | `channels` | string[] \| null | Active channel subscriptions, or `null` if receiving all tier-allowed data |
+| `global_seq` | integer | Current global event sequence number. Store this for reconnection with replay. |
+| `books.max` | integer | Maximum sportsbooks allowed for your tier (`-1` = unlimited) |
+| `books.allowed` | string[] \| null | Specific allowed sportsbooks, or `null` for all |
 
 #### `subscribed`
 
@@ -142,12 +161,15 @@ Confirms your active channels and filters.
 ```json
 {
   "type": "subscribed",
+  "seq": 2,
   "channels": ["ev", "odds"],
   "sports": ["basketball"],
   "sportsbooks": ["draftkings", "fanduel"],
   "leagues": ["nba"],
   "markets": null,
   "eventIds": null,
+  "min_ev": 3.0,
+  "min_profit": 1.5,
   "timestamp": "2026-02-08T18:47:17.561Z"
 }
 ```
@@ -159,6 +181,7 @@ Snapshot of opportunities for a single channel type. Sent once per subscribed op
 ```json
 {
   "type": "opportunities_snapshot",
+  "seq": 3,
   "ev": [
     {
       "eventId": "32825-35775-2026-02-08",
@@ -176,7 +199,7 @@ Snapshot of opportunities for a single channel type. Sent once per subscribed op
 }
 ```
 
-The top-level key matches the channel type: `ev`, `arbitrage`, `middles`, or `low_hold`. Each snapshot message contains only one type.
+The top-level key matches the channel type: `ev`, `arbitrage`, `middles`, or `low_hold`. Each snapshot message contains only one type. Large snapshots are automatically chunked — when this happens, messages include `chunk` and `totalChunks` fields.
 
 #### `initial`
 
@@ -185,15 +208,16 @@ Per-sportsbook odds snapshot. Sent once per sportsbook when the `odds` channel i
 ```json
 {
   "type": "initial",
-  "data": {
-    "draftkings": [ /* NormalizedOdds[] */ ]
-  },
+  "seq": 4,
+  "source": "draftkings",
+  "data": [ /* NormalizedOdds[] */ ],
+  "count": 1500,
   "timestamp": "2026-02-08T18:47:17.800Z"
 }
 ```
 
 <Callout type="info">
-Odds are chunked by sportsbook — you will receive one `initial` message per book. If you don't need raw odds, omit the `odds` channel to skip this entirely.
+Odds are chunked by sportsbook — you will receive one `initial` message per book. Large books may be split across multiple messages (up to 1000 odds each). If you don't need raw odds, omit the `odds` channel to skip this entirely.
 </Callout>
 
 #### `snapshot_complete`
@@ -203,9 +227,17 @@ Signals that all initial snapshots (opportunities + odds) have been sent. Safe t
 ```json
 {
   "type": "snapshot_complete",
+  "seq": 10,
+  "books": ["draftkings", "fanduel", "pinnacle"],
+  "resumed": false,
   "timestamp": "2026-02-08T18:47:18.000Z"
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `books` | string[] | List of sportsbooks included in the initial snapshot |
+| `resumed` | boolean | `true` if this was a resume connection (no odds resent) |
 
 #### `odds_update`
 
@@ -214,9 +246,26 @@ Incremental odds update from a single sportsbook.
 ```json
 {
   "type": "odds_update",
-  "data": [ /* NormalizedOdds[] */ ],
+  "seq": 46,
   "source": "draftkings",
+  "data": [ /* NormalizedOdds[] */ ],
+  "count": 23,
   "timestamp": "2026-02-08T18:47:19.123Z"
+}
+```
+
+#### `odds_removed`
+
+Odds removed by a sportsbook (e.g. market taken down, event settled).
+
+```json
+{
+  "type": "odds_removed",
+  "seq": 47,
+  "source": "draftkings",
+  "ids": ["odd_id_1", "odd_id_2"],
+  "count": 2,
+  "timestamp": "2026-02-08T18:47:19.200Z"
 }
 ```
 
@@ -227,6 +276,7 @@ New +EV opportunity found. Pro tier or higher only.
 ```json
 {
   "type": "ev:detected",
+  "seq": 48,
   "data": [
     {
       "eventId": "32825-35775-2026-02-08",
@@ -251,6 +301,7 @@ Previously detected +EV opportunity is no longer available.
 ```json
 {
   "type": "ev:expired",
+  "seq": 49,
   "data": {
     "expired": [
       "32825-35775-2026-02-08:draftkings:Tyrese Haliburton Over 22.5"
@@ -267,6 +318,7 @@ New arbitrage opportunity found. Pro tier or higher only.
 ```json
 {
   "type": "arb:detected",
+  "seq": 50,
   "data": [
     {
       "eventId": "32825-35775-2026-02-08",
@@ -289,6 +341,7 @@ Previously detected arbitrage opportunity is no longer available.
 ```json
 {
   "type": "arb:expired",
+  "seq": 51,
   "data": {
     "expired": [
       "32825-35775-2026-02-08:moneyline"
@@ -305,6 +358,7 @@ New middle opportunity found. Requires `middles` channel.
 ```json
 {
   "type": "middles:detected",
+  "seq": 52,
   "data": [
     {
       "id": "abc123",
@@ -332,6 +386,7 @@ Previously detected middle opportunity is no longer available.
 ```json
 {
   "type": "middles:expired",
+  "seq": 53,
   "data": {
     "expired": ["abc123"]
   },
@@ -346,6 +401,7 @@ New low-hold opportunity found. Requires `low_hold` channel.
 ```json
 {
   "type": "low_hold:detected",
+  "seq": 54,
   "data": [
     {
       "hash_id": "def456",
@@ -375,6 +431,7 @@ Previously detected low-hold opportunity is no longer available.
 ```json
 {
   "type": "low_hold:expired",
+  "seq": 55,
   "data": {
     "expired": ["def456"]
   },
@@ -389,6 +446,7 @@ Keep-alive sent every 30 seconds.
 ```json
 {
   "type": "heartbeat",
+  "seq": 150,
   "timestamp": "2026-02-08T18:48:17.559Z"
 }
 ```
@@ -400,6 +458,7 @@ Response to a client `ping`.
 ```json
 {
   "type": "pong",
+  "seq": 151,
   "timestamp": "2026-02-08T18:47:42.000Z"
 }
 ```
@@ -411,6 +470,7 @@ Error notification. The connection may remain open (for non-fatal errors) or clo
 ```json
 {
   "type": "error",
+  "seq": 152,
   "code": "unknown_type",
   "message": "Unknown message type: foobar"
 }
@@ -424,6 +484,69 @@ Error notification. The connection may remain open (for non-fatal errors) or clo
 | `4001` | Authentication failure | Check your API key |
 | `4003` | No streaming access | Add WebSocket add-on ($99/mo) or upgrade to Enterprise |
 | `4029` | Stream limit exceeded | Close unused connections (max 10 concurrent) |
+
+## Sequence Numbers
+
+Every server message includes a `seq` field — a per-connection integer that increments with each message. The `connected` message also includes `global_seq`, a server-wide event counter.
+
+Use these for:
+- **Ordering** -- Verify messages arrive in order by checking `seq` is monotonically increasing
+- **Gap detection** -- A gap in `seq` means a message was lost (e.g. due to backpressure)
+- **Reconnection replay** -- Pass `global_seq` as `from_seq` on reconnect to replay missed events
+
+<Callout type="info">
+Store `global_seq` from the `connected` message and track `seq` from each subsequent message. On reconnect, pass the last seen sequence as `from_seq` to receive missed events.
+</Callout>
+
+## Reconnection with Replay
+
+The server maintains a 2-minute replay buffer (up to 2000 events). For brief disconnections, you can reconnect without missing data:
+
+```
+wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&resume=true&from_seq=12900
+```
+
+| Parameter | Effect |
+|-----------|--------|
+| `resume=true` | Skips the full odds snapshot (assumes client has previous state) |
+| `from_seq=N` | Replays all events since global sequence `N` |
+
+Replayed messages include `"replay": true` and `"global_seq": N` so you can distinguish them from live events.
+
+```javascript
+let lastGlobalSeq = 0;
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  if (msg.type === 'connected') {
+    lastGlobalSeq = msg.global_seq;
+  }
+
+  if (msg.global_seq) {
+    lastGlobalSeq = msg.global_seq;
+  }
+
+  if (msg.replay) {
+    console.log('Replayed event:', msg.type);
+  }
+};
+
+// On reconnect:
+function reconnect() {
+  const params = new URLSearchParams({
+    api_key: 'YOUR_KEY',
+    channels: 'ev,odds',
+    resume: 'true',
+    from_seq: lastGlobalSeq.toString()
+  });
+  ws = new WebSocket(`wss://ws.sharpapi.io?${params}`);
+}
+```
+
+<Callout type="warning">
+The replay buffer holds events for **2 minutes** (max 2000 events). If you've been disconnected longer, omit `resume` and `from_seq` to receive a full snapshot instead.
+</Callout>
 
 ## Code Examples
 
@@ -655,12 +778,15 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 
 1. **Use channels** -- Subscribe only to the data you need. `channels=low_hold` skips the entire odds dump and other opportunity types, reducing initial payload from megabytes to kilobytes
 2. **Send pings every 25 seconds** -- The server sends heartbeats every 30s, but explicit pings prevent proxy/firewall timeouts
-3. **Use filters** -- Pass `sport`, `sportsbook`, and `league` params to narrow data within your subscribed channels
-4. **Update via `subscribe`** -- Change both channels and filters without reconnecting
-5. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
-6. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...)
-7. **Wait for `snapshot_complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
-8. **Close unused connections** -- Each connection counts against your 10-stream limit
+3. **Use filters** -- Pass `sport`, `sportsbook`, `league`, `market`, and `event_id` params to narrow data within your subscribed channels
+4. **Set thresholds** -- Use `min_ev` and `min_profit` to filter out low-value opportunities at the server, reducing noise
+5. **Update via `subscribe`** -- Change channels, filters, and thresholds without reconnecting
+6. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
+7. **Track sequence numbers** -- Store `global_seq` for replay on reconnection. Use `resume=true&from_seq=N` for gap-free recovery
+8. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...) with `from_seq` replay for brief outages
+9. **Wait for `snapshot_complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
+10. **Handle `odds_removed`** -- Remove odds from your local state when you receive this message to avoid showing stale data
+11. **Close unused connections** -- Each connection counts against your 10-stream limit
 
 ## Related
 

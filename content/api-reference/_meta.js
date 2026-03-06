@@ -38,6 +38,7 @@ export default {
   "opportunities-arbitrage": "Arbitrage",
   "opportunities-middles": "Middles",
   "opportunities-middles-summary": "Middles Summary",
+  "opportunities-low-hold": "Low Hold",
   "---Streaming": {
     type: "separator",
     title: "Streaming",

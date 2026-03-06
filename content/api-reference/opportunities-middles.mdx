@@ -16,13 +16,16 @@ Requires API key. **Pro tier or higher required.**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
-| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
-| `sportsbook` | string | all | Filter by sportsbook (e.g., `draftkings`, `fanduel`) |
-| `market` | string | all | Filter by market type (e.g., `point_spread`, `total_points`) |
-| `min_size` | number | none | Minimum middle size in points (e.g., `1.5`) |
-| `limit` | integer | 50 | Results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`) |
+| `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
+| `market` | string | all | Filter by market type(s), comma-separated (e.g. `point_spread`, `total_points`) |
+| `min_size` | number | 0.5 | Minimum middle size in points |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `max_odds_age` | number | — | Max odds age in seconds. Filters out stale opportunities. |
+| `sort` | string | `quality` | Sort field: `quality` (default), `ev`, `probability`, `middle_size` |
+| `limit` | integer | 50 | Results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
 
 ## Example Requests
 
@@ -215,6 +218,8 @@ X-Request-Id: req_mid456abc789
 | `guaranteed_roi` | number\|null | Worst-case ROI% when guaranteed (null otherwise) |
 | `key_numbers` | number[] | Key numbers in middle range (e.g., NFL 3, 7) |
 | `key_number_probability` | number | Combined probability of key numbers only |
+| `quality_score` | number | Multi-factor quality metric (0-100) |
+| `market_overround` | number | Combined implied probability across both sides |
 | `is_live` | boolean | Whether the game is currently in-play |
 | `is_player_prop` | boolean | Whether this is a player prop middle |
 | `player_name` | string\|null | Player name (if player prop) |
@@ -229,9 +234,13 @@ X-Request-Id: req_mid456abc789
 | `book` | string | Sportsbook for this side |
 | `selection` | string | The selection name |
 | `line` | number | The line value at this sportsbook |
-| `odds` | object | Odds in multiple formats (`american`, `decimal`, `probability`) |
+| `odds.american` | number | American odds |
+| `odds.decimal` | number | Decimal odds |
+| `odds.probability` | number | Implied probability (0-1) |
+| `odds.fair_probability` | number | Fair probability adjusted for overround |
 | `stake_percent` | number | Recommended stake allocation (% of total) |
 | `odds_age_seconds` | number\|null | Age of this side's odds at detection time |
+| `deep_link` | string\|null | Direct link to place this bet at the sportsbook |
 
 ### Warning Flags
 
@@ -242,6 +251,27 @@ X-Request-Id: req_mid456abc789
 | `STALE_ODDS` | One or both odds are older than 30 seconds |
 | `LIVE_GAME` | Game is currently in progress |
 | `GUARANTEED_PROFIT` | Worst-case loss is positive — this is also an arbitrage |
+
+---
+
+## Detail Endpoint
+
+Fetch a single middle opportunity by its ID.
+
+```
+GET /api/v1/opportunities/middles/:id
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | path | **Required.** 16-character hex hash (e.g., `a1b2c3d4e5f67890`) |
+
+Returns a single middle object (same schema as the list items). Returns `404` if not found, `400` if the ID format is invalid.
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/middles/a1b2c3d4e5f67890" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
 
 ---
 

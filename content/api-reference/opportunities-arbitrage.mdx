@@ -10,17 +10,21 @@ GET /api/v1/opportunities/arbitrage
 
 ## Authentication
 
-Requires API key. **Pro tier or higher required.**
+Requires API key. **Hobby tier or higher required.** Your account must have the `arbitrage` feature enabled.
 
 ## Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
-| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
-| `min_profit` | number | 0.5 | Minimum profit percentage (e.g., `1.0` = 1%) |
-| `limit` | integer | 50 | Results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`) |
+| `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
+| `market` | string | all | Filter by market type(s), comma-separated |
+| `min_profit` | number | 0.5 | Minimum profit percentage (e.g. `1.0` = 1%) |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `format` | string | `json` | Response format: `json` or `csv`. CSV downloads as `arbitrage_YYYY-MM-DD.csv`. |
+| `limit` | integer | 50 | Results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
 
 ### Filtering Multiple Values
 
@@ -82,45 +86,80 @@ for arb in data['data']:
 {
   "data": [
     {
+      "id": "arb_dk_pin_nba_lal_bos_ml",
       "event_id": "evt_nba_lal_bos_20260208",
       "event_name": "Los Angeles Lakers @ Boston Celtics",
       "sport": "basketball",
+      "league": "nba",
       "market_type": "moneyline",
+      "line": null,
       "profit_percent": 1.83,
       "implied_total": 98.2,
+      "is_live": false,
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_alternate_line": false,
+      "possibly_stale": false,
+      "oldest_odds_age_seconds": 8,
+      "warnings": [],
+      "game_state": null,
+      "ev_available": true,
+      "ev_percentage": 3.5,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
       "legs": [
         {
           "sportsbook": "draftkings",
           "selection": "Los Angeles Lakers",
-          "odds": 145,
-          "decimal_odds": 2.45,
-          "stake_percent": 41.5
+          "odds_american": 145,
+          "odds_decimal": 2.45,
+          "implied_probability": 0.408,
+          "stake_percent": 41.5,
+          "timestamp": "2026-02-08T14:22:05.000Z",
+          "external_event_id": "33483153",
+          "selection_id": "sel_lal_ml",
+          "market_id": "mkt_ml_33483153"
         },
         {
           "sportsbook": "pinnacle",
           "selection": "Boston Celtics",
-          "odds": -135,
-          "decimal_odds": 1.74,
-          "stake_percent": 58.5
+          "odds_american": -135,
+          "odds_decimal": 1.74,
+          "implied_probability": 0.574,
+          "stake_percent": 58.5,
+          "timestamp": "2026-02-08T14:22:08.000Z",
+          "external_event_id": null,
+          "selection_id": null,
+          "market_id": null
         }
       ],
       "detected_at": "2026-02-08T14:22:10.456Z"
     }
   ],
-  "meta": {
-    "count": 3,
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
     "total": 3,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": false,
-      "next_offset": null
+    "maxOffset": 5000
+  },
+  "meta": {
+    "source": "cache",
+    "summary": {
+      "count": 3,
+      "avg_profit": 1.23,
+      "max_profit": 1.83,
+      "by_market": { "moneyline": 2, "point_spread": 1 },
+      "by_sport": { "basketball": 3 }
     },
-    "updated_at": "2026-02-08T14:22:10.456Z",
     "filters": {
-      "league": "nba",
-      "min_profit": 1
-    }
+      "sport": null,
+      "league": ["nba"],
+      "sportsbook": null,
+      "market": null,
+      "live": null,
+      "min_profit": 1.0
+    },
+    "books_analyzed": 8
   }
 }
 ```
@@ -154,7 +193,7 @@ X-Request-Id: req_arb789xyz012
 {
   "error": {
     "code": "tier_restricted",
-    "message": "Arbitrage detection requires Pro tier or higher",
+    "message": "Arbitrage detection requires Hobby tier or higher",
     "docs": "https://sharpapi.io/docs/pricing"
   }
 }
@@ -175,12 +214,27 @@ X-Request-Id: req_arb789xyz012
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `id` | string | Unique arbitrage identifier (hash) |
 | `event_id` | string | Event identifier |
 | `event_name` | string | Human-readable event name |
-| `sport` | string | Sport identifier |
-| `market_type` | string | Market type (`moneyline`, `spread`, `total`) |
+| `sport` | string | Sport identifier (lowercase) |
+| `league` | string | League identifier |
+| `market_type` | string | Market type (`moneyline`, `point_spread`, `total_points`, etc.) |
+| `line` | number\|null | Spread/total line (e.g., `-3.5`) |
 | `profit_percent` | number | Guaranteed profit as a percentage (e.g., `1.83` = 1.83%) |
 | `implied_total` | number | Sum of implied probabilities across all legs (below 100 = arb exists) |
+| `is_live` | boolean | Whether the event is currently live |
+| `start_time` | string\|null | ISO 8601 event start time |
+| `is_alternate_line` | boolean | Whether this uses a non-standard line |
+| `possibly_stale` | boolean | Whether odds may have moved since detection |
+| `oldest_odds_age_seconds` | number\|null | Age of the stalest leg's odds in seconds |
+| `warnings` | string[] | Warning flags (e.g., `POTENTIALLY_STALE_ODDS`) |
+| `game_state` | object\|null | Live game state (`period`, `clock`, `score_home`, `score_away`) |
+| `ev_available` | boolean | Whether an EV opportunity exists on this market |
+| `ev_percentage` | number\|null | EV percentage if available |
+| `is_player_prop` | boolean | Whether this is a player prop market |
+| `player_name` | string\|null | Player name (if player prop) |
+| `stat_category` | string\|null | Stat type (if player prop, e.g., `points`, `rebounds`) |
 | `legs` | array | Array of bet legs that form the arbitrage |
 | `detected_at` | string | ISO 8601 timestamp when the arb was first detected |
 
@@ -190,9 +244,22 @@ X-Request-Id: req_arb789xyz012
 |-------|------|-------------|
 | `sportsbook` | string | Sportsbook for this leg |
 | `selection` | string | The selection (team name, Over/Under, etc.) |
-| `odds` | number | American odds for this leg |
-| `decimal_odds` | number | Decimal odds for this leg |
+| `odds_american` | number | American odds for this leg |
+| `odds_decimal` | number | Decimal odds for this leg |
+| `implied_probability` | number | Implied probability (0.0 to 1.0) |
 | `stake_percent` | number | Percentage of total stake to place on this leg |
+| `timestamp` | string\|null | When these odds were captured (ISO 8601) |
+| `external_event_id` | string\|null | Sportsbook's native event ID |
+| `selection_id` | string\|null | Sportsbook's selection/outcome ID |
+| `market_id` | string\|null | Sportsbook's market ID |
+
+### CSV Format
+
+When `?format=csv`, the response downloads as `arbitrage_YYYY-MM-DD.csv` with columns:
+
+```
+event,sport,market,line,profit%,implied_total,book1,selection1,odds1,stake1%,book2,selection2,odds2,stake2%,is_live,is_alternate_line,possibly_stale,warnings,detected_at
+```
 
 ---
 

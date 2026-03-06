@@ -20,15 +20,18 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
-| `league` | string | all | Filter by league (e.g., `nba`, `nfl`, `nhl`) |
-| `sportsbook` | string | all | Filter by sportsbook (e.g., `draftkings`, `fanduel`) |
+| `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
+| `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports categories (`spread`, `total`, `moneyline`, `props`) or exact types (`point_spread`, `player_points`). |
+| `event` | string | all | Filter by game/event ID(s), comma-separated |
 | `min_ev` | number | 0 | Minimum EV percentage threshold |
-| `max_ev` | number | none | Maximum EV percentage threshold |
-| `live` | boolean | false | Filter for live/in-play events only |
-| `include` | string | none | Set to `scoring` to add confidence, Kelly, and edge fields |
-| `limit` | integer | 50 | Results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `max_ev` | number | — | Maximum EV percentage threshold |
+| `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_fraction`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
+| `include` | string | — | Set to `scoring` to add confidence, Kelly, and edge fields |
+| `limit` | integer | 50 | Results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset (max 5000) |
 
 ### Filtering Multiple Values
 
@@ -95,9 +98,15 @@ for opp in data['data']:
       "game_id": "evt_nba_phi_pho_20260208",
       "ev_percent": 4.2,
       "odds_american": -105,
+      "odds_decimal": 1.952,
       "no_vig_odds": -118,
+      "true_probability": 0.541,
+      "market_width": 3.2,
+      "devig_method": "multiplicative",
+      "devig_book": "pinnacle",
       "selection": "PHO Suns",
       "market": "moneyline",
+      "line": null,
       "sportsbook": "draftkings",
       "game": "PHI 76ers vs PHO Suns",
       "sport": "basketball",
@@ -106,24 +115,26 @@ for opp in data['data']:
       "away_team": "PHO Suns",
       "start_time": "2026-02-08T19:00:00Z",
       "is_live": false,
-      "market_width": 3.2,
+      "confidence_score": 87,
+      "kelly_fraction": 0.021,
+      "book_count": 5,
+      "arb_available": false,
+      "arb_profit": null,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
       "detected_at": "2026-02-08T14:22:10.456Z"
     }
   ],
-  "meta": {
-    "count": 12,
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
     "total": 12,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": false,
-      "next_offset": null
-    },
-    "updated_at": "2026-02-08T14:22:10.456Z",
-    "filters": {
-      "league": "nba",
-      "min_ev": 2
-    },
+    "maxOffset": 5000
+  },
+  "meta": {
+    "source": "redis",
+    "last_update": "2026-02-08T14:22:10.456Z",
     "summary": {
       "count": 12,
       "avg_ev": 3.8,
@@ -135,7 +146,23 @@ for opp in data['data']:
       },
       "by_sport": {
         "basketball": 12
+      },
+      "by_market": {
+        "moneyline": 5,
+        "point_spread": 4,
+        "player_points": 3
       }
+    },
+    "filters": {
+      "sport": null,
+      "league": ["nba"],
+      "sportsbook": null,
+      "market": null,
+      "min_ev": 2.0,
+      "max_ev": null,
+      "live": null,
+      "sort": "-ev",
+      "include": null
     }
   }
 }
@@ -145,35 +172,14 @@ for opp in data['data']:
 
 When you pass `?include=scoring`, each item in the `data` array includes additional scoring fields:
 
+When `include=scoring` is set, each item includes additional legacy scoring fields:
+
 ```json
 {
-  "data": [
-    {
-      "id": "ev_dk_nba_33483153_ml_PHO",
-      "game_id": "evt_nba_phi_pho_20260208",
-      "ev_percent": 4.2,
-      "odds_american": -105,
-      "no_vig_odds": -118,
-      "selection": "PHO Suns",
-      "market": "moneyline",
-      "sportsbook": "draftkings",
-      "game": "PHI 76ers vs PHO Suns",
-      "sport": "basketball",
-      "league": "nba",
-      "home_team": "PHI 76ers",
-      "away_team": "PHO Suns",
-      "start_time": "2026-02-08T19:00:00Z",
-      "is_live": false,
-      "market_width": 3.2,
-      "detected_at": "2026-02-08T14:22:10.456Z",
-      "confidence": "high",
-      "kelly_percent": 2.1,
-      "edge_percent": 4.2,
-      "combined_score": 87.5,
-      "fair_probability": 0.541
-    }
-  ],
-  "meta": { "..." : "..." }
+  "confidence": "high",
+  "kelly_percent": 2.1,
+  "edge_percent": 4.2,
+  "fair_probability": 0.541
 }
 ```
 
@@ -229,33 +235,48 @@ X-Request-Id: req_abc123def456
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Unique opportunity identifier |
-| `game_id` | string | Associated game/event identifier |
+| `id` | string | Unique opportunity identifier (hash) |
+| `game_id` | string\|null | Associated game/event identifier |
+| `external_event_id` | string\|null | Sportsbook's native event ID |
 | `ev_percent` | number | Expected value as a percentage (e.g., `4.2` = 4.2% EV) |
 | `odds_american` | number | Current American odds at the sportsbook |
-| `no_vig_odds` | number | Fair (no-vig) American odds derived from the sharp line |
+| `odds_decimal` | number | Decimal odds (e.g., `1.952`) |
+| `no_vig_odds` | number\|null | Fair (no-vig) American odds derived from the sharp line |
+| `true_probability` | number\|null | Fair probability (0.0 to 1.0) |
+| `market_width` | number\|null | Width of the market (vig indicator) |
+| `devig_method` | string | De-vig method used (e.g., `multiplicative`) |
+| `devig_book` | string | Sharp book used as reference (e.g., `pinnacle`) |
 | `selection` | string | The selection (team name, Over/Under, player, etc.) |
-| `market` | string | Market type (`moneyline`, `spread`, `total`, `player_prop`) |
+| `market` | string | Market type (`moneyline`, `point_spread`, `total_points`, etc.) |
+| `line` | number\|null | Spread/total line (e.g., `-3.5`, `220.5`) |
 | `sportsbook` | string | Sportsbook offering these odds |
 | `game` | string | Human-readable game name |
-| `sport` | string | Sport identifier |
+| `sport` | string | Sport identifier (lowercase) |
 | `league` | string | League identifier |
-| `home_team` | string | Home team name |
-| `away_team` | string | Away team name |
-| `start_time` | string | ISO 8601 event start time |
+| `home_team` | string\|null | Home team name |
+| `away_team` | string\|null | Away team name |
+| `start_time` | string\|null | ISO 8601 event start time |
 | `is_live` | boolean | Whether the event is currently live |
-| `market_width` | number | Width of the market (vig indicator) |
+| `confidence_score` | number | Multi-factor confidence score (0-100) |
+| `kelly_fraction` | number\|null | Kelly criterion optimal bet fraction (0.0 to 1.0) |
+| `book_count` | number | Number of sportsbooks offering this market |
+| `arb_available` | boolean | Whether an arbitrage exists on this market |
+| `arb_profit` | number\|null | Arbitrage profit percentage if available |
+| `is_player_prop` | boolean | Whether this is a player prop market |
+| `player_name` | string\|null | Player name (if player prop) |
+| `stat_category` | string\|null | Stat type (if player prop, e.g., `points`, `rebounds`) |
 | `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
 
 ### Scoring Fields (with `include=scoring`)
+
+Legacy scoring fields added when `?include=scoring` is set:
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `confidence` | string | Confidence level: `low`, `medium`, or `high` |
 | `kelly_percent` | number | Kelly criterion optimal stake as a percentage of bankroll |
-| `edge_percent` | number | Calculated edge over the sportsbook |
-| `combined_score` | number | Weighted composite score (0-100) combining EV, confidence, and market factors |
-| `fair_probability` | number | Fair probability derived from the sharp line (0.0 to 1.0) |
+| `edge_percent` | number | Calculated edge over the sportsbook (copy of `ev_percent`) |
+| `fair_probability` | number | Fair probability (0.0 to 1.0) |
 
 ### Meta Summary Fields
 
@@ -266,6 +287,7 @@ X-Request-Id: req_abc123def456
 | `summary.max_ev` | number | Highest EV found |
 | `summary.by_sportsbook` | object | Opportunity count per sportsbook |
 | `summary.by_sport` | object | Opportunity count per sport |
+| `summary.by_market` | object | Opportunity count per market type |
 
 ---
 

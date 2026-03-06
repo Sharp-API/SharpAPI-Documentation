@@ -23,13 +23,13 @@ curl -X GET "https://api.sharpapi.io/api/v1/health"
   <Tabs.Tab>
 ```javascript
 const response = await fetch('https://api.sharpapi.io/api/v1/health');
-const { data } = await response.json();
+const health = await response.json();
 
-if (data.status === 'ok') {
+if (health.status === 'ok') {
   console.log('SharpAPI is healthy');
 } else {
-  console.warn(`SharpAPI status: ${data.status}`);
-  for (const [name, check] of Object.entries(data.checks)) {
+  console.warn(`SharpAPI status: ${health.status}`);
+  for (const [name, check] of Object.entries(health.checks)) {
     if (check.status !== 'ok') {
       console.warn(`  ${name}: ${check.status} - ${check.message}`);
     }
@@ -42,7 +42,7 @@ if (data.status === 'ok') {
 import requests
 
 response = requests.get('https://api.sharpapi.io/api/v1/health')
-health = response.json()['data']
+health = response.json()
 
 print(f"Status: {health['status']}")
 print(f"Version: {health['version']}")
@@ -60,26 +60,28 @@ for name, check in health['checks'].items():
 
 ```json
 {
-  "data": {
-    "status": "ok",
-    "version": "1.4.2",
-    "timestamp": "2026-02-08T15:00:00.123Z",
-    "checks": {
-      "redis": {
-        "status": "ok",
-        "latency_ms": 2,
-        "message": "Connected"
-      },
-      "data": {
-        "status": "ok",
-        "last_update": "2026-02-08T14:59:58.456Z",
-        "age_seconds": 1.7,
-        "message": "Data is fresh"
-      }
+  "status": "ok",
+  "version": "v1",
+  "timestamp": "2026-02-08T15:00:00.123Z",
+  "checks": {
+    "redis": {
+      "status": "ok",
+      "latency_ms": 2
+    },
+    "data": {
+      "status": "ok",
+      "message": "5 sportsbook snapshots available"
+    },
+    "schema": {
+      "status": "ok",
+      "message": "All 14 required fields present"
     }
   },
-  "meta": {
-    "updated_at": "2026-02-08T15:00:00.123Z"
+  "eventLoop": {
+    "min": 0.1,
+    "max": 2.5,
+    "mean": 0.4,
+    "p99": 1.8
   }
 }
 ```
@@ -90,26 +92,22 @@ When the service is partially functional, the status will be `degraded`:
 
 ```json
 {
-  "data": {
-    "status": "degraded",
-    "version": "1.4.2",
-    "timestamp": "2026-02-08T15:00:00.123Z",
-    "checks": {
-      "redis": {
-        "status": "ok",
-        "latency_ms": 5,
-        "message": "Connected"
-      },
-      "data": {
-        "status": "degraded",
-        "last_update": "2026-02-08T14:55:00.000Z",
-        "age_seconds": 300,
-        "message": "Data is stale (last update 5m ago)"
-      }
+  "status": "degraded",
+  "version": "v1",
+  "timestamp": "2026-02-08T15:00:00.123Z",
+  "checks": {
+    "redis": {
+      "status": "ok",
+      "latency_ms": 5
+    },
+    "data": {
+      "status": "degraded",
+      "message": "No snapshot data in Redis"
+    },
+    "schema": {
+      "status": "degraded",
+      "message": "Schema drift: missing fields [selectionType] in draftkings snapshot"
     }
-  },
-  "meta": {
-    "updated_at": "2026-02-08T15:00:00.123Z"
   }
 }
 ```
@@ -120,26 +118,14 @@ When the service is unable to function, the status will be `down` and the HTTP s
 
 ```json
 {
-  "data": {
-    "status": "down",
-    "version": "1.4.2",
-    "timestamp": "2026-02-08T15:00:00.123Z",
-    "checks": {
-      "redis": {
-        "status": "down",
-        "latency_ms": null,
-        "message": "Connection refused"
-      },
-      "data": {
-        "status": "down",
-        "last_update": null,
-        "age_seconds": null,
-        "message": "Unable to read data"
-      }
+  "status": "down",
+  "version": "v1",
+  "timestamp": "2026-02-08T15:00:00.123Z",
+  "checks": {
+    "redis": {
+      "status": "down",
+      "message": "Redis unreachable"
     }
-  },
-  "meta": {
-    "updated_at": "2026-02-08T15:00:00.123Z"
   }
 }
 ```
@@ -185,10 +171,28 @@ The health endpoint does not return rate limit headers or tier headers since it 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `status` | string | Data freshness status: `ok`, `degraded`, or `down` |
-| `last_update` | string \| null | ISO 8601 timestamp of the last data update |
-| `age_seconds` | number \| null | Seconds since the last data update |
-| `message` | string | Human-readable status message |
+| `status` | string | Data freshness status: `ok` or `degraded` |
+| `message` | string | Human-readable status message (e.g., "5 sportsbook snapshots available") |
+
+### Schema Check
+
+Included on GET requests only (not HEAD). Verifies that upstream snapshot data contains all required fields.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Schema compatibility status: `ok` or `degraded` |
+| `message` | string | Human-readable status message (e.g., "All 14 required fields present") |
+
+### Event Loop
+
+Optional object included when event loop monitoring is active. Reports main-thread delay statistics to detect blocking operations.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `min` | number | Minimum event loop delay (ms) |
+| `max` | number | Maximum event loop delay (ms) |
+| `mean` | number | Mean event loop delay (ms) |
+| `p99` | number | 99th percentile event loop delay (ms) |
 
 ## Status Logic
 
@@ -198,13 +202,13 @@ The overall `status` is determined by the worst individual check:
 - **degraded** - At least one check is `degraded`, none are `down`
 - **down** - At least one check is `down`
 
-### Data Freshness Thresholds
+### Data Availability
 
-| Data Age | Status | Description |
-|----------|--------|-------------|
-| < 30 seconds | `ok` | Data is fresh |
-| 30 seconds - 5 minutes | `degraded` | Data is stale but usable |
-| > 5 minutes | `down` | Data is too old to be reliable |
+| Condition | Status | Description |
+|-----------|--------|-------------|
+| 1+ sportsbook snapshots | `ok` | Snapshot data available in Redis |
+| 0 snapshots in Redis | `degraded` | No snapshot data found |
+| Redis unreachable | (not checked) | Data check is skipped when Redis is down |
 
 ## Use Cases
 
@@ -214,7 +218,7 @@ Use the health endpoint in your monitoring stack (Prometheus, Datadog, UptimeRob
 
 ```bash
 # Simple health check for monitoring scripts
-STATUS=$(curl -s https://api.sharpapi.io/api/v1/health | jq -r '.data.status')
+STATUS=$(curl -s https://api.sharpapi.io/api/v1/health | jq -r '.status')
 if [ "$STATUS" != "ok" ]; then
   echo "ALERT: SharpAPI status is $STATUS"
 fi
@@ -229,11 +233,11 @@ async function safeRequest(endpoint) {
   const health = await fetch('https://api.sharpapi.io/api/v1/health')
     .then(r => r.json());
 
-  if (health.data.status === 'down') {
+  if (health.status === 'down') {
     throw new Error('SharpAPI is currently down');
   }
 
-  if (health.data.status === 'degraded') {
+  if (health.status === 'degraded') {
     console.warn('SharpAPI is degraded - data may be stale');
   }
 
@@ -250,7 +254,7 @@ import requests
 from datetime import datetime
 
 response = requests.get('https://api.sharpapi.io/api/v1/health')
-health = response.json()['data']
+health = response.json()
 
 print(f"SharpAPI Status: {health['status'].upper()}")
 print(f"Version: {health['version']}")
@@ -259,12 +263,10 @@ print()
 
 for name, check in health['checks'].items():
     status_icon = {'ok': 'PASS', 'degraded': 'WARN', 'down': 'FAIL'}
-    print(f"  [{status_icon.get(check['status'], '???')}] {name}: {check['message']}")
+    print(f"  [{status_icon.get(check['status'], '???')}] {name}: {check.get('message', 'healthy')}")
 
     if name == 'redis' and check.get('latency_ms') is not None:
         print(f"        Latency: {check['latency_ms']}ms")
-    if name == 'data' and check.get('age_seconds') is not None:
-        print(f"        Data age: {check['age_seconds']}s")
 ```
 
 ## Related Endpoints

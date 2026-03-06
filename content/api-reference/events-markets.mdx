@@ -35,11 +35,19 @@ All responses include standard rate limit and metadata headers:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `market_type` | string | Market type identifier (e.g., `moneyline`, `spread`, `total`) |
-| `display_name` | string | Human-readable market name |
-| `odds_count` | integer | Total number of odds lines for this market |
-| `sportsbook_count` | integer | Number of sportsbooks offering this market |
-| `sportsbooks` | array | List of sportsbook identifiers offering this market |
+| `type` | string | Market type identifier (e.g., `moneyline`, `point_spread`, `total_points`) |
+| `selection_count` | integer | Number of distinct selections within this market |
+| `book_count` | integer | Number of sportsbooks offering this market |
+| `selections` | array | List of [Selection objects](#selection-object) for this market |
+
+## Selection Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Selection name (e.g., `Boston Celtics`, `Over`, `LeBron James`) |
+| `type` | string | Selection type (e.g., `home`, `away`, `over`, `under`) |
+| `line` | number | Point spread or total line value. Omitted for markets without lines (e.g., moneyline). |
+| `book_count` | integer | Number of sportsbooks offering this selection |
 
 ## Example Requests
 
@@ -59,9 +67,12 @@ const response = await fetch(
 );
 const { data, meta } = await response.json();
 
-// Find markets available on all books
+// List markets and their selections
 for (const market of data) {
-  console.log(`${market.display_name}: ${market.sportsbook_count} books, ${market.odds_count} odds`);
+  console.log(`${market.type}: ${market.book_count} books, ${market.selection_count} selections`);
+  for (const sel of market.selections) {
+    console.log(`  ${sel.name} (${sel.type}): ${sel.book_count} books${sel.line !== undefined ? `, line ${sel.line}` : ''}`);
+  }
 }
 ```
   </Tabs.Tab>
@@ -77,8 +88,10 @@ response = requests.get(
 result = response.json()
 
 for market in result['data']:
-    books = ', '.join(market['sportsbooks'])
-    print(f"{market['display_name']}: {market['sportsbook_count']} books ({books})")
+    print(f"{market['type']}: {market['book_count']} books, {market['selection_count']} selections")
+    for sel in market['selections']:
+        line_info = f", line {sel['line']}" if 'line' in sel else ''
+        print(f"  {sel['name']} ({sel['type']}): {sel['book_count']} books{line_info}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -89,96 +102,62 @@ for market in result['data']:
 
 ```json
 {
+  "success": true,
   "data": [
     {
-      "market_type": "moneyline",
-      "display_name": "Moneyline",
-      "odds_count": 12,
-      "sportsbook_count": 6,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm",
-        "caesars",
-        "bet365",
-        "pinnacle"
+      "type": "moneyline",
+      "selection_count": 2,
+      "book_count": 6,
+      "selections": [
+        { "name": "Boston Celtics", "type": "home", "book_count": 6 },
+        { "name": "Los Angeles Lakers", "type": "away", "book_count": 6 }
       ]
     },
     {
-      "market_type": "spread",
-      "display_name": "Spread",
-      "odds_count": 12,
-      "sportsbook_count": 6,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm",
-        "caesars",
-        "bet365",
-        "pinnacle"
+      "type": "point_spread",
+      "selection_count": 2,
+      "book_count": 6,
+      "selections": [
+        { "name": "Boston Celtics", "type": "home", "line": -5.5, "book_count": 6 },
+        { "name": "Los Angeles Lakers", "type": "away", "line": 5.5, "book_count": 6 }
       ]
     },
     {
-      "market_type": "total",
-      "display_name": "Total (Over/Under)",
-      "odds_count": 12,
-      "sportsbook_count": 6,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm",
-        "caesars",
-        "bet365",
-        "pinnacle"
+      "type": "total_points",
+      "selection_count": 2,
+      "book_count": 6,
+      "selections": [
+        { "name": "Over", "type": "over", "line": 220.5, "book_count": 6 },
+        { "name": "Under", "type": "under", "line": 220.5, "book_count": 6 }
       ]
     },
     {
-      "market_type": "player_prop",
-      "display_name": "Player Props",
-      "odds_count": 156,
-      "sportsbook_count": 4,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm",
-        "caesars"
+      "type": "team_total",
+      "selection_count": 4,
+      "book_count": 4,
+      "selections": [
+        { "name": "Boston Celtics Over", "type": "over", "line": 113.5, "book_count": 4 },
+        { "name": "Boston Celtics Under", "type": "under", "line": 113.5, "book_count": 4 },
+        { "name": "Los Angeles Lakers Over", "type": "over", "line": 106.5, "book_count": 3 },
+        { "name": "Los Angeles Lakers Under", "type": "under", "line": 106.5, "book_count": 3 }
       ]
     },
     {
-      "market_type": "team_total",
-      "display_name": "Team Total",
-      "odds_count": 8,
-      "sportsbook_count": 4,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm",
-        "pinnacle"
-      ]
-    },
-    {
-      "market_type": "first_half_spread",
-      "display_name": "1st Half Spread",
-      "odds_count": 6,
-      "sportsbook_count": 3,
-      "sportsbooks": [
-        "draftkings",
-        "fanduel",
-        "betmgm"
+      "type": "player_prop",
+      "selection_count": 24,
+      "book_count": 4,
+      "selections": [
+        { "name": "LeBron James Over", "type": "over", "line": 25.5, "book_count": 4 },
+        { "name": "LeBron James Under", "type": "under", "line": 25.5, "book_count": 4 },
+        { "name": "Jayson Tatum Over", "type": "over", "line": 28.5, "book_count": 3 },
+        { "name": "Jayson Tatum Under", "type": "under", "line": 28.5, "book_count": 3 }
       ]
     }
   ],
   "meta": {
-    "count": 6,
-    "total": 6,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": false,
-      "next_offset": null
-    },
-    "updated_at": "2026-02-08T12:05:00Z",
-    "filters": {}
+    "event_id": "evt_nba_bos_lal_20260208",
+    "count": 5,
+    "updated_at": "2026-02-08T12:05:00Z"
   }
 }
 ```

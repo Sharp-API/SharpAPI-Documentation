@@ -17,7 +17,6 @@ This is a **public endpoint** -- no authentication required. Unauthenticated req
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `sport` | string | all | Filter markets by sport (e.g., `basketball`) |
-| `category` | string | all | Filter by category (e.g., `main`, `prop`, `period`) |
 
 ## Example Requests
 
@@ -29,9 +28,6 @@ curl -X GET "https://api.sharpapi.io/api/v1/markets"
 
 # Filter by sport
 curl -X GET "https://api.sharpapi.io/api/v1/markets?sport=basketball"
-
-# Filter by category
-curl -X GET "https://api.sharpapi.io/api/v1/markets?category=main"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -39,13 +35,12 @@ curl -X GET "https://api.sharpapi.io/api/v1/markets?category=main"
 const response = await fetch('https://api.sharpapi.io/api/v1/markets');
 const { data, meta } = await response.json();
 
-// Group markets by category
-const byCategory = {};
+// List markets with event counts
 data.forEach(m => {
-  if (!byCategory[m.category]) byCategory[m.category] = [];
-  byCategory[m.category].push(m);
+  const lineInfo = m.hasLine ? 'has line' : 'no line';
+  console.log(`${m.name} (${m.id}): ${lineInfo}, ${m.event_count ?? 0} events`);
+  if (m.examples.length) console.log(`  Examples: ${m.examples.join(', ')}`);
 });
-console.log('Categories:', Object.keys(byCategory));
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -56,8 +51,11 @@ response = requests.get('https://api.sharpapi.io/api/v1/markets')
 result = response.json()
 
 for market in result['data']:
-    line_info = "has line" if market['has_line'] else "no line"
-    print(f"{market['display_name']} ({market['id']}): {line_info}, {market['category']}")
+    line_info = "has line" if market['hasLine'] else "no line"
+    events = market['event_count'] or 0
+    print(f"{market['name']} ({market['id']}): {line_info}, {events} events")
+    if market['examples']:
+        print(f"  Examples: {', '.join(market['examples'])}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -71,106 +69,104 @@ for market in result['data']:
   "data": [
     {
       "id": "moneyline",
-      "name": "moneyline",
-      "display_name": "Moneyline",
-      "description": "Bet on which team wins the game",
-      "category": "main",
-      "has_line": false,
-      "selection_types": ["home", "away"],
-      "sports": ["basketball", "football", "baseball", "hockey", "soccer", "tennis", "mma"]
+      "name": "Moneyline",
+      "description": "Bet on which team will win the game outright",
+      "hasLine": false,
+      "examples": ["Lakers -150", "Celtics +130"],
+      "event_count": 142,
+      "selection_count": 312,
+      "sports": ["baseball", "basketball", "football", "hockey", "mma", "soccer", "tennis"]
     },
     {
-      "id": "spread",
-      "name": "spread",
-      "display_name": "Point Spread",
-      "description": "Bet on the margin of victory",
-      "category": "main",
-      "has_line": true,
-      "selection_types": ["home", "away"],
-      "sports": ["basketball", "football", "hockey", "baseball"]
+      "id": "point_spread",
+      "name": "Point Spread",
+      "description": "Bet on the point margin between teams",
+      "hasLine": true,
+      "examples": ["Lakers -4.5 (-110)", "Celtics +4.5 (-110)"],
+      "event_count": 98,
+      "selection_count": 210,
+      "sports": ["baseball", "basketball", "football", "hockey"]
     },
     {
-      "id": "total",
-      "name": "total",
-      "display_name": "Total (Over/Under)",
-      "description": "Bet on the combined score of both teams",
-      "category": "main",
-      "has_line": true,
-      "selection_types": ["over", "under"],
-      "sports": ["basketball", "football", "baseball", "hockey", "soccer", "tennis"]
+      "id": "total_points",
+      "name": "Total Points",
+      "description": "Bet on the combined score of both teams (over/under)",
+      "hasLine": true,
+      "examples": ["Over 220.5 (-110)", "Under 220.5 (-110)"],
+      "event_count": 95,
+      "selection_count": 198,
+      "sports": ["baseball", "basketball", "football", "hockey", "soccer", "tennis"]
+    },
+    {
+      "id": "team_total",
+      "name": "Team Total",
+      "description": "Bet on the score of one specific team",
+      "hasLine": true,
+      "examples": ["Lakers Over 112.5", "Lakers Under 112.5"],
+      "event_count": 64,
+      "selection_count": 140,
+      "sports": ["baseball", "basketball", "football", "hockey"]
     },
     {
       "id": "player_prop",
-      "name": "player_prop",
-      "display_name": "Player Props",
+      "name": "Player Prop",
       "description": "Bet on individual player performance statistics",
-      "category": "prop",
-      "has_line": true,
-      "selection_types": ["over", "under"],
-      "sports": ["basketball", "football", "baseball", "hockey"]
-    },
-    {
-      "id": "team_prop",
-      "name": "team_prop",
-      "display_name": "Team Props",
-      "description": "Bet on team-specific outcomes within a game",
-      "category": "prop",
-      "has_line": true,
-      "selection_types": ["over", "under", "yes", "no"],
-      "sports": ["basketball", "football", "baseball", "hockey"]
+      "hasLine": true,
+      "examples": ["LeBron James Over 25.5 Points", "Stephen Curry Over 4.5 3-Pointers"],
+      "event_count": 52,
+      "selection_count": 1840,
+      "sports": ["baseball", "basketball", "football", "hockey"]
     },
     {
       "id": "game_prop",
-      "name": "game_prop",
-      "display_name": "Game Props",
-      "description": "Bet on game-specific outcomes and events",
-      "category": "prop",
-      "has_line": false,
-      "selection_types": ["yes", "no"],
-      "sports": ["basketball", "football", "baseball", "hockey"]
+      "name": "Game Prop",
+      "description": "Bet on specific game events or occurrences",
+      "hasLine": false,
+      "examples": ["First Team to Score", "Will there be Overtime?"],
+      "event_count": 30,
+      "selection_count": 86,
+      "sports": ["baseball", "basketball", "football", "hockey"]
     },
     {
-      "id": "first_half",
-      "name": "first_half",
-      "display_name": "First Half",
-      "description": "Bet on first half moneyline, spread, or total",
-      "category": "period",
-      "has_line": true,
-      "selection_types": ["home", "away", "over", "under"],
+      "id": "future",
+      "name": "Future",
+      "description": "Long-term bets on season outcomes or championships",
+      "hasLine": false,
+      "examples": ["NBA Championship Winner", "MVP Award Winner"],
+      "event_count": 12,
+      "selection_count": 48,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "1st_half",
+      "name": "1st Half",
+      "description": "1st Half",
+      "hasLine": true,
+      "examples": [],
+      "event_count": 40,
+      "selection_count": 96,
       "sports": ["basketball", "football"]
     },
     {
-      "id": "first_quarter",
-      "name": "first_quarter",
-      "display_name": "First Quarter",
-      "description": "Bet on first quarter moneyline, spread, or total",
-      "category": "period",
-      "has_line": true,
-      "selection_types": ["home", "away", "over", "under"],
-      "sports": ["basketball", "football"]
-    },
-    {
-      "id": "second_half",
-      "name": "second_half",
-      "display_name": "Second Half",
-      "description": "Bet on second half moneyline, spread, or total",
-      "category": "period",
-      "has_line": true,
-      "selection_types": ["home", "away", "over", "under"],
+      "id": "1st_quarter",
+      "name": "1st Quarter",
+      "description": "1st Quarter",
+      "hasLine": true,
+      "examples": [],
+      "event_count": 28,
+      "selection_count": 64,
       "sports": ["basketball", "football"]
     }
   ],
   "meta": {
     "count": 9,
-    "total": 9,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": false,
-      "next_offset": null
-    },
-    "updated_at": "2026-01-26T12:00:00Z",
-    "filters": {}
+    "total_events": 561,
+    "total_selections": 2994,
+    "rate_limit": {
+      "limit": 10,
+      "remaining": 9,
+      "reset": 1706270460
+    }
   }
 }
 ```
@@ -180,45 +176,50 @@ for market in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique market identifier (use in API filters) |
-| `name` | string | Market name (lowercase) |
-| `display_name` | string | Human-readable display name |
+| `name` | string | Human-readable market name |
 | `description` | string | Brief description of the market |
-| `category` | string | Market category: `main`, `prop`, or `period` |
-| `has_line` | boolean | Whether this market includes a line value |
-| `selection_types` | string[] | Possible selection types for this market |
-| `sports` | string[] | Sport IDs that support this market |
+| `hasLine` | boolean | Whether this market includes a line value |
+| `examples` | string[] | Example selections for this market |
+| `event_count` | number \| null | Number of events currently offering this market |
+| `selection_count` | number \| null | Number of unique selections across all events |
+| `sports` | string[] | Sport IDs that currently have this market |
 
-## Market Categories
+## Market Types
 
-### Main Markets
+### Core Markets
 
-Core betting markets available for most events. These are the most popular and widely available.
+The most popular and widely available betting markets.
 
-| Market | Description | Line | Selections |
-|--------|-------------|------|------------|
-| `moneyline` | Pick the winner | No | `home`, `away` |
-| `spread` | Point spread / handicap betting | Yes | `home`, `away` |
-| `total` | Over/Under combined score | Yes | `over`, `under` |
+| Market | Description | hasLine | Examples |
+|--------|-------------|---------|----------|
+| `moneyline` | Pick the winner outright | No | Lakers -150, Celtics +130 |
+| `point_spread` | Point spread / handicap betting | Yes | Lakers -4.5 (-110), Celtics +4.5 (-110) |
+| `total_points` | Over/Under combined score | Yes | Over 220.5 (-110), Under 220.5 (-110) |
+| `team_total` | Bet on one team's score | Yes | Lakers Over 112.5, Lakers Under 112.5 |
 
 ### Prop Markets
 
-Player, team, and game proposition bets for more specific outcomes.
+Player and game proposition bets for more specific outcomes.
 
-| Market | Description | Line | Selections |
-|--------|-------------|------|------------|
-| `player_prop` | Individual player statistics (points, rebounds, assists, etc.) | Yes | `over`, `under` |
-| `team_prop` | Team-specific outcomes (team total points, first to score, etc.) | Yes | `over`, `under`, `yes`, `no` |
-| `game_prop` | Game-specific outcomes (will there be overtime, etc.) | No | `yes`, `no` |
+| Market | Description | hasLine | Examples |
+|--------|-------------|---------|----------|
+| `player_prop` | Individual player statistics (points, rebounds, assists, etc.) | Yes | LeBron James Over 25.5 Points |
+| `game_prop` | Game-specific outcomes (will there be overtime, etc.) | No | First Team to Score |
 
 ### Period Markets
 
 Markets for specific periods within a game (halves, quarters).
 
-| Market | Description | Line | Selections |
-|--------|-------------|------|------------|
-| `first_half` | 1H moneyline, spread, or total | Yes | `home`, `away`, `over`, `under` |
-| `first_quarter` | 1Q moneyline, spread, or total | Yes | `home`, `away`, `over`, `under` |
-| `second_half` | 2H moneyline, spread, or total | Yes | `home`, `away`, `over`, `under` |
+| Market | Description | hasLine |
+|--------|-------------|---------|
+| `1st_half` | 1st half moneyline, spread, or total | Yes |
+| `1st_quarter` | 1st quarter moneyline, spread, or total | Yes |
+
+### Other Markets
+
+| Market | Description | hasLine | Examples |
+|--------|-------------|---------|----------|
+| `future` | Long-term bets on season outcomes or championships | No | NBA Championship Winner, MVP Award Winner |
 
 ## Selection Types
 
@@ -260,7 +261,7 @@ curl "https://api.sharpapi.io/api/v1/odds?market=moneyline" \
   -H "X-API-Key: YOUR_API_KEY"
 
 # Get spread and total odds
-curl "https://api.sharpapi.io/api/v1/odds?market=spread,total" \
+curl "https://api.sharpapi.io/api/v1/odds?market=point_spread,total_points" \
   -H "X-API-Key: YOUR_API_KEY"
 
 # Get player props only
@@ -274,14 +275,14 @@ curl "https://api.sharpapi.io/api/v1/odds/best?market=moneyline" \
 
 ## Understanding Lines
 
-Markets with `has_line: true` include a numerical line value in the odds response:
+Markets with `hasLine: true` include a numerical line value in the odds response:
 
 - **Spread**: The point handicap (e.g., `-6.5` means the team must win by 7+)
 - **Total**: The combined score threshold (e.g., `215.5` for over/under)
 - **Player Props**: The stat threshold (e.g., `24.5` points for a player)
 - **Team Props**: The team stat threshold (e.g., `105.5` team total points)
 
-Markets with `has_line: false` (like moneyline) will have `line: null` in the odds response.
+Markets with `hasLine: false` (like moneyline) will have `line: null` in the odds response.
 
 ## Related Endpoints
 

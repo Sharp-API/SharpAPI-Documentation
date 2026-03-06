@@ -39,7 +39,7 @@ const response = await fetch(
 const { data, meta } = await response.json();
 
 data.forEach(league => {
-  console.log(`${league.display_name} (${league.sport}): ${league.eventCount} events`);
+  console.log(`${league.display_name} (${league.sport}): ${league.event_count} events`);
 });
 ```
   </Tabs.Tab>
@@ -55,7 +55,7 @@ response = requests.get(
 result = response.json()
 
 for league in result['data']:
-    print(f"{league['display_name']} ({league['sport']}): {league['eventCount']} events")
+    print(f"{league['display_name']} ({league['sport']}): {league['event_count']} events")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -72,24 +72,24 @@ for league in result['data']:
       "name": "nba",
       "display_name": "NBA",
       "sport": "basketball",
-      "eventCount": 15,
-      "liveCount": 2
+      "event_count": 15,
+      "live_count": 2
     },
     {
       "id": "ncaab",
       "name": "ncaab",
       "display_name": "NCAAB",
       "sport": "basketball",
-      "eventCount": 27,
-      "liveCount": 1
+      "event_count": 27,
+      "live_count": 1
     },
     {
       "id": "wnba",
       "name": "wnba",
       "display_name": "WNBA",
       "sport": "basketball",
-      "eventCount": 0,
-      "liveCount": 0
+      "event_count": 0,
+      "live_count": 0
     }
   ],
   "meta": {
@@ -119,128 +119,128 @@ for league in result['data']:
       "name": "nba",
       "display_name": "NBA",
       "sport": "basketball",
-      "eventCount": 15,
-      "liveCount": 2
+      "event_count": 15,
+      "live_count": 2
     },
     {
       "id": "ncaab",
       "name": "ncaab",
       "display_name": "NCAAB",
       "sport": "basketball",
-      "eventCount": 27,
-      "liveCount": 1
+      "event_count": 27,
+      "live_count": 1
     },
     {
       "id": "wnba",
       "name": "wnba",
       "display_name": "WNBA",
       "sport": "basketball",
-      "eventCount": 0,
-      "liveCount": 0
+      "event_count": 0,
+      "live_count": 0
     },
     {
       "id": "nfl",
       "name": "nfl",
       "display_name": "NFL",
       "sport": "football",
-      "eventCount": 16,
-      "liveCount": 1
+      "event_count": 16,
+      "live_count": 1
     },
     {
       "id": "ncaaf",
       "name": "ncaaf",
       "display_name": "NCAAF",
       "sport": "football",
-      "eventCount": 12,
-      "liveCount": 0
+      "event_count": 12,
+      "live_count": 0
     },
     {
       "id": "nhl",
       "name": "nhl",
       "display_name": "NHL",
       "sport": "hockey",
-      "eventCount": 15,
-      "liveCount": 2
+      "event_count": 15,
+      "live_count": 2
     },
     {
       "id": "mlb",
       "name": "mlb",
       "display_name": "MLB",
       "sport": "baseball",
-      "eventCount": 0,
-      "liveCount": 0
+      "event_count": 0,
+      "live_count": 0
     },
     {
       "id": "epl",
       "name": "epl",
       "display_name": "English Premier League",
       "sport": "soccer",
-      "eventCount": 10,
-      "liveCount": 2
+      "event_count": 10,
+      "live_count": 2
     },
     {
       "id": "la_liga",
       "name": "la_liga",
       "display_name": "La Liga",
       "sport": "soccer",
-      "eventCount": 10,
-      "liveCount": 1
+      "event_count": 10,
+      "live_count": 1
     },
     {
       "id": "serie_a",
       "name": "serie_a",
       "display_name": "Serie A",
       "sport": "soccer",
-      "eventCount": 10,
-      "liveCount": 1
+      "event_count": 10,
+      "live_count": 1
     },
     {
       "id": "bundesliga",
       "name": "bundesliga",
       "display_name": "Bundesliga",
       "sport": "soccer",
-      "eventCount": 5,
-      "liveCount": 0
+      "event_count": 5,
+      "live_count": 0
     },
     {
       "id": "mls",
       "name": "mls",
       "display_name": "MLS",
       "sport": "soccer",
-      "eventCount": 0,
-      "liveCount": 0
+      "event_count": 0,
+      "live_count": 0
     },
     {
       "id": "atp",
       "name": "atp",
       "display_name": "ATP",
       "sport": "tennis",
-      "eventCount": 12,
-      "liveCount": 4
+      "event_count": 12,
+      "live_count": 4
     },
     {
       "id": "wta",
       "name": "wta",
       "display_name": "WTA",
       "sport": "tennis",
-      "eventCount": 6,
-      "liveCount": 2
+      "event_count": 6,
+      "live_count": 2
     },
     {
       "id": "ufc",
       "name": "ufc",
       "display_name": "UFC",
       "sport": "mma",
-      "eventCount": 12,
-      "liveCount": 0
+      "event_count": 12,
+      "live_count": 0
     },
     {
       "id": "pga",
       "name": "pga",
       "display_name": "PGA Tour",
       "sport": "golf",
-      "eventCount": 4,
-      "liveCount": 1
+      "event_count": 4,
+      "live_count": 1
     }
   ],
   "meta": {
@@ -266,8 +266,8 @@ for league in result['data']:
 | `name` | string | League name (lowercase) |
 | `display_name` | string | Human-readable display name |
 | `sport` | string | Parent sport ID |
-| `eventCount` | integer | Total events currently available with odds |
-| `liveCount` | integer | Events currently live/in-play |
+| `event_count` | integer | Total events currently available with odds |
+| `live_count` | integer | Events currently live/in-play |
 
 ## Leagues by Sport
 
@@ -320,7 +320,7 @@ for league in result['data']:
 | `pga` | PGA Tour | Professional Golfers' Association Tour |
 
 <Callout type="info">
-The `eventCount` and `liveCount` values are dynamic. Off-season leagues (e.g., MLB in winter, WNBA in fall) will show 0 events.
+The `event_count` and `live_count` values are dynamic. Off-season leagues (e.g., MLB in winter, WNBA in fall) will show 0 events.
 </Callout>
 
 ## Using Leagues in Filters

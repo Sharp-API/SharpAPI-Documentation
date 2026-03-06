@@ -57,18 +57,18 @@ class ArbScanner:
             self._process_arb(opp)
 
     def _process_arb(self, opp):
-        arb_id = f"{opp['eventId']}:{opp['marketType']}"
+        arb_id = f"{opp['event_id']}:{opp['market_type']}"
 
         if arb_id in self.seen_arbs:
             return
 
         self.seen_arbs.add(arb_id)
 
-        logger.info(f"💰 ARB FOUND: {opp['profitPercent']:.2f}%")
-        logger.info(f"   Event: {opp['eventName']}")
+        logger.info(f"💰 ARB FOUND: {opp['profit_percent']:.2f}%")
+        logger.info(f"   Event: {opp['event_name']}")
 
         for leg in opp['legs']:
-            logger.info(f"   → {leg['sportsbook']}: {leg['selection']} @ {leg['odds']} ({leg['stakePercent']:.1f}%)")
+            logger.info(f"   → {leg['sportsbook']}: {leg['selection']} @ {leg['odds_american']} ({leg['stake_percent']:.1f}%)")
 
         # Send alert
         self._send_alert(opp)
@@ -98,14 +98,14 @@ class StakeCalculator:
         bets = []
 
         for leg in arb['legs']:
-            stake = self.bankroll * (leg['stakePercent'] / 100)
+            stake = self.bankroll * (leg['stake_percent'] / 100)
 
             bets.append({
                 'sportsbook': leg['sportsbook'],
                 'selection': leg['selection'],
-                'odds': leg['odds'],
+                'odds': leg['odds_american'],
                 'stake': round(stake, 2),
-                'potential_return': round(stake * leg['decimalOdds'], 2),
+                'potential_return': round(stake * leg['odds_decimal'], 2),
             })
 
         return bets
@@ -116,9 +116,9 @@ calc = StakeCalculator(bankroll=1000)
 
 def process_arb(opp):
     bets = calc.calculate(opp)
-    profit = opp['profitPercent'] * 10  # $10 per 1% on $1000
+    profit = opp['profit_percent'] * 10  # $10 per 1% on $1000
 
-    print(f"💰 {opp['eventName']} - ${profit:.2f} profit")
+    print(f"💰 {opp['event_name']} - ${profit:.2f} profit")
     for bet in bets:
         print(f"   Bet ${bet['stake']} on {bet['selection']} @ {bet['sportsbook']}")
 ```
@@ -139,8 +139,8 @@ class DiscordAlerter:
             webhook = Webhook.from_url(self.webhook_url, session=session)
 
             embed = discord.Embed(
-                title=f"💰 {opp['profitPercent']:.2f}% Arbitrage",
-                description=opp['eventName'],
+                title=f"💰 {opp['profit_percent']:.2f}% Arbitrage",
+                description=opp['event_name'],
                 color=0x00FF00,
             )
 

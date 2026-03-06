@@ -107,7 +107,7 @@ A new positive expected value opportunity has been found. Only sent on `opportun
 ```
 event: ev:detected
 id: evt_00043
-data: {"opportunity_id":"opp_x1y2z3","event_id":"evt_abc123","sportsbook":"draftkings","selection":"PHO Suns -3.5","odds":{"american":-105,"decimal":1.952,"probability":0.512},"sharp_odds":{"american":-115,"decimal":1.870,"probability":0.535},"ev_percent":4.35,"kelly_percent":2.18,"timestamp":"2026-01-26T02:10:38.500Z"}
+data: [{"id":"a1b2c3d4e5f6","game_id":"nba_phosuns_phi76ers_2026-02-08","ev_percent":4.35,"odds_american":-105,"odds_decimal":1.952,"no_vig_odds":-101,"selection":"PHO Suns -3.5","market":"point_spread","line":-3.5,"sportsbook":"draftkings","game":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","start_time":"2026-02-08T19:00:00.000Z","is_live":false,"confidence_score":72,"kelly_fraction":0.038,"book_count":4,"detected_at":"2026-02-08T18:47:20.000Z"}]
 ```
 
 ### `ev:expired`
@@ -117,7 +117,7 @@ A previously detected +EV opportunity is no longer available.
 ```
 event: ev:expired
 id: evt_00044
-data: {"opportunity_id":"opp_x1y2z3","reason":"odds_moved","timestamp":"2026-01-26T02:10:39.100Z"}
+data: {"expired":["a1b2c3d4e5f6"],"timestamp":"2026-02-08T18:47:25.000Z"}
 ```
 
 ### `arb:detected`
@@ -127,7 +127,7 @@ A new arbitrage opportunity has been found. Only sent on `opportunities` or `all
 ```
 event: arb:detected
 id: evt_00045
-data: {"opportunity_id":"opp_a1b2c3","event_id":"evt_abc123","legs":[{"sportsbook":"draftkings","selection":"PHO Suns ML","odds":{"american":+150,"decimal":2.50,"probability":0.40}},{"sportsbook":"fanduel","selection":"PHI 76ers ML","odds":{"american":-130,"decimal":1.769,"probability":0.565}}],"profit_percent":2.8,"stakes":{"leg_1":0.414,"leg_2":0.586},"timestamp":"2026-01-26T02:10:38.700Z"}
+data: [{"id":"61c501b83ce932d1","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"moneyline","line":null,"profit_percent":2.8,"implied_total":97.2,"is_live":false,"legs":[{"sportsbook":"draftkings","selection":"PHO Suns","odds_american":150,"odds_decimal":2.5,"implied_probability":0.4,"stake_percent":41.4},{"sportsbook":"fanduel","selection":"PHI 76ers","odds_american":-130,"odds_decimal":1.769,"implied_probability":0.5652,"stake_percent":58.6}],"detected_at":"2026-02-08T18:47:21.000Z"}]
 ```
 
 ### `arb:expired`
@@ -147,7 +147,7 @@ A new middle opportunity has been found. Only sent on `opportunities` or `all` c
 ```
 event: middles:detected
 id: evt_00047
-data: [{"hash_id":"middle_abc123","game_id":"evt_abc123","eventName":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","marketType":"player_points","selection1":{"book":"draftkings","selection":"Over 22.5","odds":-110},"selection2":{"book":"fanduel","selection":"Under 23.5","odds":-105},"middleProbability":0.12,"expectedValue":3.5,"qualityScore":85}]
+data: [{"id":"middle_abc123","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"player_points","side1":{"book":"draftkings","selection":"Over 22.5","line":22.5,"odds":{"american":-110,"decimal":1.909,"probability":0.5238,"fair_probability":0.51},"stake_percent":50,"odds_age_seconds":2.1,"deep_link":null},"side2":{"book":"fanduel","selection":"Under 23.5","line":23.5,"odds":{"american":-105,"decimal":1.952,"probability":0.5122,"fair_probability":0.49},"stake_percent":50,"odds_age_seconds":1.5,"deep_link":null},"middle_size":1,"middle_numbers":[23],"middle_probability":0.12,"expected_value":3.5,"quality_score":85,"detected_at":"2026-02-08T18:47:22.000Z"}]
 ```
 
 ### `middles:expired`
@@ -167,7 +167,7 @@ A new low-hold opportunity has been found. Only sent on `opportunities` or `all`
 ```
 event: low_hold:detected
 id: evt_00049
-data: [{"hash_id":"lowhold_abc123","hold_id":"32825:moneyline:0","hold_percentage":1.2,"normalized_market":"moneyline","game_id":"evt_abc123","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","is_live":false,"all_books":["draftkings","fanduel"],"side1":{"selection":"PHO Suns","price":-108,"books":["draftkings"]},"side2":{"selection":"PHI 76ers","price":110,"books":["fanduel"]}}]
+data: [{"id":"lowhold_abc123","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"moneyline","line":null,"home_team":"PHI 76ers","away_team":"PHO Suns","start_time":"2026-02-08T19:00:00.000Z","hold_percentage":1.2,"is_live":false,"all_books":["draftkings","fanduel"],"side1":{"selection":"PHO Suns","books":["draftkings"],"line":null,"odds":{"american":-108,"decimal":1.926,"implied_probability":0.5192,"fair_probability":0.5096},"deep_links":{"draftkings":"https://sportsbook.draftkings.com/event/..."}},"side2":{"selection":"PHI 76ers","books":["fanduel"],"line":null,"odds":{"american":110,"decimal":2.1,"implied_probability":0.4762,"fair_probability":0.4904},"deep_links":{"fanduel":"https://sportsbook.fanduel.com/event/..."}},"detected_at":"2026-02-08T18:47:22.000Z"}]
 ```
 
 ### `low_hold:expired`
@@ -210,7 +210,7 @@ data: {"code":"upstream_error","message":"Temporary issue fetching DraftKings da
 
 ## Reconnection
 
-SSE supports automatic reconnection via the `Last-Event-ID` header. Each event includes an `id` field. When the client reconnects, it sends the last received `id` and the server replays any missed events.
+SSE supports automatic reconnection via the `Last-Event-ID` header. Each event includes an `id` field. When the client reconnects, the server delivers a **fresh full snapshot** — not a replay of individual missed events. This means your client receives a complete, up-to-date picture on every reconnect.
 
 ```javascript
 // Browsers handle this automatically with EventSource.
@@ -221,8 +221,12 @@ const headers = {
 };
 ```
 
+<Callout type="warning">
+On reconnect, **clear your local state** before processing the new snapshot. The `connected` event includes `"reconnected": true` so you can detect this. If you don't clear state, stale odds from the previous session will mix with fresh data.
+</Callout>
+
 <Callout type="info">
-Browser `EventSource` handles `Last-Event-ID` automatically. No extra code needed for reconnection in browsers.
+Browser `EventSource` handles `Last-Event-ID` and reconnection automatically. No extra code needed for the reconnect itself, but you must handle clearing state on the client side.
 </Callout>
 
 ## Code Examples
@@ -262,17 +266,17 @@ eventSource.addEventListener('odds:removed', (e) => {
 
 eventSource.addEventListener('ev:detected', (e) => {
   const opps = JSON.parse(e.data);
-  opps.forEach(opp => console.log(`+EV: ${opp.selection} at ${opp.ev_percentage}%`));
+  opps.forEach(opp => console.log(`+EV: ${opp.selection} at ${opp.ev_percent}%`));
 });
 
 eventSource.addEventListener('arb:detected', (e) => {
   const arbs = JSON.parse(e.data);
-  arbs.forEach(arb => console.log(`Arb: ${arb.percentage}% profit`));
+  arbs.forEach(arb => console.log(`Arb: ${arb.profit_percent}% profit`));
 });
 
 eventSource.addEventListener('middles:detected', (e) => {
   const middles = JSON.parse(e.data);
-  middles.forEach(m => console.log(`Middle: ${m.eventName} — EV ${m.expectedValue}%`));
+  middles.forEach(m => console.log(`Middle: ${m.event_name} — EV ${m.expected_value}%`));
 });
 
 eventSource.addEventListener('low_hold:detected', (e) => {
@@ -327,7 +331,7 @@ es.addEventListener('odds:removed', (e) => {
 es.addEventListener('ev:detected', (e) => {
   const opps = JSON.parse(e.data);
   opps.forEach(opp =>
-    console.log(`+EV: ${opp.selection} — ${opp.ev_percentage}% EV`)
+    console.log(`+EV: ${opp.selection} — ${opp.ev_percent}% EV`)
   );
 });
 
@@ -339,7 +343,7 @@ es.addEventListener('ev:expired', (e) => {
 es.addEventListener('arb:detected', (e) => {
   const arbs = JSON.parse(e.data);
   arbs.forEach(arb =>
-    console.log(`Arb: ${arb.percentage}% across ${arb.legs.length} legs`)
+    console.log(`Arb: ${arb.profit_percent}% across ${arb.legs.length} legs`)
   );
 });
 
@@ -391,21 +395,21 @@ for event in client.events():
 
     elif event.event == 'ev:detected':
         for opp in data:
-            print(f"+EV: {opp['selection']} at {opp['ev_percentage']}%")
+            print(f"+EV: {opp['selection']} at {opp['ev_percent']}%")
 
     elif event.event == 'ev:expired':
         print(f"EV expired: {len(data['expired'])} opportunities")
 
     elif event.event == 'arb:detected':
         for arb in data:
-            print(f"Arb: {arb['percentage']}% profit")
+            print(f"Arb: {arb['profit_percent']}% profit")
 
     elif event.event == 'arb:expired':
         print(f"Arb expired: {len(data['expired'])} opportunities")
 
     elif event.event == 'middles:detected':
         for m in data:
-            print(f"Middle: {m.get('eventName', '?')} — EV {m.get('expectedValue', '?')}%")
+            print(f"Middle: {m.get('event_name', '?')} — EV {m.get('expected_value', '?')}%")
 
     elif event.event == 'low_hold:detected':
         for h in data:

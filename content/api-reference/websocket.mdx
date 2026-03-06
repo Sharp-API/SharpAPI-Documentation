@@ -184,15 +184,27 @@ Snapshot of opportunities for a single channel type. Sent once per subscribed op
   "seq": 3,
   "ev": [
     {
-      "eventId": "32825-35775-2026-02-08",
-      "eventName": "Indiana Pacers @ Toronto Raptors",
-      "sport": "basketball",
-      "marketType": "player_points",
-      "sportsbook": "draftkings",
+      "id": "a1b2c3d4e5f6",
+      "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "ev_percent": 4.35,
+      "odds_american": -110,
+      "odds_decimal": 1.909,
+      "no_vig_odds": -101,
       "selection": "Tyrese Haliburton Over 22.5",
-      "odds": -110,
-      "evPercent": 4.35,
-      "detectedAt": "2026-02-08T18:47:20.000Z"
+      "market": "player_points",
+      "line": 22.5,
+      "sportsbook": "draftkings",
+      "game": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "is_live": false,
+      "confidence_score": 72,
+      "kelly_fraction": 0.038,
+      "book_count": 4,
+      "detected_at": "2026-02-08T18:47:20.000Z"
     }
   ],
   "timestamp": "2026-02-08T18:47:17.700Z"
@@ -200,6 +212,10 @@ Snapshot of opportunities for a single channel type. Sent once per subscribed op
 ```
 
 The top-level key matches the channel type: `ev`, `arbitrage`, `middles`, or `low_hold`. Each snapshot message contains only one type. Large snapshots are automatically chunked — when this happens, messages include `chunk` and `totalChunks` fields.
+
+<Callout type="info">
+All opportunity fields use **snake_case** naming (e.g. `event_id`, `market_type`, `profit_percent`, `detected_at`). This applies consistently across all channels, message types, and protocols (REST, SSE, and WebSocket).
+</Callout>
 
 #### `initial`
 
@@ -279,15 +295,27 @@ New +EV opportunity found. Pro tier or higher only.
   "seq": 48,
   "data": [
     {
-      "eventId": "32825-35775-2026-02-08",
-      "eventName": "Indiana Pacers @ Toronto Raptors",
-      "sport": "basketball",
-      "marketType": "player_points",
-      "sportsbook": "draftkings",
+      "id": "a1b2c3d4e5f6",
+      "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "ev_percent": 4.35,
+      "odds_american": -110,
+      "odds_decimal": 1.909,
+      "no_vig_odds": -101,
       "selection": "Tyrese Haliburton Over 22.5",
-      "odds": -110,
-      "evPercent": 4.35,
-      "detectedAt": "2026-02-08T18:47:20.000Z"
+      "market": "player_points",
+      "line": 22.5,
+      "sportsbook": "draftkings",
+      "game": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "is_live": false,
+      "confidence_score": 72,
+      "kelly_fraction": 0.038,
+      "book_count": 4,
+      "detected_at": "2026-02-08T18:47:20.000Z"
     }
   ],
   "timestamp": "2026-02-08T18:47:20.000Z"
@@ -321,13 +349,35 @@ New arbitrage opportunity found. Pro tier or higher only.
   "seq": 50,
   "data": [
     {
-      "eventId": "32825-35775-2026-02-08",
-      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "id": "61c501b83ce932d1",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
       "sport": "basketball",
-      "marketType": "moneyline",
-      "profitPercent": 2.8,
-      "legs": [ /* ArbitrageLeg[] */ ],
-      "detectedAt": "2026-02-08T18:47:21.000Z"
+      "league": "nba",
+      "market_type": "moneyline",
+      "line": null,
+      "profit_percent": 2.8,
+      "implied_total": 97.2,
+      "is_live": false,
+      "legs": [
+        {
+          "sportsbook": "draftkings",
+          "selection": "Indiana Pacers",
+          "odds_american": 125,
+          "odds_decimal": 2.25,
+          "implied_probability": 0.4444,
+          "stake_percent": 52.8
+        },
+        {
+          "sportsbook": "fanduel",
+          "selection": "Toronto Raptors",
+          "odds_american": -110,
+          "odds_decimal": 1.909,
+          "implied_probability": 0.5238,
+          "stake_percent": 47.2
+        }
+      ],
+      "detected_at": "2026-02-08T18:47:21.000Z"
     }
   ],
   "timestamp": "2026-02-08T18:47:21.000Z"
@@ -362,17 +412,36 @@ New middle opportunity found. Requires `middles` channel.
   "data": [
     {
       "id": "abc123",
-      "eventId": "32825-35775-2026-02-08",
-      "eventName": "Indiana Pacers @ Toronto Raptors",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
       "sport": "basketball",
       "league": "nba",
-      "marketType": "player_points",
-      "selection1": { "book": "draftkings", "selection": "Over 22.5", "odds": -110 },
-      "selection2": { "book": "fanduel", "selection": "Under 23.5", "odds": -105 },
-      "middleProbability": 0.12,
-      "expectedValue": 3.5,
-      "qualityScore": 85,
-      "detectedAt": "2026-02-08T18:47:22.000Z"
+      "market_type": "player_points",
+      "side1": {
+        "book": "draftkings",
+        "selection": "Over 22.5",
+        "line": 22.5,
+        "odds": { "american": -110, "decimal": 1.909, "probability": 0.5238, "fair_probability": 0.51 },
+        "stake_percent": 50,
+        "odds_age_seconds": 3.2,
+        "deep_link": null
+      },
+      "side2": {
+        "book": "fanduel",
+        "selection": "Under 23.5",
+        "line": 23.5,
+        "odds": { "american": -105, "decimal": 1.952, "probability": 0.5122, "fair_probability": 0.49 },
+        "stake_percent": 50,
+        "odds_age_seconds": 1.8,
+        "deep_link": null
+      },
+      "middle_size": 1,
+      "middle_numbers": [23],
+      "middle_probability": 0.12,
+      "expected_value": 3.5,
+      "roi_percentage": 4.2,
+      "quality_score": 85,
+      "detected_at": "2026-02-08T18:47:22.000Z"
     }
   ],
   "timestamp": "2026-02-08T18:47:22.000Z"
@@ -404,20 +473,34 @@ New low-hold opportunity found. Requires `low_hold` channel.
   "seq": 54,
   "data": [
     {
-      "hash_id": "def456",
-      "hold_id": "32825:moneyline:0",
-      "hold_percentage": 1.2,
-      "normalized_market": "moneyline",
-      "game_id": "32825-35775-2026-02-08",
+      "id": "def456",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
       "sport": "basketball",
       "league": "nba",
+      "market_type": "moneyline",
+      "line": null,
       "home_team": "Toronto Raptors",
       "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "hold_percentage": 1.2,
       "is_live": false,
       "all_books": ["draftkings", "fanduel"],
-      "side1": { "selection": "Indiana Pacers", "price": -108, "books": ["draftkings"] },
-      "side2": { "selection": "Toronto Raptors", "price": 110, "books": ["fanduel"] },
-      "timestamp": 1707414442
+      "side1": {
+        "selection": "Indiana Pacers",
+        "books": ["draftkings"],
+        "line": null,
+        "odds": { "american": -108, "decimal": 1.926, "implied_probability": 0.5192, "fair_probability": 0.5096 },
+        "deep_links": { "draftkings": "https://sportsbook.draftkings.com/event/..." }
+      },
+      "side2": {
+        "selection": "Toronto Raptors",
+        "books": ["fanduel"],
+        "line": null,
+        "odds": { "american": 110, "decimal": 2.1, "implied_probability": 0.4762, "fair_probability": 0.4904 },
+        "deep_links": { "fanduel": "https://sportsbook.fanduel.com/event/..." }
+      },
+      "detected_at": "2026-02-08T18:47:22.000Z"
     }
   ],
   "timestamp": "2026-02-08T18:47:22.000Z"
@@ -583,7 +666,7 @@ ws.onmessage = (event) => {
       break;
     case 'ev:detected':
       msg.data.forEach(ev =>
-        console.log(`+EV: ${ev.selection} at ${ev.evPercent}%`)
+        console.log(`+EV: ${ev.selection} at ${ev.ev_percent}%`)
       );
       break;
     case 'heartbeat':
@@ -680,7 +763,7 @@ def on_message(ws, raw):
         print("Initial data complete")
     elif msg_type == "middles:detected":
         for m in msg["data"]:
-            print(f'Middle: {m["eventName"]} — EV {m.get("expectedValue", "?")}%')
+            print(f'Middle: {m["event_name"]} — EV {m.get("expected_value", "?")}%')
     elif msg_type == "middles:expired":
         print(f'Expired: {len(msg["data"]["expired"])} middles')
     elif msg_type == "heartbeat":
@@ -737,7 +820,7 @@ stream.on('odds_update', ({ data, source }) => {
 
 stream.on('ev:detected', ({ data }) => {
   data.forEach(ev =>
-    console.log(`+EV: ${ev.selection} at ${ev.evPercent}%`)
+    console.log(`+EV: ${ev.selection} at ${ev.ev_percent}%`)
   );
 });
 

@@ -1,0 +1,136 @@
+
+## The Problem
+
+Each sportsbook uses its own internal event IDs. The same Lakers vs Celtics game might be event `33483200` on DraftKings, `nba-bos-lal-20260208` on FanDuel, and `556677889` on Pinnacle. Without a unified identifier, building cross-book comparison tools requires implementing your own event matching logic.
+
+## How SharpAPI Solves This
+
+SharpAPI generates a **canonical event ID** for every event. This ID is deterministic — the same real-world event always gets the same `id`, regardless of which sportsbook it comes from.
+
+```
+Format: {league}_{teamA}_{teamB}_{YYYY-MM-DD}
+```
+
+**Example:** A Celtics vs Lakers game on February 8, 2026 produces the same ID across all sportsbooks:
+
+| Sportsbook | Native Event ID | SharpAPI `id` |
+|------------|----------------|---------------|
+| DraftKings | `33483200` | `nba_celtics_lakers_20260208` |
+| FanDuel | `nba-bos-lal-20260208` | `nba_celtics_lakers_20260208` |
+| Pinnacle | `556677889` | `nba_celtics_lakers_20260208` |
+| BetMGM | `ms_44556` | `nba_celtics_lakers_20260208` |
+
+## Two Types of Event IDs
+
+Every event in the API has two ID fields:
+
+| Field | Scope | Purpose |
+|-------|-------|---------|
+| `id` | Cross-book (canonical) | Use as your primary key for matching events across sportsbooks |
+| `external_ids` | Per-sportsbook | Map of each book's native event ID, useful for deep links |
+
+```json
+{
+  "id": "nba_celtics_lakers_20260208",
+  "external_ids": {
+    "draftkings": "33483200",
+    "fanduel": "nba-bos-lal-20260208",
+    "pinnacle": "556677889",
+    "betmgm": "ms_44556"
+  }
+}
+```
+
+## How Canonical IDs Are Generated
+
+The canonical ID is built from four components:
+
+1. **League code** — sport mapped to league (e.g., `basketball` → `nba`)
+2. **Team names** — normalized and alphabetically sorted
+3. **Date** — event start date in `YYYY-MM-DD` format
+
+### Team Name Normalization
+
+Team names are normalized to handle variations across sportsbooks:
+
+- `"Los Angeles Lakers"` → `lakers`
+- `"LA Lakers"` → `lakers`
+- `"LAL"` → `lakers`
+
+Normalization strips prefixes ("The", "Los", "Las"), suffixes ("FC", "United", "City"), punctuation, and accents. Teams are then sorted alphabetically so the ID is identical regardless of home/away ordering.
+
+## Using Canonical IDs in Your Application
+
+### As a Primary Key
+
+Use the `id` field as your database primary key when storing events:
+
+```javascript
+// Fetch events from the API
+const { data: events } = await fetch(
+  'https://api.sharpapi.io/api/v1/events?league=nba',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// Store using canonical ID as primary key
+for (const event of events) {
+  await db.events.upsert({
+    id: event.id,  // "nba_celtics_lakers_20260208"
+    home_team: event.home_team,
+    away_team: event.away_team,
+    start_time: event.start_time,
+    external_ids: event.external_ids
+  });
+}
+```
+
+### Cross-Book Odds Comparison
+
+The canonical ID lets you compare odds for the same event across all books:
+
+```javascript
+// Get odds filtered to a specific event
+const { data } = await fetch(
+  'https://api.sharpapi.io/api/v1/events/nba_celtics_lakers_20260208/odds',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// All odds in the response are for the same canonical event
+// Group by sportsbook to compare
+const byBook = {};
+for (const odds of data.odds) {
+  byBook[odds.sportsbook] = byBook[odds.sportsbook] || [];
+  byBook[odds.sportsbook].push(odds);
+}
+```
+
+### Deep Linking to Sportsbooks
+
+Use `external_ids` to link users back to a specific sportsbook's event page:
+
+```javascript
+const event = await getEvent('nba_celtics_lakers_20260208');
+
+// Build a sportsbook-specific link
+const dkEventId = event.external_ids['draftkings'];
+// → "33483200"
+```
+
+## How This Powers EV and Arbitrage Detection
+
+SharpAPI's opportunity detection engines rely on canonical event IDs internally:
+
+- **EV calculation** finds the sharp reference (Pinnacle) odds for the same `eventId` and compares them to soft book odds
+- **Arbitrage detection** groups all odds by `eventId` + market type to find cross-book price discrepancies
+- **Middles detection** finds overlapping lines across books for the same `eventId`
+
+This is the same matching system exposed to you through the API — when you see an arbitrage opportunity with legs from different sportsbooks, the canonical event ID is what linked those odds together.
+
+## Key Properties
+
+| Property | Detail |
+|----------|--------|
+| **Deterministic** | Same inputs always produce the same ID — no random UUIDs |
+| **Stable** | The ID doesn't change once generated |
+| **Human-readable** | `nba_celtics_lakers_20260208` is meaningful at a glance |
+| **Sortable** | IDs sort naturally by league, team, and date |

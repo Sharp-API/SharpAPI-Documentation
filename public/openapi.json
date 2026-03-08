@@ -782,13 +782,12 @@
       },
       "NormalizedOdds": {
         "type": "object",
-        "required": ["id", "sportsbook", "eventId", "sport", "league", "homeTeam", "awayTeam", "marketType", "selection", "odds", "eventStartTime", "timestamp", "isLive", "status"],
+        "required": ["id", "sportsbook", "eventId", "sport", "league", "homeTeam", "awayTeam", "marketType", "selection", "odds", "eventStartTime", "timestamp", "isLive"],
         "properties": {
           "id": { "type": "string" },
           "sportsbook": { "type": "string", "example": "draftkings" },
           "sportsbookDisplayName": { "type": "string", "example": "DraftKings" },
           "eventId": { "type": "string" },
-          "externalEventId": { "type": "string" },
           "sport": { "type": "string", "example": "basketball" },
           "league": { "type": "string", "example": "NBA" },
           "homeTeam": { "type": "string", "example": "Los Angeles Lakers" },
@@ -801,7 +800,8 @@
           "eventStartTime": { "type": "string", "format": "date-time" },
           "timestamp": { "type": "string", "format": "date-time" },
           "isLive": { "type": "boolean" },
-          "status": { "$ref": "#/components/schemas/EventStatus" }
+          "playerName": { "type": "string", "description": "Player name (player prop markets only)" },
+          "statCategory": { "type": "string", "description": "Stat category (player prop markets only)" }
         }
       },
       "Event": {

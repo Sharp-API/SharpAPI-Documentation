@@ -52,8 +52,8 @@ All responses include standard rate limit and metadata headers:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Unique event identifier |
-| `external_ids` | object | Map of sportsbook ID to external event ID (e.g., `{"draftkings": "33483153"}`) |
+| `id` | string | Canonical event identifier — the same for every sportsbook covering this event. Use as your primary key for cross-book matching. See [Event Matching](/concepts/event-matching). |
+| `external_ids` | object | Map of sportsbook ID to that book's native event ID (e.g., `{"draftkings": "33483153"}`). Use these for deep linking back to sportsbook pages. |
 | `sport` | string | Sport identifier (e.g., `basketball`, `football`) |
 | `league` | string | League slug (e.g., `nba`, `nfl`) |
 | `home_team` | string | Home team name |
@@ -338,6 +338,12 @@ The previous endpoints used **camelCase** field names (`homeTeam`, `awayTeam`, `
 - Query parameters use **singular form** (`sport` instead of `sports`)
 - Base URL is `https://api.sharpapi.io` (not `https://sharpapi.io`)
 - Pagination now includes `has_more` and `next_offset` fields
+
+## Cross-Book Event Matching
+
+The `id` field is a **canonical event identifier** — the same real-world event gets the same `id` regardless of which sportsbook it comes from. Use it as your primary key when building cross-book comparison tools. The `external_ids` field maps each sportsbook to its native event ID for deep linking.
+
+See [Event Matching](/concepts/event-matching) for full details on how canonical IDs work.
 
 ## Related Endpoints
 

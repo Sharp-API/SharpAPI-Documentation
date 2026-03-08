@@ -25,7 +25,6 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 | `market` | string | all | Filter by market type(s), comma-separated (e.g., `moneyline`, `spread`, `total`) |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
-| `has_score` | boolean | — | `true` = only events with game state/scores |
 | `min_odds` | number | — | Minimum American odds filter |
 | `max_odds` | number | — | Maximum American odds filter |
 | `limit` | integer | 50 | Max results per page (max 500) |
@@ -222,6 +221,8 @@ X-Request-Id: req_best_789xyz
 | `all_books[].line` | number \| null | Line at this sportsbook |
 | `all_books[].timestamp` | string | When this book's odds were last updated |
 | `timestamp` | string | ISO 8601 timestamp of the best odds determination |
+| `player_name` | string\|undefined | Player name (player prop markets only) |
+| `stat_category` | string\|undefined | Stat category, e.g. `points`, `rebounds` (player prop markets only) |
 
 <Callout type="info">
 The `market_hold` field represents the bookmaker's built-in margin (overround) as a percentage. A hold of `4.2` means the combined implied probabilities across all outcomes sum to 104.2%. Lower hold = more efficient market.

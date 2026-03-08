@@ -26,7 +26,6 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `market` | string | all | Filter by market type(s), comma-separated. Supports categories (`moneyline`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
-| `has_score` | boolean | — | `true` = only events with game state/scores |
 | `sort` | string | — | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
 | `fields` | string | all | Comma-separated field names to include in response (e.g., `id,sportsbook,odds_american`) |
 | `min_odds` | number | — | Minimum American odds filter (e.g., `-110`) |
@@ -115,8 +114,7 @@ if result['meta']['pagination']['has_more']:
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
       "timestamp": "2026-01-26T02:10:24.125Z",
-      "is_live": false,
-      "status": "upcoming"
+      "is_live": false
     },
     {
       "id": "draftkings_33483153_moneyline_PHI",
@@ -136,8 +134,7 @@ if result['meta']['pagination']['has_more']:
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
       "timestamp": "2026-01-26T02:10:24.125Z",
-      "is_live": false,
-      "status": "upcoming"
+      "is_live": false
     }
   ],
   "meta": {
@@ -238,26 +235,12 @@ X-Request-Id: req_abc123def456
 | `event_start_time` | string | ISO 8601 event start time |
 | `timestamp` | string | ISO 8601 timestamp when odds were last updated |
 | `is_live` | boolean | Whether the event is currently live |
-| `status` | string | `upcoming`, `live`, or `ended` |
-| `external_event_id` | string\|undefined | Sportsbook's native event ID (for deep linking) |
-| `selection_id` | string\|undefined | Sportsbook's selection/outcome ID |
-| `market_id` | string\|undefined | Sportsbook's market ID |
+| `player_name` | string\|undefined | Player name (player prop markets only) |
+| `stat_category` | string\|undefined | Stat category, e.g. `points`, `rebounds` (player prop markets only) |
 
-#### Live Game State Fields
-
-These fields are included when the event is live (`is_live: true`):
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `home_score` | number\|null | Home team score |
-| `away_score` | number\|null | Away team score |
-| `game_period` | string\|null | Current period (e.g., `Q3`, `2nd`, `3rd Period`) |
-| `game_clock` | string\|null | Time remaining (e.g., `5:42`) |
-| `score_type` | string\|undefined | Score type (e.g., `points`, `goals`, `runs`) |
-| `possession` | string\|null | Team with possession |
-| `is_timeout` | boolean\|null | Whether a timeout is in progress |
-| `power_play` | string\|null | Power play info (hockey) |
-| `last_play` | string\|null | Description of last play |
+<Callout type="info">
+Live game state (scores, periods, clocks) is available via the [Game State](/api-reference/gamestate) endpoint. Deep links to sportsbook pages are available via the [Deep Links](/api-reference/deeplinks) endpoint using the odds `id` field.
+</Callout>
 
 ## Sorting
 

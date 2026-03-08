@@ -63,10 +63,9 @@ interface OddsLine {
   line?: number;
   event_start_time: string;
   is_live: boolean;
-  status: string;
   timestamp: string;
-  fetched_at?: string;
-  data_age_ms?: number;
+  player_name?: string;     // Player prop markets only
+  stat_category?: string;   // Player prop markets only
 }
 
 interface EVOpportunity {

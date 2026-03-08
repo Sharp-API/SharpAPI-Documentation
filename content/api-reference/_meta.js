@@ -30,6 +30,11 @@ export default {
   "events-by-id": "Event Details",
   "events-odds": "Event Odds",
   "events-markets": "Event Markets",
+  "---GameState": {
+    type: "separator",
+    title: "Game State",
+  },
+  gamestate: "Live Game State",
   "---Opportunities": {
     type: "separator",
     title: "Opportunities",

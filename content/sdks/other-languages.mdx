@@ -1,0 +1,310 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Other Languages
+
+<Callout type="info">
+We provide official SDKs for [TypeScript](/sdks/typescript) and [Python](/sdks/python). For all other languages, you can auto-generate a client from our OpenAPI spec or use the REST API directly.
+</Callout>
+
+## OpenAPI Spec
+
+Our full API specification is available at:
+
+```
+https://docs.sharpapi.io/openapi.json
+```
+
+This is a standard OpenAPI 3.1.0 spec with 34 endpoints, 27 schemas, and full request/response examples. You can use it with any OpenAPI-compatible code generator.
+
+## Auto-Generate a Client
+
+### Using `openapi-generator`
+
+The most popular generator supports 50+ languages. Install it and generate a client in one command:
+
+<Tabs items={['Go', 'C# / .NET', 'Java', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin']}>
+<Tabs.Tab>
+```bash
+# Install
+brew install openapi-generator   # macOS
+# or: npm install -g @openapitools/openapi-generator-cli
+
+# Generate Go client
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g go \
+  -o ./sharpapi-go \
+  --additional-properties=packageName=sharpapi
+```
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    sharpapi "sharpapi"
+)
+
+func main() {
+    cfg := sharpapi.NewConfiguration()
+    cfg.AddDefaultHeader("X-API-Key", "sk_live_...")
+    client := sharpapi.NewAPIClient(cfg)
+
+    odds, _, err := client.OddsAPI.GetOdds(context.Background()).
+        League("nba").
+        Execute()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("Got %d odds\n", len(odds.Data))
+}
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g csharp \
+  -o ./SharpApi \
+  --additional-properties=packageName=SharpApi,targetFramework=net8.0
+```
+
+```csharp
+using SharpApi.Api;
+using SharpApi.Client;
+
+var config = new Configuration();
+config.ApiKey.Add("X-API-Key", "sk_live_...");
+var api = new OddsApi(config);
+
+var odds = await api.GetOddsAsync(league: "nba");
+Console.WriteLine($"Got {odds.Data.Count} odds");
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g java \
+  -o ./sharpapi-java \
+  --additional-properties=groupId=io.sharpapi,artifactId=sharpapi-client
+```
+
+```java
+import io.sharpapi.client.*;
+import io.sharpapi.client.api.OddsApi;
+
+ApiClient client = new ApiClient();
+client.setApiKey("sk_live_...");
+OddsApi api = new OddsApi(client);
+
+var odds = api.getOdds().league("nba").execute();
+System.out.println("Got " + odds.getData().size() + " odds");
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g rust \
+  -o ./sharpapi-rust \
+  --additional-properties=packageName=sharpapi
+```
+
+```rust
+use sharpapi::apis::configuration::Configuration;
+use sharpapi::apis::odds_api;
+
+#[tokio::main]
+async fn main() {
+    let mut config = Configuration::new();
+    config.api_key = Some(sharpapi::apis::configuration::ApiKey {
+        key: "sk_live_...".to_string(),
+        prefix: Some("X-API-Key".to_string()),
+    });
+
+    let odds = odds_api::get_odds(&config, Some("nba"), None, None)
+        .await
+        .unwrap();
+    println!("Got {} odds", odds.data.len());
+}
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g ruby \
+  -o ./sharpapi-ruby \
+  --additional-properties=gemName=sharpapi
+```
+
+```ruby
+require 'sharpapi'
+
+SharpApi.configure do |config|
+  config.api_key['X-API-Key'] = 'sk_live_...'
+end
+
+api = SharpApi::OddsApi.new
+odds = api.get_odds(league: 'nba')
+puts "Got #{odds.data.length} odds"
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g php \
+  -o ./sharpapi-php \
+  --additional-properties=packageName=SharpApi
+```
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+$config = SharpApi\Configuration::getDefaultConfiguration()
+    ->setApiKey('X-API-Key', 'sk_live_...');
+
+$api = new SharpApi\Api\OddsApi(new GuzzleHttp\Client(), $config);
+$odds = $api->getOdds('nba');
+echo "Got " . count($odds->getData()) . " odds\n";
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g swift5 \
+  -o ./SharpApi \
+  --additional-properties=projectName=SharpApi
+```
+
+```swift
+import SharpApi
+
+let config = SharpApiAPI.customHeaders = ["X-API-Key": "sk_live_..."]
+
+OddsAPI.getOdds(league: "nba") { response, error in
+    guard let odds = response?.data else { return }
+    print("Got \(odds.count) odds")
+}
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```bash
+openapi-generator generate \
+  -i https://docs.sharpapi.io/openapi.json \
+  -g kotlin \
+  -o ./sharpapi-kotlin \
+  --additional-properties=groupId=io.sharpapi,artifactId=sharpapi-client
+```
+
+```kotlin
+import io.sharpapi.client.apis.OddsApi
+import io.sharpapi.client.infrastructure.ApiClient
+
+fun main() {
+    ApiClient.apiKey["X-API-Key"] = "sk_live_..."
+    val api = OddsApi()
+    val odds = api.getOdds(league = "nba")
+    println("Got ${odds.data.size} odds")
+}
+```
+</Tabs.Tab>
+</Tabs>
+
+### Using `openapi-fetch` (TypeScript alternative)
+
+If you prefer a lighter TypeScript client without our full SDK:
+
+```bash
+npm install openapi-fetch openapi-typescript
+npx openapi-typescript https://docs.sharpapi.io/openapi.json -o ./sharpapi.d.ts
+```
+
+```typescript
+import createClient from 'openapi-fetch'
+import type { paths } from './sharpapi'
+
+const api = createClient<paths>({
+  baseUrl: 'https://api.sharpapi.io/api/v1',
+  headers: { 'X-API-Key': 'sk_live_...' },
+})
+
+const { data } = await api.GET('/odds', {
+  params: { query: { league: 'nba' } },
+})
+```
+
+## Plain REST API
+
+No SDK needed — our API is standard REST with JSON responses. Any HTTP client works:
+
+<Tabs items={['curl', 'Go', 'C#', 'Java', 'Rust', 'Ruby', 'PHP']}>
+<Tabs.Tab>
+```bash
+curl -H "X-API-Key: sk_live_..." \
+  "https://api.sharpapi.io/api/v1/odds?league=nba"
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```go
+req, _ := http.NewRequest("GET", "https://api.sharpapi.io/api/v1/odds?league=nba", nil)
+req.Header.Set("X-API-Key", "sk_live_...")
+resp, _ := http.DefaultClient.Do(req)
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```csharp
+var client = new HttpClient();
+client.DefaultRequestHeaders.Add("X-API-Key", "sk_live_...");
+var json = await client.GetStringAsync("https://api.sharpapi.io/api/v1/odds?league=nba");
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```java
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.sharpapi.io/api/v1/odds?league=nba"))
+    .header("X-API-Key", "sk_live_...")
+    .build();
+HttpResponse<String> response = HttpClient.newHttpClient().send(request, BodyHandlers.ofString());
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```rust
+let client = reqwest::Client::new();
+let resp = client.get("https://api.sharpapi.io/api/v1/odds")
+    .query(&[("league", "nba")])
+    .header("X-API-Key", "sk_live_...")
+    .send().await?;
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```ruby
+require 'net/http'
+uri = URI("https://api.sharpapi.io/api/v1/odds?league=nba")
+req = Net::HTTP::Get.new(uri)
+req["X-API-Key"] = "sk_live_..."
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```php
+$ch = curl_init("https://api.sharpapi.io/api/v1/odds?league=nba");
+curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: sk_live_..."]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$json = curl_exec($ch);
+```
+</Tabs.Tab>
+</Tabs>
+
+## SSE Streaming
+
+SSE works with any language that supports `EventSource` or HTTP streaming. See the [streaming docs](/streaming) for the event protocol.
+
+<Callout type="warning">
+Auto-generated clients do **not** include SSE streaming support. For real-time streaming, use our [TypeScript SDK](/sdks/typescript) or implement the SSE protocol directly — it's just a long-lived HTTP GET with `text/event-stream` content type.
+</Callout>

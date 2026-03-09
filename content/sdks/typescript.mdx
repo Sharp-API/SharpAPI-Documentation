@@ -107,11 +107,46 @@ interface ArbOpportunity {
   detected_at: string;
 }
 
+interface LowHoldOpportunity {
+  id: string;
+  event_id: string;
+  event_name: string;
+  sport: string;
+  league: string;
+  market_type: string;
+  line: number | null;
+  hold_percentage: number;
+  side1: LowHoldSide;
+  side2: LowHoldSide;
+  side3: LowHoldSide | null;       // 3-way markets (soccer, hockey)
+  is_live: boolean;
+  is_alternate_line: boolean;
+  all_books: string[];
+  confidence: number;
+  odds_age_seconds: number;
+  possibly_stale: boolean;
+  detected_at: string;
+}
+
+interface LowHoldSide {
+  selection: string;
+  books: string[];
+  line: number | null;
+  odds: {
+    american: number;
+    decimal: number;
+    implied_probability: number;
+    fair_probability: number;
+  };
+  deep_links: Record<string, string>;
+}
+
 // ─── State Management ─────────────────────────────────────────────────────
 // Keyed by odds line ID (e.g. "draftkings_33483153_moneyline_PHO")
 const oddsMap = new Map<string, OddsLine>();
 const evMap = new Map<string, EVOpportunity>();
 const arbMap = new Map<string, ArbOpportunity>();
+const lowHoldMap = new Map<string, LowHoldOpportunity>();
 let isReady = false;
 
 // ─── Connect ──────────────────────────────────────────────────────────────
@@ -132,6 +167,7 @@ eventSource.addEventListener('connected', (e) => {
     oddsMap.clear();
     evMap.clear();
     arbMap.clear();
+    lowHoldMap.clear();
     isReady = false;
   }
 });
@@ -143,8 +179,7 @@ eventSource.addEventListener('snapshot', (e) => {
   // Odds snapshots: keyed by sportsbook name
   // e.g. { "draftkings": [OddsLine, ...], "fanduel": [OddsLine, ...] }
   for (const [key, value] of Object.entries(data)) {
-    if (Array.isArray(value) && key !== 'ev' && key !== 'arbitrage'
-        && key !== 'middles' && key !== 'low_hold') {
+    if (Array.isArray(value) && !['ev', 'arbitrage', 'middles', 'low_hold'].includes(key)) {
       // Odds data — key is sportsbook name
       for (const odds of value as OddsLine[]) {
         oddsMap.set(odds.id, odds);
@@ -163,13 +198,18 @@ eventSource.addEventListener('snapshot', (e) => {
       arbMap.set(arb.id, arb);
     }
   }
+  if (data.low_hold) {
+    for (const lh of data.low_hold as LowHoldOpportunity[]) {
+      lowHoldMap.set(lh.id, lh);
+    }
+  }
 });
 
 eventSource.addEventListener('snapshot:complete', (e) => {
   const { books, total_odds } = JSON.parse(e.data);
   isReady = true;
   console.log(`Ready: ${total_odds} odds from ${books.join(', ')}`);
-  console.log(`${evMap.size} EV opportunities, ${arbMap.size} arb opportunities`);
+  console.log(`${evMap.size} EV, ${arbMap.size} arb, ${lowHoldMap.size} low-hold opportunities`);
 });
 
 // ─── Real-time odds updates (DELTAS — merge into local state) ─────────────
@@ -222,6 +262,22 @@ eventSource.addEventListener('arb:expired', (e) => {
   const { expired } = JSON.parse(e.data) as { expired: string[] };
   for (const id of expired) {
     arbMap.delete(id);
+  }
+});
+
+eventSource.addEventListener('low_hold:detected', (e) => {
+  const opps = JSON.parse(e.data) as LowHoldOpportunity[];
+  for (const opp of opps) {
+    if (opp.possibly_stale) continue;
+    lowHoldMap.set(opp.id, opp);
+    console.log(`Low Hold: ${opp.hold_percentage}% — ${opp.event_name} (${opp.market_type})`);
+  }
+});
+
+eventSource.addEventListener('low_hold:expired', (e) => {
+  const { expired } = JSON.parse(e.data) as { expired: string[] };
+  for (const id of expired) {
+    lowHoldMap.delete(id);
   }
 });
 
@@ -306,7 +362,7 @@ function americanToProbability(american: number): number {
 
 ## Staleness Metadata
 
-EV and arbitrage opportunity responses include staleness information to help you filter out opportunities based on stale odds:
+EV, arbitrage, and low-hold opportunity responses include staleness information to help you filter out opportunities based on stale odds:
 
 ```typescript
 interface EVOpportunity {
@@ -345,6 +401,7 @@ eventSource.addEventListener('connected', (e) => {
     oddsMap.clear();
     evMap.clear();
     arbMap.clear();
+    lowHoldMap.clear();
     isReady = false;
   }
 });

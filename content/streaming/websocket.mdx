@@ -101,6 +101,10 @@ On connect you receive messages in order:
 4. **`initial`** -- Per-sportsbook odds snapshot (only if `odds` channel is subscribed)
 5. **`snapshot_complete`** -- Signals all initial data has been sent
 
+<Callout type="info">
+**Snapshot chunking:** Large snapshots are split across multiple frames to prevent backpressure. Odds snapshots are chunked at 1,000 items per frame, and opportunity snapshots at 300 items per frame. Wait for `snapshot_complete` before treating the initial data as fully loaded.
+</Callout>
+
 After that, you receive incremental updates for your subscribed channels:
 
 - **`odds_update`** -- Odds changed for a sportsbook (requires `odds` channel)

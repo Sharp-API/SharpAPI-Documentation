@@ -26,6 +26,10 @@ Requires API key. **Hobby tier or higher required.** Your account must have the 
 | `limit` | integer | 50 | Results per page (max 500) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
+<Callout type="info">
+**Profit cap:** Opportunities with profit above 10% are automatically filtered out. These are almost always phantom arbs caused by stale or suspended odds rather than real opportunities.
+</Callout>
+
 ### Filtering Multiple Values
 
 Use comma-separated values for multi-select filters:
@@ -228,7 +232,7 @@ X-Request-Id: req_arb789xyz012
 | `is_alternate_line` | boolean | Whether this uses a non-standard line |
 | `possibly_stale` | boolean | Whether odds may have moved since detection |
 | `oldest_odds_age_seconds` | number\|null | Age of the stalest leg's odds in seconds |
-| `warnings` | string[] | Warning flags (e.g., `POTENTIALLY_STALE_ODDS`) |
+| `warnings` | string[] | Warning flags. Possible values: `LIVE_GAME`, `LIVE_HIGH_PROFIT_SUSPICIOUS`, `LOW_IMPLIED_TOTAL`, `POTENTIALLY_STALE_ODDS`, `VERY_STALE_ODDS` |
 | `game_state` | object\|null | Live game state (`period`, `clock`, `score_home`, `score_away`) |
 | `ev_available` | boolean | Whether an EV opportunity exists on this market |
 | `ev_percentage` | number\|null | EV percentage if available |

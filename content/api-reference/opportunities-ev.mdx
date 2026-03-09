@@ -28,6 +28,12 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `min_ev` | number | 0 | Minimum EV percentage threshold |
 | `max_ev` | number | — | Maximum EV percentage threshold |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `min_odds` | number | — | Minimum American odds (e.g., `-200`) |
+| `max_odds` | number | — | Maximum American odds (e.g., `+500`) |
+| `min_market_width` | number | — | Minimum market width (vig indicator). Lower width = sharper market. |
+| `max_market_width` | number | — | Maximum market width |
+| `max_odds_age` | number | — | Maximum odds age in seconds. Filters out stale opportunities where the underlying odds are older than this threshold. |
+| `date_range` | string | — | Filter by event date: `today`, `tomorrow`, or `week`. Dates are evaluated in **US Eastern Time (ET)**. |
 | `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_fraction`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
 | `include` | string | — | Set to `scoring` to add confidence, Kelly, and edge fields |
 | `limit` | integer | 50 | Results per page (max 500) |
@@ -102,7 +108,7 @@ for opp in data['data']:
       "no_vig_odds": -118,
       "true_probability": 0.541,
       "market_width": 3.2,
-      "devig_method": "multiplicative",
+      "devig_method": "power",
       "devig_book": "pinnacle",
       "selection": "PHO Suns",
       "market": "moneyline",
@@ -247,7 +253,7 @@ X-Request-Id: req_abc123def456
 | `no_vig_odds` | number\|null | Fair (no-vig) American odds derived from the sharp line |
 | `true_probability` | number\|null | Fair probability (0.0 to 1.0) |
 | `market_width` | number\|null | Width of the market (vig indicator) |
-| `devig_method` | string | De-vig method used (e.g., `multiplicative`) |
+| `devig_method` | string | De-vig method used (e.g., `power`) |
 | `devig_book` | string | Sharp book used as reference (e.g., `pinnacle`) |
 | `selection` | string | The selection (team name, Over/Under, player, etc.) |
 | `market` | string | Market type (`moneyline`, `point_spread`, `total_points`, etc.) |
@@ -319,7 +325,7 @@ SharpAPI uses **Pinnacle** (a sharp book with efficient odds) as the source of t
 Pinnacle: Team A -115 / Team B +105
 ```
 
-**Step 2: Remove the vig to find fair probability**
+**Step 2: Remove the vig to find fair probability (Power method)**
 
 ```javascript
 // Implied probabilities (with vig)
@@ -327,9 +333,10 @@ probA = 1 / 1.87 = 0.535  // -115 in decimal = 1.87
 probB = 1 / 2.05 = 0.488  // +105 in decimal = 2.05
 total = 1.023              // 2.3% vig
 
-// No-vig (fair) probabilities
-fairProbA = 0.535 / 1.023 = 0.523 (52.3%)
-fairProbB = 0.488 / 1.023 = 0.477 (47.7%)
+// Power devig: solve for k where probA^k + probB^k = 1
+// k ≈ 1.036 for this market
+fairProbA = 0.535^1.036 = 0.522 (52.2%)
+fairProbB = 0.488^1.036 = 0.478 (47.8%)
 ```
 
 **Step 3: Compare to a soft book**

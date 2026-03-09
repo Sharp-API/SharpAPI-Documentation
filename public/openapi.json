@@ -58,6 +58,10 @@
       "description": "Futures markets and odds"
     },
     {
+      "name": "Historical",
+      "description": "Historical opportunity data and CLV analysis (Pro+)"
+    },
+    {
       "name": "Game State",
       "description": "Live game state data (Enterprise)"
     }
@@ -2474,6 +2478,176 @@
         }
       }
     },
+    "/account/keys/{keyId}": {
+      "delete": {
+        "operationId": "deleteApiKey",
+        "summary": "Revoke an API key",
+        "description": "Permanently revokes a specific API key. Users can only revoke their own keys.",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "keyId",
+            "in": "path",
+            "required": true,
+            "description": "The Unkey key ID to revoke",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "revoked": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "key_abc123",
+                    "revoked": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/account/keys/{keyId}/rotate": {
+      "post": {
+        "operationId": "rotateApiKey",
+        "summary": "Rotate an API key",
+        "description": "Creates a new API key and revokes the old one. Supports an optional grace period\n(0-72 hours) to keep the old key valid during migration.\n",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "keyId",
+            "in": "path",
+            "required": true,
+            "description": "The Unkey key ID to rotate",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "gracePeriodHours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 72,
+                    "default": 0,
+                    "description": "Hours to keep the old key valid (0 = immediate revocation)"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Optional name for the new key"
+                  }
+                }
+              },
+              "example": {
+                "gracePeriodHours": 24,
+                "name": "Rotated production key"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Key rotated successfully (new key value shown only once)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "new_key_id",
+                            "new_key",
+                            "old_key_id"
+                          ],
+                          "properties": {
+                            "new_key_id": {
+                              "type": "string"
+                            },
+                            "new_key": {
+                              "type": "string",
+                              "description": "The new API key value (shown only once)"
+                            },
+                            "old_key_id": {
+                              "type": "string"
+                            },
+                            "old_key_expires_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true,
+                              "description": "When the old key expires (null if immediate)"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/deeplinks": {
       "get": {
         "operationId": "getDeepLinks",
@@ -2952,6 +3126,385 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/historical/opportunities": {
+      "get": {
+        "operationId": "listHistoricalOpportunities",
+        "summary": "Query historical opportunities",
+        "description": "Returns historical opportunity data from ClickHouse with full filtering. Requires **Pro** tier or higher.\n\nDate range is clamped by tier: Pro = 30 days, Sharp = 90 days, Enterprise = unlimited.\n\n**Sort options:** `detected_at` (default), `expired_at`, `survival_seconds`, `ev_percent`, `profit_percent`, `confidence`, `kelly_fraction`, `clv_percent`, `sport`, `league`, `sportsbook`. Prefix with `-` for descending.\n",
+        "tags": [
+          "Historical"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Opportunity type filter",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ev",
+                "arbitrage",
+                "middles",
+                "low_hold"
+              ]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/sport"
+          },
+          {
+            "$ref": "#/components/parameters/league"
+          },
+          {
+            "$ref": "#/components/parameters/sportsbook"
+          },
+          {
+            "$ref": "#/components/parameters/min_ev"
+          },
+          {
+            "$ref": "#/components/parameters/max_ev"
+          },
+          {
+            "$ref": "#/components/parameters/min_profit"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "graded",
+            "in": "query",
+            "description": "Filter by graded status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "survived",
+            "in": "query",
+            "description": "Minimum survival time in seconds",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort field (prefix with `-` for descending)",
+            "schema": {
+              "type": "string",
+              "default": "-detected_at"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated historical opportunities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/HistoricalOpportunity"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/TierRestricted"
+          }
+        }
+      }
+    },
+    "/historical/clv": {
+      "get": {
+        "operationId": "getHistoricalCLV",
+        "summary": "CLV analysis",
+        "description": "Closing Line Value analysis -- aggregates CLV statistics for graded opportunities\nwithin a date range, grouped by sportsbook, sport, league, market, or day.\nRequires **Pro** tier or higher.\n",
+        "tags": [
+          "Historical"
+        ],
+        "parameters": [
+          {
+            "name": "group_by",
+            "in": "query",
+            "description": "Grouping dimension",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sportsbook",
+                "sport",
+                "league",
+                "market",
+                "day"
+              ],
+              "default": "sportsbook"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/sport"
+          },
+          {
+            "$ref": "#/components/parameters/league"
+          },
+          {
+            "$ref": "#/components/parameters/sportsbook"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CLV analysis grouped by the requested dimension",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "group_by",
+                            "groups",
+                            "date_range"
+                          ],
+                          "properties": {
+                            "group_by": {
+                              "type": "string"
+                            },
+                            "groups": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/CLVGroup"
+                              }
+                            },
+                            "date_range": {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "to": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "group_by": "sportsbook",
+                    "groups": [
+                      {
+                        "sportsbook": "draftkings",
+                        "total_graded": 142,
+                        "wins": 84,
+                        "losses": 58,
+                        "win_rate": 59.15,
+                        "clv": {
+                          "avg": 2.4,
+                          "median": 1.8,
+                          "min": -5.2,
+                          "max": 12.1,
+                          "positive_count": 108,
+                          "negative_count": 34,
+                          "positive_rate": 76.06
+                        },
+                        "avg_ev": 3.8
+                      }
+                    ],
+                    "date_range": {
+                      "from": "2026-03-02T00:00:00Z",
+                      "to": "2026-03-09T14:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/TierRestricted"
+          }
+        }
+      }
+    },
+    "/historical/summary": {
+      "get": {
+        "operationId": "getHistoricalSummary",
+        "summary": "Daily opportunity summary",
+        "description": "Returns daily aggregate summaries of opportunity detection including counts by type,\ngrading results, and average metrics. Requires **Pro** tier or higher.\n",
+        "tags": [
+          "Historical"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily summary with totals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "date_range",
+                            "totals",
+                            "days"
+                          ],
+                          "properties": {
+                            "date_range": {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "to": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                }
+                              }
+                            },
+                            "totals": {
+                              "type": "object",
+                              "properties": {
+                                "total_opportunities": {
+                                  "type": "integer"
+                                },
+                                "total_graded": {
+                                  "type": "integer"
+                                },
+                                "total_wins": {
+                                  "type": "integer"
+                                },
+                                "total_losses": {
+                                  "type": "integer"
+                                },
+                                "win_rate": {
+                                  "type": "number",
+                                  "nullable": true
+                                },
+                                "days": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "days": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/DailySummary"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/TierRestricted"
           }
         }
       }
@@ -5268,6 +5821,268 @@
               "type": "string"
             },
             "description": "Sportsbooks offering this futures market"
+          }
+        }
+      },
+      "HistoricalOpportunity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ev",
+              "arbitrage",
+              "middles",
+              "low_hold"
+            ]
+          },
+          "hash_id": {
+            "type": "string"
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expired_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "survival_seconds": {
+            "type": "number",
+            "description": "How long the opportunity survived before expiring"
+          },
+          "event": {
+            "type": "object",
+            "properties": {
+              "game_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "sport": {
+                "type": "string"
+              },
+              "league": {
+                "type": "string"
+              },
+              "home_team": {
+                "type": "string"
+              },
+              "away_team": {
+                "type": "string"
+              },
+              "start_time": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "market": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "selection": {
+                "type": "string"
+              },
+              "selection_type": {
+                "type": "string"
+              },
+              "line": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          },
+          "opportunity": {
+            "type": "object",
+            "properties": {
+              "sportsbook": {
+                "type": "string"
+              },
+              "odds": {
+                "type": "number"
+              },
+              "decimal_odds": {
+                "type": "number"
+              },
+              "ev_percent": {
+                "type": "number",
+                "nullable": true
+              },
+              "no_vig_price": {
+                "type": "number",
+                "nullable": true
+              },
+              "true_probability": {
+                "type": "number",
+                "nullable": true
+              },
+              "market_width": {
+                "type": "number",
+                "nullable": true
+              },
+              "confidence": {
+                "type": "number",
+                "nullable": true
+              },
+              "kelly_fraction": {
+                "type": "number",
+                "nullable": true
+              },
+              "devig_method": {
+                "type": "string"
+              },
+              "devig_book": {
+                "type": "string"
+              },
+              "book_count": {
+                "type": "integer"
+              },
+              "arb_profit_percent": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          },
+          "grading": {
+            "type": "object",
+            "properties": {
+              "graded": {
+                "type": "boolean"
+              },
+              "bet_won": {
+                "type": "boolean",
+                "nullable": true
+              },
+              "clv_percent": {
+                "type": "number",
+                "nullable": true,
+                "description": "Closing Line Value percentage"
+              },
+              "closing_odds": {
+                "type": "number",
+                "nullable": true
+              },
+              "closing_decimal": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "CLVGroup": {
+        "type": "object",
+        "description": "CLV statistics for one group (sportsbook, sport, league, market, or day)",
+        "properties": {
+          "total_graded": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "losses": {
+            "type": "integer"
+          },
+          "win_rate": {
+            "type": "number"
+          },
+          "clv": {
+            "type": "object",
+            "properties": {
+              "avg": {
+                "type": "number"
+              },
+              "median": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "positive_count": {
+                "type": "integer"
+              },
+              "negative_count": {
+                "type": "integer"
+              },
+              "positive_rate": {
+                "type": "number"
+              }
+            }
+          },
+          "avg_ev": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": true
+      },
+      "DailySummary": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "total_opportunities": {
+            "type": "integer"
+          },
+          "by_type": {
+            "type": "object",
+            "properties": {
+              "ev": {
+                "type": "integer"
+              },
+              "arbitrage": {
+                "type": "integer"
+              },
+              "middles": {
+                "type": "integer"
+              },
+              "low_hold": {
+                "type": "integer"
+              }
+            }
+          },
+          "grading": {
+            "type": "object",
+            "properties": {
+              "graded": {
+                "type": "integer"
+              },
+              "wins": {
+                "type": "integer"
+              },
+              "losses": {
+                "type": "integer"
+              },
+              "win_rate": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          },
+          "avg_ev": {
+            "type": "number"
+          },
+          "max_ev": {
+            "type": "number"
+          },
+          "avg_survival_seconds": {
+            "type": "integer"
+          },
+          "avg_clv": {
+            "type": "number",
+            "nullable": true
           }
         }
       },

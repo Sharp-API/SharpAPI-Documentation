@@ -461,36 +461,83 @@
         }
       }
     },
-    "/middles": {
+    "/opportunities/middles": {
       "get": {
         "tags": ["Opportunities"],
         "summary": "Get middle opportunities",
-        "description": "Detects middle opportunities where both sides of a spread/total could win. Requires Sharp tier.",
+        "description": "Detects middle opportunities where both sides of a spread or total market could win, landing on numbers between the two lines. Requires Pro tier.",
         "operationId": "getMiddles",
+        "security": [
+          { "ApiKeyHeader": [] },
+          { "ApiKeyQuery": [] },
+          { "BearerAuth": [] }
+        ],
         "parameters": [
           {
-            "name": "sports",
+            "name": "sport",
             "in": "query",
-            "description": "Comma-separated sports filter",
+            "description": "Comma-separated sports filter (e.g. \"football,basketball\")",
             "schema": { "type": "string" }
           },
           {
-            "name": "market_type",
+            "name": "league",
             "in": "query",
-            "description": "Filter by spread or total",
-            "schema": { "type": "string", "enum": ["spread", "total"] }
+            "description": "Comma-separated leagues filter (e.g. \"nfl,nba\")",
+            "schema": { "type": "string" }
           },
           {
-            "name": "min_gap",
+            "name": "sportsbook",
             "in": "query",
-            "description": "Minimum gap size between lines",
-            "schema": { "type": "number", "default": 1 }
+            "description": "Comma-separated sportsbook filter (e.g. \"draftkings,fanduel\")",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "description": "Comma-separated market type filter (e.g. \"spread,total,player_points\")",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "min_size",
+            "in": "query",
+            "description": "Minimum middle size in points",
+            "schema": { "type": "number", "default": 0.5 }
+          },
+          {
+            "name": "max_odds_age",
+            "in": "query",
+            "description": "Maximum age of odds in seconds. Filters out stale lines.",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "live",
+            "in": "query",
+            "description": "Filter by live (true) or prematch (false) events. Omit for both.",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order for results",
+            "schema": { "type": "string", "enum": ["quality", "ev", "probability", "middle_size"], "default": "quality" }
           },
           {
             "name": "limit",
             "in": "query",
-            "description": "Maximum results",
-            "schema": { "type": "integer", "default": 50, "maximum": 200 }
+            "description": "Maximum results per page",
+            "schema": { "type": "integer", "default": 50, "maximum": 500 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Pagination offset",
+            "schema": { "type": "integer", "default": 0, "maximum": 5000 }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "US state abbreviation for sportsbook deep links (e.g. \"pa\", \"nj\")",
+            "schema": { "type": "string", "default": "pa" }
           }
         ],
         "responses": {
@@ -504,6 +551,82 @@
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
           "403": { "$ref": "#/components/responses/TierRequired" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/opportunities/middles/summary": {
+      "get": {
+        "tags": ["Opportunities"],
+        "summary": "Get middles summary",
+        "description": "Returns aggregate statistics about currently available middle opportunities, broken down by sport, market type, and sportsbook. Requires Pro tier.",
+        "operationId": "getMiddlesSummary",
+        "security": [
+          { "ApiKeyHeader": [] },
+          { "ApiKeyQuery": [] },
+          { "BearerAuth": [] }
+        ],
+        "parameters": [
+          {
+            "name": "sport",
+            "in": "query",
+            "description": "Comma-separated sports filter",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "league",
+            "in": "query",
+            "description": "Comma-separated leagues filter",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Middles summary statistics",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MiddlesSummaryResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/TierRequired" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/opportunities/middles/{id}": {
+      "get": {
+        "tags": ["Opportunities"],
+        "summary": "Get middle opportunity by ID",
+        "description": "Returns a single middle opportunity by its unique identifier. Requires Pro tier.",
+        "operationId": "getMiddleById",
+        "security": [
+          { "ApiKeyHeader": [] },
+          { "ApiKeyQuery": [] },
+          { "BearerAuth": [] }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Middle opportunity ID (16-character hex string)",
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{16}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Middle opportunity details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MiddleOpportunity" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/TierRequired" },
+          "404": { "description": "Middle opportunity not found" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         }
       }
@@ -914,41 +1037,86 @@
           }
         ]
       },
+      "MiddleSideOdds": {
+        "type": "object",
+        "description": "Odds data for one side of a middle opportunity",
+        "required": ["american", "decimal", "probability", "fair_probability"],
+        "properties": {
+          "american": { "type": "number", "description": "American odds format (e.g. -110, +150)" },
+          "decimal": { "type": "number", "description": "Decimal odds format (e.g. 1.909)" },
+          "probability": { "type": "number", "description": "Implied probability from the odds (0-1)" },
+          "fair_probability": { "type": "number", "description": "Fair probability with vig removed (0-1)" }
+        }
+      },
+      "MiddleSide": {
+        "type": "object",
+        "description": "One side of a middle opportunity",
+        "required": ["book", "selection", "line", "odds", "stake_percent"],
+        "properties": {
+          "book": { "type": "string", "description": "Sportsbook identifier" },
+          "selection": { "type": "string", "description": "Selection name (e.g. team name, Over/Under)" },
+          "line": { "type": "number", "description": "Point spread or total line" },
+          "odds": { "$ref": "#/components/schemas/MiddleSideOdds" },
+          "stake_percent": { "type": "number", "description": "Recommended stake percentage for this side (0-100)" },
+          "odds_age_seconds": { "type": ["number", "null"], "description": "How old these odds are in seconds, or null if unknown" },
+          "deep_link": { "type": ["string", "null"], "description": "Direct link to this bet on the sportsbook, or null if unavailable" }
+        }
+      },
+      "GameState": {
+        "type": "object",
+        "description": "Current game state for live events",
+        "properties": {
+          "period": { "type": ["string", "null"], "description": "Current period (e.g. \"1st Quarter\", \"2nd Half\")" },
+          "clock": { "type": ["string", "null"], "description": "Game clock (e.g. \"5:30\")" },
+          "score_home": { "type": ["number", "null"], "description": "Home team score" },
+          "score_away": { "type": ["number", "null"], "description": "Away team score" }
+        }
+      },
       "MiddleOpportunity": {
         "type": "object",
-        "required": ["eventId", "eventName", "sport", "league", "marketType", "side1", "side2", "middleSize", "middleNumbers", "worstCaseLoss", "bestCaseProfit", "breakEvenPercent", "detectedAt"],
+        "required": ["id", "event_id", "event_name", "sport", "league", "market_type", "home_team", "away_team", "side1", "side2", "middle_size", "middle_numbers", "middle_probability", "expected_value", "roi_percentage", "worst_case_loss", "best_case_profit", "break_even_percent", "is_guaranteed_profit", "quality_score", "market_overround", "is_live", "is_player_prop", "is_team_total", "warnings", "detected_at"],
         "properties": {
-          "eventId": { "type": "string" },
-          "eventName": { "type": "string" },
-          "sport": { "type": "string" },
-          "league": { "type": "string" },
-          "marketType": { "type": "string", "enum": ["spread", "total"] },
-          "side1": {
-            "type": "object",
-            "properties": {
-              "book": { "type": "string" },
-              "selection": { "type": "string" },
-              "line": { "type": "number" },
-              "odds": { "$ref": "#/components/schemas/OddsValue" },
-              "stakePercent": { "type": "number" }
-            }
+          "id": { "type": "string", "description": "Unique identifier (16-character hex string)", "pattern": "^[0-9a-f]{16}$" },
+          "event_id": { "type": "string", "description": "Associated event identifier" },
+          "event_name": { "type": "string", "description": "Display name of the event (e.g. \"Lakers vs Celtics\")" },
+          "sport": { "type": "string", "description": "Sport key (e.g. \"basketball\", \"football\")" },
+          "league": { "type": "string", "description": "League key (e.g. \"nba\", \"nfl\")" },
+          "market_type": { "type": "string", "description": "Market type (e.g. \"spread\", \"total\", \"player_points\", \"player_rebounds\", \"team_total\")" },
+          "home_team": { "type": "string", "description": "Home team name" },
+          "away_team": { "type": "string", "description": "Away team name" },
+          "start_time": { "type": ["string", "null"], "format": "date-time", "description": "Event start time in ISO 8601 format, or null if unknown" },
+          "side1": { "$ref": "#/components/schemas/MiddleSide" },
+          "side2": { "$ref": "#/components/schemas/MiddleSide" },
+          "middle_size": { "type": "number", "description": "Size of the middle gap in points" },
+          "middle_numbers": { "type": "array", "items": { "type": "integer" }, "description": "Integer values that fall within the middle" },
+          "middle_probability": { "type": "number", "description": "Estimated probability of landing in the middle (0-1)" },
+          "expected_value": { "type": "number", "description": "Expected value of the middle play as a decimal" },
+          "roi_percentage": { "type": "number", "description": "Return on investment percentage" },
+          "worst_case_loss": { "type": "number", "description": "Maximum loss if the middle does not hit" },
+          "best_case_profit": { "type": "number", "description": "Maximum profit if the middle hits" },
+          "break_even_percent": { "type": "number", "description": "Win percentage needed to break even" },
+          "is_guaranteed_profit": { "type": "boolean", "description": "Whether this middle guarantees profit regardless of outcome" },
+          "guaranteed_roi": { "type": ["number", "null"], "description": "Guaranteed ROI percentage if is_guaranteed_profit is true, otherwise null" },
+          "key_numbers": { "type": "array", "items": { "type": "integer" }, "description": "Key numbers (high-frequency landing numbers) within the middle" },
+          "key_number_probability": { "type": "number", "description": "Combined probability of landing on key numbers (0-1)" },
+          "quality_score": { "type": "number", "description": "Overall quality score from 0-100 combining EV, probability, and key numbers" },
+          "market_overround": { "type": "number", "description": "Combined overround (vig) of the two sides" },
+          "odds_age_seconds": { "type": ["number", "null"], "description": "Age of the oldest odds in this opportunity in seconds" },
+          "is_live": { "type": "boolean", "description": "Whether the event is currently live" },
+          "game_state": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/GameState" },
+              { "type": "null" }
+            ],
+            "description": "Current game state for live events, null for prematch"
           },
-          "side2": {
-            "type": "object",
-            "properties": {
-              "book": { "type": "string" },
-              "selection": { "type": "string" },
-              "line": { "type": "number" },
-              "odds": { "$ref": "#/components/schemas/OddsValue" },
-              "stakePercent": { "type": "number" }
-            }
-          },
-          "middleSize": { "type": "number" },
-          "middleNumbers": { "type": "array", "items": { "type": "integer" } },
-          "worstCaseLoss": { "type": "number" },
-          "bestCaseProfit": { "type": "number" },
-          "breakEvenPercent": { "type": "number" },
-          "detectedAt": { "type": "string", "format": "date-time" }
+          "is_player_prop": { "type": "boolean", "description": "Whether this is a player prop market" },
+          "player_name": { "type": ["string", "null"], "description": "Player name if is_player_prop is true" },
+          "stat_category": { "type": ["string", "null"], "description": "Stat category if is_player_prop is true (e.g. \"points\", \"rebounds\")" },
+          "is_team_total": { "type": "boolean", "description": "Whether this is a team total market" },
+          "team_name": { "type": ["string", "null"], "description": "Team name if is_team_total is true" },
+          "warnings": { "type": "array", "items": { "type": "string" }, "description": "Warning messages about this opportunity (e.g. stale odds, low liquidity)" },
+          "detected_at": { "type": "string", "format": "date-time", "description": "When this opportunity was first detected (ISO 8601)" }
         }
       },
       "Sportsbook": {
@@ -1084,12 +1252,100 @@
       },
       "MiddlesResponse": {
         "type": "object",
+        "description": "Paginated response containing middle opportunities",
         "properties": {
-          "success": { "type": "boolean" },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "summary": { "type": "object" },
-          "count": { "type": "integer" },
-          "middles": { "type": "array", "items": { "$ref": "#/components/schemas/MiddleOpportunity" } }
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/MiddleOpportunity" }, "description": "Array of middle opportunities" },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "limit": { "type": "integer", "description": "Results per page" },
+              "offset": { "type": "integer", "description": "Current offset" },
+              "total": { "type": "integer", "description": "Total matching opportunities" },
+              "max_offset": { "type": "integer", "description": "Maximum allowed offset value", "example": 5000 }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "source": { "type": "string", "description": "Data source identifier" },
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "count": { "type": "integer", "description": "Number of results in this page" }
+                }
+              },
+              "filters": {
+                "type": "object",
+                "description": "Active filters applied to the request",
+                "properties": {
+                  "sport": { "type": ["string", "null"] },
+                  "league": { "type": ["string", "null"] },
+                  "sportsbook": { "type": ["string", "null"] },
+                  "market": { "type": ["string", "null"] },
+                  "min_size": { "type": ["number", "null"] },
+                  "live": { "type": ["boolean", "null"] }
+                }
+              }
+            }
+          },
+          "rate_limit": {
+            "type": "object",
+            "properties": {
+              "remaining": { "type": "integer", "description": "API calls remaining in current window" },
+              "reset_at": { "type": "string", "format": "date-time", "description": "When the rate limit window resets" }
+            }
+          },
+          "cache_max_age": { "type": "integer", "description": "Recommended cache duration in seconds", "example": 10 }
+        }
+      },
+      "MiddlesSummaryResponse": {
+        "type": "object",
+        "description": "Aggregate statistics about available middle opportunities",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer", "description": "Total number of middle opportunities" },
+              "positive_ev_count": { "type": "integer", "description": "Number of opportunities with positive expected value" },
+              "guaranteed_profit_count": { "type": "integer", "description": "Number of guaranteed-profit middles" },
+              "player_prop_count": { "type": "integer", "description": "Number of player prop middles" },
+              "by_sport": { "type": "object", "additionalProperties": { "type": "integer" }, "description": "Opportunity count by sport" },
+              "by_market": { "type": "object", "additionalProperties": { "type": "integer" }, "description": "Opportunity count by market type" },
+              "by_sportsbook": { "type": "object", "additionalProperties": { "type": "integer" }, "description": "Opportunity count by sportsbook" },
+              "avg_middle_size": { "type": "number", "description": "Average middle size in points" },
+              "avg_probability": { "type": "number", "description": "Average middle probability" },
+              "avg_ev": { "type": "number", "description": "Average expected value" },
+              "best_ev": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "ev": { "type": "number" },
+                      "sport": { "type": "string" },
+                      "market": { "type": "string" }
+                    }
+                  },
+                  { "type": "null" }
+                ],
+                "description": "Best EV opportunity summary, or null if no opportunities"
+              },
+              "has_key_numbers_count": { "type": "integer", "description": "Number of opportunities containing key numbers" }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "source": { "type": "string", "description": "Data source identifier" },
+              "filters": {
+                "type": "object",
+                "properties": {
+                  "sport": { "type": ["string", "null"] },
+                  "league": { "type": ["string", "null"] }
+                }
+              },
+              "updated_at": { "type": "string", "format": "date-time", "description": "When the summary was last computed" }
+            }
+          }
         }
       },
       "MarketTypesResponse": {

@@ -383,7 +383,7 @@
       "get": {
         "tags": ["Opportunities"],
         "summary": "Get arbitrage opportunities",
-        "description": "Returns cross-book arbitrage opportunities with stake calculations. Requires Pro tier.",
+        "description": "Returns cross-book arbitrage opportunities with stake calculations. Requires Hobby tier or higher.",
         "operationId": "getArbitrage",
         "parameters": [
           {

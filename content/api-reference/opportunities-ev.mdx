@@ -9,7 +9,7 @@ GET /api/v1/opportunities/ev
 ```
 
 <Callout type="info">
-This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. Use `?include=scoring` for the extended fields that were previously available in `/value-bets`.
+This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_fraction`, `true_probability`) are now included in every response.
 </Callout>
 
 ## Authentication
@@ -35,7 +35,6 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `max_odds_age` | number | — | Maximum odds age in seconds. Filters out stale opportunities where the underlying odds are older than this threshold. |
 | `date_range` | string | — | Filter by event date: `today`, `tomorrow`, or `week`. Dates are evaluated in **US Eastern Time (ET)**. |
 | `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_fraction`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
-| `include` | string | — | Set to `scoring` to add confidence, Kelly, and edge fields |
 | `limit` | integer | 50 | Results per page (max 500) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
@@ -54,10 +53,6 @@ Use comma-separated values for multi-select filters:
 ```bash
 # Basic EV opportunities for NBA
 curl -X GET "https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&min_ev=2" \
-  -H "X-API-Key: YOUR_API_KEY"
-
-# With scoring fields included
-curl -X GET "https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&include=scoring" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
@@ -81,7 +76,6 @@ response = requests.get(
     params={
         'league': 'nba',
         'min_ev': 2,
-        'include': 'scoring'
     },
     headers={'X-API-Key': 'YOUR_API_KEY'}
 )
@@ -177,21 +171,6 @@ for opp in data['data']:
 }
 ```
 
-### With `include=scoring`
-
-When you pass `?include=scoring`, each item in the `data` array includes additional scoring fields:
-
-When `include=scoring` is set, each item includes additional legacy scoring fields:
-
-```json
-{
-  "confidence": "high",
-  "kelly_percent": 2.1,
-  "edge_percent": 4.2,
-  "fair_probability": 0.541
-}
-```
-
 ### Response Headers
 
 ```
@@ -247,6 +226,7 @@ X-Request-Id: req_abc123def456
 | `id` | string | Unique opportunity identifier (hash) |
 | `game_id` | string\|null | Associated game/event identifier |
 | `external_event_id` | string\|null | Sportsbook's native event ID |
+| `selection_id` | string\|null | Sportsbook's native outcome/selection ID (for deep linking to the bet slip) |
 | `ev_percent` | number | Expected value as a percentage (e.g., `4.2` = 4.2% EV) |
 | `odds_american` | number | Current American odds at the sportsbook |
 | `odds_decimal` | number | Decimal odds (e.g., `1.952`) |
@@ -278,17 +258,6 @@ X-Request-Id: req_abc123def456
 | `oldest_odds_age_seconds` | number\|null | Age of the stalest odds used in the EV calculation (seconds) |
 | `warnings` | string[] | Data quality warnings (e.g., `POTENTIALLY_STALE_ODDS`, `LIVE_STALE_ODDS`) |
 | `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
-
-### Scoring Fields (with `include=scoring`)
-
-Legacy scoring fields added when `?include=scoring` is set:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `confidence` | string | Confidence level: `low`, `medium`, or `high` |
-| `kelly_percent` | number | Kelly criterion optimal stake as a percentage of bankroll |
-| `edge_percent` | number | Calculated edge over the sportsbook (copy of `ev_percent`) |
-| `fair_probability` | number | Fair probability (0.0 to 1.0) |
 
 ### Meta Summary Fields
 
@@ -375,7 +344,7 @@ We recommend setting `min_ev=2` for most use cases. Marginal EV (below 2%) can b
 
 ## Kelly Criterion
 
-The `kelly_percent` field (available with `include=scoring`) tells you the optimal fraction of your bankroll to wager according to the Kelly criterion:
+The `kelly_fraction` field tells you the optimal fraction of your bankroll to wager according to the Kelly criterion (0.0 to 1.0, e.g. `0.021` = 2.1%):
 
 ```
 Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1)
@@ -397,8 +366,8 @@ Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1
 ## Best Practices
 
 1. **Set a minimum EV threshold** - Use `min_ev=2` or higher to focus on meaningful edges
-2. **Use Kelly sizing** - Pass `include=scoring` and use `kelly_percent` to determine bet size
-3. **Filter by confidence** - Prioritize `high` confidence opportunities
+2. **Use Kelly sizing** - Use `kelly_fraction` to determine bet size (multiply by bankroll)
+3. **Filter by confidence** - Use `confidence_score` to prioritize high-confidence opportunities
 4. **Monitor `market_width`** - Narrow markets (low width) indicate more efficient pricing and more reliable EV calculations
 5. **Act quickly** - +EV opportunities are fleeting; lines move fast
 6. **Track your results** - Log every bet and compare actual ROI to expected EV over time

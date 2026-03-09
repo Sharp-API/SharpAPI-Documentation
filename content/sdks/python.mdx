@@ -1,142 +1,332 @@
-import { Callout } from 'nextra/components'
+import { Callout, Tabs } from 'nextra/components'
 
 # Python SDK
 
-<Callout type="info">
-**Note:** The official `sharpapi` package is coming soon. For now, use the REST API and SSE streaming directly with the patterns below.
-</Callout>
+The official `sharpapi` Python package provides typed access to all SharpAPI endpoints with Pydantic models, SSE streaming, and full IDE autocomplete.
 
 ## Installation
 
 ```bash
-pip install requests sseclient-py
+pip install sharpapi
 ```
 
-## REST API
+With optional pandas support:
+
+```bash
+pip install sharpapi[pandas]
+```
+
+Requires Python 3.9+.
+
+## Quick Start
 
 ```python
-import requests
-from typing import Optional, List
+from sharpapi import SharpAPI
 
-class SharpApiClient:
-    BASE_URL = 'https://api.sharpapi.io/api/v1'
+client = SharpAPI("sk_live_xxx")
 
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.session = requests.Session()
-        self.session.headers['X-API-Key'] = api_key
+# Arbitrage opportunities
+arbs = client.arbitrage.get(min_profit=1.0, league="nba")
+for arb in arbs.data:
+    print(f"{arb.profit_percent:.2f}% profit — {arb.event_name}")
+    for leg in arb.legs:
+        print(f"  {leg.sportsbook}: {leg.selection} @ {leg.odds_american} ({leg.stake_percent:.1f}%)")
 
-    def get_odds(self, sports: Optional[List[str]] = None) -> dict:
-        params = {}
-        if sports:
-            params['sport'] = ','.join(sports)
+# +EV opportunities
+evs = client.ev.get(min_ev=3.0, sport="basketball")
+for opp in evs.data:
+    print(f"+{opp.ev_percent:.1f}% EV on {opp.selection} @ {opp.sportsbook}")
+    if opp.kelly_fraction:
+        print(f"  Kelly: {opp.kelly_fraction:.1%}, Confidence: {opp.confidence_score}")
 
-        response = self.session.get(f'{self.BASE_URL}/odds', params=params)
-        response.raise_for_status()
-        return response.json()
+# Best odds across sportsbooks
+odds = client.odds.best(league="nba", market="moneyline")
+for line in odds.data:
+    print(f"{line.home_team} vs {line.away_team}: {line.selection} {line.odds_american}")
+```
 
-    def get_ev(self, threshold: float = 2.0, books: Optional[List[str]] = None) -> dict:
-        params = {'min_ev': threshold}
-        if books:
-            params['sportsbook'] = ','.join(books)
+## Resources
 
-        response = self.session.get(f'{self.BASE_URL}/opportunities/ev', params=params)
-        response.raise_for_status()
-        return response.json()
+### Odds
 
-    def get_arbitrage(self, min_profit: float = 0.5) -> dict:
-        params = {'min_profit': min_profit}
-        response = self.session.get(f'{self.BASE_URL}/opportunities/arbitrage', params=params)
-        response.raise_for_status()
-        return response.json()
+```python
+# Full snapshot with filters
+client.odds.get(sport="basketball", league="nba", limit=100)
+
+# Best odds per selection across books
+client.odds.best(league="nfl", market="moneyline")
+
+# Side-by-side comparison for an event
+client.odds.comparison(event_id="evt_abc123")
+
+# Batch lookup
+client.odds.batch(event_ids=["evt_abc123", "evt_def456"])
+```
+
+### +EV Opportunities (Pro+)
+
+```python
+evs = client.ev.get(
+    min_ev=2.0,
+    sportsbook="draftkings",
+    league="nba",
+    sort="-ev",          # Highest EV first
+    max_odds_age=60,     # Only fresh odds
+    limit=50,
+)
+
+for opp in evs.data:
+    print(f"+{opp.ev_percent:.1f}% on {opp.selection} @ {opp.sportsbook}")
+    print(f"  Fair probability: {opp.true_probability}")
+    print(f"  Devig: {opp.devig_method} via {opp.devig_book}")
+    print(f"  Kelly: {opp.kelly_fraction:.1%}")
+    print(f"  Confidence: {opp.confidence_score}/100")
+```
+
+### Arbitrage (Hobby+)
+
+```python
+arbs = client.arbitrage.get(
+    min_profit=0.5,
+    sport="basketball",
+    group="best",        # One per event+market
+    max_odds_age=30,     # Only fresh odds
+)
+
+for arb in arbs.data:
+    if arb.possibly_stale:
+        continue  # Skip stale opportunities
+
+    print(f"{arb.profit_percent:.2f}% — {arb.event_name}")
+    if arb.game_state:
+        gs = arb.game_state
+        print(f"  Live: {gs.period} {gs.clock} ({gs.score_home}-{gs.score_away})")
+
+    for leg in arb.legs:
+        print(f"  {leg.sportsbook}: {leg.selection} @ {leg.odds_american} → stake {leg.stake_percent:.1f}%")
+```
+
+### Middles (Pro+)
+
+```python
+middles = client.middles.get(sport="football", min_size=3.0, sort="quality")
+
+for mid in middles.data:
+    print(f"{mid.event_name} — gap: {mid.middle_size} pts")
+    if mid.side1 and mid.side2:
+        print(f"  {mid.side1.book}: {mid.side1.selection} {mid.side1.line} @ {mid.side1.odds.american}")
+        print(f"  {mid.side2.book}: {mid.side2.selection} +{mid.side2.line} @ {mid.side2.odds.american}")
+    print(f"  Hit probability: {mid.middle_probability:.1%}")
+    print(f"  Expected value: ${mid.expected_value:.2f}")
+    print(f"  Key numbers: {mid.key_numbers}")
+```
+
+### Low Hold
+
+```python
+low_holds = client.low_hold.get(max_hold=2.0, sport="basketball")
+
+for lh in low_holds.data:
+    print(f"{lh.event_name}: {lh.hold_percentage:.2f}% hold")
+```
+
+### Reference Data
+
+```python
+client.sports.list()
+client.leagues.list(sport="basketball")
+client.sportsbooks.list()
+client.events.list(league="nba", live=True)
+client.events.search("Lakers")
+```
+
+### Account
+
+```python
+info = client.account.me()
+print(f"Tier: {info.key['tier']}")
+print(f"Rate limit: {info.limits.requests_per_minute} req/min")
+print(f"Features: EV={info.features.ev}, Arb={info.features.arbitrage}")
 ```
 
 ## SSE Streaming
 
-```python
-import json
-import sseclient
-import requests
-from typing import Optional, List
-
-def stream_odds(api_key: str, sports: Optional[List[str]] = None):
-    url = 'https://api.sharpapi.io/api/v1/stream'
-    params = {'channel': 'all'}
-    if sports:
-        params['sport'] = ','.join(sports)
-    headers = {'X-API-Key': api_key}
-
-    response = requests.get(url, params=params, headers=headers, stream=True)
-    client = sseclient.SSEClient(response)
-
-    # Local state — odds:update events are DELTAS, not full snapshots
-    odds_map = {}  # keyed by odds line ID
-    is_ready = False
-
-    for event in client.events():
-        data = json.loads(event.data) if event.data else {}
-
-        if event.event == 'connected':
-            reconnected = data.get('reconnected', False)
-            if reconnected:
-                odds_map.clear()  # Clear stale state on reconnect
-            print(f"Connected: stream {data['stream_id']}")
-
-        elif event.event == 'snapshot':
-            # Merge snapshot chunks into local state
-            for key, value in data.items():
-                if isinstance(value, list) and key not in ('ev', 'arbitrage', 'middles', 'low_hold'):
-                    for odds in value:
-                        odds_map[odds['id']] = odds
-
-        elif event.event == 'snapshot:complete':
-            is_ready = True
-            print(f"Ready: {data['total_odds']} odds from {', '.join(data['books'])}")
-
-        elif event.event == 'odds:update':
-            # DELTA — merge changed odds into local state
-            for book, odds_list in data.items():
-                if not isinstance(odds_list, list):
-                    continue
-                for odds in odds_list:
-                    odds_map[odds['id']] = odds
-
-        elif event.event == 'odds:removed':
-            # Delete removed odds from local state
-            for odds_id in data.get('ids', []):
-                odds_map.pop(odds_id, None)
-
-        elif event.event == 'ev:detected':
-            for opp in data:
-                if not opp.get('possibly_stale', False):
-                    print(f"+EV: {opp['selection']} {opp['ev_percent']}% on {opp['sportsbook']}")
-
-        elif event.event == 'ev:expired':
-            print(f"EV expired: {len(data['expired'])} opportunities")
-
-        elif event.event == 'arb:detected':
-            for arb in data:
-                if not arb.get('possibly_stale', False):
-                    print(f"Arb: {arb['profit_percent']}% — {arb['event_name']}")
-
-        elif event.event == 'arb:expired':
-            print(f"Arb expired: {len(data['expired'])} opportunities")
-
-        elif event.event == 'heartbeat':
-            pass  # silent keepalive
-
-
-# Usage
-stream_odds('YOUR_KEY', sports=['basketball'])
-```
+Real-time streaming with handler-based or iterator-based patterns.
 
 <Callout type="warning">
-**Critical:** `odds:update` events are **deltas** — they only contain odds that changed. Your client must maintain local state (like `odds_map` above) and merge updates into it. Treating each event as a full snapshot will produce incorrect data.
+**Critical:** `odds:update` events are **deltas** — they only contain odds that changed. Your client must maintain local state and merge updates into it. Treating each event as a full snapshot will produce incorrect data.
 </Callout>
 
-## Requirements
+### Handler-Based (Decorator Pattern)
 
+```python
+stream = client.stream.opportunities(league="nba", min_ev=3.0)
+
+@stream.on("ev:detected")
+def on_ev(data):
+    for opp in data:
+        if not opp.get("possibly_stale"):
+            print(f"+EV: {opp['selection']} {opp['ev_percent']}% @ {opp['sportsbook']}")
+
+@stream.on("arb:detected")
+def on_arb(data):
+    for arb in data:
+        print(f"Arb: {arb['profit_percent']}% — {arb['event_name']}")
+
+@stream.on("snapshot:complete")
+def on_ready(data):
+    print(f"Ready: {data['total_odds']} odds from {', '.join(data['books'])}")
+
+stream.connect()  # Blocks, processing events
 ```
-requests>=2.28.0
-sseclient-py>=1.7.2
+
+### Iterator-Based
+
+```python
+stream = client.stream.all(sport="basketball")
+
+for event_type, data in stream.iter_events():
+    if event_type == "ev:detected":
+        for opp in data:
+            print(f"+EV: {opp['ev_percent']}%")
+    elif event_type == "arb:detected":
+        for arb in data:
+            print(f"Arb: {arb['profit_percent']}%")
+    elif event_type == "snapshot:complete":
+        print("Stream ready")
+```
+
+### Full State Management
+
+```python
+odds_map = {}  # Keyed by odds line ID
+
+stream = client.stream.all(league="nba")
+
+@stream.on("snapshot")
+def on_snapshot(data):
+    for key, value in data.items():
+        if isinstance(value, list) and key not in ("ev", "arbitrage", "middles", "low_hold"):
+            for odds in value:
+                odds_map[odds["id"]] = odds
+
+@stream.on("odds:update")
+def on_update(data):
+    # DELTA — merge into local state
+    for book, odds_list in data.items():
+        if isinstance(odds_list, list):
+            for odds in odds_list:
+                odds_map[odds["id"]] = odds
+
+@stream.on("odds:removed")
+def on_removed(data):
+    for odds_id in data.get("ids", []):
+        odds_map.pop(odds_id, None)
+
+@stream.on("connected")
+def on_connected(data):
+    if data.get("reconnected"):
+        odds_map.clear()  # Clear stale state on reconnect
+
+stream.connect()
+```
+
+### Stream Channels
+
+```python
+# Odds only
+client.stream.odds(league="nba")
+
+# Opportunities only (EV + arb + middles)
+client.stream.opportunities(min_ev=3.0)
+
+# Everything
+client.stream.all(sport="basketball")
+
+# Single event
+client.stream.event("evt_abc123")
+```
+
+## Data Quality
+
+Every opportunity includes staleness metadata:
+
+```python
+arbs = client.arbitrage.get()
+for arb in arbs.data:
+    # Skip stale or suspicious opportunities
+    if arb.possibly_stale:
+        print(f"Stale ({arb.oldest_odds_age_seconds}s old)")
+        continue
+    if "LIVE_HIGH_PROFIT_SUSPICIOUS" in arb.warnings:
+        print("Phantom arb — skipping")
+        continue
+
+    print(f"Actionable: {arb.profit_percent}%")
+```
+
+## Rate Limits
+
+Rate limit info is available after every request:
+
+```python
+response = client.odds.get()
+rl = client.rate_limit
+print(f"{rl.remaining}/{rl.limit} requests remaining (tier: {rl.tier})")
+```
+
+## Error Handling
+
+```python
+from sharpapi import (
+    SharpAPI,
+    AuthenticationError,
+    TierRestrictedError,
+    RateLimitedError,
+)
+
+client = SharpAPI("sk_live_xxx")
+
+try:
+    evs = client.ev.get()
+except AuthenticationError:
+    print("Invalid API key")
+except TierRestrictedError as e:
+    print(f"Upgrade to {e.required_tier} for this feature")
+except RateLimitedError as e:
+    print(f"Rate limited — retry after {e.retry_after}s")
+```
+
+## Odds Conversion Utilities
+
+```python
+from sharpapi import american_to_decimal, american_to_probability, decimal_to_american
+
+american_to_decimal(-110)       # 1.909
+american_to_decimal(150)        # 2.5
+american_to_probability(-110)   # 0.524
+decimal_to_american(2.5)        # 150
+```
+
+## Context Manager
+
+```python
+with SharpAPI("sk_live_xxx") as client:
+    arbs = client.arbitrage.get()
+    # HTTP client automatically closed on exit
+```
+
+## Type Safety
+
+All responses use Pydantic models with full type hints:
+
+```python
+from sharpapi import EVOpportunity, ArbitrageOpportunity
+
+# IDE autocomplete works on all fields
+arbs = client.arbitrage.get()
+arb: ArbitrageOpportunity = arbs.data[0]
+arb.profit_percent   # float
+arb.legs[0].sportsbook  # str
+arb.game_state.period    # str | None
 ```

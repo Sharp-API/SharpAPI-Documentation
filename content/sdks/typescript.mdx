@@ -3,8 +3,38 @@ import { Callout, Tabs } from 'nextra/components'
 # TypeScript SDK
 
 <Callout type="info">
-**Note:** The official `@sharpapi/client` package is coming soon. For now, use the REST API and SSE streaming directly with the patterns below.
+Install the official SDK: `npm install @sharp-api/client` — [npm](https://www.npmjs.com/package/@sharp-api/client) · [GitHub](https://github.com/Sharp-API/sharpapi-ts)
 </Callout>
+
+## SDK Quick Start
+
+```typescript
+import { SharpAPI } from '@sharp-api/client'
+
+const api = new SharpAPI('sk_live_...')
+
+// Get odds
+const { data: odds } = await api.odds.get({ league: 'nba' })
+
+// Get +EV opportunities (Pro+)
+const { data: ev } = await api.ev.get({ min_ev: 3 })
+
+// Get arbitrage opportunities (Hobby+)
+const { data: arbs } = await api.arbitrage.get({ min_profit: 1 })
+
+// Get middles (Pro+)
+const { data: middles } = await api.middles.get({ league: 'nba' })
+
+// SSE streaming (WebSocket add-on)
+const stream = api.stream.odds({ league: 'nba' })
+stream.on('update', ({ data }) => console.log(data))
+stream.connect()
+
+// WebSocket streaming (~100ms latency)
+const ws = api.stream.oddsWs({ sportsbook: ['draftkings'] })
+ws.on('odds_update', ({ data, source }) => console.log(source, data))
+ws.connect()
+```
 
 ## REST API
 

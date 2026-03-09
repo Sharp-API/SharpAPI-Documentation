@@ -1,6 +1,8 @@
-# CLAUDE.md
+# CLAUDE.md — docs.sharpapi.io
 
 This file provides guidance to Claude Code when working with the SharpAPI documentation site.
+
+> **See [`../CLAUDE.md`](../CLAUDE.md) for shared infrastructure:** SSH aliases, environment architecture, monitoring URLs, global `.env`.
 
 <!-- AUTO-MANAGED: project-description -->
 ## Overview

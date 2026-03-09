@@ -65,7 +65,7 @@
 **Actual Implementation:**
 - **Odds**: All tiers ✅
 - **EV**: Pro+ ✅ (Free tier blocked)
-- **Arbitrage**: Pro+ ✅ (Free tier blocked)
+- **Arbitrage**: Hobby+ ✅ (Free tier blocked)
 - **Webhooks**: Not implemented yet ⚠️
 
 ## 🔍 Implementation Details

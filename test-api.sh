@@ -320,8 +320,8 @@ main() {
     # Opportunities Endpoints (Pro+ Tier)
     test_endpoint "GET" "/ev" "GET /ev - Expected value opportunities" 200 "pro+"
     test_endpoint "GET" "/ev?min_ev=3.0" "GET /ev?min_ev=3.0 - EV with filter" 200 "pro+"
-    test_endpoint "GET" "/arbitrage" "GET /arbitrage - Arbitrage opportunities" 200 "pro+"
-    test_endpoint "GET" "/arbitrage?min_profit=0.5" "GET /arbitrage?min_profit=0.5 - Arbitrage with filter" 200 "pro+"
+    test_endpoint "GET" "/arbitrage" "GET /arbitrage - Arbitrage opportunities" 200 "hobby+"
+    test_endpoint "GET" "/arbitrage?min_profit=0.5" "GET /arbitrage?min_profit=0.5 - Arbitrage with filter" 200 "hobby+"
     test_endpoint "GET" "/value-bets" "GET /value-bets - Value bets" 200 "pro+"
     test_endpoint "GET" "/middles" "GET /middles - Middle opportunities" 200 "sharp"
     

@@ -90,6 +90,7 @@ for hold in data['data']:
 
 ```json
 {
+  "success": true,
   "data": [
     {
       "id": "lh_nba_lal_bos_ml_0",
@@ -103,6 +104,7 @@ for hold in data['data']:
       "start_time": "2026-02-08T19:00:00Z",
       "line": null,
       "hold_percentage": 1.8,
+      "game_state": null,
       "side1": {
         "selection": "Los Angeles Lakers",
         "books": ["draftkings", "betmgm"],
@@ -150,10 +152,24 @@ for hold in data['data']:
     "limit": 50,
     "offset": 0,
     "total": 87,
-    "maxOffset": 5000
+    "has_more": true,
+    "next_offset": 50
   },
   "meta": {
     "source": "cache",
+    "summary": {
+      "count": 87,
+      "avg_hold": 2.4,
+      "min_hold": 0.8,
+      "by_market": {
+        "moneyline": 35,
+        "point_spread": 30,
+        "total_points": 22
+      },
+      "by_sport": {
+        "basketball": 87
+      }
+    },
     "filters": {
       "sport": null,
       "league": ["nba"],

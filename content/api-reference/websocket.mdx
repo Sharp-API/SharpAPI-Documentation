@@ -49,6 +49,9 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sport=basketball&
 | `event_id` | string | all | Filter by specific event ID(s), comma-separated |
 | `min_ev` | number | 2.0 | Minimum EV percentage for +EV opportunities |
 | `min_profit` | number | 0.5 | Minimum profit percentage for arbitrage and low-hold opportunities |
+| `min_odds` | number | — | Filter odds by minimum American odds value (e.g., `-200`) |
+| `max_odds` | number | — | Filter odds by maximum American odds value (e.g., `500`) |
+| `state` | string | `pa` | US state code for generating sportsbook deep links in opportunity events (e.g., `nj`, `ny`, `il`) |
 | `resume` | boolean | false | Skip initial odds snapshot on reconnection (assumes client has previous state) |
 | `from_seq` | integer | — | Replay missed events since this global sequence number. Use with `resume` for gap-free reconnection. See [Reconnection with Replay](#reconnection-with-replay). |
 
@@ -68,9 +71,9 @@ Client                                         Server
   |← opportunities_snapshot (ev) ----------------|  EV opportunities
   |← initial (draftkings) -----------------------|  Odds per sportsbook
   |← initial (fanduel) --------------------------|  (chunked by book)
-  |← snapshot_complete --------------------------|  All initial data sent
+  |← snapshot:complete --------------------------|  All initial data sent
   |                                               |
-  |← odds_update --------------------------------|  Incremental odds update
+  |← odds:update --------------------------------|  Incremental odds update
   |← ev:detected --------------------------------|  +EV opportunity found
   |← heartbeat ----------------------------------|  Keep-alive (every 30s)
   |                                               |
@@ -236,13 +239,13 @@ Per-sportsbook odds snapshot. Sent once per sportsbook when the `odds` channel i
 Odds are chunked by sportsbook — you will receive one `initial` message per book. Large books may be split across multiple messages (up to 1000 odds each). If you don't need raw odds, omit the `odds` channel to skip this entirely.
 </Callout>
 
-#### `snapshot_complete`
+#### `snapshot:complete`
 
 Signals that all initial snapshots (opportunities + odds) have been sent. Safe to hide loading states after receiving this.
 
 ```json
 {
-  "type": "snapshot_complete",
+  "type": "snapshot:complete",
   "seq": 10,
   "books": ["draftkings", "fanduel", "pinnacle"],
   "resumed": false,
@@ -257,13 +260,13 @@ Signals that all initial snapshots (opportunities + odds) have been sent. Safe t
 | `resumed` | boolean | `true` if this was a resume connection (no odds resent) |
 | `progressive` | boolean | `true` if odds were delivered progressively (chunked per book) |
 
-#### `odds_update`
+#### `odds:update`
 
 Incremental odds update from a single sportsbook.
 
 ```json
 {
-  "type": "odds_update",
+  "type": "odds:update",
   "seq": 46,
   "source": "draftkings",
   "data": [ /* NormalizedOdds[] */ ],
@@ -272,13 +275,13 @@ Incremental odds update from a single sportsbook.
 }
 ```
 
-#### `odds_removed`
+#### `odds:removed`
 
 Odds removed by a sportsbook (e.g. market taken down, event settled).
 
 ```json
 {
-  "type": "odds_removed",
+  "type": "odds:removed",
   "seq": 47,
   "source": "draftkings",
   "ids": ["odd_id_1", "odd_id_2"],
@@ -660,10 +663,10 @@ ws.onmessage = (event) => {
       const books = Object.keys(msg.data);
       console.log(`Odds snapshot: ${books.length} books`);
       break;
-    case 'snapshot_complete':
+    case 'snapshot:complete':
       console.log('All initial data received');
       break;
-    case 'odds_update':
+    case 'odds:update':
       console.log(`${msg.source}: ${msg.data.length} odds updated`);
       break;
     case 'ev:detected':
@@ -716,7 +719,7 @@ ws.on('message', (raw) => {
   else if (msg.type === 'opportunities_snapshot' && msg.low_hold) {
     console.log(`Low-hold snapshot: ${msg.low_hold.length} opportunities`);
   }
-  else if (msg.type === 'snapshot_complete') {
+  else if (msg.type === 'snapshot:complete') {
     console.log('Initial data complete');
   }
   else if (msg.type === 'low_hold:detected') {
@@ -761,7 +764,7 @@ def on_message(ws, raw):
         print(f'{msg["message"]} | tier: {msg["tier"]} | channels: {msg["channels"]}')
     elif msg_type == "opportunities_snapshot" and "middles" in msg:
         print(f'Middles snapshot: {len(msg["middles"])} opportunities')
-    elif msg_type == "snapshot_complete":
+    elif msg_type == "snapshot:complete":
         print("Initial data complete")
     elif msg_type == "middles:detected":
         for m in msg["data"]:
@@ -812,11 +815,11 @@ stream.on('opportunities_snapshot', ({ ev, arbitrage, middles, low_hold }) => {
   if (low_hold) console.log(`Low-hold snapshot: ${low_hold.length}`);
 });
 
-stream.on('snapshot_complete', () => {
+stream.on('snapshot:complete', () => {
   console.log('All initial data received');
 });
 
-stream.on('odds_update', ({ data, source }) => {
+stream.on('odds:update', ({ data, source }) => {
   console.log(`${source}: ${data.length} odds updated`);
 });
 
@@ -869,7 +872,7 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 6. **Handle close codes** -- `4001` means bad key, `4003` means no streaming access, `4029` means too many connections
 7. **Track sequence numbers** -- Store `global_seq` for replay on reconnection. Use `resume=true&from_seq=N` for gap-free recovery
 8. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...) with `from_seq` replay for brief outages
-9. **Wait for `snapshot_complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
+9. **Wait for `snapshot:complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
 10. **Handle `odds_removed`** -- Remove odds from your local state when you receive this message to avoid showing stale data
 11. **Close unused connections** -- Each connection counts against your 10-stream limit
 

@@ -149,7 +149,7 @@ for event in client.events():
 |-------|-------------|
 | `connected` | Stream established, returns stream ID, active filters, and channels |
 | `snapshot` / `opportunities_snapshot` | Data dump of current odds and/or opportunities |
-| `snapshot_complete` | All initial data has been sent (WebSocket only) |
+| `snapshot:complete` | All initial data has been sent |
 | `odds:update` / `odds_update` | Odds changed for a sportsbook |
 | `odds_removed` | Odds removed by a sportsbook (WebSocket only) |
 | `ev:detected` | New +EV opportunity found |

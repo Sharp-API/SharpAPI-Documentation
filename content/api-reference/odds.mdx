@@ -95,6 +95,7 @@ if result['meta']['pagination']['has_more']:
 
 ```json
 {
+  "success": true,
   "data": [
     {
       "id": "draftkings_33483153_moneyline_PHO",
@@ -164,7 +165,6 @@ if result['meta']['pagination']['has_more']:
 X-RateLimit-Limit: 300
 X-RateLimit-Remaining: 299
 X-RateLimit-Reset: 1737853200
-X-Tier: pro
 X-Data-Delay: 0
 X-Request-Id: req_abc123def456
 ```
@@ -174,7 +174,6 @@ X-Request-Id: req_abc123def456
 | `X-RateLimit-Limit` | Maximum requests per minute for your tier |
 | `X-RateLimit-Remaining` | Requests remaining in current window |
 | `X-RateLimit-Reset` | Unix timestamp when the rate limit resets |
-| `X-Tier` | Your current subscription tier |
 | `X-Data-Delay` | Data delay in seconds (0 for real-time, 60 for free tier) |
 | `X-Request-Id` | Unique request identifier for debugging |
 

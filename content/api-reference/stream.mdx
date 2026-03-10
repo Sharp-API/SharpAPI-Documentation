@@ -33,6 +33,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 | `market` | string | all | Filter by market type(s), comma-separated (e.g. `moneyline`, `point_spread`, `total_points`, `player_points`) |
 | `min_ev` | number | 2.0 | Minimum EV percentage for +EV opportunity events |
 | `min_profit` | number | 0.5 | Minimum profit percentage for arbitrage events only (does not apply to low-hold filtering) |
+| `state` | string | `pa` | US state code for generating sportsbook deep links in opportunity events (e.g., `nj`, `ny`, `il`) |
 | `api_key` | string | — | API key (alternative to header auth for browser `EventSource`) |
 
 ### Channel Options

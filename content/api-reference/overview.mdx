@@ -95,6 +95,7 @@ All successful responses wrap data in a consistent envelope:
 
 ```json
 {
+  "success": true,
   "data": [
     {
       "id": "draftkings_33483153_moneyline_PHO",
@@ -111,6 +112,12 @@ All successful responses wrap data in a consistent envelope:
       "is_live": false
     }
   ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "has_more": true,
+    "next_offset": 50
+  },
   "meta": {
     "count": 1,
     "total": 3095,
@@ -131,13 +138,15 @@ All successful responses wrap data in a consistent envelope:
 
 | Field | Description |
 |-------|-------------|
+| `success` | `true` for all successful responses |
 | `data` | Array of results (or single object for detail endpoints) |
+| `pagination.limit` | Maximum items per page (default: 50, max: 200) |
+| `pagination.offset` | Current offset into results |
+| `pagination.has_more` | Whether more results exist beyond this page |
+| `pagination.next_offset` | Offset value to use for the next page |
 | `meta.count` | Number of items returned in this response |
 | `meta.total` | Total matching items across all pages |
-| `meta.pagination.limit` | Maximum items per page (default: 50, max: 200) |
-| `meta.pagination.offset` | Current offset into results |
-| `meta.pagination.has_more` | Whether more results exist beyond this page |
-| `meta.pagination.next_offset` | Offset value to use for the next page |
+| `meta.pagination` | Same as top-level `pagination` (included for backward compatibility) |
 | `meta.updated_at` | ISO 8601 timestamp of when the data was last refreshed |
 | `meta.filters` | Echo of the filters applied to this request |
 
@@ -145,6 +154,7 @@ All successful responses wrap data in a consistent envelope:
 
 ```json
 {
+  "success": true,
   "data": {
     "id": "evt_abc123",
     "sport": "nba",
@@ -187,7 +197,6 @@ Every API response includes these headers:
 | `X-RateLimit-Limit` | `300` | Maximum requests per minute for your tier |
 | `X-RateLimit-Remaining` | `299` | Requests remaining in the current window |
 | `X-RateLimit-Reset` | `1705804800` | Unix timestamp when the rate limit resets |
-| `X-Tier` | `pro` | Your current subscription tier |
 | `X-Data-Delay` | `0` | Data delay in seconds (`60` for Free, `0` for paid tiers) |
 | `X-Request-Id` | `req_a1b2c3d4` | Unique request identifier for debugging and support |
 

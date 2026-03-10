@@ -7,7 +7,7 @@ This file provides guidance to Claude Code when working with the SharpAPI docume
 <!-- AUTO-MANAGED: project-description -->
 ## Overview
 
-**SharpAPI Documentation Site** - Next.js 14 static documentation site built with Nextra 2.13.4 theme. Provides comprehensive API documentation, SDK guides, examples, and streaming concepts for the SharpAPI real-time sports betting odds platform.
+**SharpAPI Documentation Site** - Next.js 15 static documentation site built with Nextra 4.6 (App Router). Provides comprehensive API documentation, SDK guides, examples, and streaming concepts for the SharpAPI real-time sports betting odds platform.
 
 Extracted from sharp-api/docs-vercel repository for standalone deployment.
 
@@ -18,7 +18,7 @@ Extracted from sharp-api/docs-vercel repository for standalone deployment.
 
 ```bash
 # Development
-npm run dev          # Start Next.js dev server (default port 3000)
+npm run dev          # Start Next.js dev server (port 3002)
 
 # Production
 npm run build        # Build static site (output to ./out/)
@@ -34,25 +34,35 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 ## Architecture
 
 ```
-/root/docs.sharpapi.io/
-├── pages/                       # MDX documentation pages
-│   ├── _app.tsx                 # Next.js app wrapper (imports globals.css)
+/root/sharpapi.io/docs.sharpapi.io/
+├── app/                         # Next.js App Router
+│   ├── layout.tsx               # Root layout (Nextra Layout, Navbar, Footer, PostHog)
+│   └── [[...mdxPath]]/
+│       └── page.tsx             # Catch-all route for MDX content
+│
+├── content/                     # MDX documentation pages (Nextra 4 content dir)
+│   ├── _meta.js                 # Top-level sidebar navigation config
 │   ├── index.mdx                # Homepage
 │   ├── authentication.mdx       # Auth guide
 │   ├── quickstart.mdx           # Getting started
-│   ├── api-reference/           # API endpoint documentation
-│   ├── concepts/                # Core concepts
-│   ├── examples/                # Code examples
-│   ├── sdks/                    # SDK documentation
-│   └── streaming/               # WebSocket streaming docs
+│   ├── pricing.mdx              # Pricing tiers
+│   ├── api-reference/           # API endpoint documentation (+_meta.js)
+│   ├── concepts/                # Core concepts (+_meta.js)
+│   ├── examples/                # Code examples (+_meta.js)
+│   ├── sdks/                    # SDK documentation (+_meta.js)
+│   └── streaming/               # WebSocket streaming docs (+_meta.js)
+│
+├── components/
+│   └── PostHogProvider.tsx      # PostHog analytics provider
 │
 ├── styles/
 │   └── globals.css              # Global styles (footer padding customization)
 │
-├── theme.config.tsx             # Nextra theme configuration
+├── mdx-components.tsx           # MDX component overrides (nextra-theme-docs)
 ├── next.config.mjs              # Next.js config (static export, Nextra plugin)
+├── knip.json                    # Knip config (ignores convention-based _meta.js)
 ├── tsconfig.json                # TypeScript config (ES2017, strict: false)
-├── package.json                 # Dependencies (Next.js 14.2, Nextra 2.13.4)
+├── package.json                 # Dependencies (Next.js 15, Nextra 4.6)
 ├── pnpm-lock.yaml               # Lock file
 ├── vercel.json                  # Vercel deployment config
 └── out/                         # Build output (static export)
@@ -64,11 +74,12 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 ## Code Conventions
 
 - **TypeScript**: ES2017 target, `strict: false`, JSX preserve mode
-- **Next.js**: App router pattern with `_app.tsx` wrapper
-- **Nextra**: MDX pages in `pages/` directory, `theme.config.tsx` for theme
+- **Next.js 15**: App Router with `app/layout.tsx` root layout
+- **Nextra 4**: MDX content in `content/` directory, `_meta.js` files for sidebar nav
 - **Styling**: Global CSS in `styles/globals.css`, custom footer padding reduction
 - **Static Export**: `output: 'export'` with unoptimized images
-- **Theme Config**: DocsThemeConfig type, Link wrapper for logo, useNextSeoProps for titles
+- **Analytics**: PostHog via client-side provider component
+- **Metadata**: Next.js Metadata API in `app/layout.tsx` (title template, OG tags)
 
 <!-- END AUTO-MANAGED -->
 
@@ -77,19 +88,21 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 
 **Nextra/Next.js:**
 - Static site generation with `output: 'export'` for deployment
-- Nextra plugin wraps Next.js config with theme and default copy code enabled
+- Nextra plugin wraps Next.js config with `defaultShowCopyCode: true`
 - Custom footer styling uses `!important` to override Nextra defaults
-- Logo uses Next.js Link component with inline styles for clickability
-- SEO handled via `useNextSeoProps` with titleTemplate pattern
+- Logo links to sharpapi.io with Next.js Link component and inline styles
+- Navbar includes "Back to SharpAPI" button linking to main site
+- Metadata via Next.js Metadata API with `%s - SharpAPI Docs` template
 
 **Branding:**
-- Primary hue: 210 (blue tone)
-- Logo: "SharpAPI" text with fontWeight 700
+- Primary hue: 210 (blue tone, set via `<Head color={{ hue: 210 }} />`)
+- Logo: "SharpAPI" text with fontWeight 700 + `/logo.svg` icon
 - Footer: Copyright with current year
 - Page titles: "[Page] - SharpAPI Docs" format
 
 **Content Organization:**
-- Flat MDX structure in `pages/` with subdirectories for major sections
+- Flat MDX structure in `content/` with subdirectories for major sections
+- `_meta.js` files define sidebar ordering, labels, and separators
 - Sidebar default collapse level: 1
 - Table of contents with "back to top" enabled
 - Toggle button enabled for sidebar

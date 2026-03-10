@@ -1041,7 +1041,7 @@ curl -N -H "X-API-Key: sk_test_pro" \
 
 Message Format:
 ```
-data: {"type":"odds_update","timestamp":"2024-01-15T10:30:00.000Z","data":{...}}
+data: {"type":"odds:update","timestamp":"2024-01-15T10:30:00.000Z","data":{...}}
 
 data: {"type":"heartbeat","timestamp":"2024-01-15T10:30:30.000Z"}
 ```
@@ -1065,7 +1065,7 @@ Query Parameters:
 Event Types:
 - connected: Initial connection acknowledgment
 - initial: Full snapshot of current odds and opportunities
-- odds_update: Incremental odds changes
+- odds:update: Incremental odds changes
 - ev_opportunity: New or updated +EV opportunity
 - arbitrage: New or updated arbitrage opportunity
 - heartbeat: Keep-alive (every 30 seconds)
@@ -1357,7 +1357,7 @@ function createOddsStream(sports, callbacks) {
       const data = JSON.parse(event.data);
 
       switch (data.type) {
-        case 'odds_update':
+        case 'odds:update':
           callbacks.onUpdate?.(data.data);
           break;
         case 'heartbeat':

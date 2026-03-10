@@ -44,6 +44,11 @@ export default {
   "opportunities-middles": "Middles",
   "opportunities-middles-summary": "Middles Summary",
   "opportunities-low-hold": "Low Hold",
+  "---DeepLinks": {
+    type: "separator",
+    title: "Deep Links",
+  },
+  deeplinks: "Deep Links",
   "---Streaming": {
     type: "separator",
     title: "Streaming",

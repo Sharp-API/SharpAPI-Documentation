@@ -32,7 +32,7 @@ stream.connect()
 
 // WebSocket streaming (~100ms latency)
 const ws = api.stream.oddsWs({ sportsbook: ['draftkings'] })
-ws.on('odds_update', ({ data, source }) => console.log(source, data))
+ws.on('odds:update', ({ data, source }) => console.log(source, data))
 ws.connect()
 ```
 

@@ -873,7 +873,7 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 7. **Track sequence numbers** -- Store `global_seq` for replay on reconnection. Use `resume=true&from_seq=N` for gap-free recovery
 8. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...) with `from_seq` replay for brief outages
 9. **Wait for `snapshot:complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
-10. **Handle `odds_removed`** -- Remove odds from your local state when you receive this message to avoid showing stale data
+10. **Handle `odds:removed`** -- Remove odds from your local state when you receive this message to avoid showing stale data
 11. **Close unused connections** -- Each connection counts against your 10-stream limit
 
 ## Related

@@ -77,7 +77,7 @@ evs = client.ev.get(
 
 for opp in evs.data:
     print(f"+{opp.ev_percent:.1f}% on {opp.selection} @ {opp.sportsbook}")
-    print(f"  Fair probability: {opp.true_probability}")
+    print(f"  Fair probability: {opp.fair_probability}")
     print(f"  Devig: {opp.devig_method} via {opp.devig_book}")
     print(f"  Kelly: {opp.kelly_fraction:.1%}")
     print(f"  Confidence: {opp.confidence_score}/100")

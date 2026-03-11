@@ -9,7 +9,7 @@ GET /api/v1/opportunities/ev
 ```
 
 <Callout type="info">
-This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_fraction`, `true_probability`) are now included in every response.
+This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_fraction`, `fair_probability`) are now included in every response.
 </Callout>
 
 ## Authentication
@@ -101,7 +101,7 @@ for opp in data['data']:
       "odds_american": -105,
       "odds_decimal": 1.952,
       "no_vig_odds": -118,
-      "true_probability": 0.541,
+      "fair_probability": 0.541,
       "market_width": 3.2,
       "devig_method": "power",
       "devig_book": "pinnacle",
@@ -231,7 +231,7 @@ X-Request-Id: req_abc123def456
 | `odds_american` | number | Current American odds at the sportsbook |
 | `odds_decimal` | number | Decimal odds (e.g., `1.952`) |
 | `no_vig_odds` | number\|null | Fair (no-vig) American odds derived from the sharp line |
-| `true_probability` | number\|null | Fair probability (0.0 to 1.0) |
+| `fair_probability` | number\|null | No-vig (devigged) fair probability (0.0 to 1.0) |
 | `market_width` | number\|null | Width of the market (vig indicator) |
 | `devig_method` | string | De-vig method used (e.g., `power`) |
 | `devig_book` | string | Sharp book used as reference (e.g., `pinnacle`) |

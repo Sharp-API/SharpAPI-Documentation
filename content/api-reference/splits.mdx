@@ -1,0 +1,156 @@
+import { Callout, Tabs } from 'nextra/components'
+
+# Betting Splits
+
+Get public betting splits (handle % and bet %) from DraftKings and Circa Sports.
+
+```
+GET /api/v1/splits
+```
+
+## Authentication
+
+Requires API key. Available to **all tiers**.
+
+## What are betting splits?
+
+**Handle %** is the percentage of total money wagered on each side.
+**Bet %** is the percentage of total tickets (bets placed) on each side.
+
+The gap between bet % and handle % reveals sharp money. If 30% of tickets carry 60% of the money, sharp bettors are on that side.
+
+## Data Sources
+
+| Source | Type | Update Frequency |
+|--------|------|-----------------|
+| DraftKings | Recreational book (~35% US market share) | Every 5 minutes |
+| Circa Sports | Sharp-friendly book (attracts professionals) | Every 5 minutes |
+
+Comparing DraftKings (recreational) vs Circa (sharp) splits reveals where professional money diverges from the public.
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sport` | string | Filter by sport (comma-separated). Example: `basketball` |
+| `league` | string | Filter by league (comma-separated). Example: `nba,ncaab` |
+| `sportsbook` | string | Filter by splits source. Example: `draftkings,circa` |
+| `event_id` | string | Filter by canonical event ID (comma-separated) |
+| `limit` | integer | Max results (default 100, max 500) |
+| `offset` | integer | Pagination offset (default 0) |
+
+## Response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "event_id": "nba_thunder_timberwolves_2026-03-15",
+      "sport": "basketball",
+      "league": "nba",
+      "book": "draftkings",
+      "away_team": "Minnesota Timberwolves",
+      "home_team": "Oklahoma City Thunder",
+      "spread": {
+        "away_line": 9.5,
+        "home_line": -9.5,
+        "handle_pct": { "away": 0.55, "home": 0.45 },
+        "bets_pct": { "away": 0.59, "home": 0.41 }
+      },
+      "total": {
+        "line": 225.5,
+        "handle_pct": { "over": 0.51, "under": 0.49 },
+        "bets_pct": { "over": 0.67, "under": 0.33 }
+      },
+      "moneyline": {
+        "away_odds": 310,
+        "home_odds": -395,
+        "handle_pct": { "away": 0.51, "home": 0.49 },
+        "bets_pct": { "away": 0.22, "home": 0.78 }
+      },
+      "fetched_at": "2026-03-15T14:30:00Z"
+    }
+  ],
+  "meta": {
+    "total": 25,
+    "limit": 100,
+    "offset": 0,
+    "sources": ["draftkings", "circa"],
+    "sports": ["basketball", "mma"]
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `event_id` | string | Canonical event ID — use this to join with `/odds` data |
+| `sport` | string | Atlas-normalized sport name |
+| `league` | string | Atlas-normalized league name |
+| `book` | string | Source sportsbook for the splits data |
+| `away_team` | string | Away team name |
+| `home_team` | string | Home team name |
+| `spread.away_line` | number | Away spread line (e.g., +9.5) |
+| `spread.home_line` | number | Home spread line (e.g., -9.5) |
+| `spread.handle_pct` | object | Money % on each side (`away`, `home`; 0.0-1.0) |
+| `spread.bets_pct` | object | Ticket % on each side (`away`, `home`; 0.0-1.0) |
+| `total.line` | number | Over/under line (e.g., 225.5) |
+| `total.handle_pct` | object | Money % (`over`, `under`; 0.0-1.0) |
+| `total.bets_pct` | object | Ticket % (`over`, `under`; 0.0-1.0) |
+| `moneyline.away_odds` | number | Away moneyline odds (American format) |
+| `moneyline.home_odds` | number | Home moneyline odds (American format) |
+| `moneyline.handle_pct` | object | Money % on each side (`away`, `home`; 0.0-1.0) |
+| `moneyline.bets_pct` | object | Ticket % on each side (`away`, `home`; 0.0-1.0) |
+| `fetched_at` | string | ISO 8601 timestamp when data was last scraped |
+
+<Callout type="info">
+  The `event_id` field uses the same canonical ID format as the `/odds` endpoint, so you can join splits with odds data directly.
+  For example, fetch odds for a specific game and compare with its splits:
+
+  ```
+  GET /api/v1/odds?event_id=nba_thunder_timberwolves_2026-03-15
+  GET /api/v1/splits?event_id=nba_thunder_timberwolves_2026-03-15
+  ```
+</Callout>
+
+## Per-Selection Bet % (BetMGM)
+
+In addition to the game-level splits from this endpoint, BetMGM odds items in the `/odds` response include an inline `public_bet_pct` field (0.0-1.0) representing ticket percentage per selection. This is available on NBA (100%), MLB (100%), and NHL (~60%) prematch markets.
+
+## Examples
+
+<Tabs items={['All NBA Splits', 'DraftKings Only', 'Specific Game']}>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?league=nba" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?sportsbook=draftkings&sport=basketball" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?event_id=nba_thunder_timberwolves_2026-03-15" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Interpreting Splits
+
+| Signal | What it means |
+|--------|--------------|
+| Bet % high, Handle % low | Public side — lots of small bets |
+| Bet % low, Handle % high | Sharp side — fewer but larger bets |
+| DK and Circa agree | Market consensus — both public and sharp aligned |
+| DK and Circa diverge | Sharp-public split — Circa (sharp) disagrees with DK (public) |
+
+<Callout type="warning">
+  Splits data only comes from recreational books (DraftKings) and one sharp-adjacent book (Circa). No sharp book publishes splits. Use splits as one signal alongside line movement and +EV analysis, not in isolation.
+</Callout>

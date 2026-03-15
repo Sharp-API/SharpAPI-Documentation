@@ -30,6 +30,11 @@ export default {
   "events-by-id": "Event Details",
   "events-odds": "Event Odds",
   "events-markets": "Event Markets",
+  "---Splits": {
+    type: "separator",
+    title: "Betting Splits",
+  },
+  splits: "Betting Splits",
   "---GameState": {
     type: "separator",
     title: "Game State",

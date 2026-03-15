@@ -142,6 +142,84 @@ In addition to the game-level splits from this endpoint, BetMGM odds items in th
   </Tabs.Tab>
 </Tabs>
 
+## Splits History
+
+Track how splits shift over time for a specific event.
+
+```
+GET /api/v1/splits/history?event_id={event_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `event_id` | string | Yes | Canonical event ID |
+| `sportsbook` | string | No | Filter by book (comma-separated) |
+| `limit` | integer | No | Max entries (default 100, max 500) |
+
+### Response
+
+Entries are sorted oldest-first, showing how splits evolved over the game day.
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "book": "draftkings",
+      "ts": "2026-03-15T14:30:00Z",
+      "timestamp": 1710513000,
+      "spread": {
+        "handle_pct": { "away": 0.55, "home": 0.45 },
+        "bets_pct": { "away": 0.59, "home": 0.41 }
+      },
+      "total": {
+        "handle_pct": { "over": 0.51, "under": 0.49 },
+        "bets_pct": { "over": 0.67, "under": 0.33 }
+      },
+      "moneyline": {
+        "handle_pct": { "away": 0.51, "home": 0.49 },
+        "bets_pct": { "away": 0.22, "home": 0.78 }
+      }
+    },
+    {
+      "book": "draftkings",
+      "ts": "2026-03-15T14:35:00Z",
+      "timestamp": 1710513300,
+      "spread": {
+        "handle_pct": { "away": 0.58, "home": 0.42 },
+        "bets_pct": { "away": 0.60, "home": 0.40 }
+      }
+    }
+  ],
+  "meta": {
+    "event_id": "nba_thunder_timberwolves_2026-03-15",
+    "total": 2,
+    "books": ["draftkings", "circa"],
+    "oldest": "2026-03-15T14:30:00Z",
+    "newest": "2026-03-15T14:35:00Z"
+  }
+}
+```
+
+Data is collected every 5 minutes and retained for 48 hours.
+
+<Tabs items={['Full History', 'DraftKings Only']}>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits/history?event_id=nba_thunder_timberwolves_2026-03-15" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits/history?event_id=nba_thunder_timberwolves_2026-03-15&sportsbook=draftkings" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+</Tabs>
+
 ## Interpreting Splits
 
 | Signal | What it means |

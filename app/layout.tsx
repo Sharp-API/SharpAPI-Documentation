@@ -9,6 +9,7 @@ import 'nextra-theme-docs/style.css'
 import '../styles/globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://docs.sharpapi.io'),
   title: {
     default: 'SharpAPI Docs',
     template: '%s - SharpAPI Docs',
@@ -22,8 +23,9 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'SharpAPI Documentation',
-    description: 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',
+    type: 'website',
+    siteName: 'SharpAPI Docs',
+    images: [{ url: 'https://sharpapi.io/og-image.png', width: 1200, height: 630, alt: 'SharpAPI - Sports Betting Odds API' }],
   },
 }
 

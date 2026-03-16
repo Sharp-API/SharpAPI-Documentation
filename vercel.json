@@ -4,6 +4,13 @@
   "framework": null,
   "cleanUrls": true,
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ pages/ styles/ theme.config.tsx next.config.mjs package.json vercel.json",
+  "redirects": [
+    { "source": "/streaming", "destination": "/streaming/overview", "permanent": true },
+    { "source": "/api-reference", "destination": "/api-reference/overview", "permanent": true },
+    { "source": "/concepts", "destination": "/concepts/arbitrage", "permanent": true },
+    { "source": "/sdks", "destination": "/sdks/typescript", "permanent": true },
+    { "source": "/examples", "destination": "/examples/arbitrage-scanner", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/ingest/static/:path*", "destination": "https://us-assets.i.posthog.com/static/:path*" },
     { "source": "/ingest/:path*", "destination": "https://us.i.posthog.com/:path*" },

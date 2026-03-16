@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     default: 'SharpAPI Docs',
     template: '%s - SharpAPI Docs',
   },
-  description: 'Real-time sports betting odds API',
+  description: 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'SharpAPI Documentation',
-    description: 'Real-time sports betting odds API',
+    description: 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',
   },
 }
 

@@ -6,7 +6,19 @@ export const generateStaticParams = generateStaticParamsFor('mdxPath')
 export async function generateMetadata(props) {
   const params = await props.params
   const { metadata } = await importPage(params.mdxPath)
-  return metadata
+  const path = params.mdxPath ? `/${params.mdxPath.join('/')}` : ''
+  const ogTitle = metadata.title ? `${metadata.title} - SharpAPI Docs` : 'SharpAPI Docs'
+  return {
+    ...metadata,
+    openGraph: {
+      title: ogTitle,
+      description: metadata.description || 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',
+      url: `https://docs.sharpapi.io${path}`,
+      type: 'website',
+      siteName: 'SharpAPI Docs',
+      images: [{ url: 'https://sharpapi.io/og-image.png', width: 1200, height: 630, alt: 'SharpAPI - Sports Betting Odds API' }],
+    },
+  }
 }
 
 const Wrapper = useMDXComponents({}).wrapper

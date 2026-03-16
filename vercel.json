@@ -3,7 +3,7 @@
   "outputDirectory": "out",
   "framework": null,
   "cleanUrls": true,
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ pages/ styles/ theme.config.tsx next.config.mjs package.json vercel.json",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ pages/ public/ styles/ theme.config.tsx next.config.mjs package.json vercel.json",
   "redirects": [
     { "source": "/streaming", "destination": "/streaming/overview", "permanent": true },
     { "source": "/api-reference", "destination": "/api-reference/overview", "permanent": true },

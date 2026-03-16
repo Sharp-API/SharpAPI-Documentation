@@ -2,6 +2,8 @@
 description: "How SharpAPI matches events across sportsbooks using canonical event IDs. Solves the problem of different sportsbook-specific event identifiers."
 ---
 
+# Event Matching
+
 ## The Problem
 
 Each sportsbook uses its own internal event IDs. The same Lakers vs Celtics game might be event `33483200` on DraftKings, `nba-bos-lal-20260208` on FanDuel, and `556677889` on Pinnacle. Without a unified identifier, building cross-book comparison tools requires implementing your own event matching logic.

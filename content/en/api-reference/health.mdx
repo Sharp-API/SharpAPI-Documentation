@@ -80,12 +80,6 @@ for name, check in health['checks'].items():
       "status": "ok",
       "message": "All 14 required fields present"
     }
-  },
-  "eventLoop": {
-    "min": 0.1,
-    "max": 2.5,
-    "mean": 0.4,
-    "p99": 1.8
   }
 }
 ```
@@ -186,17 +180,6 @@ Included on GET requests only (not HEAD). Verifies that upstream snapshot data c
 |-------|------|-------------|
 | `status` | string | Schema compatibility status: `ok` or `degraded` |
 | `message` | string | Human-readable status message (e.g., "All 14 required fields present") |
-
-### Event Loop
-
-Optional object included when event loop monitoring is active. Reports main-thread delay statistics to detect blocking operations.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `min` | number | Minimum event loop delay (ms) |
-| `max` | number | Maximum event loop delay (ms) |
-| `mean` | number | Mean event loop delay (ms) |
-| `p99` | number | 99th percentile event loop delay (ms) |
 
 ## Status Logic
 

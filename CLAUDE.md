@@ -36,21 +36,24 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 ```
 /root/sharpapi.io/docs.sharpapi.io/
 ├── app/                         # Next.js App Router
-│   ├── layout.tsx               # Root layout (Nextra Layout, Navbar, Footer, PostHog)
-│   └── [[...mdxPath]]/
-│       └── page.tsx             # Catch-all route for MDX content
+│   ├── layout.tsx               # Root layout (metadata only, returns children)
+│   └── [lang]/                  # i18n locale segment
+│       ├── layout.tsx           # Locale layout (html/body, Nextra Layout, Navbar, Footer)
+│       └── [[...mdxPath]]/
+│           └── page.tsx         # Catch-all route for MDX content
 │
 ├── content/                     # MDX documentation pages (Nextra 4 content dir)
-│   ├── _meta.js                 # Top-level sidebar navigation config
-│   ├── index.mdx                # Homepage
-│   ├── authentication.mdx       # Auth guide
-│   ├── quickstart.mdx           # Getting started
-│   ├── pricing.mdx              # Pricing tiers
-│   ├── api-reference/           # API endpoint documentation (+_meta.js)
-│   ├── concepts/                # Core concepts (+_meta.js)
-│   ├── examples/                # Code examples (+_meta.js)
-│   ├── sdks/                    # SDK documentation (+_meta.js)
-│   └── streaming/               # WebSocket streaming docs (+_meta.js)
+│   └── en/                      # English locale (add more locales as siblings)
+│       ├── _meta.js             # Top-level sidebar navigation config
+│       ├── index.mdx            # Homepage
+│       ├── authentication.mdx   # Auth guide
+│       ├── quickstart.mdx       # Getting started
+│       ├── pricing.mdx          # Pricing tiers
+│       ├── api-reference/       # API endpoint documentation (+_meta.js)
+│       ├── concepts/            # Core concepts (+_meta.js)
+│       ├── examples/            # Code examples (+_meta.js)
+│       ├── sdks/                # SDK documentation (+_meta.js)
+│       └── streaming/           # WebSocket streaming docs (+_meta.js)
 │
 ├── components/
 │   └── PostHogProvider.tsx      # PostHog analytics provider
@@ -58,14 +61,15 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 ├── styles/
 │   └── globals.css              # Global styles (footer padding customization)
 │
+├── proxy.ts                     # Nextra locale detection proxy (redirects / → /en/)
 ├── mdx-components.tsx           # MDX component overrides (nextra-theme-docs)
-├── next.config.mjs              # Next.js config (static export, Nextra plugin)
+├── next.config.mjs              # Next.js config (static export, Nextra plugin, i18n)
 ├── knip.json                    # Knip config (ignores convention-based _meta.js)
 ├── tsconfig.json                # TypeScript config (ES2017, strict: false)
-├── package.json                 # Dependencies (Next.js 15, Nextra 4.6)
+├── package.json                 # Dependencies (Next.js 16, Nextra 4.6)
 ├── pnpm-lock.yaml               # Lock file
-├── vercel.json                  # Vercel deployment config
-└── out/                         # Build output (static export)
+├── vercel.json                  # Vercel deployment config (with legacy → /en/ redirects)
+└── out/                         # Build output (static export, /en/ prefixed paths)
 ```
 
 <!-- END AUTO-MANAGED -->
@@ -74,8 +78,9 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 ## Code Conventions
 
 - **TypeScript**: ES2017 target, `strict: false`, JSX preserve mode
-- **Next.js 15**: App Router with `app/layout.tsx` root layout
-- **Nextra 4**: MDX content in `content/` directory, `_meta.js` files for sidebar nav
+- **Next.js 16**: App Router with `[lang]` i18n segment, root layout is metadata-only passthrough
+- **Nextra 4**: MDX content in `content/{locale}/` directories, `_meta.js` files for sidebar nav
+- **i18n**: Locales configured via `next.config.mjs` `i18n` field; Nextra reads and manages internally
 - **Styling**: Global CSS in `styles/globals.css`, custom footer padding reduction
 - **Static Export**: `output: 'export'` with unoptimized images
 - **Analytics**: PostHog via client-side provider component
@@ -101,7 +106,7 @@ npm install          # Install dependencies (uses pnpm-lock.yaml)
 - Page titles: "[Page] - SharpAPI Docs" format
 
 **Content Organization:**
-- Flat MDX structure in `content/` with subdirectories for major sections
+- Locale-scoped MDX in `content/{locale}/` with subdirectories for major sections
 - `_meta.js` files define sidebar ordering, labels, and separators
 - Sidebar default collapse level: 1
 - Table of contents with "back to top" enabled

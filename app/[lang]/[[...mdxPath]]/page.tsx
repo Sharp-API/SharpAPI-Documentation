@@ -1,12 +1,12 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages'
-import { useMDXComponents } from '../../mdx-components'
+import { useMDXComponents } from '../../../mdx-components'
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath')
 
 export async function generateMetadata(props) {
   const params = await props.params
-  const { metadata } = await importPage(params.mdxPath)
-  const path = params.mdxPath ? `/${params.mdxPath.join('/')}` : ''
+  const { metadata } = await importPage(params.mdxPath, params.lang)
+  const path = params.mdxPath ? `/${params.lang}/${params.mdxPath.join('/')}` : `/${params.lang}`
   const ogTitle = metadata.title ? `${metadata.title} - SharpAPI Docs` : 'SharpAPI Docs'
   return {
     ...metadata,
@@ -25,7 +25,7 @@ const Wrapper = useMDXComponents({}).wrapper
 
 export default async function Page(props) {
   const params = await props.params
-  const result = await importPage(params.mdxPath)
+  const result = await importPage(params.mdxPath, params.lang)
   const { default: MDXContent, toc, metadata } = result
   return (
     <Wrapper toc={toc} metadata={metadata}>

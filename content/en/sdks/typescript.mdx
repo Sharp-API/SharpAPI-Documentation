@@ -104,7 +104,7 @@ interface OddsLine {
 
 interface EVOpportunity {
   id: string;
-  ev_percent: number;
+  ev_percentage: number;
   odds_american: number;
   odds_decimal: number;
   selection: string;
@@ -272,7 +272,7 @@ eventSource.addEventListener('ev:detected', (e) => {
     // Skip stale opportunities
     if (opp.possibly_stale) continue;
     evMap.set(opp.id, opp);
-    console.log(`+EV: ${opp.selection} ${opp.ev_percent}% on ${opp.sportsbook}`);
+    console.log(`+EV: ${opp.selection} ${opp.ev_percentage}% on ${opp.sportsbook}`);
   }
 });
 

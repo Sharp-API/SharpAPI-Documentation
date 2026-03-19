@@ -87,7 +87,7 @@ eventSource.addEventListener('odds:update', (e) => {
 
 eventSource.addEventListener('ev:detected', (e) => {
   const opp = JSON.parse(e.data);
-  console.log(`+EV: ${opp.selection} at ${opp.ev_percent}% EV`);
+  console.log(`+EV: ${opp.selection} at ${opp.ev_percentage}% EV`);
 });
 
 eventSource.addEventListener('heartbeat', () => {
@@ -144,7 +144,7 @@ for event in client.events():
     elif event.event == 'odds:update':
         print(f"{data['sportsbook']}: odds updated")
     elif event.event == 'ev:detected':
-        print(f"+EV: {data['selection']} at {data['ev_percent']}%")
+        print(f"+EV: {data['selection']} at {data['ev_percentage']}%")
 ```
 
 ## Event Types

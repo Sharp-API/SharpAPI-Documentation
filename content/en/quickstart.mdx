@@ -23,7 +23,7 @@ Always use `api.sharpapi.io` - not `sharpapi.io` - for API requests.
 ### Get Your API Key
 
 1. **Sign Up** - Create a free account at [sharpapi.io/sign-up](https://sharpapi.io/sign-up)
-2. **Get Your Key** - Copy your API key from the dashboard. It starts with `sk_live_` or `sk_test_`
+2. **Get Your Key** - Copy your API key from the dashboard. It starts with `sk_live_`
 3. **Make Your First Call** - Use the examples below to fetch live odds
 
 ### Your First API Call
@@ -157,7 +157,7 @@ Response:
         "decimal": 1.870,
         "probability": 0.535
       },
-      "ev_percent": 4.35,
+      "ev_percentage": 4.35,
       "kelly_fraction": 0.0218
     }
   ],
@@ -204,7 +204,7 @@ eventSource.addEventListener('odds:update', (e) => {
 
 eventSource.addEventListener('ev:detected', (e) => {
   const opp = JSON.parse(e.data);
-  console.log(`+EV found: ${opp.selection} at ${opp.ev_percent}% EV`);
+  console.log(`+EV found: ${opp.selection} at ${opp.ev_percentage}% EV`);
 });
 ```
 

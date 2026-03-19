@@ -124,8 +124,8 @@ for sport in result['data']:
     }
   ],
   "meta": {
-    "count": 8,
-    "total": 8,
+    "count": 19,
+    "total": 19,
     "pagination": {
       "limit": 50,
       "offset": 0,
@@ -177,7 +177,7 @@ curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
 {
   "error": {
     "code": "not_found",
-    "message": "Sport 'cricket' not found",
+    "message": "Sport 'handball' not found",
     "docs": "https://sharpapi.io/docs/api-reference/sports"
   }
 }
@@ -205,6 +205,17 @@ curl -X GET "https://api.sharpapi.io/api/v1/sports/basketball"
 | `tennis` | Tennis | ATP, WTA |
 | `mma` | MMA | UFC |
 | `golf` | Golf | PGA |
+| `boxing` | Boxing | — |
+| `cricket` | Cricket | — |
+| `rugby` | Rugby Union | — |
+| `rugby_league` | Rugby League | — |
+| `lacrosse` | Lacrosse | PLL |
+| `motorsports` | Motorsports | F1, NASCAR |
+| `curling` | Curling | — |
+| `darts` | Darts | PDC |
+| `snooker` | Snooker | — |
+| `table_tennis` | Table Tennis | — |
+| `esports` | Esports | LoL, CS2, Dota 2 |
 
 <Callout type="info">
 The `event_count` and `live_count` values are dynamic and change based on current schedules. Off-season sports will show 0 events.

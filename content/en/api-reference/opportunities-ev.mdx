@@ -85,7 +85,7 @@ response = requests.get(
 )
 data = response.json()
 for opp in data['data']:
-    print(f"{opp['selection']} @ {opp['sportsbook']}: {opp['ev_percent']}% EV")
+    print(f"{opp['selection']} @ {opp['sportsbook']}: {opp['ev_percentage']}% EV")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -101,14 +101,14 @@ for opp in data['data']:
     {
       "id": "ev_dk_nba_33483153_ml_PHO",
       "game_id": "evt_nba_phi_pho_20260208",
-      "ev_percent": 4.2,
+      "ev_percentage": 4.2,
       "odds_american": -105,
       "odds_decimal": 1.952,
       "no_vig_odds": -118,
       "fair_probability": 0.541,
       "market_width": 3.2,
       "devig_method": "power",
-      "devig_book": "pinnacle",
+      "sharp_book": "pinnacle",
       "selection": "PHO Suns",
       "market": "moneyline",
       "line": null,
@@ -137,8 +137,8 @@ for opp in data['data']:
   "pagination": {
     "limit": 50,
     "offset": 0,
-    "total": 12,
-    "maxOffset": 5000
+    "has_more": false,
+    "next_offset": null
   },
   "meta": {
     "source": "redis",
@@ -231,14 +231,14 @@ X-Request-Id: req_abc123def456
 | `game_id` | string\|null | Associated game/event identifier |
 | `external_event_id` | string\|null | Sportsbook's native event ID |
 | `selection_id` | string\|null | Sportsbook's native outcome/selection ID (for deep linking to the bet slip) |
-| `ev_percent` | number | Expected value as a percentage (e.g., `4.2` = 4.2% EV) |
+| `ev_percentage` | number | Expected value as a percentage (e.g., `4.2` = 4.2% EV). Deprecated alias: `ev_percent`. |
 | `odds_american` | number | Current American odds at the sportsbook |
 | `odds_decimal` | number | Decimal odds (e.g., `1.952`) |
 | `no_vig_odds` | number\|null | Fair (no-vig) American odds derived from the sharp line |
 | `fair_probability` | number\|null | No-vig (devigged) fair probability (0.0 to 1.0) |
 | `market_width` | number\|null | Width of the market (vig indicator) |
 | `devig_method` | string | De-vig method used (e.g., `power`) |
-| `devig_book` | string | Sharp book used as reference (e.g., `pinnacle`) |
+| `sharp_book` | string | Sharp book used as reference (e.g., `pinnacle`). Deprecated alias: `devig_book`. |
 | `selection` | string | The selection (team name, Over/Under, player, etc.) |
 | `market` | string | Market type (`moneyline`, `point_spread`, `total_points`, etc.) |
 | `line` | number\|null | Spread/total line (e.g., `-3.5`, `220.5`) |

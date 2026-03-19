@@ -62,16 +62,16 @@ async function sendAlert(opp) {
   const channel = await discord.channels.fetch(CHANNEL_ID);
 
   const embed = new EmbedBuilder()
-    .setColor(opp.ev_percent >= 5 ? 0xFF0000 : 0x00FF00)
-    .setTitle(`${opp.ev_percent >= 5 ? '🔥' : '✅'} +EV Alert`)
+    .setColor(opp.ev_percentage >= 5 ? 0xFF0000 : 0x00FF00)
+    .setTitle(`${opp.ev_percentage >= 5 ? '🔥' : '✅'} +EV Alert`)
     .setDescription(`**${opp.game}**`)
     .addFields(
       { name: 'Selection', value: opp.selection, inline: true },
       { name: 'Book', value: opp.sportsbook, inline: true },
       { name: 'Odds', value: String(opp.odds_american), inline: true },
-      { name: 'EV', value: `+${opp.ev_percent}%`, inline: true },
+      { name: 'EV', value: `+${opp.ev_percentage}%`, inline: true },
       { name: 'Kelly', value: `${opp.kelly_fraction}`, inline: true },
-      { name: 'Devig', value: `${opp.no_vig_odds} (${opp.devig_book})`, inline: true },
+      { name: 'Devig', value: `${opp.no_vig_odds} (${opp.sharp_book})`, inline: true },
     )
     .setTimestamp();
 
@@ -100,7 +100,7 @@ es.addEventListener('ev:detected', async (e) => {
 
   for (const opp of opportunities) {
     // Only high EV
-    if (opp.ev_percent < 5) continue;
+    if (opp.ev_percentage < 5) continue;
 
     // Only certain sports
     if (!['nba', 'nfl'].includes(opp.sport)) continue;
@@ -123,13 +123,13 @@ const chatId = process.env.TELEGRAM_CHAT_ID;
 
 async function sendTelegramAlert(opp) {
   const message = `
-${opp.ev_percent >= 5 ? '🔥' : '✅'} *+EV Alert*
+${opp.ev_percentage >= 5 ? '🔥' : '✅'} *+EV Alert*
 
 *${opp.game}*
 Selection: ${opp.selection}
 Book: ${opp.sportsbook}
 Odds: ${opp.odds_american}
-EV: +${opp.ev_percent}%
+EV: +${opp.ev_percentage}%
 Kelly: ${opp.kelly_fraction}
   `.trim();
 

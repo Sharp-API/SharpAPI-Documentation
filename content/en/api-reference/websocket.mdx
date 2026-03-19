@@ -193,7 +193,7 @@ Snapshot of opportunities for a single channel type. Sent once per subscribed op
     {
       "id": "a1b2c3d4e5f6",
       "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
-      "ev_percent": 4.35,
+      "ev_percentage": 4.35,
       "odds_american": -110,
       "odds_decimal": 1.909,
       "no_vig_odds": -101,
@@ -306,7 +306,7 @@ New +EV opportunity found. Pro tier or higher only.
     {
       "id": "a1b2c3d4e5f6",
       "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
-      "ev_percent": 4.35,
+      "ev_percentage": 4.35,
       "odds_american": -110,
       "odds_decimal": 1.909,
       "no_vig_odds": -101,
@@ -675,7 +675,7 @@ ws.onmessage = (event) => {
       break;
     case 'ev:detected':
       msg.data.forEach(ev =>
-        console.log(`+EV: ${ev.selection} at ${ev.ev_percent}%`)
+        console.log(`+EV: ${ev.selection} at ${ev.ev_percentage}%`)
       );
       break;
     case 'heartbeat':
@@ -829,7 +829,7 @@ stream.on('odds:update', ({ data, source }) => {
 
 stream.on('ev:detected', ({ data }) => {
   data.forEach(ev =>
-    console.log(`+EV: ${ev.selection} at ${ev.ev_percent}%`)
+    console.log(`+EV: ${ev.selection} at ${ev.ev_percentage}%`)
   );
 });
 

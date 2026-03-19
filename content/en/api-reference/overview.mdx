@@ -190,7 +190,8 @@ All errors follow a consistent format:
 |-------|-------------|
 | `error.code` | Machine-readable error code |
 | `error.message` | Human-readable description |
-| `error.docs` | Link to relevant documentation |
+| `error.docs` | Link to relevant documentation (optional — included on auth, tier, rate limit, and streaming errors) |
+| `error.retry_after` | Seconds until retry is allowed (optional — included on `rate_limited` errors) |
 
 ## Standard Response Headers
 
@@ -212,7 +213,7 @@ Include the `X-Request-Id` value when contacting support about a specific reques
 
 | Feature | Free | Hobby | Pro | Sharp | Enterprise |
 |---------|------|-------|-----|-------|------------|
-| **Sportsbooks** | 2 (DK, FD) | 5 | 15 | All 16+ | All 16+ |
+| **Sportsbooks** | 2 (DK, FD) | 5 | 15 | All 30+ | All 30+ |
 | **Data Delay** | 60s | 0s | 0s | 0s | 0s |
 | **Requests/min** | 12 | 120 | 300 | 1,000 | Custom |
 | **Pinnacle** | No | No | Yes | Yes | Yes |

@@ -23,11 +23,11 @@ Requires API key. **Hobby tier or higher required.** Your account must have the 
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports category aliases — see [Odds: Market Category Aliases](/api-reference/odds#market-category-aliases). |
 | `min_profit` | number | 0.5 | Minimum profit percentage (e.g. `1.0` = 1%) |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
 | `format` | string | `json` | Response format: `json` or `csv`. CSV downloads as `arbitrage_YYYY-MM-DD.csv`. |
-| `limit` | integer | 50 | Results per page (max 500) |
+| `limit` | integer | 50 | Results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
 <Callout type="info">

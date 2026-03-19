@@ -27,7 +27,7 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `sportsbook` | string | tier-allowed | Comma-separated sportsbook IDs (e.g., `draftkings,fanduel`). Tier limits enforced. |
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g., `basketball`, `football`). Supports category aliases. |
 | `league` | string | all | Filter by league(s), comma-separated (e.g., `nba`, `nfl`, `nhl`) |
-| `market` | string | all | Filter by market type(s), comma-separated. Supports categories (`moneyline`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
 | `sort` | string | — | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
@@ -35,11 +35,40 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `min_odds` | number | — | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | — | Maximum American odds filter (e.g., `+200`) |
 | `group_by` | string | — | Group results by field (e.g., `event`) |
-| `limit` | integer | 50 | Max results per page (max 500) |
+| `limit` | integer | 50 | Max results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
 <Callout type="info">
 Use comma-separated values to filter by multiple sportsbooks: `sportsbook=draftkings,fanduel,betmgm`
+</Callout>
+
+### Market Category Aliases
+
+Instead of listing individual market types, you can use a category alias to match a group of related markets. Aliases and exact types can be mixed freely in a comma-separated list.
+
+| Alias | Expands to |
+|-------|------------|
+| `main` | `moneyline`, `point_spread`, `total_points` |
+| `spread` | `point_spread`, `puck_line`, `run_line`, `set_handicap` |
+| `total` | `total_points`, `total_goals`, `total_runs`, `total_games`, `total_rounds`, `team_total` |
+| `props` | All `player_*` market types (prefix match) |
+
+```bash
+# Fetch all "main" markets (moneyline + spreads + totals)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&market=main" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Mix an alias with an exact type
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread,moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# All player prop markets
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&market=props" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+<Callout type="info">
+The `props` alias uses a prefix match, so it automatically includes any market type starting with `player_` (e.g., `player_points`, `player_rebounds`, `player_assists`, `player_strikeouts`, etc.).
 </Callout>
 
 ## Example Requests

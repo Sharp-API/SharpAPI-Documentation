@@ -27,7 +27,7 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated. Supports categories (`spread`, `total`, `moneyline`, `props`) or exact types (`point_spread`, `player_points`). |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | all | Filter by game/event ID(s), comma-separated |
 | `min_ev` | number | 0 | Minimum EV percentage threshold |
 | `max_ev` | number | — | Maximum EV percentage threshold |
@@ -39,7 +39,7 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `max_odds_age` | number | — | Maximum odds age in seconds. Filters out stale opportunities where the underlying odds are older than this threshold. |
 | `date_range` | string | — | Filter by event date: `today`, `tomorrow`, or `week`. Dates are evaluated in **US Eastern Time (ET)**. |
 | `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_fraction`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
-| `limit` | integer | 50 | Results per page (max 500) |
+| `limit` | integer | 50 | Results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
 ### Filtering Multiple Values

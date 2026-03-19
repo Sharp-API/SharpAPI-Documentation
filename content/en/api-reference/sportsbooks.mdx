@@ -392,13 +392,15 @@ The `event_count` may be 0 and `last_update` may be `null` if a sportsbook is te
 
 The `requires_tier` field indicates the minimum subscription tier needed to access a sportsbook's odds data through the API.
 
+{/* AUTO:START:tier-summary */}
 | Tier | Books Available | Included Sportsbooks |
 |------|-----------------|----------------------|
-| **Free** | 2 | DraftKings, FanDuel |
-| **Hobby** | 5 | + BetMGM, Caesars, theScore Bet |
-| **Pro** | 15 | + Bet365, BetRivers, and more |
-| **Sharp** | All | All available sportsbooks |
-| **Enterprise** | All | All available sportsbooks |
+| **Free** | 23 | Kalshi, BetMGM, DraftKings, Bet365, and 19 more |
+| **Hobby** | 23 | Same as Free |
+| **Pro** | 23 | Same as Hobby |
+| **Sharp** | 25 | All available sportsbooks |
+| **Enterprise** | 25 | All available sportsbooks |
+{/* AUTO:END:tier-summary */}
 
 <Callout type="warning">
 **Pinnacle**, **Bookmaker**, **ProphetX**, and **Betfair** require **Sharp tier or higher**. Pinnacle is a sharp book whose efficient lines are used as the reference for +EV calculations. Requesting sharp book odds on Free, Hobby, or Pro tier will return a `403 tier_restricted` error.
@@ -417,54 +419,67 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 ### Major US Books
 
+{/* AUTO:START:us-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
+| `ballybet` | Bally Bet | Yes | No | Free |
+| `betmgm` | BetMGM | Yes | Yes | Free |
+| `betonline` | BetOnline | Yes | Yes | Free |
+| `betrivers` | BetRivers | Yes | Yes | Free |
+| `bovada` | Bovada | Yes | Yes | Free |
+| `caesars` | Caesars | Yes | Yes | Free |
 | `draftkings` | DraftKings | Yes | Yes | Free |
+| `fanatics` | Fanatics | Yes | Yes | Free |
 | `fanduel` | FanDuel | Yes | Yes | Free |
-| `betmgm` | BetMGM | Yes | Yes | Hobby |
-| `caesars` | Caesars | Yes | Yes | Hobby |
-| `espnbet` | theScore Bet | Yes | Yes | Hobby |
-| `betrivers` | BetRivers | Yes | Yes | Pro |
+| `fliff` | Fliff | Yes | Yes | Free |
+| `novig` | Novig | No | No | Free |
 | `rebet` | Rebet | Yes | Yes | Free |
+| `thescorebet` | theScore Bet | Yes | Yes | Free |
+{/* AUTO:END:us-books */}
 
 ### Sharp Books
 
+{/* AUTO:START:sharp-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
 | `pinnacle` | Pinnacle | Yes | Yes | **Sharp** |
-| `bookmaker` | Bookmaker | Yes | No | **Sharp** |
+{/* AUTO:END:sharp-books */}
 
 ### International
 
+{/* AUTO:START:intl-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
-| `bet365` | Bet365 | Yes | Yes | Pro |
+| `bet105` | Bet105 | Yes | Yes | Free |
+| `bet365` | Bet365 | Yes | Yes | Free |
 | `betway` | Betway | Yes | Yes | Free |
+| `ladbrokes` | Ladbrokes | Yes | Yes | Free |
+| `saba` | SABA | Yes | No | Free |
 | `skybet` | Sky Bet | Yes | No | Free |
+| `stake` | Stake | Yes | Yes | Free |
+| `unibet` | Unibet | Yes | Yes | Free |
+{/* AUTO:END:intl-books */}
 
 ### Exchanges
 
+{/* AUTO:START:exchange-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
 | `prophetx` | ProphetX | Yes | No | **Sharp** |
-| `betfair` | Betfair | Yes | No | **Sharp** |
+{/* AUTO:END:exchange-books */}
 
 ### Prediction Markets
 
+{/* AUTO:START:prediction-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
-| `polymarket` | Polymarket | No | No | Free |
 | `kalshi` | Kalshi | Yes | No | Free |
+| `polymarket` | Polymarket | No | No | Free |
+{/* AUTO:END:prediction-books */}
 
 <Callout type="info">
 **Polymarket** and **Kalshi** are prediction market platforms. Unlike traditional sportsbooks, they use binary outcome contracts priced between $0 and $1. SharpAPI normalizes contract prices into standard odds formats (American, decimal, implied probability) so you can compare them directly with sportsbook odds. Kalshi is CFTC-regulated.
 </Callout>
-
-### Coming Soon
-
-| ID | Name | Category |
-|----|------|----------|
-| `fanatics` | Fanatics | Major US |
 
 ## Sharp vs Soft Books
 

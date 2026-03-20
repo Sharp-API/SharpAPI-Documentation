@@ -1,1524 +1,1421 @@
-================================================================================
-SHARPAPI - REAL-TIME SPORTS BETTING ODDS API
-Complete Documentation for LLM Integration
-================================================================================
+# SharpAPI — Real-Time Sports Betting Odds API
+> Complete API documentation for LLM integration
+> Last updated: 2026-03-20
+> OpenAPI spec: https://docs.sharpapi.io/openapi.json
 
-OVERVIEW
---------------------------------------------------------------------------------
-SharpAPI is a real-time sports betting odds API providing:
-- Live odds from 15+ sportsbooks (DraftKings, FanDuel, BetMGM, Caesars, ESPN Bet, Fanatics, BetRivers, PointsBet, Bet365, Unibet, Hard Rock, SuperBook, WynnBET, Betfred)
-- Sharp book reference odds from Pinnacle for true probability
-- +EV (Expected Value) opportunity detection
-- Cross-book arbitrage detection with stake calculations
+## Overview
+
+SharpAPI is a real-time sports betting odds aggregation platform. It provides:
+
+- Real-time odds from 30+ sportsbooks (DraftKings, FanDuel, BetMGM, Pinnacle, Bet365, and more)
+- +EV (Expected Value) opportunity detection using Pinnacle as the sharp reference
+- Cross-book arbitrage detection with optimal stake calculations
 - Middle opportunity detection for spread/total betting
-- Real-time SSE streaming for instant alerts
-- Kelly Criterion stake sizing recommendations
+- Low-hold market detection
+- SSE and WebSocket streaming for sub-second updates
+- Deep link generation for direct bet placement
 
-Base URL: https://sharpapi.io/api/v1
+Base URL: https://api.sharpapi.io/api/v1
+Documentation: https://docs.sharpapi.io
+Sign up: https://sharpapi.io/sign-up
 
-API Version: 1.0.0
+---
 
-================================================================================
-AUTHENTICATION
-================================================================================
+## Authentication
 
-Three authentication methods are supported:
+All API requests require authentication via an API key (prefix: `sk_live_` or `sk_test_`).
 
-1. Header Authentication (Recommended)
-   X-API-Key: sk_your_api_key
+Three methods, in priority order:
 
-2. Bearer Token
-   Authorization: Bearer sk_your_api_key
+1. **X-API-Key Header (Recommended)**
+   ```
+   X-API-Key: sk_live_your_key
+   ```
 
-3. Query Parameter
-   ?api_key=sk_your_api_key
+2. **Bearer Token**
+   ```
+   Authorization: Bearer sk_live_your_key
+   ```
 
-Test Keys (Development/Preview Only):
-- sk_test_free  - Free tier testing
-- sk_test_pro   - Pro tier testing
-- sk_test_sharp - Sharp tier testing
+3. **Query Parameter** (useful for SSE streaming in browsers)
+   ```
+   ?api_key=sk_live_your_key
+   ```
 
-Production keys are obtained from https://sharpapi.io/dashboard
+### Public Reference Endpoints (no auth required, 10 req/min)
 
-================================================================================
-SUBSCRIPTION TIERS
-================================================================================
+- GET /api/v1/sports
+- GET /api/v1/sports/{sportId}
+- GET /api/v1/leagues
+- GET /api/v1/sportsbooks
+- GET /api/v1/sportsbooks/{bookId}
+- GET /api/v1/markets
+- GET /api/v1/health
 
-FEATURE COMPARISON
---------------------------------------------------------------------------------
-| Feature                    | Free      | Pro       | Sharp     |
-|----------------------------|-----------|-----------|-----------|
-| Discovery Endpoints        | Yes       | Yes       | Yes       |
-| Basic Odds                 | 5s delay  | Real-time | Real-time |
-| Best Odds                  | No        | Yes       | Yes       |
-| Batch Requests             | No        | 10 events | 50 events |
-| EV Opportunities           | No        | Yes       | Yes       |
-| Arbitrage Detection        | No        | Yes       | Yes       |
-| Value Bets                 | No        | Yes       | Yes       |
-| Middles Detection          | No        | No        | Yes       |
-| Player Props               | No        | Yes       | Yes       |
-| Alternate Lines            | No        | Yes       | Yes       |
-| SSE Streams                | 1         | 3         | 10        |
-| Combined Stream            | No        | No        | Yes       |
-| Requests/minute            | 100       | 1,000     | Unlimited |
+---
 
-COMING SOON (All Tiers):
-- Odds Movements (historical line changes)
-- Odds History/Rewind
-- Results & Grading
-- Closing Line Value (CLV)
-- Same-Game Parlays (SGP)
-- User Preferences
-- Webhooks
+## Subscription Tiers
 
-================================================================================
-RATE LIMITING
-================================================================================
+| Tier | Price | Req/Min | Data Delay | Books | Key Features |
+|------|-------|---------|------------|-------|--------------|
+| **Free** | $0/mo | 12 | 60s | 2 | Odds, Schedule |
+| **Hobby** | $79/mo | 120 | Real-time | 5 | + Arbitrage, Low Hold |
+| **Pro** | $229/mo | 300 | Real-time | 15 | + EV, Middles |
+| **Sharp** | $399/mo | 1,000 | Real-time | All 30+ | + Priority Support |
+| **Enterprise** | Custom | Custom | Real-time | All | + SLA, Dedicated Support |
 
-Rate limits are enforced per API key:
+**WebSocket Add-on**: $99/mo — adds 10 concurrent SSE streams to any paid tier. Enterprise includes streaming.
 
-| Tier   | Requests/Minute | Concurrent Streams |
-|--------|-----------------|-------------------|
-| Free   | 100             | 1                 |
-| Pro    | 1,000           | 3                 |
-| Sharp  | Unlimited       | 10                |
+### Sportsbook Access by Tier
 
-Rate Limit Headers (included in all responses):
-- X-RateLimit-Limit: Maximum requests allowed
-- X-RateLimit-Remaining: Requests remaining in window
-- X-RateLimit-Reset: Unix timestamp when limit resets
+- **Free**: DraftKings, FanDuel
+- **Hobby**: + BetMGM, Caesars, theScore Bet
+- **Pro**: + Bet365, BetRivers, and more (15 total)
+- **Sharp/Enterprise**: All 30+ supported books
 
-When rate limited, responses return HTTP 429 with:
+### Feature Access by Endpoint
+
+| Endpoint | Free | Hobby | Pro | Sharp | Enterprise |
+|----------|------|-------|-----|-------|------------|
+| GET /odds | Yes | Yes | Yes | Yes | Yes |
+| GET /odds/best | Yes | Yes | Yes | Yes | Yes |
+| GET /odds/comparison | Yes | Yes | Yes | Yes | Yes |
+| POST /odds/batch | Yes | Yes | Yes | Yes | Yes |
+| GET /events | Yes | Yes | Yes | Yes | Yes |
+| GET /events/:eventId | Yes | Yes | Yes | Yes | Yes |
+| GET /events/:eventId/odds | Yes | Yes | Yes | Yes | Yes |
+| GET /events/:eventId/markets | Yes | Yes | Yes | Yes | Yes |
+| GET /opportunities/ev | No | No | Yes | Yes | Yes |
+| GET /opportunities/arbitrage | No | Yes | Yes | Yes | Yes |
+| GET /opportunities/middles | No | No | Yes | Yes | Yes |
+| GET /opportunities/low_hold | No | Yes | Yes | Yes | Yes |
+| GET /stream | No | Add-on | Add-on | Add-on | Yes |
+| GET /account | Yes | Yes | Yes | Yes | Yes |
+| GET /account/usage | Yes | Yes | Yes | Yes | Yes |
+| GET /account/keys | Yes | Yes | Yes | Yes | Yes |
+| CSV Export | No | No | Yes | Yes | Yes |
+| Priority Support | No | No | No | Yes | Yes |
+| SLA | No | No | No | No | Yes |
+
+---
+
+## Rate Limiting
+
+Rate limits are enforced per API key. Response headers on every request:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1703123456789
+```
+
+When exceeded, returns HTTP 429:
+```json
 {
-  "error": "Rate limit exceeded",
-  "code": "rate_limit_exceeded",
-  "retry_after": 30,
-  "upgrade_url": "https://sharpapi.io/pricing"
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
 }
+```
 
-================================================================================
-ERROR CODES
-================================================================================
+Use `retry_after` (seconds) for exponential backoff.
 
-| HTTP | Code                    | Description                          |
-|------|-------------------------|--------------------------------------|
-| 400  | invalid_request         | Malformed request or parameters      |
-| 401  | unauthorized            | Missing or invalid API key           |
-| 403  | tier_required           | Endpoint requires higher tier        |
-| 404  | not_found               | Resource not found                   |
-| 429  | rate_limit_exceeded     | Rate limit exceeded                  |
-| 429  | stream_limit_exceeded   | Max concurrent streams reached       |
-| 500  | internal_error          | Server error                         |
+---
 
-Error Response Format:
+## Error Codes
+
+| HTTP | Code | Description |
+|------|------|-------------|
+| 400 | invalid_request | Malformed request or parameters |
+| 401 | unauthorized | API key missing or invalid |
+| 403 | forbidden | Feature requires higher tier |
+| 403 | tier_restricted | Endpoint not available on your tier |
+| 404 | not_found | Resource not found |
+| 429 | rate_limited | Too many requests |
+| 500 | internal_error | Server error |
+| 502 | upstream_error | Temporary issue fetching data |
+
+All errors follow this format:
+```json
 {
-  "error": "Human-readable error message",
-  "code": "machine_readable_code",
-  "required_tier": "pro",           // If tier_required
-  "upgrade_url": "https://...",     // Upgrade link
-  "retry_after": 30                 // If rate limited (seconds)
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid API key. Check that your key is correct and active.",
+    "docs": "https://sharpapi.io/docs/authentication"
+  }
 }
+```
 
-================================================================================
-DISCOVERY ENDPOINTS
-================================================================================
+---
 
-GET /sports
---------------------------------------------------------------------------------
-Returns list of available sports with event counts.
+## Supported Sportsbooks
 
-Authentication: Required (any tier)
-Rate Limit: Standard
+### Major US Books
+DraftKings, FanDuel, BetMGM, Caesars, Fanatics, BetRivers, Hard Rock Bet, theScore Bet, Bally Bet, Rebet
 
-Query Parameters: None
+### Sharp Books
+Pinnacle (reference for +EV calculations), Bookmaker, Circa Sports
 
-Example Request:
-  curl -H "X-API-Key: sk_test_free" https://sharpapi.io/api/v1/sports
+### Offshore / International
+Bet365, Bovada, BetOnline, Betway, Sky Bet, Unibet, Ladbrokes, Betfred, 1xBet, Stake, Cloudbet
 
-Example Response:
+### Exchanges
+ProphetX, Betfair, Novig
+
+### Prediction Markets
+Polymarket, Kalshi
+
+---
+
+## Standard Response Structure
+
+All endpoints return a consistent structure:
+
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "sports": [
+  "data": [...],
+  "meta": {
+    "count": 10,
+    "total": 150,
+    "books_available": ["draftkings", "fanduel"],
+    "books_returned": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {}
+  }
+}
+```
+
+### Common Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_abc123
+```
+
+---
+
+## API Reference: Reference Data Endpoints
+
+### GET /api/v1/sports
+
+Returns available sports with event counts.
+
+**Auth**: Optional (higher rate limits when authenticated)
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" https://api.sharpapi.io/api/v1/sports
+```
+
+**Response**:
+```json
+{
+  "data": [
     {
       "id": "basketball",
       "name": "Basketball",
-      "leagues": ["NBA", "NCAAB", "WNBA"],
-      "eventCount": 42,
-      "liveEventCount": 3
-    },
-    {
-      "id": "football",
-      "name": "Football",
-      "leagues": ["NFL", "NCAAF"],
-      "eventCount": 28,
-      "liveEventCount": 1
+      "slug": "basketball",
+      "active": true,
+      "event_count": 42,
+      "league_count": 3
     }
-  ]
+  ],
+  "meta": { "count": 8, "updated_at": "2026-01-26T10:00:00Z" }
 }
+```
 
-Response Fields:
-- id: Lowercase sport identifier for filtering
-- name: Display name
-- leagues: Array of league identifiers within the sport
-- eventCount: Total events with odds
-- liveEventCount: Currently in-play events
+---
 
---------------------------------------------------------------------------------
-GET /leagues
---------------------------------------------------------------------------------
-Returns leagues with filtering by sport.
+### GET /api/v1/leagues
 
-Authentication: Required (any tier)
-Rate Limit: Standard
+Returns available leagues with filtering.
 
-Query Parameters:
-| Parameter | Type   | Required | Description                    |
-|-----------|--------|----------|--------------------------------|
-| sport     | string | No       | Filter by sport (e.g., "nba")  |
+**Auth**: Optional
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport slug |
 
-Example Request:
-  curl -H "X-API-Key: sk_test_free" \
-    "https://sharpapi.io/api/v1/leagues?sport=basketball"
+**Example**:
+```
+curl "https://api.sharpapi.io/api/v1/leagues?sport=basketball"
+```
 
-Example Response:
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "filter": { "sport": "basketball" },
-  "leagues": [
+  "data": [
     {
       "id": "nba",
       "name": "NBA",
       "sport": "basketball",
-      "eventCount": 15,
-      "liveEventCount": 2
+      "active": true,
+      "event_count": 15
+    }
+  ],
+  "meta": { "count": 3 }
+}
+```
+
+---
+
+### GET /api/v1/sportsbooks
+
+Returns available sportsbooks with tier requirements and regional info.
+
+**Auth**: Optional
+
+**Response**:
+```json
+{
+  "data": [
+    {
+      "id": "draftkings",
+      "name": "DraftKings",
+      "slug": "draftkings",
+      "min_tier": "free",
+      "supported_sports": ["basketball", "football", "baseball", "hockey"],
+      "regions": ["US"],
+      "has_deep_links": true
+    }
+  ],
+  "meta": { "count": 30 }
+}
+```
+
+---
+
+### GET /api/v1/markets
+
+Returns available market types with categories and descriptions.
+
+**Auth**: Optional
+
+**Response**:
+```json
+{
+  "data": [
+    {
+      "id": "moneyline",
+      "name": "Moneyline",
+      "category": "main",
+      "description": "Straight win/lose bet",
+      "has_line": false,
+      "sports": ["basketball", "football", "baseball", "hockey"]
     },
     {
-      "id": "ncaab",
-      "name": "NCAAB",
-      "sport": "basketball",
-      "eventCount": 27,
-      "liveEventCount": 1
+      "id": "spread",
+      "name": "Spread",
+      "category": "main",
+      "description": "Point spread bet",
+      "has_line": true,
+      "sports": ["basketball", "football"]
     }
   ]
 }
+```
 
---------------------------------------------------------------------------------
-GET /events
---------------------------------------------------------------------------------
-Returns events with filtering, pagination, and optional odds inclusion.
+**Market category aliases** (use with `market` filter on odds endpoints):
+- `main` = moneyline, spread, total
+- `props` = player_prop, team_prop
+- `alts` = alternate_spread, alternate_total
 
-Authentication: Required (any tier)
-Rate Limit: Standard
+---
 
-Query Parameters:
-| Parameter     | Type    | Required | Default | Description                     |
-|---------------|---------|----------|---------|---------------------------------|
-| sports        | string  | No       | all     | Comma-separated sport filter    |
-| leagues       | string  | No       | all     | Comma-separated league filter   |
-| live          | boolean | No       | false   | Only live events if true        |
-| include_odds  | boolean | No       | false   | Include odds in response        |
-| limit         | integer | No       | 50      | Results per page (max 200)      |
-| offset        | integer | No       | 0       | Pagination offset               |
+### GET /api/v1/teams
 
-Example Request:
-  curl -H "X-API-Key: sk_test_free" \
-    "https://sharpapi.io/api/v1/events?sports=nba,nfl&limit=20"
+Search and lookup teams with aliases.
 
-Example Response:
+**Auth**: Required
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| q | string | No | Search query (min 2 chars) |
+| sport | string | No | Filter by sport |
+| league | string | No | Filter by league |
+| limit | integer | No | Max results (default 50, max 200) |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" "https://api.sharpapi.io/api/v1/teams?q=lakers&league=nba"
+```
+
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "pagination": {
-    "total": 43,
-    "limit": 20,
-    "offset": 0,
-    "hasMore": true
-  },
-  "filters": {
-    "sports": ["nba", "nfl"],
-    "leagues": "all",
-    "live": false
-  },
-  "events": [
+  "data": [
     {
-      "id": "evt_nba_lal_bos_20240115",
-      "externalIds": {
-        "draftkings": "12345",
-        "fanduel": "67890"
-      },
+      "id": "los-angeles-lakers",
+      "name": "Los Angeles Lakers",
+      "short_name": "LAL",
+      "aliases": ["LA Lakers", "Lakers", "LAL"],
       "sport": "basketball",
-      "league": "NBA",
-      "homeTeam": "Boston Celtics",
-      "awayTeam": "Los Angeles Lakers",
-      "startTime": "2024-01-15T19:30:00.000Z",
-      "status": "scheduled",
-      "isLive": false,
-      "markets": ["moneyline", "spread", "total", "player_prop"],
-      "bookCount": 5
+      "league": "nba"
     }
   ]
 }
+```
 
---------------------------------------------------------------------------------
-GET /events/live
---------------------------------------------------------------------------------
-Returns only live (in-play) events with scores.
+---
 
-Authentication: Required (any tier)
-Rate Limit: Standard
+## API Reference: Odds Endpoints
 
-Query Parameters:
-| Parameter | Type   | Required | Description                    |
-|-----------|--------|----------|--------------------------------|
-| sports    | string | No       | Comma-separated sport filter   |
-| leagues   | string | No       | Comma-separated league filter  |
+### GET /api/v1/odds
 
-Example Request:
-  curl -H "X-API-Key: sk_test_free" \
-    "https://sharpapi.io/api/v1/events/live?sports=nba"
+Returns current odds snapshot with filtering. Core endpoint.
 
-Example Response:
+**Auth**: Required (all tiers, Free has 60s delay)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport slug |
+| league | string | all | Filter by league slug (comma-separated) |
+| sportsbook | string | all | Filter by sportsbook slug (comma-separated) |
+| market | string | all | Market type or category alias |
+| event_id | string | — | Filter by event ID |
+| team | string | — | Filter by team name |
+| live | boolean | — | Only live events if true |
+| limit | integer | 50 | Results per page (max 200) |
+| offset | integer | 0 | Pagination offset (max 5000) |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings&market=moneyline"
+```
+
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T20:45:00.000Z",
-  "count": 3,
-  "events": [
+  "data": [
     {
-      "id": "evt_nba_lal_bos_20240115",
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sportsbook_name": "DraftKings",
       "sport": "basketball",
-      "league": "NBA",
-      "homeTeam": "Boston Celtics",
-      "awayTeam": "Los Angeles Lakers",
-      "startTime": "2024-01-15T19:30:00.000Z",
-      "status": "in_progress",
-      "isLive": true,
-      "liveScore": {
-        "home": 78,
-        "away": 72,
-        "period": "Q3",
-        "clock": "5:42"
-      },
-      "markets": ["moneyline", "spread", "total"],
-      "bookCount": 5
+      "league": "nba",
+      "event_id": "evt_nba_lal_bos_20260126",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "selection_type": "away",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "probability": 0.60,
+      "line": null,
+      "is_live": false,
+      "start_time": "2026-01-26T19:30:00Z",
+      "timestamp": "2026-01-26T10:15:00.000Z"
     }
-  ]
+  ],
+  "meta": {
+    "count": 1,
+    "total": 3095,
+    "books_available": ["draftkings", "fanduel"],
+    "books_returned": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": { "league": "nba", "sportsbook": "draftkings", "market": "moneyline" }
+  }
 }
+```
 
---------------------------------------------------------------------------------
-GET /events/{eventId}
---------------------------------------------------------------------------------
-Returns detailed information for a single event including all odds.
+---
 
-Authentication: Required (any tier)
-Rate Limit: Standard
+### GET /api/v1/odds/best
 
-Path Parameters:
-| Parameter | Type   | Required | Description          |
-|-----------|--------|----------|----------------------|
-| eventId   | string | Yes      | Event identifier     |
+Returns best available odds for each selection across all sportsbooks, with edge calculations.
 
-Example Request:
-  curl -H "X-API-Key: sk_test_free" \
-    "https://sharpapi.io/api/v1/events/evt_nba_lal_bos_20240115"
+**Auth**: Required (all tiers)
+**Parameters**: Same as GET /odds plus:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| include_all_books | boolean | false | Include odds from every book alongside the best |
 
-Example Response:
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/odds/best?league=nba&market=spread"
+```
+
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "event": {
-    "id": "evt_nba_lal_bos_20240115",
-    "sport": "basketball",
-    "league": "NBA",
-    "homeTeam": "Boston Celtics",
-    "awayTeam": "Los Angeles Lakers",
-    "startTime": "2024-01-15T19:30:00.000Z",
-    "status": "scheduled",
-    "isLive": false
-  },
-  "markets": {
-    "moneyline": [
-      {
+  "data": [
+    {
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "spread",
+      "selection": "Boston Celtics",
+      "selection_type": "home",
+      "line": -5.5,
+      "best_odds": {
         "sportsbook": "draftkings",
+        "odds_american": -108,
+        "odds_decimal": 1.926,
+        "probability": 0.519
+      },
+      "worst_odds": {
+        "sportsbook": "caesars",
+        "odds_american": -115,
+        "odds_decimal": 1.870,
+        "probability": 0.535
+      },
+      "edge": {
+        "best_vs_worst_cents": 7,
+        "best_vs_average_pct": 1.2
+      },
+      "all_books": [
+        {
+          "sportsbook": "draftkings",
+          "odds_american": -108,
+          "odds_decimal": 1.926,
+          "timestamp": "2026-01-26T10:15:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### GET /api/v1/odds/delta
+
+Returns odds that have changed since a given timestamp. Efficient for polling.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| since | string | **Yes** | ISO 8601 timestamp — only return odds updated after this time |
+| sport | string | No | Filter by sport |
+| league | string | No | Filter by league |
+| sportsbook | string | No | Filter by sportsbook |
+| market | string | No | Filter by market type |
+| limit | integer | No | Max results (default 50, max 200) |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/odds/delta?since=2026-01-26T10:00:00Z&league=nba"
+```
+
+**Response**:
+```json
+{
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "event_id": "evt_nba_lal_bos_20260126",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "odds_american": -155,
+      "odds_decimal": 1.645,
+      "previous_odds_american": -150,
+      "previous_odds_decimal": 1.667,
+      "direction": "shortened",
+      "change_cents": 5,
+      "timestamp": "2026-01-26T10:15:30Z",
+      "previous_timestamp": "2026-01-26T10:10:00Z"
+    }
+  ],
+  "meta": {
+    "since": "2026-01-26T10:00:00Z",
+    "server_time": "2026-01-26T10:16:00Z",
+    "count": 45,
+    "next_since": "2026-01-26T10:15:30Z"
+  }
+}
+```
+
+Use `meta.next_since` as the `since` parameter in your next request for efficient polling.
+
+---
+
+### GET /api/v1/odds/comparison
+
+Side-by-side odds comparison across sportsbooks with hold/vig calculations.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| event_id | string | **Yes** | Event ID to compare |
+| market | string | No | Market type filter (default: moneyline) |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/odds/comparison?event_id=evt_nba_lal_bos_20260126&market=moneyline"
+```
+
+**Response**:
+```json
+{
+  "data": {
+    "event_id": "evt_nba_lal_bos_20260126",
+    "event_name": "Los Angeles Lakers @ Boston Celtics",
+    "market_type": "moneyline",
+    "selections": [
+      {
         "selection": "Boston Celtics",
-        "odds": { "american": -180, "decimal": 1.556, "probability": 0.643 }
-      },
-      {
-        "sportsbook": "draftkings",
-        "selection": "Los Angeles Lakers",
-        "odds": { "american": +155, "decimal": 2.55, "probability": 0.392 }
+        "selection_type": "home",
+        "odds_by_book": {
+          "draftkings": { "american": -180, "decimal": 1.556, "timestamp": "2026-01-26T10:15:00Z" },
+          "fanduel": { "american": -175, "decimal": 1.571, "timestamp": "2026-01-26T10:14:55Z" },
+          "betmgm": { "american": -185, "decimal": 1.541, "timestamp": "2026-01-26T10:14:50Z" }
+        },
+        "best_book": "fanduel",
+        "best_american": -175,
+        "worst_book": "betmgm",
+        "worst_american": -185
       }
     ],
-    "spread": [...],
-    "total": [...]
-  },
-  "oddsCount": 48
-}
-
---------------------------------------------------------------------------------
-GET /events/search
---------------------------------------------------------------------------------
-Search events by team name.
-
-Authentication: Required (any tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type    | Required | Default | Description                   |
-|-----------|---------|----------|---------|-------------------------------|
-| q         | string  | Yes      | -       | Search query (min 2 chars)    |
-| live      | boolean | No       | false   | Only search live events       |
-| limit     | integer | No       | 20      | Max results (max 100)         |
-
-Example Request:
-  curl -H "X-API-Key: sk_test_free" \
-    "https://sharpapi.io/api/v1/events/search?q=lakers"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "query": "lakers",
-  "count": 3,
-  "events": [
-    {
-      "id": "evt_nba_lal_bos_20240115",
-      "sport": "basketball",
-      "league": "NBA",
-      "homeTeam": "Boston Celtics",
-      "awayTeam": "Los Angeles Lakers",
-      "startTime": "2024-01-15T19:30:00.000Z",
-      "isLive": false,
-      "matchedTeam": "Los Angeles Lakers",
-      "bookCount": 5
+    "hold_by_book": {
+      "draftkings": { "hold_pct": 4.2, "overround": 1.042 },
+      "fanduel": { "hold_pct": 3.8, "overround": 1.038 },
+      "betmgm": { "hold_pct": 4.5, "overround": 1.045 }
+    },
+    "best_combined_hold": {
+      "hold_pct": 1.2,
+      "books": ["fanduel", "draftkings"]
     }
-  ]
+  }
 }
+```
 
-================================================================================
-ODDS ENDPOINTS
-================================================================================
+---
 
-GET /odds
---------------------------------------------------------------------------------
-Returns current odds snapshot with filtering.
+### POST /api/v1/odds/batch
 
-Authentication: Required (any tier)
-Rate Limit: Standard
-Data Delay: Free tier has 5-second delay
+Fetch odds for multiple events in a single request.
 
-Query Parameters:
-| Parameter   | Type   | Required | Default | Description                        |
-|-------------|--------|----------|---------|------------------------------------|
-| sports      | string | No       | all     | Comma-separated sports             |
-| books       | string | No       | all     | Comma-separated sportsbooks        |
-| market_type | string | No       | all     | Filter by market type              |
-| event_ids   | string | No       | -       | Comma-separated event IDs (batch)  |
-| limit       | integer| No       | 100     | Max results (max 500)              |
+**Auth**: Required (all tiers)
+**Request body** (JSON):
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| event_ids | string[] | **Yes** | Array of event IDs |
+| sportsbook | string | No | Sportsbook filter |
+| market | string | No | Market type filter |
 
-Market Types:
-- moneyline
-- spread
-- total
-- team_total
-- player_prop
-- alternate_spread
-- alternate_total
-- futures
+**Batch limits by tier**: Free/Hobby: 10, Pro/Sharp: 50, Enterprise: 100
 
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/odds?sports=nba&market_type=moneyline"
+**Example**:
+```
+curl -X POST "https://api.sharpapi.io/api/v1/odds/batch" \
+  -H "X-API-Key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"event_ids": ["evt_nba_lal_bos_20260126", "evt_nba_gsw_mia_20260126"]}'
+```
 
-Example Response:
+**Response**:
+```json
 {
   "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "count": 24,
-  "filters": {
-    "sports": ["nba"],
-    "books": "all",
-    "marketType": "moneyline"
+  "data": {
+    "events": [
+      {
+        "event_id": "evt_nba_lal_bos_20260126",
+        "event_name": "Los Angeles Lakers @ Boston Celtics",
+        "sport": "basketball",
+        "league": "nba",
+        "start_time": "2026-01-26T19:30:00Z",
+        "is_live": false,
+        "odds": [
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Boston Celtics",
+            "selection_type": "home",
+            "odds_american": -210,
+            "odds_decimal": 1.476,
+            "line": null,
+            "timestamp": "2026-01-26T10:15:00.000Z"
+          }
+        ]
+      }
+    ],
+    "missing_events": []
   },
-  "odds": [
+  "meta": {
+    "requested": 2,
+    "found": 2,
+    "missing": 0,
+    "max_batch": 50
+  }
+}
+```
+
+---
+
+## API Reference: Events Endpoints
+
+### GET /api/v1/events
+
+Returns events with filtering and pagination.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league (comma-separated) |
+| live | boolean | — | Only live events if true |
+| date | string | — | Filter by date (YYYY-MM-DD) |
+| team | string | — | Filter by team name |
+| limit | integer | 50 | Results per page (max 200) |
+| offset | integer | 0 | Pagination offset |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/events?league=nba&limit=20"
+```
+
+**Response**:
+```json
+{
+  "data": [
     {
-      "id": "dk_nba_lal_bos_ml_home",
-      "sportsbook": "draftkings",
-      "sportsbookDisplayName": "DraftKings",
-      "eventId": "evt_nba_lal_bos_20240115",
-      "externalEventId": "12345",
+      "id": "evt_nba_lal_bos_20260126",
       "sport": "basketball",
-      "league": "NBA",
-      "homeTeam": "Boston Celtics",
-      "awayTeam": "Los Angeles Lakers",
-      "marketType": "moneyline",
-      "selection": "Boston Celtics",
-      "selectionType": "home",
-      "odds": {
-        "american": -180,
-        "decimal": 1.556,
-        "probability": 0.643
+      "league": "nba",
+      "home_team": "Boston Celtics",
+      "away_team": "Los Angeles Lakers",
+      "start_time": "2026-01-26T19:30:00Z",
+      "status": "scheduled",
+      "is_live": false,
+      "market_count": 12,
+      "book_count": 8
+    }
+  ],
+  "meta": {
+    "count": 15,
+    "total": 43,
+    "pagination": {
+      "limit": 20,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 20
+    }
+  }
+}
+```
+
+---
+
+### GET /api/v1/events/{eventId}
+
+Returns detailed info for a single event.
+
+**Auth**: Required (all tiers)
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/events/evt_nba_lal_bos_20260126"
+```
+
+**Response**:
+```json
+{
+  "data": {
+    "id": "evt_nba_lal_bos_20260126",
+    "sport": "basketball",
+    "league": "nba",
+    "home_team": "Boston Celtics",
+    "away_team": "Los Angeles Lakers",
+    "start_time": "2026-01-26T19:30:00Z",
+    "status": "scheduled",
+    "is_live": false,
+    "markets": ["moneyline", "spread", "total", "player_prop"],
+    "book_count": 8,
+    "odds_count": 156
+  }
+}
+```
+
+---
+
+### GET /api/v1/events/{eventId}/odds
+
+Returns all odds for a specific event.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sportsbook | string | all | Filter by sportsbook |
+| market | string | all | Filter by market type |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/events/evt_nba_lal_bos_20260126/odds?market=moneyline"
+```
+
+---
+
+### GET /api/v1/events/{eventId}/markets
+
+Returns available markets for a specific event with sportsbook coverage.
+
+**Auth**: Required (all tiers)
+
+**Response**:
+```json
+{
+  "data": {
+    "event_id": "evt_nba_lal_bos_20260126",
+    "markets": [
+      {
+        "market_type": "moneyline",
+        "category": "main",
+        "selection_count": 2,
+        "books_offering": ["draftkings", "fanduel", "betmgm"]
       },
-      "eventStartTime": "2024-01-15T19:30:00.000Z",
-      "timestamp": "2024-01-15T10:30:00.000Z",
-      "isLive": false,
-      "status": "scheduled"
-    }
-  ]
+      {
+        "market_type": "spread",
+        "category": "main",
+        "selection_count": 2,
+        "line": -5.5,
+        "books_offering": ["draftkings", "fanduel", "betmgm"]
+      }
+    ]
+  }
 }
+```
 
-Batch Requests (Pro: 10 events, Sharp: 50 events):
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/odds?event_ids=evt_1,evt_2,evt_3"
+---
 
---------------------------------------------------------------------------------
-GET /odds/best
---------------------------------------------------------------------------------
-Returns best available odds for each selection across all sportsbooks.
+## API Reference: Opportunities Endpoints
 
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
+### GET /api/v1/opportunities/ev
 
-Query Parameters:
-| Parameter   | Type   | Required | Default | Description                   |
-|-------------|--------|----------|---------|-------------------------------|
-| sports      | string | No       | all     | Comma-separated sports        |
-| market_type | string | No       | all     | Filter by market type         |
-| limit       | integer| No       | 100     | Max results (max 500)         |
+Returns +EV (positive expected value) opportunities. Uses Pinnacle as the sharp reference book.
 
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/odds/best?sports=nba&market_type=spread"
+**Auth**: Required (**Pro+ tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| sportsbook | string | all | Filter by soft book |
+| market | string | all | Market type or category |
+| min_ev | number | 0 | Minimum EV percentage |
+| max_ev | number | — | Maximum EV percentage |
+| min_odds | integer | — | Minimum American odds |
+| max_odds | integer | — | Maximum American odds |
+| sort | string | ev_pct | Sort field (ev_pct, odds, kelly, edge) |
+| order | string | desc | Sort order (asc, desc) |
+| limit | integer | 50 | Results per page (max 200) |
+| offset | integer | 0 | Pagination offset |
 
-Example Response:
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0&league=nba"
+```
+
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "count": 15,
-  "filters": {
-    "sports": ["nba"],
-    "marketType": "spread"
-  },
-  "bestOdds": [
+  "data": [
     {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
+      "opportunity_id": "opp_x1y2z3",
+      "type": "ev",
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "PHO Suns @ PHI 76ers",
       "sport": "basketball",
-      "league": "NBA",
-      "marketType": "spread",
-      "selection": "Boston Celtics",
-      "line": -6.5,
-      "bestOdds": {
+      "league": "nba",
+      "start_time": "2026-01-26T19:30:00Z",
+      "is_live": false,
+      "sportsbook": "draftkings",
+      "sportsbook_name": "DraftKings",
+      "market_type": "spread",
+      "selection": "PHO Suns -3.5",
+      "selection_type": "away",
+      "odds": {
         "american": -105,
         "decimal": 1.952,
         "probability": 0.512
       },
-      "bestBook": "fanduel",
-      "allBooks": [
-        { "book": "fanduel", "odds": -105, "line": -6.5 },
-        { "book": "draftkings", "odds": -110, "line": -6.5 },
-        { "book": "betmgm", "odds": -108, "line": -6.5 }
-      ],
-      "sharpOdds": {
-        "american": -108,
-        "decimal": 1.926,
-        "probability": 0.519
-      },
-      "sharpBook": "pinnacle",
-      "timestamp": "2024-01-15T10:30:00.000Z"
-    }
-  ]
-}
-
-================================================================================
-MARKET ENDPOINTS
-================================================================================
-
-GET /markets/types
---------------------------------------------------------------------------------
-Returns list of available market types.
-
-Authentication: Required (any tier)
-Rate Limit: Standard
-
-Example Request:
-  curl -H "X-API-Key: sk_test_free" https://sharpapi.io/api/v1/markets/types
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "marketTypes": [
-    {
-      "id": "moneyline",
-      "name": "Moneyline",
-      "description": "Bet on which team will win the game",
-      "hasLine": false,
-      "sports": ["basketball", "football", "hockey", "baseball", "soccer"]
-    },
-    {
-      "id": "spread",
-      "name": "Point Spread",
-      "description": "Bet on the margin of victory",
-      "hasLine": true,
-      "lineUnit": 0.5,
-      "sports": ["basketball", "football", "hockey", "baseball"]
-    },
-    {
-      "id": "total",
-      "name": "Total (Over/Under)",
-      "description": "Bet on combined score",
-      "hasLine": true,
-      "lineUnit": 0.5,
-      "sports": ["basketball", "football", "hockey", "baseball"]
-    },
-    {
-      "id": "player_prop",
-      "name": "Player Props",
-      "description": "Bet on individual player performance",
-      "hasLine": true,
-      "sports": ["basketball", "football", "hockey", "baseball"]
-    }
-  ]
-}
-
---------------------------------------------------------------------------------
-GET /markets/player-props
---------------------------------------------------------------------------------
-Returns player prop odds for events.
-
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                    |
-|-----------|--------|----------|---------|--------------------------------|
-| sports    | string | No       | all     | Comma-separated sports         |
-| event_id  | string | No       | -       | Filter by specific event       |
-| player    | string | No       | -       | Filter by player name          |
-| limit     | integer| No       | 100     | Max results (max 500)          |
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/markets/player-props?sports=nba&player=lebron"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "count": 24,
-  "filters": {
-    "sports": ["nba"],
-    "player": "lebron"
-  },
-  "playerProps": [
-    {
-      "id": "dk_lebron_pts_20240115",
-      "sportsbook": "draftkings",
-      "eventId": "evt_nba_lal_bos_20240115",
-      "sport": "basketball",
-      "league": "NBA",
-      "player": "LeBron James",
-      "team": "Los Angeles Lakers",
-      "propType": "points",
-      "selection": "Over",
-      "line": 26.5,
-      "odds": {
+      "sharp_odds": {
+        "book": "pinnacle",
         "american": -115,
-        "decimal": 1.87,
+        "decimal": 1.870,
         "probability": 0.535
       },
-      "eventStartTime": "2024-01-15T19:30:00.000Z",
-      "timestamp": "2024-01-15T10:30:00.000Z"
+      "ev_percentage": 4.35,
+      "edge": 0.023,
+      "kelly_fraction": 0.0218,
+      "kelly_half": 0.0109,
+      "recommended_stake_pct": 1.09,
+      "deep_link": "https://sportsbook.draftkings.com/...",
+      "detected_at": "2026-01-26T10:15:00Z"
     }
-  ]
-}
-
---------------------------------------------------------------------------------
-GET /markets/alternates
---------------------------------------------------------------------------------
-Returns alternate spread and total lines.
-
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                    |
-|-----------|--------|----------|---------|--------------------------------|
-| sports    | string | No       | all     | Comma-separated sports         |
-| event_id  | string | No       | -       | Filter by specific event       |
-| type      | string | No       | both    | "spread", "total", or "both"   |
-| limit     | integer| No       | 100     | Max results (max 500)          |
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/markets/alternates?event_id=evt_nba_lal_bos_20240115&type=spread"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "count": 42,
-  "filters": {
-    "eventId": "evt_nba_lal_bos_20240115",
-    "type": "spread"
-  },
-  "alternates": [
-    {
-      "id": "dk_lal_bos_altspread_1",
-      "sportsbook": "draftkings",
-      "eventId": "evt_nba_lal_bos_20240115",
-      "marketType": "alternate_spread",
-      "selection": "Boston Celtics",
-      "line": -10.5,
-      "odds": {
-        "american": +150,
-        "decimal": 2.50,
-        "probability": 0.40
-      },
-      "timestamp": "2024-01-15T10:30:00.000Z"
-    }
-  ]
-}
-
---------------------------------------------------------------------------------
-GET /markets/active
---------------------------------------------------------------------------------
-Returns summary of active markets across all events.
-
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description               |
-|-----------|--------|----------|---------|---------------------------|
-| sports    | string | No       | all     | Comma-separated sports    |
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/markets/active?sports=nba"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "summary": {
-    "totalMarkets": 1250,
-    "totalEvents": 45,
-    "byMarketType": {
-      "moneyline": 90,
-      "spread": 90,
-      "total": 90,
-      "player_prop": 650,
-      "alternate_spread": 165,
-      "alternate_total": 165
-    },
-    "bySport": {
-      "basketball": 1250
-    }
-  },
-  "markets": [
-    {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
-      "sport": "basketball",
-      "marketTypes": ["moneyline", "spread", "total", "player_prop"],
-      "oddsCount": 48,
-      "bookCount": 5
-    }
-  ]
-}
-
-================================================================================
-OPPORTUNITY ENDPOINTS
-================================================================================
-
-GET /ev
---------------------------------------------------------------------------------
-Returns +EV (Expected Value) betting opportunities.
-
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                    |
-|-----------|--------|----------|---------|--------------------------------|
-| sports    | string | No       | all     | Comma-separated sports         |
-| books     | string | No       | soft    | Target sportsbooks             |
-| min_ev    | number | No       | 2.0     | Minimum EV percentage          |
-| min_kelly | number | No       | 0.5     | Minimum Kelly percentage       |
-| limit     | integer| No       | 50      | Max results (max 200)          |
-
-How EV is Calculated:
-1. Sharp book (Pinnacle) odds are used as "true" probability
-2. No-vig fair odds: fairProb = impliedProb / totalImplied
-3. EV% = (fairProbability * decimalOdds - 1) * 100
-4. Kelly% = (p * b - q) / b, capped at 25%
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/ev?sports=nba&min_ev=3.0"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "summary": {
+  ],
+  "meta": {
+    "count": 12,
     "total": 12,
-    "avgEV": 4.2,
-    "avgKelly": 2.1,
-    "bySport": { "basketball": 8, "football": 4 }
-  },
-  "count": 12,
-  "opportunities": [
-    {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
-      "sport": "basketball",
-      "league": "NBA",
-      "marketType": "moneyline",
-      "sportsbook": "draftkings",
-      "selection": "Los Angeles Lakers",
-      "odds": +165,
-      "decimalOdds": 2.65,
-      "sharpOdds": +145,
-      "sharpDecimalOdds": 2.45,
-      "sharpBook": "pinnacle",
-      "fairProbability": 40.0,
-      "evPercent": 6.0,
-      "kellyPercent": 2.4,
-      "detectedAt": "2024-01-15T10:30:00.000Z"
-    }
-  ]
+    "sharp_book": "pinnacle",
+    "pagination": { "limit": 50, "offset": 0, "has_more": false, "next_offset": null },
+    "updated_at": "2026-01-26T10:15:00Z",
+    "filters": { "min_ev": 3.0, "league": "nba" }
+  }
 }
+```
 
---------------------------------------------------------------------------------
-GET /arbitrage
---------------------------------------------------------------------------------
-Returns cross-book arbitrage opportunities.
+**Key fields**:
+- `ev_percentage`: Expected value as a percentage (e.g., 4.35 = 4.35% edge)
+- `kelly_fraction`: Full Kelly criterion stake as fraction of bankroll
+- `kelly_half`: Half Kelly (more conservative, recommended)
+- `edge`: Raw probability edge (sharp probability - implied probability)
+- `sharp_odds`: Reference line from Pinnacle
 
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
+---
 
-Query Parameters:
-| Parameter  | Type   | Required | Default | Description                   |
-|------------|--------|----------|---------|-------------------------------|
-| sports     | string | No       | all     | Comma-separated sports        |
-| min_profit | number | No       | 0.5     | Minimum profit percentage     |
-| limit      | integer| No       | 50      | Max results (max 200)         |
+### GET /api/v1/opportunities/arbitrage
 
-How Arbitrage Works:
-1. Find best odds for each selection across all books
-2. Calculate implied probability: 1 / decimalOdds
-3. Sum all implied probabilities
-4. If total < 1.0, profit exists: profitPercent = (1/total - 1) * 100
-5. Calculate stake percentages for guaranteed profit
+Returns cross-book arbitrage opportunities with optimal stake calculations.
 
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/arbitrage?sports=nba&min_profit=1.0"
+**Auth**: Required (**Hobby+ tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| min_profit | number | 0 | Minimum profit percentage |
+| max_profit | number | — | Maximum profit percentage |
+| sportsbook | string | all | Include opps from this book |
+| market | string | all | Market type filter |
+| sort | string | profit_pct | Sort field |
+| limit | integer | 50 | Results per page (max 200) |
+| offset | integer | 0 | Pagination offset |
 
-Example Response:
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/opportunities/arbitrage?min_profit=1.0"
+```
+
+**Response**:
+```json
 {
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "summary": {
-    "total": 3,
-    "avgProfit": 1.8,
-    "bySport": { "basketball": 2, "football": 1 }
-  },
-  "count": 3,
-  "opportunities": [
+  "data": [
     {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
+      "opportunity_id": "arb_abc123",
+      "type": "arbitrage",
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
       "sport": "basketball",
-      "league": "NBA",
-      "marketType": "moneyline",
-      "profitPercent": 2.1,
-      "impliedTotal": 0.9794,
+      "league": "nba",
+      "market_type": "moneyline",
+      "profit_percentage": 2.35,
+      "total_implied_probability": 0.9765,
       "legs": [
         {
           "selection": "Boston Celtics",
+          "selection_type": "home",
           "sportsbook": "fanduel",
-          "odds": { "american": -175, "decimal": 1.571, "probability": 0.636 },
-          "stakePercent": 64.97
+          "sportsbook_name": "FanDuel",
+          "odds_american": -165,
+          "odds_decimal": 1.606,
+          "probability": 0.623,
+          "stake_percentage": 62.3,
+          "stake_amount": 623.00,
+          "payout": 1000.53,
+          "deep_link": "https://sportsbook.fanduel.com/..."
         },
         {
           "selection": "Los Angeles Lakers",
+          "selection_type": "away",
           "sportsbook": "draftkings",
-          "odds": { "american": +175, "decimal": 2.75, "probability": 0.364 },
-          "stakePercent": 35.03
+          "sportsbook_name": "DraftKings",
+          "odds_american": 185,
+          "odds_decimal": 2.85,
+          "probability": 0.351,
+          "stake_percentage": 37.7,
+          "stake_amount": 377.00,
+          "payout": 1074.45,
+          "deep_link": "https://sportsbook.draftkings.com/..."
         }
       ],
-      "detectedAt": "2024-01-15T10:30:00.000Z"
+      "detected_at": "2026-01-26T10:15:00Z"
     }
-  ]
-}
-
-Arbitrage Example Calculation:
-- Bet $64.97 on Celtics at 1.571: returns $102.07
-- Bet $35.03 on Lakers at 2.75: returns $96.33
-- Total stake: $100
-- Guaranteed return: $96.33 - $102.07
-- Profit: 2.1% regardless of outcome
-
---------------------------------------------------------------------------------
-GET /value-bets
---------------------------------------------------------------------------------
-Returns enhanced EV opportunities with confidence analysis.
-
-Authentication: Required (Pro+ tier)
-Rate Limit: Standard
-
-Query Parameters:
-| Parameter | Type   | Required | Default | Description                    |
-|-----------|--------|----------|---------|--------------------------------|
-| sports    | string | No       | all     | Comma-separated sports         |
-| books     | string | No       | soft    | Target sportsbooks             |
-| min_ev    | number | No       | 2.0     | Minimum EV percentage          |
-| min_kelly | number | No       | 0.5     | Minimum Kelly percentage       |
-| limit     | integer| No       | 50      | Max results (max 200)          |
-
-Additional Analysis:
-- Edge over sharp line
-- Combined value score (EV + Kelly weighted)
-- Confidence rating based on market depth
-- Market liquidity estimate
-- Time until event starts
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" \
-    "https://sharpapi.io/api/v1/value-bets?sports=nba&min_ev=3.0"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "summary": {
-    "total": 8,
-    "avgEV": 4.5,
-    "avgKelly": 2.2,
-    "highConfidence": 3,
-    "mediumConfidence": 4,
-    "lowConfidence": 1
-  },
-  "count": 8,
-  "valueBets": [
-    {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
-      "sport": "basketball",
-      "league": "NBA",
-      "marketType": "spread",
-      "sportsbook": "draftkings",
-      "selection": "Los Angeles Lakers +6.5",
-      "odds": -105,
-      "decimalOdds": 1.952,
-      "sharpOdds": -110,
-      "sharpDecimalOdds": 1.909,
-      "sharpBook": "pinnacle",
-      "fairProbability": 52.4,
-      "evPercent": 4.8,
-      "kellyPercent": 2.5,
-      "edgePercent": 2.2,
-      "combinedScore": 3.9,
-      "confidence": "high",
-      "marketLiquidity": "high",
-      "timeUntilStart": 28800,
-      "detectedAt": "2024-01-15T10:30:00.000Z"
-    }
-  ]
-}
-
-Confidence Calculation:
-- HIGH: EV >= 5% + Kelly >= 2% + 4+ books offering market
-- MEDIUM: EV >= 3% + Kelly >= 1% + 2+ books
-- LOW: Below medium thresholds
-
---------------------------------------------------------------------------------
-GET /middles
---------------------------------------------------------------------------------
-Detects middle opportunities in spread/total markets.
-
-Authentication: Required (Sharp tier only)
-Rate Limit: Standard
-
-What is a Middle?
-When different sportsbooks offer spread/total lines that create a gap where
-both bets could win. Example: Book A has Lakers -3.5, Book B has Celtics +5.5.
-If Lakers win by 4 or 5, both bets win.
-
-Query Parameters:
-| Parameter   | Type   | Required | Default | Description                  |
-|-------------|--------|----------|---------|------------------------------|
-| sports      | string | No       | all     | Comma-separated sports       |
-| min_gap     | number | No       | 1       | Minimum gap size             |
-| market_type | string | No       | both    | "spread", "total", or "both" |
-| limit       | integer| No       | 50      | Max results (max 200)        |
-
-Example Request:
-  curl -H "X-API-Key: sk_test_sharp" \
-    "https://sharpapi.io/api/v1/middles?sports=nba&min_gap=2"
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "summary": {
+  ],
+  "meta": {
+    "count": 5,
     "total": 5,
-    "avgMiddleSize": 2.3,
-    "avgBestCase": 85.0,
-    "byMarketType": { "spread": 3, "total": 2 }
-  },
-  "count": 5,
-  "middles": [
+    "reference_stake": 1000,
+    "pagination": { "limit": 50, "offset": 0, "has_more": false }
+  }
+}
+```
+
+**Key fields**:
+- `profit_percentage`: Guaranteed profit as % of total stake
+- `legs[]`: Each leg has stake calculations for a $1000 reference stake
+- `deep_link`: Direct link to place the bet on the sportsbook
+
+---
+
+### GET /api/v1/opportunities/middles
+
+Returns middle opportunities (bet both sides at different lines for a chance to win both).
+
+**Auth**: Required (**Pro+ tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| min_gap | number | 0 | Minimum line gap (points) |
+| market | string | all | Market type filter |
+| sort | string | gap | Sort field (gap, probability, ev) |
+| limit | integer | 50 | Max results |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/opportunities/middles?league=nba&min_gap=1"
+```
+
+**Response**:
+```json
+{
+  "data": [
     {
-      "eventId": "evt_nba_lal_bos_20240115",
-      "eventName": "Los Angeles Lakers @ Boston Celtics",
-      "sport": "basketball",
-      "league": "NBA",
-      "marketType": "spread",
-      "side1": {
-        "book": "draftkings",
-        "selection": "Boston Celtics",
-        "line": -4.5,
-        "odds": { "american": -110, "decimal": 1.909, "probability": 0.524 },
-        "stakePercent": 52.4
-      },
-      "side2": {
-        "book": "fanduel",
-        "selection": "Los Angeles Lakers",
-        "line": +7.5,
-        "odds": { "american": -110, "decimal": 1.909, "probability": 0.524 },
-        "stakePercent": 47.6
-      },
-      "middleSize": 3.0,
-      "middleNumbers": [5, 6, 7],
-      "worstCaseLoss": 4.8,
-      "bestCaseProfit": 90.9,
-      "breakEvenPercent": 5.0,
-      "detectedAt": "2024-01-15T10:30:00.000Z"
+      "opportunity_id": "mid_def456",
+      "type": "middle",
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "market_type": "spread",
+      "gap": 2.0,
+      "middle_probability": 12.5,
+      "worst_case_loss": -4.2,
+      "best_case_profit": 95.8,
+      "expected_value": 8.3,
+      "legs": [
+        {
+          "selection": "Boston Celtics -4.5",
+          "sportsbook": "draftkings",
+          "odds_american": -110,
+          "odds_decimal": 1.909,
+          "line": -4.5
+        },
+        {
+          "selection": "Los Angeles Lakers +6.5",
+          "sportsbook": "fanduel",
+          "odds_american": -108,
+          "odds_decimal": 1.926,
+          "line": 6.5
+        }
+      ]
     }
   ]
 }
+```
 
-Middle Outcome Scenarios:
-- Celtics win by 8+: Side1 wins, Side2 loses → Small loss
-- Celtics win by 5-7: BOTH win → Big profit
-- Lakers win or Celtics win by 1-4: Side1 loses, Side2 wins → Small loss
+---
 
-================================================================================
-STREAMING ENDPOINTS (SSE)
-================================================================================
+### GET /api/v1/opportunities/middles/summary
 
-Server-Sent Events (SSE) provide real-time updates without polling.
+Returns aggregated statistics for current middle opportunities.
 
-Connection Example (JavaScript):
+**Auth**: Required (**Pro+ tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+
+---
+
+### GET /api/v1/opportunities/low_hold
+
+Returns markets with the lowest combined vig/hold across books.
+
+**Auth**: Required (**Hobby+ tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| max_hold | number | 5.0 | Maximum hold percentage |
+| market | string | all | Market type filter |
+| sort | string | hold_pct | Sort field |
+| limit | integer | 50 | Max results |
+
+**Example**:
+```
+curl -H "X-API-Key: YOUR_KEY" \
+  "https://api.sharpapi.io/api/v1/opportunities/low_hold?league=nba&max_hold=2.0"
+```
+
+**Response**:
+```json
+{
+  "data": [
+    {
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "market_type": "moneyline",
+      "hold_pct": 1.2,
+      "overround": 1.012,
+      "best_combination": {
+        "home": { "sportsbook": "fanduel", "odds_american": -165, "probability": 0.623 },
+        "away": { "sportsbook": "draftkings", "odds_american": 160, "probability": 0.385 }
+      }
+    }
+  ]
+}
+```
+
+---
+
+## API Reference: Betting Splits
+
+### GET /api/v1/splits
+
+Returns public betting split data (handle % and ticket %) from sportsbooks that publish this data.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| sportsbook | string | all | Source sportsbook (draftkings, circa) |
+
+**Data sources**: DraftKings, Circa Sports (public handle/ticket percentages)
+
+---
+
+## API Reference: Live Game State
+
+### GET /api/v1/gamestate
+
+Returns live game state (scores, clock, period) for in-progress events.
+
+**Auth**: Required (**Enterprise tier**)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| event_id | string | — | Specific event |
+
+---
+
+## API Reference: Deep Links
+
+### GET /api/v1/deeplinks
+
+Generates deep links for direct bet placement on sportsbooks.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| sportsbook | string | **Yes** | Target sportsbook |
+| event_id | string | **Yes** | Event identifier |
+| market | string | No | Market type |
+| selection | string | No | Selection name |
+
+**Response**:
+```json
+{
+  "data": {
+    "sportsbook": "draftkings",
+    "event_id": "evt_nba_lal_bos_20260126",
+    "deep_link": "https://sportsbook.draftkings.com/event/...",
+    "fallback_url": "https://sportsbook.draftkings.com",
+    "supported": true
+  }
+}
+```
+
+---
+
+## API Reference: SSE Streaming
+
+### GET /api/v1/stream
+
+Server-Sent Events (SSE) stream for real-time odds updates.
+
+**Auth**: Required + **WebSocket add-on** ($99/mo on any paid tier)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| channel | string | **Required** | Channel: `odds`, `ev`, `arbitrage`, `all` |
+| sport | string | all | Filter by sport |
+| league | string | all | Filter by league |
+| sportsbook | string | all | Filter by sportsbook |
+| market | string | all | Filter by market type |
+| api_key | string | — | Auth via query param (for browser EventSource) |
+
+**Event types**:
+- `connected` — Stream established, includes `stream_id`
+- `snapshot` — Initial data dump
+- `odds:update` — Single odds change
+- `odds:batch` — Multiple odds changes batched
+- `ev:detected` — New +EV opportunity found
+- `ev:expired` — +EV opportunity no longer available
+- `arb:detected` — New arbitrage opportunity
+- `arb:expired` — Arbitrage opportunity closed
+- `heartbeat` — Keep-alive (every 30s)
+- `error` — Stream error
+
+**Example (JavaScript)**:
 ```javascript
 const eventSource = new EventSource(
-  'https://sharpapi.io/v1/stream?sports=nba',
-  { headers: { 'X-API-Key': 'sk_your_key' } }
+  'https://api.sharpapi.io/api/v1/stream?channel=all&api_key=YOUR_KEY'
 );
 
-eventSource.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Update:', data.type, data.data);
-};
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id } = JSON.parse(e.data);
+  console.log('Connected:', stream_id);
+});
 
-eventSource.onerror = (error) => {
-  console.error('Stream error:', error);
-  eventSource.close();
-};
-```
+eventSource.addEventListener('odds:update', (e) => {
+  const update = JSON.parse(e.data);
+  console.log('Odds update:', update.sportsbook, update.selection, update.odds_american);
+});
 
-Connection Example (curl):
-```bash
-curl -N -H "X-API-Key: sk_test_pro" \
-  "https://sharpapi.io/v1/stream?sports=nba"
-```
-
-Message Format:
-```
-data: {"type":"odds:update","timestamp":"2024-01-15T10:30:00.000Z","data":{...}}
-
-data: {"type":"heartbeat","timestamp":"2024-01-15T10:30:30.000Z"}
-```
-
---------------------------------------------------------------------------------
-GET /v1/stream
---------------------------------------------------------------------------------
-Unified real-time stream for odds, +EV, and arbitrage updates via Server-Sent Events.
-
-Authentication: Required (any tier with WebSocket add-on)
-Stream Limit: 10 concurrent
-
-Query Parameters:
-| Parameter  | Type   | Required | Default | Description                   |
-|------------|--------|----------|---------|-------------------------------|
-| sports     | string | No       | all     | Comma-separated sports        |
-| books      | string | No       | all     | Comma-separated sportsbooks   |
-| min_ev     | number | No       | 2.0     | Minimum EV percentage         |
-| min_profit | number | No       | 0.5     | Minimum arbitrage profit      |
-
-Event Types:
-- connected: Initial connection acknowledgment
-- initial: Full snapshot of current odds and opportunities
-- odds:update: Incremental odds changes
-- ev_opportunity: New or updated +EV opportunity
-- arbitrage: New or updated arbitrage opportunity
-- heartbeat: Keep-alive (every 30 seconds)
-- error: Error notification
-
-Example:
-```bash
-curl -N -H "X-API-Key: sk_test_pro" \
-  "https://sharpapi.io/v1/stream?sports=nba,nfl"
-```
-
-================================================================================
-USER ENDPOINTS
-================================================================================
-
-GET /user/stats
---------------------------------------------------------------------------------
-Returns API usage statistics for the authenticated user.
-
-Authentication: Required (any tier)
-Rate Limit: Standard
-
-Example Request:
-  curl -H "X-API-Key: sk_test_pro" https://sharpapi.io/api/v1/user/stats
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "stats": {
-    "keyId": "key_abc123",
-    "tier": "pro",
-    "usage": {
-      "requestsToday": 1250,
-      "requestsThisMonth": 28500,
-      "streamsActive": 2,
-      "streamsAllowed": 3
-    },
-    "limits": {
-      "requestsPerMinute": 1000,
-      "dataDelay": 0
-    }
-  },
-  "rateLimit": {
-    "limit": 1000,
-    "remaining": 875,
-    "reset": "2024-01-15T10:31:00.000Z"
-  },
-  "features": [
-    "odds",
-    "ev",
-    "arbitrage",
-    "streaming",
-    "player_props"
-  ],
-  "upgrade": {
-    "url": "https://sharpapi.io/pricing",
-    "nextTier": "sharp"
-  }
-}
-
-================================================================================
-REFERENCE ENDPOINTS
-================================================================================
-
-GET /books
---------------------------------------------------------------------------------
-Returns list of available sportsbooks.
-
-Authentication: Required (any tier)
-Rate Limit: Standard
-
-Example Request:
-  curl -H "X-API-Key: sk_test_free" https://sharpapi.io/api/v1/books
-
-Example Response:
-{
-  "success": true,
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "books": [
-    {
-      "id": "draftkings",
-      "name": "DraftKings",
-      "isSharp": false,
-      "regions": ["US"],
-      "features": ["live_betting", "player_props", "sgp"],
-      "oddsCount": 2500,
-      "lastUpdate": "2024-01-15T10:30:00.000Z"
-    },
-    {
-      "id": "pinnacle",
-      "name": "Pinnacle",
-      "isSharp": true,
-      "regions": ["EU", "LATAM", "APAC"],
-      "features": ["sharp_odds", "high_limits"],
-      "oddsCount": 1800,
-      "lastUpdate": "2024-01-15T10:30:00.000Z"
-    }
-  ]
-}
-
-Sportsbook Reference (15+ books):
-| ID          | Name           | Sharp | Region    | Notes              |
-|-------------|----------------|-------|-----------|--------------------|
-| draftkings  | DraftKings     | No    | US        | Most markets       |
-| fanduel     | FanDuel        | No    | US        | Good promos        |
-| betmgm      | BetMGM         | No    | US        | -                  |
-| caesars     | Caesars        | No    | US        | -                  |
-| espnbet     | ESPN Bet       | No    | US        | Formerly Barstool  |
-| fanatics    | Fanatics       | No    | US        | New entrant        |
-| betrivers   | BetRivers      | No    | US        | -                  |
-| pointsbet   | PointsBet      | No    | US        | -                  |
-| pinnacle    | Pinnacle       | YES   | Global    | Sharp reference    |
-| bet365      | Bet365         | No    | UK/EU/AU  | International      |
-| unibet      | Unibet         | No    | EU/US     | -                  |
-| hardrock    | Hard Rock Bet  | No    | US        | Regional           |
-| superbook   | SuperBook      | No    | US        | -                  |
-| wynnbet     | WynnBET        | No    | US        | -                  |
-| betfred     | Betfred        | No    | UK/US     | -                  |
-
-================================================================================
-REFERENCE DATA
-================================================================================
-
-SPORTS
---------------------------------------------------------------------------------
-| ID          | Name       | Leagues                           |
-|-------------|------------|-----------------------------------|
-| basketball  | Basketball | NBA, NCAAB, WNBA, EuroLeague     |
-| football    | Football   | NFL, NCAAF, CFL, XFL             |
-| hockey      | Hockey     | NHL, AHL, KHL                     |
-| baseball    | Baseball   | MLB, NPB, KBO                     |
-| soccer      | Soccer     | EPL, LaLiga, Serie A, Bundesliga  |
-| tennis      | Tennis     | ATP, WTA, Grand Slams            |
-| mma         | MMA        | UFC, Bellator, ONE, PFL          |
-| golf        | Golf       | PGA, LIV, DP World               |
-
-MARKET TYPES
---------------------------------------------------------------------------------
-| ID               | Name              | Has Line | Description              |
-|------------------|-------------------|----------|--------------------------|
-| moneyline        | Moneyline         | No       | Pick the winner          |
-| spread           | Point Spread      | Yes      | Margin of victory        |
-| total            | Total O/U         | Yes      | Combined score           |
-| team_total       | Team Total        | Yes      | Single team score        |
-| player_prop      | Player Props      | Yes      | Player statistics        |
-| alternate_spread | Alt Spread        | Yes      | Non-standard spread      |
-| alternate_total  | Alt Total         | Yes      | Non-standard total       |
-| futures          | Futures           | No       | Championship, MVP, etc.  |
-
-SELECTION TYPES
---------------------------------------------------------------------------------
-| Type          | Description                                    |
-|---------------|------------------------------------------------|
-| home          | Home team                                      |
-| away          | Away team                                      |
-| draw          | Tie/Draw (soccer)                              |
-| over          | Total over line                                |
-| under         | Total under line                               |
-| player        | Player prop selection                          |
-| other         | Other selection type                           |
-
-EVENT STATUS
---------------------------------------------------------------------------------
-| Status       | Description                                    |
-|--------------|------------------------------------------------|
-| scheduled    | Not yet started                                |
-| in_progress  | Currently live                                 |
-| suspended    | Temporarily paused                             |
-| completed    | Game finished                                  |
-| cancelled    | Game cancelled                                 |
-| postponed    | Game postponed                                 |
-
-================================================================================
-ODDS CONVERSION REFERENCE
-================================================================================
-
-American to Decimal:
-- Positive (+150): decimal = (american / 100) + 1 = 2.50
-- Negative (-150): decimal = (100 / |american|) + 1 = 1.667
-
-Decimal to Probability:
-- probability = 1 / decimal
-- Example: 2.50 decimal = 40% probability
-
-American to Probability:
-- Positive (+150): prob = 100 / (american + 100) = 40%
-- Negative (-150): prob = |american| / (|american| + 100) = 60%
-
-Common Odds Reference:
-| American | Decimal | Probability |
-|----------|---------|-------------|
-| -500     | 1.20    | 83.3%       |
-| -300     | 1.33    | 75.0%       |
-| -200     | 1.50    | 66.7%       |
-| -150     | 1.67    | 60.0%       |
-| -110     | 1.91    | 52.4%       |
-| +100     | 2.00    | 50.0%       |
-| +110     | 2.10    | 47.6%       |
-| +150     | 2.50    | 40.0%       |
-| +200     | 3.00    | 33.3%       |
-| +300     | 4.00    | 25.0%       |
-| +500     | 6.00    | 16.7%       |
-
-================================================================================
-BEST PRACTICES
-================================================================================
-
-1. AUTHENTICATION
-   - Use header authentication (X-API-Key) for security
-   - Never expose API keys in client-side code
-   - Use environment variables for key storage
-
-2. RATE LIMITING
-   - Monitor X-RateLimit-Remaining headers
-   - Implement exponential backoff on 429 responses
-   - Use batch endpoints to reduce request count
-   - Cache responses when appropriate
-
-3. STREAMING
-   - Implement reconnection logic with exponential backoff
-   - Handle heartbeat timeouts (reconnect if no message for 45s)
-   - Close connections properly when done
-   - Don't open multiple streams for same data
-
-4. ERROR HANDLING
-   - Always check for error responses
-   - Use the 'code' field for programmatic handling
-   - Log full error responses for debugging
-   - Implement graceful degradation
-
-5. DATA FRESHNESS
-   - Odds can change rapidly (seconds)
-   - Always check timestamps before placing bets
-   - Use streaming for time-sensitive applications
-   - Implement staleness detection (>30s = stale)
-
-6. CACHING
-   - Cache static data (sports, books, market types)
-   - Don't cache live odds > 5 seconds
-   - Use ETags for conditional requests
-   - Cache EV/arbitrage for 10-30 seconds
-
-================================================================================
-CODE EXAMPLES
-================================================================================
-
-JAVASCRIPT/TYPESCRIPT
---------------------------------------------------------------------------------
-
-```javascript
-// REST API Client
-const SHARP_API_BASE = 'https://sharpapi.io/api/v1';
-const API_KEY = process.env.SHARP_API_KEY;
-
-async function getOdds(sports = []) {
-  const params = new URLSearchParams();
-  if (sports.length) params.set('sports', sports.join(','));
-
-  const response = await fetch(
-    `${SHARP_API_BASE}/odds?${params}`,
-    { headers: { 'X-API-Key': API_KEY } }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`API Error: ${error.code}`);
-  }
-
-  return response.json();
-}
-
-// SSE Streaming with Reconnection
-function createOddsStream(sports, callbacks) {
-  let retries = 0;
-  const maxRetries = 5;
-  const baseDelay = 1000;
-
-  function connect() {
-    const url = new URL(`${SHARP_API_BASE}/v1/stream`);
-    if (sports.length) url.searchParams.set('sports', sports.join(','));
-
-    const eventSource = new EventSource(url, {
-      headers: { 'X-API-Key': API_KEY }
-    });
-
-    eventSource.onmessage = (event) => {
-      retries = 0; // Reset on successful message
-      const data = JSON.parse(event.data);
-
-      switch (data.type) {
-        case 'odds:update':
-          callbacks.onUpdate?.(data.data);
-          break;
-        case 'heartbeat':
-          callbacks.onHeartbeat?.(data);
-          break;
-      }
-    };
-
-    eventSource.onerror = () => {
-      eventSource.close();
-
-      if (retries < maxRetries) {
-        const delay = baseDelay * Math.pow(2, retries);
-        retries++;
-        setTimeout(connect, delay);
-      } else {
-        callbacks.onMaxRetries?.();
-      }
-    };
-
-    return eventSource;
-  }
-
-  return connect();
-}
-
-// Usage
-const stream = createOddsStream(['nba', 'nfl'], {
-  onUpdate: (odds) => console.log('New odds:', odds),
-  onHeartbeat: () => console.log('Connection alive'),
-  onMaxRetries: () => console.error('Stream disconnected')
+eventSource.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV: ${opp.selection} at ${opp.ev_percentage}% EV on ${opp.sportsbook}`);
 });
 ```
 
-PYTHON
---------------------------------------------------------------------------------
+---
 
-```python
-import requests
-from sseclient import SSEClient
-import json
-import os
+### WebSocket: wss://ws.sharpapi.io
 
-SHARP_API_BASE = 'https://sharpapi.io/api/v1'
-API_KEY = os.environ['SHARP_API_KEY']
+Full-duplex WebSocket streaming. Same data as SSE but with bidirectional communication.
 
-def get_ev_opportunities(sports=None, min_ev=2.0):
-    """Fetch +EV betting opportunities"""
-    params = {'min_ev': min_ev}
-    if sports:
-        params['sports'] = ','.join(sports)
-
-    response = requests.get(
-        f'{SHARP_API_BASE}/ev',
-        headers={'X-API-Key': API_KEY},
-        params=params
-    )
-    response.raise_for_status()
-    return response.json()
-
-def stream_arbitrage(sports=None, min_profit=0.5, callback=None):
-    """Stream arbitrage opportunities"""
-    params = {'min_profit': min_profit}
-    if sports:
-        params['sports'] = ','.join(sports)
-
-    url = f'{SHARP_API_BASE}/v1/stream'
-    response = requests.get(
-        url,
-        headers={'X-API-Key': API_KEY},
-        params=params,
-        stream=True
-    )
-
-    client = SSEClient(response)
-    for event in client.events():
-        data = json.loads(event.data)
-        if callback:
-            callback(data)
-        else:
-            print(f"[{data['type']}]", data.get('data', data))
-
-# Usage
-opportunities = get_ev_opportunities(['nba'], min_ev=3.0)
-for opp in opportunities['opportunities']:
-    print(f"{opp['selection']}: {opp['evPercent']}% EV at {opp['sportsbook']}")
-
-# Streaming (blocking)
-stream_arbitrage(['nba', 'nfl'], callback=lambda d: print(d))
+**Auth**: Send API key in first message after connection:
+```json
+{ "type": "auth", "api_key": "sk_live_your_key" }
 ```
 
-CURL EXAMPLES
---------------------------------------------------------------------------------
+**Subscribe to channels**:
+```json
+{ "type": "subscribe", "channels": ["odds", "ev", "arbitrage"] }
+```
+
+**Filter subscriptions**:
+```json
+{
+  "type": "subscribe",
+  "channels": ["odds"],
+  "filters": { "league": "nba", "sportsbook": "draftkings" }
+}
+```
+
+---
+
+## API Reference: Account Endpoints
+
+### GET /api/v1/account
+
+Returns current account information including subscription details.
+
+**Auth**: Required (all tiers)
+
+**Response**:
+```json
+{
+  "data": {
+    "id": "acct_abc123",
+    "email": "user@example.com",
+    "tier": "pro",
+    "rate_limit": 300,
+    "streams_limit": 0,
+    "books_available": ["draftkings", "fanduel", "betmgm", "caesars"],
+    "features": ["odds", "events", "arbitrage", "ev", "middles"],
+    "created_at": "2026-01-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+### GET /api/v1/account/usage
+
+Returns usage statistics for the current billing period.
+
+**Auth**: Required (all tiers)
+**Parameters**:
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| period | string | current | Billing period: `current`, `previous`, or YYYY-MM |
+
+**Response**:
+```json
+{
+  "data": {
+    "period": "2026-01",
+    "requests": {
+      "total": 15420,
+      "by_endpoint": {
+        "/odds": 8200,
+        "/opportunities/ev": 4100,
+        "/events": 3120
+      }
+    },
+    "streams": {
+      "total_connections": 42,
+      "total_duration_minutes": 1250
+    },
+    "rate_limits_hit": 3
+  }
+}
+```
+
+---
+
+### API Key Management
+
+**GET /api/v1/account/keys** — List all API keys
+**POST /api/v1/account/keys** — Create new API key
+**DELETE /api/v1/account/keys/{keyId}** — Delete API key
+**POST /api/v1/account/keys/{keyId}/rotate** — Rotate key (invalidates old, returns new)
+
+---
+
+### GET /api/v1/health
+
+Public health check endpoint (no auth required).
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-26T10:00:00Z",
+  "version": "2.0.0",
+  "uptime": "45d 12h 30m"
+}
+```
+
+---
+
+## Concepts
+
+### Odds Formats
+
+SharpAPI returns odds in multiple formats:
+- **American**: -150 (risk $150 to win $100) or +130 (risk $100 to win $130)
+- **Decimal**: 1.667 (total return per $1 wagered, including stake)
+- **Probability**: 0.60 (implied probability without vig)
+
+Conversion formulas:
+- American to Decimal: negative → 1 + (100 / |odds|), positive → 1 + (odds / 100)
+- Decimal to Probability: 1 / decimal
+- American to Probability: negative → |odds| / (|odds| + 100), positive → 100 / (odds + 100)
+
+### Expected Value (EV) Calculation
+
+EV% = ((fair_probability / implied_probability) - 1) * 100
+
+Where:
+- `fair_probability` = derived from Pinnacle's no-vig line
+- `implied_probability` = derived from the soft book's odds
+
+A positive EV% means the bet has a mathematical edge over the long run.
+
+### Kelly Criterion
+
+Optimal stake sizing:
+- Full Kelly: f = (bp - q) / b, where b = decimal odds - 1, p = true probability, q = 1 - p
+- Half Kelly (recommended): f / 2 — more conservative, lower variance
+
+### Arbitrage
+
+An arbitrage exists when the combined implied probability across books is < 100%, guaranteeing profit regardless of outcome. SharpAPI calculates optimal stake distribution for maximum guaranteed return.
+
+### Event Matching
+
+SharpAPI uses canonical event IDs (e.g., `evt_nba_lal_bos_20260126`) to match the same event across sportsbooks. This is handled automatically — you don't need to match events yourself.
+
+---
+
+## SDKs
+
+### TypeScript / JavaScript
+```
+npm install @sharpapi/client
+```
+```typescript
+import { SharpApiClient } from '@sharpapi/client';
+const client = new SharpApiClient('sk_live_your_key');
+const { data, meta } = await client.getOdds({ league: 'nba' });
+```
+
+### Python
+```
+pip install sharpapi
+```
+```python
+from sharpapi import SharpApiClient
+client = SharpApiClient("sk_live_your_key")
+odds = client.get_odds(league="nba")
+```
+
+### Other Languages
+Use the OpenAPI spec at https://docs.sharpapi.io/openapi.json to generate clients for Go, C#, Java, Rust, Ruby, PHP, Swift, Kotlin, and more using OpenAPI Generator.
+
+---
+
+## Quick Start
+
+1. Sign up at https://sharpapi.io/sign-up (free)
+2. Copy your API key from the dashboard
+3. Make your first request:
 
 ```bash
-# Get NBA moneyline odds
-curl -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/api/v1/odds?sports=nba&market_type=moneyline"
-
-# Find +EV opportunities > 3%
-curl -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/api/v1/ev?min_ev=3.0"
-
-# Search for Lakers games
-curl -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/api/v1/events/search?q=lakers"
-
-# Stream odds updates (use -N for no-buffer)
-curl -N -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/v1/stream?sports=nba"
-
-# Get usage statistics
-curl -H "X-API-Key: $SHARP_API_KEY" \
-  "https://sharpapi.io/api/v1/user/stats"
+curl -H "X-API-Key: YOUR_KEY" https://api.sharpapi.io/api/v1/odds?league=nba
 ```
 
-================================================================================
-COMING SOON
-================================================================================
+4. Explore opportunities:
+```bash
+# Arbitrage (Hobby+ tier)
+curl -H "X-API-Key: YOUR_KEY" https://api.sharpapi.io/api/v1/opportunities/arbitrage
 
-The following features are in development:
+# +EV bets (Pro+ tier)
+curl -H "X-API-Key: YOUR_KEY" https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0
+```
 
-ODDS MOVEMENTS (/odds/movements)
-- Historical line changes over time
-- Opening vs current line comparison
-- Movement velocity and direction
+---
 
-ODDS HISTORY (/odds/history)
-- Point-in-time odds snapshots
-- Historical data for backtesting
-- Closing line archive
+## Links
 
-RESULTS & GRADING (/results/*)
-- Final scores and outcomes
-- Automatic bet settlement
-- Performance tracking
-
-SAME-GAME PARLAYS (/markets/sgp)
-- SGP odds from DraftKings/FanDuel
-- Correlation analysis
-- True odds calculation
-
-WEBHOOKS (/webhooks)
-- Push notifications for opportunities
-- Custom filters and thresholds
-- Retry logic and delivery tracking
-
-USER PREFERENCES (/user/preferences)
-- Saved filters and settings
-- Favorite teams and sports
-- Notification preferences
-
-================================================================================
-SUPPORT
-================================================================================
-
-Documentation: https://docs.sharpapi.io
-Pricing: https://sharpapi.io/pricing
-API Status: https://status.sharpapi.io
-Support Email: support@sharpapi.io
-
-================================================================================
-END OF DOCUMENTATION
-================================================================================
+- Website: https://sharpapi.io
+- API Base URL: https://api.sharpapi.io/api/v1
+- Documentation: https://docs.sharpapi.io
+- OpenAPI Spec: https://docs.sharpapi.io/openapi.json
+- Sign Up: https://sharpapi.io/sign-up
+- Status Page: https://status.sharpapi.io
+- Contact: sales@sharpapi.io

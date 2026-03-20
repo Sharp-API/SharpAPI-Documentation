@@ -71,8 +71,12 @@ export default async function LangLayout({ children, params }) {
             }
             footer={
               <Footer>
-                {new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp
-                bettors.
+                <div style={{ textAlign: 'center' }}>
+                  <div>{new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp bettors.</div>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <a href="https://status.sharpapi.io" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Status</a>
+                  </div>
+                </div>
               </Footer>
             }
           >

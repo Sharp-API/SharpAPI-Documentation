@@ -10,6 +10,9 @@ export async function generateMetadata(props) {
   const ogTitle = metadata.title ? `${metadata.title} - SharpAPI Docs` : 'SharpAPI Docs'
   return {
     ...metadata,
+    alternates: {
+      canonical: `https://docs.sharpapi.io${path}`,
+    },
     openGraph: {
       title: ogTitle,
       description: metadata.description || 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',

@@ -1,5 +1,5 @@
 import { Footer, Layout, Navbar } from 'nextra-theme-docs'
-import { Head } from 'nextra/components'
+import { Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import Link from 'next/link'
 import { PostHogProvider } from '../../components/PostHogProvider'
@@ -56,6 +56,7 @@ export default async function LangLayout({ children, params }) {
         <PostHogProvider>
           <Layout
             pageMap={await getPageMap(`/${lang}`)}
+            search={<Search />}
             sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
             toc={{ backToTop: true }}
             feedback={{ content: null }}

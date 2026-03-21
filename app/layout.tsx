@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     siteName: 'SharpAPI Docs',
     images: [{ url: 'https://sharpapi.io/og-image.png', width: 1200, height: 630, alt: 'SharpAPI - Sports Betting Odds API' }],
   },
+  alternates: {
+    types: {
+      'text/plain': [
+        { url: 'https://docs.sharpapi.io/llms.txt', title: 'LLM-friendly documentation' },
+        { url: 'https://docs.sharpapi.io/llms-full.txt', title: 'LLM-friendly full documentation' },
+      ],
+    },
+  },
 }
 
 export default function RootLayout({ children }) {

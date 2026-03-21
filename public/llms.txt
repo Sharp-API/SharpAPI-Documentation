@@ -39,7 +39,7 @@
 
 ## Optional
 
-- [TypeScript SDK](https://docs.sharpapi.io/en/sdks/typescript): `npm install @sharpapi/client`
+- [TypeScript SDK](https://docs.sharpapi.io/en/sdks/typescript): `npm install @sharp-api/client`
 - [Python SDK](https://docs.sharpapi.io/en/sdks/python): `pip install sharpapi`
 - [Streaming Guide](https://docs.sharpapi.io/en/streaming/overview): SSE and WebSocket setup
 - [Arbitrage Concepts](https://docs.sharpapi.io/en/concepts/arbitrage): How arbitrage detection works

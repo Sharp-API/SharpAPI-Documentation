@@ -1567,7 +1567,7 @@
                     {
                       "id": "a1b2c3d4e5f67890",
                       "game_id": "nba-20260309-lal-bos",
-                      "ev_percent": 4.2,
+                      "ev_percentage": 4.2,
                       "odds_american": 135,
                       "odds_decimal": 2.35,
                       "no_vig_odds": 125,
@@ -1583,14 +1583,14 @@
                       "start_time": "2026-03-09T19:30:00Z",
                       "is_live": false,
                       "market_width": 6.5,
-                      "true_probability": 0.444,
+                      "fair_probability": 0.444,
                       "devig_method": "multiplicative",
-                      "devig_book": "pinnacle",
+                      "sharp_book": "pinnacle",
                       "external_event_id": "dk-123456",
                       "selection_id": "sel-789",
                       "detected_at": "2026-03-09T14:22:15Z",
                       "confidence_score": 78,
-                      "kelly_fraction": 0.031,
+                      "kelly_percent": 0.031,
                       "book_count": 8,
                       "arb_available": false,
                       "arb_profit": null,
@@ -2187,7 +2187,7 @@
                   "type": "string",
                   "description": "Server-Sent Events stream. Each event has `event:` type, `data:` JSON payload, and `id:` for reconnection."
                 },
-                "example": "event: connected\ndata: {\"filters\":{\"channel\":\"opportunities\",\"sport\":null},\"session_id\":\"abc123\"}\nid: 1709993400000-1\n\nevent: ev:detected\ndata: {\"id\":\"a1b2c3d4e5f67890\",\"ev_percent\":4.2,\"sportsbook\":\"draftkings\",\"selection\":\"Los Angeles Lakers\",\"market\":\"moneyline\",\"sport\":\"basketball\",\"league\":\"nba\"}\nid: 1709993400000-2\n\nevent: heartbeat\ndata: {\"ts\":1709993430000}\nid: 1709993430000-3\n"
+                "example": "event: connected\ndata: {\"filters\":{\"channel\":\"opportunities\",\"sport\":null},\"session_id\":\"abc123\"}\nid: 1709993400000-1\n\nevent: ev:detected\ndata: {\"id\":\"a1b2c3d4e5f67890\",\"ev_percentage\":4.2,\"sportsbook\":\"draftkings\",\"selection\":\"Los Angeles Lakers\",\"market\":\"moneyline\",\"sport\":\"basketball\",\"league\":\"nba\"}\nid: 1709993400000-2\n\nevent: heartbeat\ndata: {\"ts\":1709993430000}\nid: 1709993430000-3\n"
               }
             }
           },
@@ -4683,7 +4683,7 @@
         "required": [
           "id",
           "game_id",
-          "ev_percent",
+          "ev_percentage",
           "odds_american",
           "odds_decimal",
           "no_vig_odds",
@@ -4699,14 +4699,14 @@
           "start_time",
           "is_live",
           "market_width",
-          "true_probability",
+          "fair_probability",
           "devig_method",
-          "devig_book",
+          "sharp_book",
           "external_event_id",
           "selection_id",
           "detected_at",
           "confidence_score",
-          "kelly_fraction",
+          "kelly_percent",
           "book_count",
           "arb_available",
           "arb_profit",
@@ -4727,9 +4727,9 @@
             "type": "string",
             "nullable": true
           },
-          "ev_percent": {
+          "ev_percentage": {
             "type": "number",
-            "description": "Expected value percentage",
+            "description": "Expected value as a percentage (e.g., 4.2 = 4.2% EV)",
             "example": 4.2
           },
           "odds_american": {
@@ -4795,19 +4795,19 @@
             "nullable": true,
             "description": "Spread between best and worst odds across books"
           },
-          "true_probability": {
+          "fair_probability": {
             "type": "number",
             "nullable": true,
-            "description": "Devigged true probability"
+            "description": "No-vig (devigged) fair probability (0.0 to 1.0)"
           },
           "devig_method": {
             "type": "string",
             "description": "Method used to remove vig",
             "example": "multiplicative"
           },
-          "devig_book": {
+          "sharp_book": {
             "type": "string",
-            "description": "Sharp book used as reference",
+            "description": "Sharp book used as reference (e.g., pinnacle)",
             "example": "pinnacle"
           },
           "external_event_id": {
@@ -4829,7 +4829,7 @@
             "description": "Multi-factor confidence score (0-100)",
             "example": 78
           },
-          "kelly_fraction": {
+          "kelly_percent": {
             "type": "number",
             "nullable": true,
             "description": "Optimal bet fraction (0.0-1.0) from Kelly criterion"
@@ -5912,7 +5912,7 @@
               "decimal_odds": {
                 "type": "number"
               },
-              "ev_percent": {
+              "ev_percentage": {
                 "type": "number",
                 "nullable": true
               },
@@ -5920,7 +5920,7 @@
                 "type": "number",
                 "nullable": true
               },
-              "true_probability": {
+              "fair_probability": {
                 "type": "number",
                 "nullable": true
               },
@@ -5932,14 +5932,14 @@
                 "type": "number",
                 "nullable": true
               },
-              "kelly_fraction": {
+              "kelly_percent": {
                 "type": "number",
                 "nullable": true
               },
               "devig_method": {
                 "type": "string"
               },
-              "devig_book": {
+              "sharp_book": {
                 "type": "string"
               },
               "book_count": {

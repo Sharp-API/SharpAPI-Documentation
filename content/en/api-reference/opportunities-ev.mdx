@@ -13,7 +13,7 @@ GET /api/v1/opportunities/ev
 ```
 
 <Callout type="info">
-This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_fraction`, `fair_probability`) are now included in every response.
+This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_percent`, `fair_probability`) are now included in every response.
 </Callout>
 
 ## Authentication
@@ -38,7 +38,7 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `max_market_width` | number | — | Maximum market width |
 | `max_odds_age` | number | — | Maximum odds age in seconds. Filters out stale opportunities where the underlying odds are older than this threshold. |
 | `date_range` | string | — | Filter by event date: `today`, `tomorrow`, or `week`. Dates are evaluated in **US Eastern Time (ET)**. |
-| `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_fraction`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
+| `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_percent`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
 | `limit` | integer | 50 | Results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 
@@ -121,7 +121,7 @@ for opp in data['data']:
       "start_time": "2026-02-08T19:00:00Z",
       "is_live": false,
       "confidence_score": 87,
-      "kelly_fraction": 0.021,
+      "kelly_percent": 0.021,
       "book_count": 5,
       "arb_available": false,
       "arb_profit": null,
@@ -251,7 +251,7 @@ X-Request-Id: req_abc123def456
 | `start_time` | string\|null | ISO 8601 event start time |
 | `is_live` | boolean | Whether the event is currently live |
 | `confidence_score` | number | Multi-factor confidence score (0-100) |
-| `kelly_fraction` | number\|null | Kelly criterion optimal bet fraction (0.0 to 1.0) |
+| `kelly_percent` | number\|null | Kelly criterion optimal bet fraction (0.0 to 1.0) |
 | `book_count` | number | Number of sportsbooks offering this market |
 | `arb_available` | boolean | Whether an arbitrage exists on this market |
 | `arb_profit` | number\|null | Arbitrage profit percentage if available |
@@ -348,7 +348,7 @@ We recommend setting `min_ev=2` for most use cases. Marginal EV (below 2%) can b
 
 ## Kelly Criterion
 
-The `kelly_fraction` field tells you the optimal fraction of your bankroll to wager according to the Kelly criterion (0.0 to 1.0, e.g. `0.021` = 2.1%):
+The `kelly_percent` field tells you the optimal fraction of your bankroll to wager according to the Kelly criterion (0.0 to 1.0, e.g. `0.021` = 2.1%):
 
 ```
 Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1)
@@ -370,7 +370,7 @@ Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1
 ## Best Practices
 
 1. **Set a minimum EV threshold** - Use `min_ev=2` or higher to focus on meaningful edges
-2. **Use Kelly sizing** - Use `kelly_fraction` to determine bet size (multiply by bankroll)
+2. **Use Kelly sizing** - Use `kelly_percent` to determine bet size (multiply by bankroll)
 3. **Filter by confidence** - Use `confidence_score` to prioritize high-confidence opportunities
 4. **Monitor `market_width`** - Narrow markets (low width) indicate more efficient pricing and more reliable EV calculations
 5. **Act quickly** - +EV opportunities are fleeting; lines move fast

@@ -869,7 +869,7 @@ curl -H "X-API-Key: YOUR_KEY" \
       },
       "ev_percentage": 4.35,
       "edge": 0.023,
-      "kelly_fraction": 0.0218,
+      "kelly_percent": 0.0218,
       "kelly_half": 0.0109,
       "recommended_stake_pct": 1.09,
       "deep_link": "https://sportsbook.draftkings.com/...",
@@ -889,7 +889,7 @@ curl -H "X-API-Key: YOUR_KEY" \
 
 **Key fields**:
 - `ev_percentage`: Expected value as a percentage (e.g., 4.35 = 4.35% edge)
-- `kelly_fraction`: Full Kelly criterion stake as fraction of bankroll
+- `kelly_percent`: Full Kelly criterion stake as fraction of bankroll
 - `kelly_half`: Half Kelly (more conservative, recommended)
 - `edge`: Raw probability edge (sharp probability - implied probability)
 - `sharp_odds`: Reference line from Pinnacle
@@ -1366,12 +1366,12 @@ SharpAPI uses canonical event IDs (e.g., `evt_nba_lal_bos_20260126`) to match th
 
 ### TypeScript / JavaScript
 ```
-npm install @sharpapi/client
+npm install @sharp-api/client
 ```
 ```typescript
-import { SharpApiClient } from '@sharpapi/client';
-const client = new SharpApiClient('sk_live_your_key');
-const { data, meta } = await client.getOdds({ league: 'nba' });
+import { SharpAPI } from '@sharp-api/client';
+const api = new SharpAPI('sk_live_your_key');
+const { data } = await api.odds.get({ league: 'nba' });
 ```
 
 ### Python
@@ -1379,9 +1379,9 @@ const { data, meta } = await client.getOdds({ league: 'nba' });
 pip install sharpapi
 ```
 ```python
-from sharpapi import SharpApiClient
-client = SharpApiClient("sk_live_your_key")
-odds = client.get_odds(league="nba")
+from sharpapi import SharpAPI
+client = SharpAPI("sk_live_your_key")
+odds = client.odds.get(league="nba")
 ```
 
 ### Other Languages

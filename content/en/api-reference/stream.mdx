@@ -480,3 +480,12 @@ These close the connection. Handle them in `onerror`:
 8. **Monitor heartbeats** -- If no heartbeat arrives within 60 seconds, consider the connection stale and reconnect
 9. **Close unused streams** -- Each open stream counts against your concurrent limit
 10. **Use `Last-Event-ID`** -- Enables the server to replay missed events after a reconnection
+
+## Related Endpoints
+
+- [+EV Opportunities](/en/api-reference/opportunities-ev) - REST endpoint for EV data (streamed via `ev:detected`)
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) - REST endpoint for arbs (streamed via `arb:detected`)
+- [Low Hold Opportunities](/en/api-reference/opportunities-low-hold) - REST endpoint for low hold (streamed via `low_hold:detected`)
+- [Middles Summary](/en/api-reference/opportunities-middles-summary) - Aggregate middle stats for dashboard polling
+- [Game State](/en/api-reference/gamestate) - Live scores and game clock (Enterprise)
+- [WebSocket API](/en/api-reference/websocket) - Bidirectional alternative to SSE

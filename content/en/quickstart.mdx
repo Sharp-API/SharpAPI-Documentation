@@ -131,7 +131,7 @@ curl "https://api.sharpapi.io/api/v1/odds?market=moneyline,spread,total" \
 
 ## Find Value Bets
 
-Once you have a Pro subscription, you can find +EV opportunities:
+Once you have a Pro subscription, you can find [+EV opportunities](/en/concepts/ev-calculation):
 
 ```bash
 curl "https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0" \
@@ -211,8 +211,11 @@ eventSource.addEventListener('ev:detected', (e) => {
 ## Next Steps
 
 - [Get +EV Bets](/en/api-reference/opportunities-ev) - Find positive expected value opportunities
-- [Find Arbitrage](/en/api-reference/opportunities-arbitrage) - Detect risk-free profit opportunities
+- [Find Arbitrage](/en/api-reference/opportunities-arbitrage) - Detect risk-free profit opportunities ([learn how arbs work](/en/concepts/arbitrage))
+- [Low Hold Markets](/en/api-reference/opportunities-low-hold) - Find the tightest lines across books
 - [Stream Live](/en/streaming/overview) - Real-time updates via SSE
+- [TypeScript SDK](/en/sdks/typescript) - Full type safety and built-in streaming
+- [Python SDK](/en/sdks/python) - Pydantic models and async support
 - [Rate Limits](/en/authentication#rate-limits) - Understand usage limits
 - [Pricing](/en/pricing) - Compare plans and features
 

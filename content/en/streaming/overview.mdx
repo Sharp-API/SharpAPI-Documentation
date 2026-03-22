@@ -160,7 +160,7 @@ for event in client.events():
 | `ev:expired` | +EV opportunity no longer available |
 | `arb:detected` | New arbitrage opportunity found |
 | `arb:expired` | Arbitrage opportunity no longer available |
-| `middles:detected` | New middle opportunity found |
+| `middles:detected` | New middle opportunity found (see [Middles Summary](/en/api-reference/opportunities-middles-summary) for aggregated stats) |
 | `middles:expired` | Middle opportunity no longer available |
 | `low_hold:detected` | New low-hold opportunity found |
 | `low_hold:expired` | Low-hold opportunity no longer available |
@@ -186,3 +186,13 @@ Both protocols deliver the same event types and data payloads.
 - **[SSE Stream API Reference](/en/api-reference/stream)** -- Query parameters, event payloads, reconnection
 - **[WebSocket API Reference](/en/api-reference/websocket)** -- Connection lifecycle, message protocol, close codes
 - **[WebSocket Streaming Guide](/en/streaming/websocket)** -- Quick start, reconnection patterns, best practices
+
+## SDKs with Streaming Support
+
+- **[TypeScript SDK](/en/sdks/typescript)** -- Built-in SSE client with type-safe event handlers
+- **[Python SDK](/en/sdks/python)** -- Handler-based and iterator-based streaming patterns
+
+## Example Projects
+
+- [Arbitrage Scanner](/en/examples/arbitrage-scanner) -- Real-time arb detection with Discord alerts
+- [Value Betting Bot](/en/examples/value-betting) -- +EV alert bot for Discord/Telegram

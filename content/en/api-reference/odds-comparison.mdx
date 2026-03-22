@@ -17,7 +17,7 @@ GET /api/v1/odds/comparison
 Requires API key. Available to **all tiers**.
 
 <Callout type="info">
-The sportsbooks included in the comparison depend on your tier's book access. Free tier compares DraftKings and FanDuel; higher tiers include more books. See [Book Access by Tier](/api-reference/odds#book-access-by-tier).
+The sportsbooks included in the comparison depend on your tier's book access. Free tier compares DraftKings and FanDuel; higher tiers include more books. See [Book Access by Tier](/en/api-reference/odds#book-access-by-tier).
 </Callout>
 
 ## Query Parameters
@@ -25,7 +25,7 @@ The sportsbooks included in the comparison depend on your tier's book access. Fr
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `event` | string | **required** | Event ID to compare odds for |
-| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`). Supports category aliases — see [Odds: Market Category Aliases](/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds#market-category-aliases). |
 | `sportsbook` | string | all | Comma-separated sportsbook IDs to include |
 
 <Callout type="warning">
@@ -300,7 +300,7 @@ Compare `hold.best_available` vs individual book holds. A large gap means line s
 
 ## Related Endpoints
 
-- [Odds Snapshot](/api-reference/odds) - Get raw odds from individual sportsbooks
-- [Best Odds](/api-reference/odds-best) - Get just the best odds with consensus and hold
-- [Odds Delta](/api-reference/odds-delta) - Get only odds that changed since a given timestamp
-- [Batch Odds](/api-reference/odds-batch) - Fetch comparison data for multiple events at once
+- [Odds Snapshot](/en/api-reference/odds) - Get raw odds from individual sportsbooks
+- [Best Odds](/en/api-reference/odds-best) - Get just the best odds with consensus and hold
+- [Odds Delta](/en/api-reference/odds-delta) - Get only odds that changed since a given timestamp
+- [Batch Odds](/en/api-reference/odds-batch) - Fetch comparison data for multiple events at once

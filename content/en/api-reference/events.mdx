@@ -55,7 +55,7 @@ All responses include standard rate limit and metadata headers:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Canonical event identifier — the same for every sportsbook covering this event. Use as your primary key for cross-book matching. See [Event Matching](/concepts/event-matching). |
+| `id` | string | Canonical event identifier — the same for every sportsbook covering this event. Use as your primary key for cross-book matching. See [Event Matching](/en/concepts/event-matching). |
 | `external_ids` | object | Map of sportsbook ID to that book's native event ID (e.g., `{"draftkings": "33483153"}`). Use these for deep linking back to sportsbook pages. |
 | `sport` | string | Sport identifier (e.g., `basketball`, `football`) |
 | `league` | string | League slug (e.g., `nba`, `nfl`) |
@@ -346,11 +346,11 @@ The previous endpoints used **camelCase** field names (`homeTeam`, `awayTeam`, `
 
 The `id` field is a **canonical event identifier** — the same real-world event gets the same `id` regardless of which sportsbook it comes from. Use it as your primary key when building cross-book comparison tools. The `external_ids` field maps each sportsbook to its native event ID for deep linking.
 
-See [Event Matching](/concepts/event-matching) for full details on how canonical IDs work.
+See [Event Matching](/en/concepts/event-matching) for full details on how canonical IDs work.
 
 ## Related Endpoints
 
-- [Event Details](/api-reference/events-by-id) - Get full details for a single event
-- [Event Odds](/api-reference/events-odds) - Get all odds for a specific event
-- [Event Markets](/api-reference/events-markets) - Get available markets for an event
-- [Odds Snapshot](/api-reference/odds) - Get current odds across all events
+- [Event Details](/en/api-reference/events-by-id) - Get full details for a single event
+- [Event Odds](/en/api-reference/events-odds) - Get all odds for a specific event
+- [Event Markets](/en/api-reference/events-markets) - Get available markets for an event
+- [Odds Snapshot](/en/api-reference/odds) - Get current odds across all events

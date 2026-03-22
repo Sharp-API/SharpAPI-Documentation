@@ -38,7 +38,7 @@ All responses include standard rate limit and metadata headers:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Canonical event identifier — the same for every sportsbook covering this event. Use as your primary key for cross-book matching. See [Event Matching](/concepts/event-matching). |
+| `id` | string | Canonical event identifier — the same for every sportsbook covering this event. Use as your primary key for cross-book matching. See [Event Matching](/en/concepts/event-matching). |
 | `external_ids` | object | Map of sportsbook ID to that book's native event ID (e.g., `{ "draftkings": "12345", "fanduel": "67890" }`). Use these for deep linking back to sportsbook pages. |
 | `sport` | string | Sport identifier (e.g., `basketball`, `football`) |
 | `league` | string | League name (e.g., `NBA`, `NFL`) |
@@ -219,14 +219,14 @@ Single-resource responses wrap the object in `data` as a single object (not an a
 
 ## Use Cases
 
-- **Cross-book comparison** -- The canonical `id` is the same across all sportsbooks, so all odds returned are already matched to the same real-world event. See [Event Matching](/concepts/event-matching).
+- **Cross-book comparison** -- The canonical `id` is the same across all sportsbooks, so all odds returned are already matched to the same real-world event. See [Event Matching](/en/concepts/event-matching).
 - **Market analysis** -- See every available market type and how many books offer each
 - **Sharp reference** -- Compare soft book odds against Pinnacle (the sharp benchmark)
 - **Deep linking** -- Use `external_ids` to link users to a specific sportsbook's event page
 
 ## Related Endpoints
 
-- [Events](/api-reference/events) - List and search events
-- [Event Odds](/api-reference/events-odds) - Get paginated odds for this event
-- [Event Markets](/api-reference/events-markets) - Get available market types for this event
-- [Odds Snapshot](/api-reference/odds) - Get current odds across all events
+- [Events](/en/api-reference/events) - List and search events
+- [Event Odds](/en/api-reference/events-odds) - Get paginated odds for this event
+- [Event Markets](/en/api-reference/events-markets) - Get available market types for this event
+- [Odds Snapshot](/en/api-reference/odds) - Get current odds across all events

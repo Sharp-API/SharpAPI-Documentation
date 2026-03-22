@@ -25,7 +25,12 @@
     { "source": "/en/api-reference", "destination": "/en/api-reference/overview", "permanent": true },
     { "source": "/en/concepts", "destination": "/en/concepts/arbitrage", "permanent": true },
     { "source": "/en/sdks", "destination": "/en/sdks/typescript", "permanent": true },
-    { "source": "/en/examples", "destination": "/en/examples/arbitrage-scanner", "permanent": true }
+    { "source": "/en/examples", "destination": "/en/examples/arbitrage-scanner", "permanent": true },
+    { "source": "/en/openapi.json", "destination": "/openapi.json", "permanent": true },
+    { "source": "/en/llms.txt", "destination": "/llms.txt", "permanent": true },
+    { "source": "/en/llms-full.txt", "destination": "/llms-full.txt", "permanent": true },
+    { "source": "/en/robots.txt", "destination": "/robots.txt", "permanent": true },
+    { "source": "/en/sitemap.xml", "destination": "/sitemap.xml", "permanent": true }
   ],
   "rewrites": [
     { "source": "/ingest/static/:path*", "destination": "https://us-assets.i.posthog.com/static/:path*" },

@@ -23,7 +23,7 @@ Requires API key. **Pro tier or higher required.**
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated (e.g. `point_spread`, `total_points`). Supports category aliases — see [Odds: Market Category Aliases](/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filter by market type(s), comma-separated (e.g. `point_spread`, `total_points`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds#market-category-aliases). |
 | `min_size` | number | 0.5 | Minimum middle size in points |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
 | `max_odds_age` | number | — | Max odds age in seconds. Filters out stale opportunities. |
@@ -352,14 +352,14 @@ The `odds_age_seconds` field shows how old the underlying odds were when the mid
 2. **Watch for key numbers** — Middles containing NFL 3/7 or NHL/MLB/soccer 1 have elevated hit rates
 3. **Prioritize guaranteed profit** — Filter for `is_guaranteed_profit` to find risk-free opportunities
 4. **Check odds freshness** — Low `odds_age_seconds` means the lines are current and actionable
-5. **Combine with the summary endpoint** — Use [`/middles/summary`](/api-reference/opportunities-middles-summary) for dashboard overviews
+5. **Combine with the summary endpoint** — Use [`/middles/summary`](/en/api-reference/opportunities-middles-summary) for dashboard overviews
 6. **Act quickly** — Lines converge as books adjust, closing the middle window
-7. **Use streaming** — Subscribe to `middles:detected` events via [SSE](/api-reference/stream) or [WebSocket](/api-reference/websocket) for real-time alerts
+7. **Use streaming** — Subscribe to `middles:detected` events via [SSE](/en/api-reference/stream) or [WebSocket](/en/api-reference/websocket) for real-time alerts
 
 ## Related Endpoints
 
-- [Middles Summary](/api-reference/opportunities-middles-summary) — Aggregate statistics without the full list
-- [+EV Opportunities](/api-reference/opportunities-ev) — Positive expected value bets
-- [Arbitrage Opportunities](/api-reference/opportunities-arbitrage) — Guaranteed profit opportunities
-- [SSE Stream](/api-reference/stream) — Real-time `middles:detected` and `middles:expired` events
-- [Best Odds](/api-reference/odds-best) — Compare odds across all books
+- [Middles Summary](/en/api-reference/opportunities-middles-summary) — Aggregate statistics without the full list
+- [+EV Opportunities](/en/api-reference/opportunities-ev) — Positive expected value bets
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) — Guaranteed profit opportunities
+- [SSE Stream](/en/api-reference/stream) — Real-time `middles:detected` and `middles:expired` events
+- [Best Odds](/en/api-reference/odds-best) — Compare odds across all books

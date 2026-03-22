@@ -9,7 +9,7 @@ import { Callout, Tabs } from 'nextra/components'
 Real-time odds and opportunity updates via WebSocket at `wss://ws.sharpapi.io`.
 
 <Callout type="info">
-For full API documentation including all message types, schemas, and close codes, see the [WebSocket API Reference](/api-reference/websocket).
+For full API documentation including all message types, schemas, and close codes, see the [WebSocket API Reference](/en/api-reference/websocket).
 </Callout>
 
 ## SSE vs WebSocket
@@ -147,7 +147,7 @@ ws.onclose = (event) => {
 Reset `reconnectDelay` to `1000` on successful connection.
 
 <Callout type="info">
-The server keeps a 2-minute replay buffer. Pass `resume=true&from_seq=N` on reconnect to skip the full snapshot and replay only missed events. For longer outages, omit these params for a full snapshot. See [Reconnection with Replay](/api-reference/websocket#reconnection-with-replay) for details.
+The server keeps a 2-minute replay buffer. Pass `resume=true&from_seq=N` on reconnect to skip the full snapshot and replay only missed events. For longer outages, omit these params for a full snapshot. See [Reconnection with Replay](/en/api-reference/websocket#reconnection-with-replay) for details.
 </Callout>
 
 ## Close Codes
@@ -161,4 +161,4 @@ The server keeps a 2-minute replay buffer. Pass `resume=true&from_seq=N` on reco
 
 ## Full API Reference
 
-For complete documentation including all message schemas, error handling, and multi-language examples, see the [WebSocket API Reference](/api-reference/websocket).
+For complete documentation including all message schemas, error handling, and multi-language examples, see the [WebSocket API Reference](/en/api-reference/websocket).

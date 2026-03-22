@@ -28,7 +28,7 @@ Use the `server_time` from each response as the `since` value for your next requ
 | `sportsbook` | string | all | Comma-separated sportsbook IDs (e.g., `draftkings,fanduel`) |
 | `sport` | string | all | Filter by sport (e.g., `basketball`, `football`) |
 | `league` | string | all | Filter by league (e.g., `nba`, `nfl`) |
-| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`). Supports category aliases — see [Odds: Market Category Aliases](/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds#market-category-aliases). |
 | `event` | string | - | Filter by event ID |
 | `live` | boolean | false | Return only live/in-play events |
 | `sort` | string | - | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
@@ -184,7 +184,7 @@ X-Request-Id: req_delta_abc123
 
 ## Delta Response Schema
 
-The `data` array contains the same odds objects as the [`/odds`](/api-reference/odds) endpoint. Only odds updated after the `since` timestamp are included.
+The `data` array contains the same odds objects as the [`/odds`](/en/api-reference/odds) endpoint. Only odds updated after the `since` timestamp are included.
 
 The `meta` object includes two additional fields:
 
@@ -213,6 +213,6 @@ If no odds have changed since your `since` timestamp, the response will have an 
 
 ## Related Endpoints
 
-- [Odds Snapshot](/api-reference/odds) - Get the full current odds snapshot
-- [SSE Stream](/api-reference/stream) - Real-time push updates via Server-Sent Events
-- [WebSocket Stream](/api-reference/websocket) - Real-time push updates via WebSocket
+- [Odds Snapshot](/en/api-reference/odds) - Get the full current odds snapshot
+- [SSE Stream](/en/api-reference/stream) - Real-time push updates via Server-Sent Events
+- [WebSocket Stream](/en/api-reference/websocket) - Real-time push updates via WebSocket

@@ -7,7 +7,7 @@ import { Callout, Tabs } from 'nextra/components'
 # Other Languages
 
 <Callout type="info">
-We provide official SDKs for [TypeScript](/sdks/typescript) and [Python](/sdks/python). For all other languages, you can auto-generate a client from our OpenAPI spec or use the REST API directly.
+We provide official SDKs for [TypeScript](/en/sdks/typescript) and [Python](/en/sdks/python). For all other languages, you can auto-generate a client from our OpenAPI spec or use the REST API directly.
 </Callout>
 
 ## OpenAPI Spec
@@ -307,8 +307,8 @@ $json = curl_exec($ch);
 
 ## SSE Streaming
 
-SSE works with any language that supports `EventSource` or HTTP streaming. See the [streaming docs](/streaming/overview) for the event protocol.
+SSE works with any language that supports `EventSource` or HTTP streaming. See the [streaming docs](/en/streaming/overview) for the event protocol.
 
 <Callout type="warning">
-Auto-generated clients do **not** include SSE streaming support. For real-time streaming, use our [TypeScript SDK](/sdks/typescript) or implement the SSE protocol directly — it's just a long-lived HTTP GET with `text/event-stream` content type.
+Auto-generated clients do **not** include SSE streaming support. For real-time streaming, use our [TypeScript SDK](/en/sdks/typescript) or implement the SSE protocol directly — it's just a long-lived HTTP GET with `text/event-stream` content type.
 </Callout>

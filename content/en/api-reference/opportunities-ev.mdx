@@ -27,7 +27,7 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](/en/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | all | Filter by game/event ID(s), comma-separated |
 | `min_ev` | number | 0 | Minimum EV percentage threshold |
 | `max_ev` | number | — | Maximum EV percentage threshold |
@@ -379,7 +379,7 @@ Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1
 
 ## Related Endpoints
 
-- [Arbitrage Opportunities](/api-reference/opportunities-arbitrage) - Guaranteed profit across books
-- [Middles](/api-reference/opportunities-middles) - Line discrepancy opportunities
-- [Best Odds](/api-reference/odds-best) - Find the best price across all books
-- [EV Calculation Concepts](/concepts/ev-calculation) - Deep dive into the math
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) - Guaranteed profit across books
+- [Middles](/en/api-reference/opportunities-middles) - Line discrepancy opportunities
+- [Best Odds](/en/api-reference/odds-best) - Find the best price across all books
+- [EV Calculation Concepts](/en/concepts/ev-calculation) - Deep dive into the math

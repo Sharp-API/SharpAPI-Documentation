@@ -6,7 +6,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Middles Summary
 
-Get aggregate statistics for current middle opportunities without the full list. Uses the same underlying data as the [Middles](/api-reference/opportunities-middles) endpoint.
+Get aggregate statistics for current middle opportunities without the full list. Uses the same underlying data as the [Middles](/en/api-reference/opportunities-middles) endpoint.
 
 ```
 GET /api/v1/opportunities/middles/summary
@@ -193,7 +193,7 @@ Use the summary endpoint to power dashboard widgets showing middle opportunity c
 
 ### Polling vs Full Fetch
 
-Poll the summary endpoint at shorter intervals to detect when new opportunities appear, then fetch the full [Middles](/api-reference/opportunities-middles) endpoint only when the count changes.
+Poll the summary endpoint at shorter intervals to detect when new opportunities appear, then fetch the full [Middles](/en/api-reference/opportunities-middles) endpoint only when the count changes.
 
 ```javascript
 // Poll summary every 10 seconds
@@ -214,7 +214,7 @@ The summary endpoint is cached for 10 seconds and counts toward your rate limit 
 
 ## Related Endpoints
 
-- [Middles](/api-reference/opportunities-middles) — Full list of middle opportunities
-- [+EV Opportunities](/api-reference/opportunities-ev) — Positive expected value bets
-- [Arbitrage Opportunities](/api-reference/opportunities-arbitrage) — Guaranteed profit opportunities
-- [SSE Stream](/api-reference/stream) — Real-time `middles:detected` and `middles:expired` events
+- [Middles](/en/api-reference/opportunities-middles) — Full list of middle opportunities
+- [+EV Opportunities](/en/api-reference/opportunities-ev) — Positive expected value bets
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) — Guaranteed profit opportunities
+- [SSE Stream](/en/api-reference/stream) — Real-time `middles:detected` and `middles:expired` events

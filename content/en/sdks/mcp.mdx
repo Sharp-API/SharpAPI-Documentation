@@ -1,0 +1,152 @@
+---
+description: "Connect SharpAPI to AI assistants like Claude using the Model Context Protocol (MCP). Query live odds, find +EV opportunities, and compare sportsbooks through natural language."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# MCP Server (AI Assistants)
+
+<Callout type="info">
+SharpAPI includes a built-in MCP server at `https://api.sharpapi.io/mcp` — connect Claude Desktop, Claude Code, or any MCP-compatible AI assistant to query live odds and opportunities through natural language.
+</Callout>
+
+## What is MCP?
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) lets AI assistants call external tools directly. Instead of copying data from our API into a chat, your AI assistant can query SharpAPI in real-time:
+
+> *"Find me the best +EV opportunities in NBA right now"*
+>
+> *"Compare moneyline odds for the Lakers game across all sportsbooks"*
+>
+> *"What arbitrage opportunities are available in soccer?"*
+
+## Setup
+
+Add SharpAPI to your MCP client configuration:
+
+<Tabs items={['Claude Desktop', 'Claude Code', 'Other MCP Clients']}>
+<Tabs.Tab>
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "sharpapi": {
+      "type": "streamable-http",
+      "url": "https://api.sharpapi.io/mcp",
+      "headers": {
+        "X-API-Key": "sk_live_..."
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving.
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+Add to your Claude Code MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "sharpapi": {
+      "type": "streamable-http",
+      "url": "https://api.sharpapi.io/mcp",
+      "headers": {
+        "X-API-Key": "sk_live_..."
+      }
+    }
+  }
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+Any MCP client that supports Streamable HTTP transport can connect:
+
+- **Endpoint:** `POST https://api.sharpapi.io/mcp`
+- **Auth:** `X-API-Key` header, `Authorization: Bearer` header, or `api_key` query parameter
+- **Protocol:** JSON-RPC 2.0 over HTTP (MCP Streamable HTTP transport)
+- **Version:** `2025-03-26`
+
+</Tabs.Tab>
+</Tabs>
+
+## Available Tools
+
+The MCP server exposes 12 tools that map to SharpAPI's REST API:
+
+### Reference Data
+
+| Tool | Description |
+|------|-------------|
+| `get_sports` | List all sports with event and live counts |
+| `get_leagues` | List leagues, filterable by sport |
+| `get_sportsbooks` | List all sportsbooks with metadata |
+
+### Odds & Events
+
+| Tool | Description |
+|------|-------------|
+| `get_events` | Search events by sport, league, or team name |
+| `get_odds` | Get current odds with filters |
+| `get_best_odds` | Best odds across all books for each selection |
+| `compare_odds` | Side-by-side odds comparison for an event |
+
+### Opportunities
+
+| Tool | Description | Min Tier |
+|------|-------------|----------|
+| `find_ev_opportunities` | +EV bets using Pinnacle as reference | Pro |
+| `find_arbitrage` | Cross-book arbitrage with stake sizing | Hobby |
+| `find_middles` | Middle opportunities (win both sides) | Pro |
+| `find_low_hold` | Tightest lines across books | All |
+
+### Account
+
+| Tool | Description |
+|------|-------------|
+| `get_account_info` | Your tier, rate limits, and features |
+
+## Sportsbook Access by Tier
+
+Odds, best odds, and comparison results are automatically filtered to the sportsbooks your tier can access:
+
+| Tier | Books | Examples |
+|------|-------|---------|
+| **Free** | 2 | DraftKings, FanDuel |
+| **Hobby** | 5 | + BetMGM, Caesars, Fanatics |
+| **Pro** | 15 | + Pinnacle, Bet365, BetOnline, ... |
+| **Sharp** | All 30+ | Every sportsbook |
+| **Enterprise** | All 30+ | + Futures, Historical, Gamestate |
+
+## Rate Limits
+
+Each MCP tool call counts as one API request against your tier's rate limit. The initial handshake (initialize + tools/list) costs 2-3 requests — this happens once per session.
+
+| Tier | Requests/min |
+|------|-------------|
+| Free | 12 |
+| Hobby | 120 |
+| Pro | 300 |
+| Sharp | 1,000 |
+| Enterprise | 10,000 |
+
+Use `get_account_info` to check your current usage and limits.
+
+## Example Conversations
+
+Once connected, you can ask your AI assistant questions like:
+
+- *"What sports have live events right now?"*
+- *"Show me NBA odds for tonight's games on DraftKings"*
+- *"Find arbitrage opportunities in soccer with at least 1% profit"*
+- *"Compare the odds for the Chiefs game across all books"*
+- *"What's my current API tier and how many requests do I have left?"*
+
+The AI will automatically call the appropriate SharpAPI tools and present the results in a readable format.

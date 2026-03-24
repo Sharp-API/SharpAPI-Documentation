@@ -75,7 +75,7 @@ export default async function LangLayout({ children, params }) {
                 <div style={{ textAlign: 'center' }}>
                   <div>{new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp bettors.</div>
                   <div style={{ marginTop: '0.5rem' }}>
-                    <a href="https://status.sharpapi.io" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Status</a>
+                    <a href="https://status.sharpapi.io/en/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Status</a>
                   </div>
                 </div>
               </Footer>

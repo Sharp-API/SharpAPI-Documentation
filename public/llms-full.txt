@@ -1417,5 +1417,5 @@ curl -H "X-API-Key: YOUR_KEY" https://api.sharpapi.io/api/v1/opportunities/ev?mi
 - Documentation: https://docs.sharpapi.io
 - OpenAPI Spec: https://docs.sharpapi.io/openapi.json
 - Sign Up: https://sharpapi.io/sign-up
-- Status Page: https://status.sharpapi.io
+- Status Page: https://status.sharpapi.io/en/
 - Contact: sales@sharpapi.io

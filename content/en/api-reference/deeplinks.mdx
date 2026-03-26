@@ -12,140 +12,18 @@ Generate sportsbook deep links from odds IDs or opportunity hash IDs. Deep links
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/v1/deeplinks` | Get deep links for a single opportunity |
 | `POST` | `/api/v1/deeplinks/batch` | Get deep links for up to 500 IDs |
 | `GET` | `/api/v1/deeplink/{id}` | Redirect to a sportsbook (public, no auth) |
 
 ## Authentication
 
-Requires API key for `GET /deeplinks` and `POST /deeplinks/batch`. Available to **Hobby tier and above**.
+Requires API key for `POST /deeplinks/batch`. Available to **Hobby tier and above**.
 
 The redirect endpoint (`GET /deeplink/{id}`) is **public** and does not require authentication — the opaque ID prevents enumeration.
 
 <Callout type="info">
 The `id` parameter accepts both **odds IDs** (from `/odds`, `/odds/best`) and **opportunity hash IDs** (from [+EV](/en/api-reference/opportunities-ev), [Arbitrage](/en/api-reference/opportunities-arbitrage), [Middles](/en/api-reference/opportunities-middles), and [Low Hold](/en/api-reference/opportunities-low-hold) endpoints). Odds IDs resolve to market-specific links; opportunity hash IDs resolve to event-level links.
 </Callout>
-
----
-
-## Get Deep Links
-
-```
-GET /api/v1/deeplinks
-```
-
-Returns deep links for a single opportunity, keyed by sportsbook.
-
-### Query Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `id` | string | **required** | Opportunity hash ID (16-character hex string, e.g., `77b0749a1faae425`) |
-| `state` | string | `pa` | US state code for state-specific sportsbook URLs (e.g., `nj`, `ny`, `il`) |
-
-### Example Requests
-
-<Tabs items={['cURL', 'JavaScript', 'Python']}>
-  <Tabs.Tab>
-```bash
-curl -X GET "https://api.sharpapi.io/api/v1/deeplinks?id=77b0749a1faae425&state=nj" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
-  </Tabs.Tab>
-  <Tabs.Tab>
-```javascript
-const response = await fetch(
-  'https://api.sharpapi.io/api/v1/deeplinks?id=77b0749a1faae425&state=nj',
-  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
-);
-const { data } = await response.json();
-
-for (const [book, url] of Object.entries(data.deep_links)) {
-  console.log(`${book}: ${url}`);
-}
-```
-  </Tabs.Tab>
-  <Tabs.Tab>
-```python
-import requests
-
-response = requests.get(
-    'https://api.sharpapi.io/api/v1/deeplinks',
-    params={'id': '77b0749a1faae425', 'state': 'nj'},
-    headers={'X-API-Key': 'YOUR_API_KEY'}
-)
-result = response.json()
-
-for book, url in result['data']['deep_links'].items():
-    print(f"{book}: {url}")
-```
-  </Tabs.Tab>
-</Tabs>
-
-### Response
-
-#### Success (200)
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "77b0749a1faae425",
-    "deep_links": {
-      "draftkings": "https://sportsbook.draftkings.com/event/12345?outcomes=abc123",
-      "fanduel": "https://nj.sportsbook.fanduel.com/addToBetslip?marketId=m456&selectionId=s789"
-    }
-  },
-  "meta": {
-    "updated_at": "2026-02-11T12:00:15.000Z"
-  }
-}
-```
-
-#### Error Responses
-
-***400 Invalid ID format***
-```json
-{
-  "error": {
-    "code": "invalid_request",
-    "message": "Invalid id format. Expected 16-character hex string."
-  }
-}
-```
-
-***403 Tier restricted***
-```json
-{
-  "error": {
-    "code": "tier_restricted",
-    "message": "Deep links requires hobby tier or higher",
-    "tier": "free",
-    "required_tier": "hobby"
-  }
-}
-```
-
-***404 Not found***
-```json
-{
-  "error": {
-    "code": "not_found",
-    "message": "Deep link not found for this opportunity"
-  }
-}
-```
-
-### Response Headers
-
-```
-X-RateLimit-Limit: 120
-X-RateLimit-Remaining: 119
-X-RateLimit-Reset: 1737853200
-X-Data-Delay: 0
-X-Request-Id: req_dl_abc123
-Cache-Control: public, s-maxage=10, max-age=5
-```
 
 ---
 
@@ -359,14 +237,6 @@ If the `fallback` query parameter is provided and the ID is not found, the endpo
 
 ## Deep Link Schema
 
-### Single Response
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | The opportunity hash ID |
-| `data.deep_links` | object | Map of sportsbook ID to deep link URL |
-| `meta.updated_at` | string | ISO 8601 timestamp of the opportunity data |
-
 ### Batch Response
 
 | Field | Type | Description |
@@ -380,6 +250,8 @@ Deep links are available for 21 of 28 sportsbooks. State-specific books use the 
 
 | Sportsbook | Deep Link Support | State-Specific |
 |-----------|-----------|----------------|
+| bet365 | Yes | No |
+| bet365 UK | Yes | No |
 | DraftKings | Yes | No |
 | FanDuel | Yes | No |
 | BetMGM | Yes | No |
@@ -404,7 +276,7 @@ Deep links are available for 21 of 28 sportsbooks. State-specific books use the 
 
 The following sportsbooks do not currently support deep links. IDs for these books will return `null` in the batch response:
 
-bet365, bet365 UK, Bet105, Bookmaker, Fliff, Rebet, SABA
+Bet105, Bookmaker, Fliff, Rebet, SABA
 
 ## Related Endpoints
 

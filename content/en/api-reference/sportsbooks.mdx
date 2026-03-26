@@ -12,7 +12,6 @@ Get a list of available sportsbooks and their current status, including which ti
 
 ```
 GET /api/v1/sportsbooks
-GET /api/v1/sportsbooks/{bookId}
 ```
 
 <Callout type="info">
@@ -292,80 +291,6 @@ for book in result['data']:
 }
 ```
 
-## Get Single Sportsbook
-
-```
-GET /api/v1/sportsbooks/{bookId}
-```
-
-Retrieve details for a specific sportsbook, including supported sports and market types.
-
-### Example Request
-
-<Tabs items={['cURL', 'JavaScript', 'Python']}>
-  <Tabs.Tab>
-```bash
-curl -X GET "https://api.sharpapi.io/api/v1/sportsbooks/draftkings"
-```
-  </Tabs.Tab>
-  <Tabs.Tab>
-```javascript
-const response = await fetch(
-  'https://api.sharpapi.io/api/v1/sportsbooks/draftkings'
-);
-const { data } = await response.json();
-console.log(`${data.display_name} covers ${data.sports.length} sports`);
-```
-  </Tabs.Tab>
-  <Tabs.Tab>
-```python
-import requests
-
-response = requests.get('https://api.sharpapi.io/api/v1/sportsbooks/draftkings')
-book = response.json()['data']
-print(f"{book['display_name']} covers {len(book['sports'])} sports")
-```
-  </Tabs.Tab>
-</Tabs>
-
-### Response
-
-```json
-{
-  "data": {
-    "id": "draftkings",
-    "name": "draftkings",
-    "display_name": "DraftKings",
-    "has_live_odds": true,
-    "has_player_props": true,
-    "regions": ["US"],
-    "is_sharp": false,
-    "status": "active",
-    "event_count": 1250,
-    "last_update": "2026-01-26T02:24:58.000Z",
-    "requires_tier": null,
-    "sports": ["basketball", "football", "baseball", "hockey", "soccer", "tennis", "mma", "golf"],
-    "markets": ["moneyline", "spread", "total", "player_prop", "team_prop", "game_prop", "first_half", "first_quarter"]
-  },
-  "meta": {
-    "updated_at": "2026-01-26T02:25:00.000Z"
-  }
-}
-```
-
-### Error Response
-
-***404 Not Found***
-```json
-{
-  "error": {
-    "code": "not_found",
-    "message": "Sportsbook 'bovada' not found",
-    "docs": "https://sharpapi.io/docs/api-reference/sportsbooks"
-  }
-}
-```
-
 ## Sportsbook Object Schema
 
 | Field | Type | Description |
@@ -381,8 +306,6 @@ print(f"{book['display_name']} covers {len(book['sports'])} sports")
 | `event_count` | integer | Number of events currently available |
 | `last_update` | string | ISO 8601 timestamp of last data update |
 | `requires_tier` | string \| null | Minimum tier required: `null` (free), `hobby`, `pro`, `sharp` |
-| `sports` | string[] | Supported sport IDs (single book endpoint only) |
-| `markets` | string[] | Supported market type IDs (single book endpoint only) |
 
 <Callout type="warning">
 The `event_count` may be 0 and `last_update` may be `null` if a sportsbook is temporarily unavailable or experiencing data delays.

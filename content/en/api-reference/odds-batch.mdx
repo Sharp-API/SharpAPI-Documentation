@@ -140,7 +140,7 @@ if result['data']['missing_events']:
             "odds_american": -210,
             "odds_decimal": 1.476,
             "line": null,
-            "timestamp": "2026-01-26T10:15:00.000Z"
+            "last_seen_at": "2026-01-26T10:15:00.000Z"
           },
           {
             "sportsbook": "draftkings",
@@ -150,7 +150,7 @@ if result['data']['missing_events']:
             "odds_american": 175,
             "odds_decimal": 2.75,
             "line": null,
-            "timestamp": "2026-01-26T10:15:00.000Z"
+            "last_seen_at": "2026-01-26T10:15:00.000Z"
           }
         ]
       },
@@ -170,7 +170,7 @@ if result['data']['missing_events']:
             "odds_american": -130,
             "odds_decimal": 1.769,
             "line": null,
-            "timestamp": "2026-01-26T10:15:05.000Z"
+            "last_seen_at": "2026-01-26T10:15:05.000Z"
           }
         ]
       }
@@ -209,7 +209,7 @@ X-Request-Id: req_batch_abc123
   "error": {
     "code": "invalid_request",
     "message": "Batch limit exceeded. Your tier (hobby) allows 10 events per batch, but 25 were requested.",
-    "docs": "https://sharpapi.io/docs/api-reference/odds-batch"
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
   }
 }
 ```
@@ -220,7 +220,7 @@ X-Request-Id: req_batch_abc123
   "error": {
     "code": "invalid_request",
     "message": "The 'event_ids' field is required and must be a non-empty array of event IDs.",
-    "docs": "https://sharpapi.io/docs/api-reference/odds-batch"
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
   }
 }
 ```
@@ -231,7 +231,7 @@ X-Request-Id: req_batch_abc123
   "error": {
     "code": "unauthorized",
     "message": "Invalid or missing API key",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```
@@ -289,7 +289,7 @@ Each item in the `data.events` array is an event object with nested odds:
 | `odds_american` | number | American odds |
 | `odds_decimal` | number | Decimal odds |
 | `line` | number \| null | Line value |
-| `timestamp` | string | When odds were last updated |
+| `last_seen_at` | string | When odds were last seen/updated |
 
 ## Use Cases
 

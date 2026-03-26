@@ -30,7 +30,7 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
-| `sort` | string | — | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
+| `sort` | string | — | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `odds_probability`) |
 | `fields` | string | all | Comma-separated field names to include in response (e.g., `id,sportsbook,odds_american`) |
 | `min_odds` | number | — | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | — | Maximum American odds filter (e.g., `+200`) |
@@ -133,7 +133,6 @@ if result['meta']['pagination']['has_more']:
     {
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
-      "sportsbook_name": "DraftKings",
       "event_id": "33483153",
       "sport": "basketball",
       "league": "nba",
@@ -144,16 +143,15 @@ if result['meta']['pagination']['has_more']:
       "selection_type": "away",
       "odds_american": -150,
       "odds_decimal": 1.667,
-      "probability": 0.60,
+      "odds_probability": 0.60,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "timestamp": "2026-01-26T02:10:24.125Z",
+      "last_seen_at": "2026-01-26T02:10:24.125Z",
       "is_live": false
     },
     {
       "id": "draftkings_33483153_moneyline_PHI",
       "sportsbook": "draftkings",
-      "sportsbook_name": "DraftKings",
       "event_id": "33483153",
       "sport": "basketball",
       "league": "nba",
@@ -164,10 +162,10 @@ if result['meta']['pagination']['has_more']:
       "selection_type": "home",
       "odds_american": 130,
       "odds_decimal": 2.30,
-      "probability": 0.4348,
+      "odds_probability": 0.4348,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "timestamp": "2026-01-26T02:10:24.125Z",
+      "last_seen_at": "2026-01-26T02:10:24.125Z",
       "is_live": false
     }
   ],
@@ -218,7 +216,7 @@ X-Request-Id: req_abc123def456
   "error": {
     "code": "unauthorized",
     "message": "Invalid or missing API key",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```
@@ -229,7 +227,7 @@ X-Request-Id: req_abc123def456
   "error": {
     "code": "tier_restricted",
     "message": "Sportsbook 'pinnacle' requires Sharp tier or higher",
-    "docs": "https://sharpapi.io/docs/pricing"
+    "docs": "https://docs.sharpapi.io/en/pricing"
   }
 }
 ```
@@ -240,7 +238,7 @@ X-Request-Id: req_abc123def456
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded. Retry after 45 seconds.",
-    "docs": "https://sharpapi.io/docs/authentication#rate-limits"
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
   }
 }
 ```
@@ -251,7 +249,6 @@ X-Request-Id: req_abc123def456
 |-------|------|-------------|
 | `id` | string | Unique odds identifier |
 | `sportsbook` | string | Sportsbook ID (e.g., `draftkings`) |
-| `sportsbook_name` | string | Display name (e.g., `DraftKings`) |
 | `event_id` | string | Event identifier |
 | `sport` | string | Sport slug (e.g., `basketball`, `football`) |
 | `league` | string | League slug (e.g., `nba`, `nfl`) |
@@ -262,10 +259,10 @@ X-Request-Id: req_abc123def456
 | `selection_type` | string | `home`, `away`, `over`, `under` |
 | `odds_american` | number | American odds (e.g., -110, +150) |
 | `odds_decimal` | number | Decimal odds (e.g., 1.909) |
-| `probability` | number | Implied probability (e.g., 0.5238) |
+| `odds_probability` | number | Implied probability (e.g., 0.5238) |
 | `line` | number \| null | Spread or total line value (`null` for moneyline) |
 | `event_start_time` | string | ISO 8601 event start time |
-| `timestamp` | string | ISO 8601 timestamp when odds were last updated |
+| `last_seen_at` | string | ISO 8601 timestamp when odds were last seen/updated |
 | `is_live` | boolean | Whether the event is currently live |
 | `player_name` | string\|undefined | Player name (player prop markets only) |
 | `stat_category` | string\|undefined | Stat category, e.g. `points`, `rebounds` (player prop markets only) |
@@ -284,8 +281,8 @@ Use the `sort` parameter to order results by any field. Prefix with `-` for desc
 curl "https://api.sharpapi.io/api/v1/odds?league=nba&sort=-odds_american" \
   -H "X-API-Key: YOUR_API_KEY"
 
-# Sort by probability (ascending)
-curl "https://api.sharpapi.io/api/v1/odds?league=nba&sort=probability" \
+# Sort by odds_probability (ascending)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&sort=odds_probability" \
   -H "X-API-Key: YOUR_API_KEY"
 
 # Sort by event start time
@@ -293,7 +290,7 @@ curl "https://api.sharpapi.io/api/v1/odds?sort=event_start_time" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
-Valid sort fields: `odds_american`, `odds_decimal`, `probability`, `event_start_time`, `timestamp`, `sportsbook`, `league`, `sport`.
+Valid sort fields: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `last_seen_at`, `sportsbook`, `league`, `sport`.
 
 ## Field Selection
 
@@ -356,15 +353,14 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
         {
           "id": "draftkings_33483153_moneyline_PHO",
           "sportsbook": "draftkings",
-          "sportsbook_name": "DraftKings",
           "market_type": "moneyline",
           "selection": "PHO Suns",
           "selection_type": "away",
           "odds_american": -150,
           "odds_decimal": 1.667,
-          "probability": 0.60,
+          "odds_probability": 0.60,
           "line": null,
-          "timestamp": "2026-01-26T02:10:24.125Z"
+          "last_seen_at": "2026-01-26T02:10:24.125Z"
         }
       ]
     }

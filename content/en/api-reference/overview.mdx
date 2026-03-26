@@ -37,7 +37,7 @@ This spec covers all endpoints, request/response schemas, and authentication req
 
 ## Endpoint Summary
 
-SharpAPI exposes 27 routes across 5 namespaces plus reference and health endpoints.
+SharpAPI exposes 33 routes across 6 namespaces plus reference and health endpoints.
 
 ### Odds
 
@@ -88,12 +88,23 @@ SharpAPI exposes 27 routes across 5 namespaces plus reference and health endpoin
 | Method | Path | Auth | Min Tier |
 |--------|------|------|----------|
 | `GET` | `/api/v1/sports` | No | - |
-| `GET` | `/api/v1/sports/:sportId` | No | - |
 | `GET` | `/api/v1/leagues` | No | - |
 | `GET` | `/api/v1/sportsbooks` | No | - |
-| `GET` | `/api/v1/sportsbooks/:bookId` | No | - |
 | `GET` | `/api/v1/markets` | No | - |
 | `GET` | `/api/v1/teams` | No | - |
+
+### Enterprise
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/futures` | Yes | Enterprise |
+| `GET` | `/api/v1/futures/odds` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/odds/movements` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/odds/closing` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/opportunities` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/opportunities/:id` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/summary` | Yes | Enterprise |
+| `GET` | `/api/v1/historical/clv` | Yes | Enterprise |
 
 ### Health
 
@@ -114,7 +125,6 @@ All successful responses wrap data in a consistent envelope:
     {
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
-      "sportsbook_name": "DraftKings",
       "sport": "basketball",
       "home_team": "PHI 76ers",
       "away_team": "PHO Suns",
@@ -122,7 +132,7 @@ All successful responses wrap data in a consistent envelope:
       "selection": "PHO Suns",
       "odds_american": -150,
       "odds_decimal": 1.667,
-      "probability": 0.60,
+      "odds_probability": 0.60,
       "is_live": false
     }
   ],
@@ -191,7 +201,7 @@ All errors follow a consistent format:
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded. Upgrade your plan or wait 45 seconds.",
-    "docs": "https://sharpapi.io/docs/authentication#rate-limits"
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
   }
 }
 ```
@@ -285,7 +295,7 @@ All odds are returned as flat fields on each odds object:
 {
   "odds_american": -110,
   "odds_decimal": 1.909,
-  "probability": 0.5238
+  "odds_probability": 0.5238
 }
 ```
 
@@ -293,7 +303,7 @@ All odds are returned as flat fields on each odds object:
 |-------|---------|-------------|
 | `odds_american` | -110, +150 | Standard US format |
 | `odds_decimal` | 1.909, 2.50 | Multiplier format |
-| `probability` | 0.5238 | Implied probability (0 to 1) |
+| `odds_probability` | 0.5238 | Implied probability (0 to 1) |
 
 ## Error Codes
 

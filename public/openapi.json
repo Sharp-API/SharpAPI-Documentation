@@ -2746,7 +2746,7 @@
       "post": {
         "operationId": "batchDeepLinks",
         "summary": "Batch deep link lookup",
-        "description": "Returns deep links for multiple opportunity IDs. Requires **Hobby** tier or higher.",
+        "description": "Returns redirect paths for multiple odds IDs or opportunity hash IDs. Resolved IDs return a redirect path, unresolvable IDs return null. Requires **Hobby** tier or higher.",
         "tags": [
           "Deep Links"
         ],
@@ -2763,10 +2763,9 @@
                   "ids": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{16}$"
+                      "type": "string"
                     },
-                    "maxItems": 50
+                    "maxItems": 500
                   },
                   "state": {
                     "type": "string",
@@ -2776,8 +2775,8 @@
               },
               "example": {
                 "ids": [
-                  "a1b2c3d4e5f67890",
-                  "b2c3d4e5f6789012"
+                  "17336125542407",
+                  "77b0749a1faae425"
                 ],
                 "state": "nj"
               }
@@ -2786,30 +2785,32 @@
         },
         "responses": {
           "200": {
-            "description": "Deep links for each opportunity",
+            "description": "Redirect paths for each ID",
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
-                    },
-                    {
+                  "type": "object",
+                  "properties": {
+                    "data": {
                       "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "object",
-                          "additionalProperties": {
-                            "type": "object",
-                            "additionalProperties": {
-                              "type": "string",
-                              "format": "uri"
-                            }
-                          }
-                        }
+                      "additionalProperties": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Redirect path (e.g. /api/v1/deeplink/{id}) or null if unavailable"
                       }
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
                     }
-                  ]
+                  }
+                },
+                "example": {
+                  "data": {
+                    "17336125542407": "/api/v1/deeplink/17336125542407",
+                    "77b0749a1faae425": null
+                  },
+                  "updated_at": "2026-02-11T12:00:15.000Z"
                 }
               }
             }

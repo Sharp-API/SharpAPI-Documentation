@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3002",
-    "build": "next build && node scripts/fix-locale-links.mjs",
+    "build": "next build && node scripts/fix-locale-links.mjs && pagefind --site out --output-subdir _pagefind",
     "start": "next start"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/node": "25.4.0",
     "@types/react": "19.2.14",
+    "pagefind": "^1.4.0",
     "typescript": "5.9.3"
   }
 }

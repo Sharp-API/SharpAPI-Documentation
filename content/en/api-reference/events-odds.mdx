@@ -61,7 +61,7 @@ All responses include standard rate limit and metadata headers:
 | `odds.american` | number | American odds (e.g., -110, +150) |
 | `odds.decimal` | number | Decimal odds (e.g., 1.909) |
 | `odds.probability` | number | Implied probability (e.g., 0.5238) |
-| `timestamp` | string | ISO 8601 timestamp of when these odds were last updated |
+| `last_seen_at` | string | ISO 8601 timestamp of when these odds were last seen/updated |
 
 ## Example Requests
 
@@ -218,9 +218,9 @@ print(f"Fetched all {len(all_odds)} odds")
       "odds": {
         "american": -180,
         "decimal": 1.556,
-        "probability": 0.643
+        "odds_probability": 0.643
       },
-      "timestamp": "2026-02-08T12:05:00Z"
+      "last_seen_at": "2026-02-08T12:05:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_ml_away",
@@ -233,9 +233,9 @@ print(f"Fetched all {len(all_odds)} odds")
       "odds": {
         "american": 155,
         "decimal": 2.55,
-        "probability": 0.392
+        "odds_probability": 0.392
       },
-      "timestamp": "2026-02-08T12:05:00Z"
+      "last_seen_at": "2026-02-08T12:05:00Z"
     },
     {
       "id": "pin_evt_nba_bos_lal_20260208_ml_home",
@@ -248,9 +248,9 @@ print(f"Fetched all {len(all_odds)} odds")
       "odds": {
         "american": -175,
         "decimal": 1.571,
-        "probability": 0.636
+        "odds_probability": 0.636
       },
-      "timestamp": "2026-02-08T12:03:00Z"
+      "last_seen_at": "2026-02-08T12:03:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_spread_home",
@@ -263,9 +263,9 @@ print(f"Fetched all {len(all_odds)} odds")
       "odds": {
         "american": -110,
         "decimal": 1.909,
-        "probability": 0.524
+        "odds_probability": 0.524
       },
-      "timestamp": "2026-02-08T12:05:00Z"
+      "last_seen_at": "2026-02-08T12:05:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_total_over",
@@ -278,9 +278,9 @@ print(f"Fetched all {len(all_odds)} odds")
       "odds": {
         "american": -110,
         "decimal": 1.909,
-        "probability": 0.524
+        "odds_probability": 0.524
       },
-      "timestamp": "2026-02-08T12:05:00Z"
+      "last_seen_at": "2026-02-08T12:05:00Z"
     }
   ],
   "meta": {
@@ -309,7 +309,7 @@ print(f"Fetched all {len(all_odds)} odds")
   "error": {
     "code": "not_found",
     "message": "Event not found",
-    "docs": "https://sharpapi.io/docs/api-reference/events-odds"
+    "docs": "https://docs.sharpapi.io/en/api-reference/events-odds"
   }
 }
 ```
@@ -320,7 +320,7 @@ print(f"Fetched all {len(all_odds)} odds")
   "error": {
     "code": "unauthorized",
     "message": "Missing or invalid API key",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```
@@ -331,7 +331,7 @@ print(f"Fetched all {len(all_odds)} odds")
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded. Upgrade your tier for higher limits.",
-    "docs": "https://sharpapi.io/docs/pricing"
+    "docs": "https://docs.sharpapi.io/en/pricing"
   }
 }
 ```

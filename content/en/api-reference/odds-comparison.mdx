@@ -127,22 +127,22 @@ for market in event['markets']:
               "fanduel": {
                 "odds_american": -145,
                 "odds_decimal": 1.690,
-                "timestamp": "2026-01-26T02:10:20.000Z"
+                "last_seen_at": "2026-01-26T02:10:20.000Z"
               },
               "draftkings": {
                 "odds_american": -150,
                 "odds_decimal": 1.667,
-                "timestamp": "2026-01-26T02:10:24.000Z"
+                "last_seen_at": "2026-01-26T02:10:24.000Z"
               },
               "betmgm": {
                 "odds_american": -155,
                 "odds_decimal": 1.645,
-                "timestamp": "2026-01-26T02:10:18.000Z"
+                "last_seen_at": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
                 "odds_american": -148,
                 "odds_decimal": 1.676,
-                "timestamp": "2026-01-26T02:10:15.000Z"
+                "last_seen_at": "2026-01-26T02:10:15.000Z"
               }
             },
             "best_book": "fanduel",
@@ -159,22 +159,22 @@ for market in event['markets']:
               "draftkings": {
                 "odds_american": 130,
                 "odds_decimal": 2.300,
-                "timestamp": "2026-01-26T02:10:24.000Z"
+                "last_seen_at": "2026-01-26T02:10:24.000Z"
               },
               "fanduel": {
                 "odds_american": 125,
                 "odds_decimal": 2.250,
-                "timestamp": "2026-01-26T02:10:20.000Z"
+                "last_seen_at": "2026-01-26T02:10:20.000Z"
               },
               "betmgm": {
                 "odds_american": 128,
                 "odds_decimal": 2.280,
-                "timestamp": "2026-01-26T02:10:18.000Z"
+                "last_seen_at": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
                 "odds_american": 126,
                 "odds_decimal": 2.260,
-                "timestamp": "2026-01-26T02:10:15.000Z"
+                "last_seen_at": "2026-01-26T02:10:15.000Z"
               }
             },
             "best_book": "draftkings",
@@ -253,7 +253,7 @@ Each entry in the `books` object:
 |-------|------|-------------|
 | `odds_american` | number | American odds |
 | `odds_decimal` | number | Decimal odds |
-| `timestamp` | string | When this book's odds were last updated |
+| `last_seen_at` | string | When this book's odds were last seen/updated |
 
 ## Understanding Hold
 
@@ -292,7 +292,7 @@ curl "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=sprea
 
 ### Identifying Stale Lines
 
-Look for books that haven't updated recently by checking each book's `timestamp`. A book with stale odds may be slow to adjust, creating temporary value.
+Look for books that haven't updated recently by checking each book's `last_seen_at`. A book with stale odds may be slow to adjust, creating temporary value.
 
 ### Market Efficiency
 

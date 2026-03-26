@@ -87,7 +87,7 @@ When exceeded, you'll receive a `429` response:
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded. Upgrade your plan or wait before retrying.",
-    "docs": "https://sharpapi.io/docs/authentication#rate-limits"
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
   }
 }
 ```
@@ -125,10 +125,8 @@ Streaming requires the WebSocket add-on ($99/mo) on any paid tier. Enterprise in
 The following reference data endpoints are accessible without authentication at 10 requests/minute:
 
 - `GET /api/v1/sports` - List all sports
-- `GET /api/v1/sports/{sportId}` - Get sport details
 - `GET /api/v1/leagues` - List all leagues
 - `GET /api/v1/sportsbooks` - List all sportsbooks
-- `GET /api/v1/sportsbooks/{bookId}` - Get sportsbook details
 - `GET /api/v1/markets` - List all market types
 - `GET /api/v1/health` - Health check
 
@@ -156,7 +154,7 @@ All errors follow a consistent format:
   "error": {
     "code": "unauthorized",
     "message": "Invalid API key. Check that your key is correct and active.",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```

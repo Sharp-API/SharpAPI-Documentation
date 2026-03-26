@@ -14,7 +14,7 @@ GET /api/v1/opportunities/low_hold
 
 ## Authentication
 
-Requires API key. **Hobby tier or higher required.** Your account must have the `arbitrage` feature enabled (low hold uses the same feature gate).
+Requires API key. **Pro tier or higher required.** Your account must have the `low_hold` feature enabled.
 
 ## Query Parameters
 
@@ -205,7 +205,7 @@ X-Request-Id: req_lh123abc456
   "error": {
     "code": "unauthorized",
     "message": "Invalid or missing API key",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```
@@ -215,8 +215,8 @@ X-Request-Id: req_lh123abc456
 {
   "error": {
     "code": "tier_restricted",
-    "message": "Low hold requires Hobby tier or higher",
-    "docs": "https://sharpapi.io/docs/pricing"
+    "message": "This endpoint requires Pro tier or higher",
+    "docs": "https://docs.sharpapi.io/en/pricing"
   }
 }
 ```
@@ -227,7 +227,7 @@ X-Request-Id: req_lh123abc456
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded",
-    "docs": "https://sharpapi.io/docs/api-reference/overview"
+    "docs": "https://docs.sharpapi.io/en/api-reference/overview"
   }
 }
 ```

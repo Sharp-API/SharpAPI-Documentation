@@ -67,6 +67,11 @@ export default {
   account: "Account Info",
   "account-usage": "Usage Stats",
   "account-keys": "API Key Management",
+  "---Enterprise": {
+    type: "separator",
+    title: "Enterprise",
+  },
+  enterprise: "Enterprise Endpoints",
   "---Internal": {
     type: "separator",
     title: "Internal",

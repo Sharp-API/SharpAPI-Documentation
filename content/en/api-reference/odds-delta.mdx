@@ -31,7 +31,7 @@ Use the `server_time` from each response as the `since` value for your next requ
 | `market` | string | all | Filter by market type (e.g., `moneyline`, `spread`, `total`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds#market-category-aliases). |
 | `event` | string | - | Filter by event ID |
 | `live` | boolean | false | Return only live/in-play events |
-| `sort` | string | - | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `probability`) |
+| `sort` | string | - | Sort field with optional `-` prefix for descending (e.g., `-odds_american`, `odds_probability`) |
 | `fields` | string | all | Comma-separated field names to include (e.g., `id,sportsbook,odds_american`) |
 | `min_odds` | number | - | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | - | Maximum American odds filter (e.g., `+200`) |
@@ -110,7 +110,6 @@ while True:
     {
       "id": "draftkings_33483153_moneyline_PHO",
       "sportsbook": "draftkings",
-      "sportsbook_name": "DraftKings",
       "event_id": "33483153",
       "sport": "basketball",
       "league": "nba",
@@ -121,10 +120,10 @@ while True:
       "selection_type": "away",
       "odds_american": -150,
       "odds_decimal": 1.667,
-      "probability": 0.60,
+      "odds_probability": 0.60,
       "line": null,
       "event_start_time": "2026-02-11T19:00:00Z",
-      "timestamp": "2026-02-11T12:00:15.125Z",
+      "last_seen_at": "2026-02-11T12:00:15.125Z",
       "is_live": false,
       "status": "upcoming"
     }
@@ -166,7 +165,7 @@ X-Request-Id: req_delta_abc123
   "error": {
     "code": "invalid_request",
     "message": "The 'since' parameter is required for the delta endpoint",
-    "docs": "https://sharpapi.io/docs/api-reference/odds-delta"
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-delta"
   }
 }
 ```
@@ -177,7 +176,7 @@ X-Request-Id: req_delta_abc123
   "error": {
     "code": "unauthorized",
     "message": "Invalid or missing API key",
-    "docs": "https://sharpapi.io/docs/authentication"
+    "docs": "https://docs.sharpapi.io/en/authentication"
   }
 }
 ```

@@ -129,6 +129,47 @@ jobs:
           echo "## Rollback" >> $GITHUB_STEP_SUMMARY
           echo "**Promoted**: ${{ steps.target.outputs.target_url }}" >> $GITHUB_STEP_SUMMARY
 
+  changelog:
+    name: Changelog & Release
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: inputs.dry_run != true && inputs.rollback != true
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Determine version tag
+        id: version
+        run: |
+          TAG="v$(date -u +%Y.%m.%d)"
+          # Append run number suffix if tag already exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            TAG="${TAG}.${{ github.run_number }}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.cliff.outputs.content }}
+          generate_release_notes: false
+
   health-check:
     name: Health Check
     needs: deploy-production

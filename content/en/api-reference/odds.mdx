@@ -35,6 +35,7 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `min_odds` | number | — | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | — | Maximum American odds filter (e.g., `+200`) |
 | `group_by` | string | — | Group results by field (e.g., `event`) |
+| `state` | string | — | US state code for sportsbook deep links (e.g., `nj`, `ny`, `il`). When set, `deep_link` URLs include `?state=XX` so the redirect targets the correct state-specific sportsbook domain. Only affects books with state-dependent URLs (BetMGM, Caesars, BetRivers). |
 | `limit` | integer | 50 | Max results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset (max 5000) |
 

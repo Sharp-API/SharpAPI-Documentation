@@ -35,6 +35,7 @@ Use the `server_time` from each response as the `since` value for your next requ
 | `fields` | string | all | Comma-separated field names to include (e.g., `id,sportsbook,odds_american`) |
 | `min_odds` | number | - | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | - | Maximum American odds filter (e.g., `+200`) |
+| `state` | string | — | US state code for sportsbook deep links (e.g., `nj`, `ny`, `il`). When set, `deep_link` URLs include `?state=XX` so the redirect targets the correct state-specific sportsbook domain. |
 | `limit` | integer | 50 | Max results per page (max 200) |
 | `offset` | integer | 0 | Pagination offset |
 

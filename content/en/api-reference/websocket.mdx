@@ -55,7 +55,7 @@ wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sport=basketball&
 | `min_profit` | number | 0.5 | Minimum profit percentage for arbitrage and low-hold opportunities |
 | `min_odds` | number | — | Filter odds by minimum American odds value (e.g., `-200`) |
 | `max_odds` | number | — | Filter odds by maximum American odds value (e.g., `500`) |
-| `state` | string | `pa` | US state code for generating sportsbook deep links in opportunity events (e.g., `nj`, `ny`, `il`) |
+| `state` | string | — | US state code for sportsbook deep links in odds and opportunity events (e.g., `nj`, `ny`, `il`). Ensures `deep_link` URLs redirect to the correct state-specific sportsbook domain. |
 | `resume` | boolean | false | Skip initial odds snapshot on reconnection (assumes client has previous state) |
 | `from_seq` | integer | — | Replay missed events since this global sequence number. Use with `resume` for gap-free reconnection. See [Reconnection with Replay](#reconnection-with-replay). |
 

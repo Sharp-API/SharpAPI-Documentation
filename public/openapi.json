@@ -1461,7 +1461,7 @@
       "get": {
         "operationId": "listEVOpportunities",
         "summary": "List +EV opportunities",
-        "description": "Returns positive expected value betting opportunities. Requires **Pro** tier or higher.\n\nEV is calculated by devigging sharp book lines (typically Pinnacle) and comparing\nagainst other sportsbook prices.\n\n**Sort options:** `ev` (default), `odds`, `confidence`, `start_time`, `kelly`.\n",
+        "description": "Returns positive expected value betting opportunities. Requires **Pro** tier or higher.\n\nEV is calculated by devigging sharp book lines (typically Pinnacle) and comparing\nagainst other sportsbook prices. When multiple sportsbooks are +EV on the same\nselection, a separate opportunity is returned for each book, ranked by EV%.\n\n**Sort options:** `ev` (default), `odds`, `confidence`, `start_time`, `kelly`.\n",
         "tags": [
           "Opportunities"
         ],
@@ -4667,6 +4667,7 @@
           },
           "sportsbook": {
             "type": "string",
+            "description": "Sportsbook offering these odds. Multiple entries may exist for the same selection if several books are +EV.",
             "example": "draftkings"
           },
           "game": {

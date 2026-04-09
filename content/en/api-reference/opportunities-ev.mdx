@@ -16,6 +16,10 @@ GET /api/v1/opportunities/ev
 This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. All scoring fields (`confidence_score`, `kelly_percent`, `fair_probability`) are now included in every response.
 </Callout>
 
+<Callout type="info">
+**Multi-book results:** When multiple sportsbooks are +EV on the same selection, the API returns a separate opportunity for **each** book. For example, if DraftKings is +105, FanDuel is +103, and BetMGM is +101 on the same moneyline, you'll see three entries — each with its own `sportsbook`, `odds_american`, `ev_percentage`, `kelly_percent`, and `confidence_score`. Results are sorted by EV% descending by default, so the best-odds book appears first. Use the `sportsbook` filter to narrow to specific books.
+</Callout>
+
 ## Authentication
 
 Requires API key. **Pro tier or higher required.** Your account must have the `ev` feature enabled.
@@ -132,6 +136,41 @@ for opp in data['data']:
       "oldest_odds_age_seconds": null,
       "warnings": [],
       "detected_at": "2026-02-08T14:22:10.456Z"
+    },
+    {
+      "id": "ev_fd_nba_33483153_ml_PHO",
+      "game_id": "evt_nba_phi_pho_20260208",
+      "ev_percentage": 2.8,
+      "odds_american": -108,
+      "odds_decimal": 1.926,
+      "no_vig_odds": -118,
+      "fair_probability": 0.541,
+      "market_width": 3.2,
+      "devig_method": "power",
+      "sharp_book": "pinnacle",
+      "selection": "PHO Suns",
+      "market": "moneyline",
+      "line": null,
+      "sportsbook": "fanduel",
+      "game": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_live": false,
+      "confidence_score": 82,
+      "kelly_percent": 0.015,
+      "book_count": 5,
+      "arb_available": false,
+      "arb_profit": null,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
+      "possibly_stale": false,
+      "oldest_odds_age_seconds": null,
+      "warnings": [],
+      "detected_at": "2026-02-08T14:22:10.456Z"
     }
   ],
   "pagination": {
@@ -144,13 +183,13 @@ for opp in data['data']:
     "source": "redis",
     "last_update": "2026-02-08T14:22:10.456Z",
     "summary": {
-      "count": 12,
+      "count": 24,
       "avg_ev": 3.8,
       "max_ev": 7.1,
       "by_sportsbook": {
-        "draftkings": 5,
-        "fanduel": 4,
-        "betmgm": 3
+        "draftkings": 9,
+        "fanduel": 8,
+        "betmgm": 7
       },
       "by_sport": {
         "basketball": 12
@@ -242,7 +281,7 @@ X-Request-Id: req_abc123def456
 | `selection` | string | The selection (team name, Over/Under, player, etc.) |
 | `market` | string | Market type (`moneyline`, `point_spread`, `total_points`, etc.) |
 | `line` | number\|null | Spread/total line (e.g., `-3.5`, `220.5`) |
-| `sportsbook` | string | Sportsbook offering these odds |
+| `sportsbook` | string | Sportsbook offering these odds. Multiple entries may exist for the same selection if several books are +EV. |
 | `game` | string | Human-readable game name |
 | `sport` | string | Sport identifier (lowercase) |
 | `league` | string | League identifier |

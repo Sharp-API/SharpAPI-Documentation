@@ -1,5 +1,5 @@
 ---
-description: "GET /api/v1/odds — Fetch a snapshot of current sportsbook odds with filtering by sport, league, sportsbook, market type, and live status. Paginated results across 30+ books."
+description: "GET /api/v1/odds — Fetch a snapshot of current sportsbook odds with filtering by sport, league, sportsbook, market type, and live status. Paginated results across 32 books."
 ---
 
 import { Callout, Tabs } from 'nextra/components'
@@ -385,8 +385,8 @@ The sportsbooks included in your odds results depend on your subscription tier:
 | **Free** | 2 | DraftKings, FanDuel |
 | **Hobby** | 5 | + BetMGM, Caesars, theScore Bet |
 | **Pro** | 15 | + Bet365, BetRivers, and more |
-| **Sharp** | All 30+ | All available sportsbooks |
-| **Enterprise** | All 30+ | All available sportsbooks |
+| **Sharp** | All 32 | All available sportsbooks |
+| **Enterprise** | All 32 | All available sportsbooks |
 
 <Callout type="warning">
 **Pinnacle** (sharp book) requires **Sharp tier or higher**. Requesting `sportsbook=pinnacle` on a Free, Hobby, or Pro tier will return a `403 tier_restricted` error.

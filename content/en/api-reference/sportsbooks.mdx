@@ -1,5 +1,5 @@
 ---
-description: "GET /api/v1/sportsbooks — List available sportsbooks with current status, required subscription tier, and book-specific capabilities. Covers 30+ books including Pinnacle and DraftKings."
+description: "GET /api/v1/sportsbooks — List available sportsbooks with current status, required subscription tier, and book-specific capabilities. Covers 32 books including Pinnacle and DraftKings."
 ---
 
 import { Callout, Tabs } from 'nextra/components'
@@ -172,6 +172,19 @@ for book in result['data']:
       "requires_tier": "sharp"
     },
     {
+      "id": "circa",
+      "name": "circa",
+      "display_name": "Circa Sports",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 620,
+      "last_update": "2026-01-26T02:24:52.000Z",
+      "requires_tier": "sharp"
+    },
+    {
       "id": "bookmaker",
       "name": "bookmaker",
       "display_name": "Bookmaker",
@@ -277,8 +290,8 @@ for book in result['data']:
     }
   ],
   "meta": {
-    "count": 16,
-    "total": 16,
+    "count": 17,
+    "total": 17,
     "pagination": {
       "limit": 50,
       "offset": 0,
@@ -321,12 +334,12 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 | **Free** | 23 | Kalshi, BetMGM, DraftKings, Bet365, and 19 more |
 | **Hobby** | 23 | Same as Free |
 | **Pro** | 23 | Same as Hobby |
-| **Sharp** | 25 | All available sportsbooks |
-| **Enterprise** | 25 | All available sportsbooks |
+| **Sharp** | 26 | All available sportsbooks |
+| **Enterprise** | 26 | All available sportsbooks |
 {/* AUTO:END:tier-summary */}
 
 <Callout type="warning">
-**Pinnacle**, **Bookmaker**, **ProphetX**, and **Betfair** require **Sharp tier or higher**. Pinnacle is a sharp book whose efficient lines are used as the reference for +EV calculations. Requesting sharp book odds on Free, Hobby, or Pro tier will return a `403 tier_restricted` error.
+**Pinnacle**, **Circa Sports**, **Bookmaker**, **ProphetX**, and **Betfair** require **Sharp tier or higher**. Pinnacle is a sharp book whose efficient lines are used as the reference for +EV calculations. Circa Sports is another known sharp book with deliberately tight lines and a focused prop menu. Requesting sharp book odds on Free, Hobby, or Pro tier will return a `403 tier_restricted` error.
 </Callout>
 
 ### Understanding `requires_tier`
@@ -365,6 +378,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 {/* AUTO:START:sharp-books */}
 | ID | Name | Live | Props | Tier |
 |----|------|------|-------|------|
+| `circa` | Circa Sports | Yes | Limited | **Sharp** |
 | `pinnacle` | Pinnacle | Yes | Yes | **Sharp** |
 {/* AUTO:END:sharp-books */}
 
@@ -410,7 +424,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 - **Lower vig (juice)** -- tighter margins mean better odds accuracy
 - **Efficient lines** -- used as the reference for +EV and fair value calculations
 - **Not available in all regions** -- Pinnacle is not licensed in the US
-- Examples: Pinnacle, Bookmaker
+- Examples: Pinnacle, Circa Sports, Bookmaker
 
 ### Soft Books
 - **Higher vig** -- wider margins create more room for +EV opportunities

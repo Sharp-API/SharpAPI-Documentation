@@ -140,7 +140,8 @@ All successful responses wrap data in a consistent envelope:
     "limit": 50,
     "offset": 0,
     "has_more": true,
-    "next_offset": 50
+    "next_offset": 50,
+    "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
   },
   "meta": {
     "count": 1,
@@ -149,7 +150,8 @@ All successful responses wrap data in a consistent envelope:
       "limit": 50,
       "offset": 0,
       "has_more": true,
-      "next_offset": 50
+      "next_offset": 50,
+      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
     },
     "updated_at": "2026-01-26T02:10:37.846Z",
     "filters": {
@@ -167,7 +169,8 @@ All successful responses wrap data in a consistent envelope:
 | `pagination.limit` | Maximum items per page (default: 50, max: 200) |
 | `pagination.offset` | Current offset into results |
 | `pagination.has_more` | Whether more results exist beyond this page |
-| `pagination.next_offset` | Offset value to use for the next page |
+| `pagination.next_offset` | Offset value to use for the next page (legacy — use `next_cursor` for live-data endpoints) |
+| `pagination.next_cursor` | Opaque cursor for the next page. Pass as `?cursor=` — stable against live data changes. Recommended for multi-page scans. |
 | `meta.count` | Number of items returned in this response |
 | `meta.total` | Total matching items across all pages |
 | `meta.pagination` | Same as top-level `pagination` (included for backward compatibility) |
@@ -265,7 +268,8 @@ All list endpoints support filtering via query parameters. Filters use **singula
 | `max_odds` | number | `200` | Maximum American odds filter |
 | `group_by` | string | `event` | Group results by field |
 | `limit` | number | `25` | Results per page (default: 50, max: 200) |
-| `offset` | number | `50` | Pagination offset |
+| `offset` | number | `50` | Pagination offset. May produce duplicate rows on live endpoints when data changes between requests. |
+| `cursor` | string | — | Opaque cursor from `next_cursor`. Recommended for multi-page scans over live data — eliminates offset drift. |
 
 ### Examples
 

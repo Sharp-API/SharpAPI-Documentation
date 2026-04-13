@@ -37,7 +37,8 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `group_by` | string | — | Group results by field (e.g., `event`) |
 | `state` | string | — | US state code for sportsbook deep links (e.g., `nj`, `ny`, `il`). When set, `deep_link` URLs include `?state=XX` so the redirect targets the correct state-specific sportsbook domain. Only affects books with state-dependent URLs (BetMGM, Caesars, BetRivers). |
 | `limit` | integer | 50 | Max results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset (max 5000) |
+| `offset` | integer | 0 | Pagination offset. May produce duplicate rows when live data updates between requests — use `cursor` for multi-page scans. |
+| `cursor` | string | — | Opaque cursor from `next_cursor` in a previous response. **Recommended for multi-page scans** — stable against live data changes. Takes precedence over `offset` when both are provided. |
 
 <Callout type="info">
 Use comma-separated values to filter by multiple sportsbooks: `sportsbook=draftkings,fanduel,betmgm`
@@ -83,19 +84,28 @@ curl -X GET "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftking
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
-const response = await fetch(
-  'https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings&market=moneyline',
-  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
-);
-const { data, meta } = await response.json();
-console.log(`Received ${meta.count} of ${meta.total} odds`);
+// Fetch all NBA moneyline odds using cursor-based pagination (recommended)
+async function fetchAllOdds() {
+  const results = [];
+  let cursor = null;
 
-// Paginate through results
-if (meta.pagination.has_more) {
-  const nextPage = await fetch(
-    `https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings&offset=${meta.pagination.next_offset}`,
-    { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
-  );
+  do {
+    const url = new URL('https://api.sharpapi.io/api/v1/odds');
+    url.searchParams.set('league', 'nba');
+    url.searchParams.set('sportsbook', 'draftkings');
+    url.searchParams.set('market', 'moneyline');
+    url.searchParams.set('limit', '200');
+    if (cursor) url.searchParams.set('cursor', cursor);
+
+    const { data, pagination } = await fetch(url, {
+      headers: { 'X-API-Key': 'YOUR_API_KEY' }
+    }).then(r => r.json());
+
+    results.push(...data);
+    cursor = pagination.has_more ? pagination.next_cursor : null;
+  } while (cursor);
+
+  return results;
 }
 ```
   </Tabs.Tab>
@@ -103,25 +113,53 @@ if (meta.pagination.has_more) {
 ```python
 import requests
 
-response = requests.get(
-    'https://api.sharpapi.io/api/v1/odds',
-    params={
-        'league': 'nba',
-        'sportsbook': 'draftkings',
-        'market': 'moneyline'
-    },
-    headers={'X-API-Key': 'YOUR_API_KEY'}
-)
-result = response.json()
-print(f"Found {result['meta']['count']} of {result['meta']['total']} odds")
+# Fetch all NBA moneyline odds using cursor-based pagination (recommended)
+def fetch_all_odds():
+    results = []
+    params = {'league': 'nba', 'sportsbook': 'draftkings', 'market': 'moneyline', 'limit': 200}
+    cursor = None
 
-# Check for more pages
-if result['meta']['pagination']['has_more']:
-    next_offset = result['meta']['pagination']['next_offset']
-    print(f"Next page at offset {next_offset}")
+    while True:
+        if cursor:
+            params['cursor'] = cursor
+        resp = requests.get(
+            'https://api.sharpapi.io/api/v1/odds',
+            params=params,
+            headers={'X-API-Key': 'YOUR_API_KEY'}
+        ).json()
+
+        results.extend(resp['data'])
+        pagination = resp['pagination']
+        if not pagination['has_more']:
+            break
+        cursor = pagination['next_cursor']
+
+    return results
 ```
   </Tabs.Tab>
 </Tabs>
+
+## Pagination
+
+<Callout type="warning">
+**Use cursor-based pagination for multi-page scans.** The `/odds` endpoint serves live data that refreshes every ~15 seconds. With offset-based pagination, rows can shift positions between requests, causing duplicates at page boundaries. Cursor-based pagination anchors each page to the last seen item — no drift.
+</Callout>
+
+Each response includes both `next_cursor` (stable) and `next_offset` (legacy) in the `pagination` object. For sequential full-dataset scans, always use `next_cursor`.
+
+```bash
+# First page — no cursor needed
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&limit=200" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Subsequent pages — pass next_cursor from the previous response
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&limit=200&cursor=eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+Cursors are opaque — do not parse or construct them. They encode the sort position of the last item on the current page and are only valid for the same filter parameters.
+
+`?offset=N` continues to work and is appropriate for single-page requests or direct position access. It is not recommended for iterating through live data.
 
 ## Response
 
@@ -179,7 +217,8 @@ if result['meta']['pagination']['has_more']:
       "limit": 50,
       "offset": 0,
       "has_more": true,
-      "next_offset": 50
+      "next_offset": 50,
+      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
     },
     "updated_at": "2026-01-26T02:10:37.846Z",
     "filters": {
@@ -403,8 +442,8 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&live=true" \
 curl "https://api.sharpapi.io/api/v1/odds?event=33483153&market=moneyline,spread" \
   -H "X-API-Key: YOUR_API_KEY"
 
-# Paginate through all NFL spread odds
-curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread&limit=100&offset=100" \
+# Paginate through all NFL spread odds (use next_cursor from each response)
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread&limit=200" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 

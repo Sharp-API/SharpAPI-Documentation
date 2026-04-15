@@ -79,11 +79,21 @@ data: {"stream_id":"stream_1704960637000","channel":"all","filters":{"sportsbook
 
 Full data dump sent after `connected`. Contains all current odds or opportunities matching your filters. Large datasets are chunked across multiple `snapshot` events (up to 1000 items each).
 
+Each odds object in the snapshot contains **all fields** — this is the full `Odds` shape that your client should store locally. Subsequent `odds:update` events send only changed fields (see below).
+
 ```
 event: snapshot
 id: evt_00001
-data: {"draftkings":[...],"timestamp":"2026-01-26T02:10:37.846Z"}
+data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"last_seen_at":"2026-02-08T18:47:20Z","odds_changed_at":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `odds` | array | Array of full `Odds` objects (see [Odds endpoint](/en/api-reference/odds) for all fields) |
+| `count` | number | Number of odds in this chunk |
+| `total` | number | Total number of odds matching filters |
+| `offset` | number | Offset of this chunk in the full result |
+| `has_more` | boolean | `true` if more `snapshot` chunks follow |
 
 ### `snapshot:complete`
 
@@ -99,11 +109,36 @@ data: {"status":"ready","books":["draftkings","fanduel"],"total_odds":3200}
 
 Fired when odds change for a sportsbook. Only sent on `odds` or `all` channels.
 
+<Callout type="warning">
+**Compact delta payload.** Delta events contain only fields that can change between updates — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, and `odds_changed_at`. Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are **not included** in deltas. Merge each delta into your local odds map by `id` using the full objects received in the initial `snapshot`. See [Migration: Compact SSE Deltas](#migration-compact-sse-deltas) below.
+</Callout>
+
 ```
 event: odds:update
 id: evt_00042
-data: {"sportsbook":"draftkings","sport":"nba","league":"nba","event_id":"evt_abc123","home_team":"PHI 76ers","away_team":"PHO Suns","markets":[{"market_type":"moneyline","selections":[{"name":"PHO Suns","odds":{"american":-155,"decimal":1.645,"probability":0.608}}]}],"timestamp":"2026-01-26T02:10:38.123Z"}
+data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
 ```
+
+**Delta object fields (`OddsDelta`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique odds ID — matches the `id` from the initial snapshot |
+| `odds_american` | number | Updated American odds (e.g. `-150`) |
+| `odds_decimal` | number | Updated decimal odds (e.g. `1.667`) |
+| `odds_probability` | number | Updated implied probability (e.g. `0.6`) |
+| `line` | number \| null | Updated line/spread (e.g. `-3.5`), or `null` for moneyline |
+| `is_live` | boolean | Whether the event is currently live |
+| `odds_changed_at` | string | ISO 8601 timestamp of when the odds changed |
+
+**Envelope fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `odds` | array | Array of `OddsDelta` objects (compact — dynamic fields only) |
+| `count` | number | Number of odds in this chunk |
+| `book` | string | Sportsbook that changed (e.g. `"draftkings"`) |
+| `partial` | boolean | `true` if more chunks follow for this update batch |
 
 ### `ev:detected`
 
@@ -192,8 +227,14 @@ Odds removed by a sportsbook (e.g. market taken down, event settled). Only sent 
 ```
 event: odds:removed
 id: evt_00051
-data: {"source":"draftkings","ids":["odd_123","odd_456"],"count":2}
+data: {"ids":["123456","789012"],"count":2,"book":"draftkings"}
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ids` | string[] | Odds IDs to remove from local state |
+| `count` | number | Number of removed odds |
+| `book` | string | Sportsbook that removed the odds |
 
 ### `heartbeat`
 
@@ -239,34 +280,52 @@ Browser `EventSource` handles `Last-Event-ID` and reconnection automatically. No
 <Tabs items={['Browser', 'Node.js', 'Python']}>
   <Tabs.Tab>
 ```javascript
+// Local odds map — keyed by odds ID, stores full Odds objects from snapshot.
+// Delta events merge into this map by ID.
+const oddsMap = new Map();
+
 const eventSource = new EventSource(
   'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba&api_key=YOUR_KEY'
 );
 
 eventSource.addEventListener('connected', (e) => {
-  const { stream_id, channel, filters } = JSON.parse(e.data);
-  console.log(`Stream ${stream_id} connected (${channel}) with filters:`, filters);
+  const { stream_id, channel, reconnected } = JSON.parse(e.data);
+  if (reconnected) oddsMap.clear(); // Fresh snapshot incoming
+  console.log(`Stream ${stream_id} connected (${channel})`);
 });
 
 eventSource.addEventListener('snapshot', (e) => {
-  const data = JSON.parse(e.data);
-  console.log('Snapshot chunk received');
+  const { odds, count, total, has_more } = JSON.parse(e.data);
+  // Store full Odds objects keyed by ID
+  for (const odd of odds) {
+    oddsMap.set(odd.id, odd);
+  }
+  console.log(`Snapshot chunk: ${count} odds (${oddsMap.size}/${total} total)`);
 });
 
 eventSource.addEventListener('snapshot:complete', (e) => {
-  const { books, total_odds } = JSON.parse(e.data);
-  console.log(`Snapshot complete: ${total_odds} odds from ${books.join(', ')}`);
+  console.log(`Snapshot complete: ${oddsMap.size} odds loaded`);
 });
 
 eventSource.addEventListener('odds:update', (e) => {
-  const update = JSON.parse(e.data);
-  const books = Object.keys(update).filter(k => k !== 'timestamp');
-  console.log(`Odds updated for: ${books.join(', ')}`);
+  const { odds, book } = JSON.parse(e.data);
+  // Merge compact deltas into local state — only dynamic fields are sent
+  for (const delta of odds) {
+    const existing = oddsMap.get(delta.id);
+    if (existing) {
+      Object.assign(existing, delta); // Merge changed fields
+    }
+    // If no existing entry, the odds appeared after our snapshot — wait for next snapshot
+  }
+  console.log(`${book}: ${odds.length} odds updated`);
 });
 
 eventSource.addEventListener('odds:removed', (e) => {
-  const { source, ids } = JSON.parse(e.data);
-  console.log(`${source}: ${ids.length} odds removed`);
+  const { ids, book } = JSON.parse(e.data);
+  for (const id of ids) {
+    oddsMap.delete(id);
+  }
+  console.log(`${book}: ${ids.length} odds removed`);
 });
 
 eventSource.addEventListener('ev:detected', (e) => {
@@ -302,6 +361,9 @@ eventSource.onerror = () => {
 ```javascript
 import EventSource from 'eventsource';
 
+// Local odds map — keyed by odds ID
+const oddsMap = new Map();
+
 const es = new EventSource(
   'https://api.sharpapi.io/api/v1/stream?channel=all&sport=basketball&league=nba',
   { headers: { 'X-API-Key': 'YOUR_KEY' } }
@@ -309,28 +371,35 @@ const es = new EventSource(
 
 es.addEventListener('connected', (e) => {
   const { stream_id, reconnected } = JSON.parse(e.data);
+  if (reconnected) oddsMap.clear();
   console.log(`Stream ${stream_id} connected (reconnected: ${reconnected})`);
 });
 
 es.addEventListener('snapshot', (e) => {
-  const data = JSON.parse(e.data);
-  console.log('Snapshot chunk received');
+  const { odds } = JSON.parse(e.data);
+  for (const odd of odds) {
+    oddsMap.set(odd.id, odd);
+  }
 });
 
-es.addEventListener('snapshot:complete', (e) => {
-  const { books, total_odds } = JSON.parse(e.data);
-  console.log(`Ready: ${total_odds} odds from ${books.join(', ')}`);
+es.addEventListener('snapshot:complete', () => {
+  console.log(`Ready: ${oddsMap.size} odds loaded`);
 });
 
 es.addEventListener('odds:update', (e) => {
-  const update = JSON.parse(e.data);
-  const books = Object.keys(update).filter(k => k !== 'timestamp');
-  console.log(`Odds updated: ${books.join(', ')}`);
+  const { odds, book } = JSON.parse(e.data);
+  // Merge compact deltas into full local objects
+  for (const delta of odds) {
+    const existing = oddsMap.get(delta.id);
+    if (existing) Object.assign(existing, delta);
+  }
+  console.log(`${book}: ${odds.length} odds updated`);
 });
 
 es.addEventListener('odds:removed', (e) => {
-  const { source, count } = JSON.parse(e.data);
-  console.log(`${source}: ${count} odds removed`);
+  const { ids, book } = JSON.parse(e.data);
+  for (const id of ids) oddsMap.delete(id);
+  console.log(`${book}: ${ids.length} odds removed`);
 });
 
 es.addEventListener('ev:detected', (e) => {
@@ -376,6 +445,9 @@ params = {
 }
 headers = {'X-API-Key': 'YOUR_KEY'}
 
+# Local odds dict — keyed by odds ID, stores full odds objects from snapshot
+odds_map: dict[str, dict] = {}
+
 response = requests.get(url, params=params, headers=headers, stream=True)
 client = sseclient.SSEClient(response)
 
@@ -383,20 +455,31 @@ for event in client.events():
     data = json.loads(event.data) if event.data else {}
 
     if event.event == 'connected':
+        if data.get('reconnected'):
+            odds_map.clear()  # Fresh snapshot incoming
         print(f"Stream {data['stream_id']} connected ({data['channel']})")
 
     elif event.event == 'snapshot':
-        print("Snapshot chunk received")
+        # Store full odds objects keyed by ID
+        for odd in data.get('odds', []):
+            odds_map[odd['id']] = odd
+        print(f"Snapshot chunk: {data['count']} odds ({len(odds_map)}/{data['total']} total)")
 
     elif event.event == 'snapshot:complete':
-        print(f"Ready: {data['total_odds']} odds from {', '.join(data['books'])}")
+        print(f"Ready: {len(odds_map)} odds loaded")
 
     elif event.event == 'odds:update':
-        books = [k for k in data if k != 'timestamp']
-        print(f"Odds updated: {', '.join(books)}")
+        # Merge compact deltas into local state
+        for delta in data.get('odds', []):
+            existing = odds_map.get(delta['id'])
+            if existing:
+                existing.update(delta)
+        print(f"{data['book']}: {data['count']} odds updated")
 
     elif event.event == 'odds:removed':
-        print(f"{data['source']}: {data['count']} odds removed")
+        for odd_id in data.get('ids', []):
+            odds_map.pop(odd_id, None)
+        print(f"{data['book']}: {data['count']} odds removed")
 
     elif event.event == 'ev:detected':
         for opp in data:
@@ -480,6 +563,48 @@ These close the connection. Handle them in `onerror`:
 8. **Monitor heartbeats** -- If no heartbeat arrives within 60 seconds, consider the connection stale and reconnect
 9. **Close unused streams** -- Each open stream counts against your concurrent limit
 10. **Use `Last-Event-ID`** -- Enables the server to replay missed events after a reconnection
+
+## Migration: Compact SSE Deltas
+
+<Callout type="warning">
+**Breaking change for SSE `odds:update` consumers.** The `odds:update` event now sends compact `OddsDelta` objects containing only dynamic fields (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `odds_changed_at`). Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are only sent in the initial `snapshot` event.
+</Callout>
+
+**Why:** The previous payload sent the full `Odds` object on every change, producing ~170 KB/s per connection. The compact delta reduces bandwidth by ~5x, sending only the 6-7 fields that actually changed.
+
+**What to change in your client:**
+
+1. **Store snapshot odds in a local map keyed by `id`.** The `snapshot` event still sends full `Odds` objects with all fields.
+
+2. **Merge `odds:update` deltas by `id`** instead of treating them as standalone objects. Each delta only contains the fields that can change — look up the full object in your local map and apply the update.
+
+3. **Do not access static fields on delta objects.** Fields like `event_id`, `market_type`, `selection`, `home_team`, and `sportsbook` are not present in deltas. Read them from your local map instead.
+
+**Before (broken — accessing fields not in delta):**
+```javascript
+eventSource.addEventListener('odds:update', (e) => {
+  const { odds } = JSON.parse(e.data);
+  for (const o of odds) {
+    // ❌ o.event_id, o.market_type, o.selection are undefined in deltas
+    console.log(`${o.event_id} ${o.market_type}: ${o.selection} → ${o.odds_american}`);
+  }
+});
+```
+
+**After (correct — merge into local state):**
+```javascript
+eventSource.addEventListener('odds:update', (e) => {
+  const { odds } = JSON.parse(e.data);
+  for (const delta of odds) {
+    const full = oddsMap.get(delta.id);
+    if (full) {
+      Object.assign(full, delta); // Merge changed fields
+      // ✅ full.event_id, full.market_type, full.selection are still available
+      console.log(`${full.event_id} ${full.market_type}: ${full.selection} → ${full.odds_american}`);
+    }
+  }
+});
+```
 
 ## Related Endpoints
 

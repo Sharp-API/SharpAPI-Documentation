@@ -13,7 +13,7 @@ GET /api/v1/leagues
 ```
 
 <Callout type="info">
-This is a **public endpoint** -- no authentication required. Unauthenticated requests are rate-limited to 10 requests/minute. Authenticated requests receive your tier's full rate limit.
+Requires an API key. Available on all tiers (Free included). Unauthenticated requests return `401`.
 </Callout>
 
 ## Query Parameters
@@ -27,18 +27,20 @@ This is a **public endpoint** -- no authentication required. Unauthenticated req
 <Tabs items={['cURL', 'JavaScript', 'Python']}>
   <Tabs.Tab>
 ```bash
-# List all leagues (no auth required)
-curl -X GET "https://api.sharpapi.io/api/v1/leagues"
+# List all leagues
+curl -X GET "https://api.sharpapi.io/api/v1/leagues" \
+  -H "X-API-Key: YOUR_API_KEY"
 
 # Filter by sport
-curl -X GET "https://api.sharpapi.io/api/v1/leagues?sport=basketball"
+curl -X GET "https://api.sharpapi.io/api/v1/leagues?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
-// No API key required for public reference endpoints
 const response = await fetch(
-  'https://api.sharpapi.io/api/v1/leagues?sport=basketball'
+  'https://api.sharpapi.io/api/v1/leagues?sport=basketball',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } },
 );
 const { data, meta } = await response.json();
 
@@ -51,10 +53,10 @@ data.forEach(league => {
 ```python
 import requests
 
-# No API key required
 response = requests.get(
     'https://api.sharpapi.io/api/v1/leagues',
-    params={'sport': 'basketball'}
+    params={'sport': 'basketball'},
+    headers={'X-API-Key': 'YOUR_API_KEY'},
 )
 result = response.json()
 

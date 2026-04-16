@@ -1,5 +1,6 @@
 export default {
   overview: "Overview",
+  conventions: "Response Conventions",
   "---Reference": {
     type: "separator",
     title: "Reference Data",

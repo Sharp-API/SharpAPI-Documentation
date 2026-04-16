@@ -1,0 +1,710 @@
+asyncapi: 3.0.0
+
+info:
+  title: SharpAPI WebSocket Stream
+  version: 1.0.0
+  description: |
+    Bidirectional real-time stream of odds updates and opportunity events
+    (`+EV`, arbitrage, middles, low-hold) over WebSocket.
+
+    REST and SSE are documented in `openapi.json`. This spec covers only the
+    WebSocket endpoint, which OpenAPI 3.x cannot fully model.
+
+    ## Subprotocols
+
+    The server negotiates one of two subprotocols on upgrade. Pass the chosen
+    name in the `Sec-WebSocket-Protocol` header (browsers: second arg to the
+    `WebSocket` constructor).
+
+    | Subprotocol      | Wire format for `data` payloads          | When to use                       |
+    |------------------|------------------------------------------|-----------------------------------|
+    | `sharpapi-v1`    | JSON throughout                          | Browsers, simple clients          |
+    | `sharpapi-v1.5`  | JSON control frames + MessagePack data   | High-throughput servers, SDKs     |
+
+    Both protocols deliver the same logical messages with the same field names;
+    `sharpapi-v1.5` swaps the `data` payload binary encoding for ~30% smaller
+    frames at the cost of needing a MessagePack decoder.
+
+    ## Authentication
+
+    The `api_key` query parameter is required. Browsers cannot set custom
+    headers on a WebSocket upgrade, so query-param auth is the only portable
+    option. Other supported sources: `Authorization: Bearer …` and
+    `X-API-Key: …` headers (server-side clients only).
+
+    ## Reconnection with replay
+
+    The server keeps a 2-minute / 2000-event ring buffer keyed by a global
+    sequence number. To recover from a brief disconnect without losing events:
+
+    1. Track `global_seq` from the `connected` message and from every later
+       message that carries one.
+    2. Reconnect with `?resume=true&from_seq=<last_seen>`. The initial odds
+       snapshot is skipped and any buffered events since `from_seq` are
+       replayed (each tagged with `"replay": true`).
+    3. If you've been disconnected longer than the buffer, omit both params
+       to receive a fresh snapshot.
+
+    Concurrent stream limits and full close-code semantics live in the API
+    reference (`/api-reference/websocket`).
+  license:
+    name: Proprietary
+    url: https://sharpapi.io/terms
+  contact:
+    name: SharpAPI Support
+    url: https://sharpapi.io
+    email: support@sharpapi.io
+
+servers:
+  production:
+    host: ws.sharpapi.io
+    pathname: /
+    protocol: wss
+    description: Production WebSocket endpoint.
+    security:
+      - $ref: '#/components/securitySchemes/ApiKeyQuery'
+
+defaultContentType: application/json
+
+channels:
+  stream:
+    address: /
+    title: SharpAPI live stream
+    description: |
+      The single root WebSocket channel. All client and server messages flow
+      over the same connection — there is no per-topic URL routing. Use the
+      `subscribe` message (or initial query parameters) to choose which data
+      *channels* (`ev`, `arbitrage`, `middles`, `low_hold`, `odds`) the server
+      pushes back.
+    parameters:
+      api_key:
+        description: Your API key. Required.
+      channels:
+        description: Comma-separated channel list — e.g. `ev,odds`. Omit to receive all tier-allowed data.
+      sport:
+        description: Initial sport filter (comma-separated).
+      sportsbook:
+        description: Initial sportsbook filter (comma-separated).
+      league:
+        description: Initial league filter (comma-separated).
+      market:
+        description: Initial market filter (comma-separated).
+      event_id:
+        description: Initial event ID filter (comma-separated).
+      min_ev:
+        description: Minimum EV percentage. Default `2.0`.
+      min_profit:
+        description: Minimum profit percentage for arb / low-hold. Default `0.5`.
+      min_odds:
+        description: Minimum American odds (e.g. `-200`).
+      max_odds:
+        description: Maximum American odds (e.g. `500`).
+      state:
+        description: US state code for deep-link URL generation (e.g. `nj`).
+      resume:
+        description: When `true`, skip the initial odds snapshot on reconnect.
+      from_seq:
+        description: Replay buffered events since this `global_seq` value.
+    messages:
+      Subscribe:           { $ref: '#/components/messages/Subscribe' }
+      Ping:                { $ref: '#/components/messages/Ping' }
+      Connected:           { $ref: '#/components/messages/Connected' }
+      Subscribed:          { $ref: '#/components/messages/Subscribed' }
+      OpportunitiesSnapshot: { $ref: '#/components/messages/OpportunitiesSnapshot' }
+      Initial:             { $ref: '#/components/messages/Initial' }
+      SnapshotComplete:    { $ref: '#/components/messages/SnapshotComplete' }
+      OddsUpdate:          { $ref: '#/components/messages/OddsUpdate' }
+      OddsRemoved:         { $ref: '#/components/messages/OddsRemoved' }
+      EvDetected:          { $ref: '#/components/messages/EvDetected' }
+      EvExpired:           { $ref: '#/components/messages/EvExpired' }
+      ArbDetected:         { $ref: '#/components/messages/ArbDetected' }
+      ArbExpired:          { $ref: '#/components/messages/ArbExpired' }
+      MiddlesDetected:     { $ref: '#/components/messages/MiddlesDetected' }
+      MiddlesExpired:      { $ref: '#/components/messages/MiddlesExpired' }
+      LowHoldDetected:     { $ref: '#/components/messages/LowHoldDetected' }
+      LowHoldExpired:      { $ref: '#/components/messages/LowHoldExpired' }
+      Heartbeat:           { $ref: '#/components/messages/Heartbeat' }
+      Pong:                { $ref: '#/components/messages/Pong' }
+      Error:               { $ref: '#/components/messages/Error' }
+
+operations:
+  send:
+    action: send
+    channel: { $ref: '#/channels/stream' }
+    title: Messages the client sends
+    summary: Subscribe (set channels and filters) or ping (keepalive).
+    messages:
+      - $ref: '#/channels/stream/messages/Subscribe'
+      - $ref: '#/channels/stream/messages/Ping'
+
+  receive:
+    action: receive
+    channel: { $ref: '#/channels/stream' }
+    title: Messages the client receives
+    summary: All server-pushed messages (lifecycle, snapshots, deltas, opportunities, control).
+    messages:
+      - $ref: '#/channels/stream/messages/Connected'
+      - $ref: '#/channels/stream/messages/Subscribed'
+      - $ref: '#/channels/stream/messages/OpportunitiesSnapshot'
+      - $ref: '#/channels/stream/messages/Initial'
+      - $ref: '#/channels/stream/messages/SnapshotComplete'
+      - $ref: '#/channels/stream/messages/OddsUpdate'
+      - $ref: '#/channels/stream/messages/OddsRemoved'
+      - $ref: '#/channels/stream/messages/EvDetected'
+      - $ref: '#/channels/stream/messages/EvExpired'
+      - $ref: '#/channels/stream/messages/ArbDetected'
+      - $ref: '#/channels/stream/messages/ArbExpired'
+      - $ref: '#/channels/stream/messages/MiddlesDetected'
+      - $ref: '#/channels/stream/messages/MiddlesExpired'
+      - $ref: '#/channels/stream/messages/LowHoldDetected'
+      - $ref: '#/channels/stream/messages/LowHoldExpired'
+      - $ref: '#/channels/stream/messages/Heartbeat'
+      - $ref: '#/channels/stream/messages/Pong'
+      - $ref: '#/channels/stream/messages/Error'
+
+components:
+  securitySchemes:
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+      description: Pass your API key as `?api_key=<KEY>` on the connection URL.
+
+  messages:
+    # ── Client → Server ─────────────────────────────────────────────────────
+    Subscribe:
+      name: subscribe
+      title: Update channels and filters
+      summary: Replace the active channel and filter set without reconnecting.
+      contentType: application/json
+      payload:
+        type: object
+        required: [type]
+        properties:
+          type: { type: string, const: subscribe }
+          channels:
+            type: array
+            description: Channel list. Omit to leave channels unchanged.
+            items:
+              type: string
+              enum: [ev, arbitrage, middles, low_hold, odds]
+          filters:
+            type: object
+            properties:
+              sports:      { type: array, items: { type: string } }
+              sportsbooks: { type: array, items: { type: string } }
+              leagues:     { type: array, items: { type: string } }
+              markets:     { type: array, items: { type: string } }
+              eventIds:    { type: array, items: { type: string } }
+              min_ev:      { type: number, description: "Minimum EV % (default 2.0)." }
+              min_profit:  { type: number, description: "Minimum profit % for arb / low-hold (default 0.5)." }
+      examples:
+        - name: NbaEvAndOdds
+          payload:
+            type: subscribe
+            channels: [ev, odds]
+            filters:
+              sports: [basketball]
+              sportsbooks: [draftkings, fanduel]
+              leagues: [nba]
+              markets: [moneyline, player_points]
+              min_ev: 3.0
+              min_profit: 1.5
+
+    Ping:
+      name: ping
+      title: Application-level keepalive
+      summary: Send every ~25s to defeat proxy idle timeouts.
+      contentType: application/json
+      payload:
+        type: object
+        required: [type]
+        properties:
+          type: { type: string, const: ping }
+
+    # ── Server → Client (lifecycle) ─────────────────────────────────────────
+    Connected:
+      name: connected
+      title: Welcome message
+      summary: First message sent after a successful upgrade and tier check.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [stream_id, tier, features, channels, global_seq, books]
+            properties:
+              type:       { type: string, const: connected }
+              message:    { type: string }
+              stream_id:  { type: string, description: "Unique connection identifier." }
+              tier:       { type: string, enum: [free, hobby, pro, sharp, enterprise] }
+              features:   { $ref: '#/components/schemas/TierFeatures' }
+              channels:
+                description: Active channel subscriptions, or `null` for all tier-allowed data.
+                oneOf:
+                  - type: array
+                    items: { type: string, enum: [ev, arbitrage, middles, low_hold, odds] }
+                  - type: 'null'
+              global_seq:
+                type: integer
+                description: |
+                  Server-wide event counter at connect time. Store this — pass it
+                  back as `from_seq` on reconnect for gap-free replay.
+              books:      { $ref: '#/components/schemas/BookAllowance' }
+
+    Subscribed:
+      name: subscribed
+      title: Active subscription confirmation
+      summary: Echoes the resolved channel + filter state after each `subscribe` (and once after connect).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type:        { type: string, const: subscribed }
+              channels:
+                oneOf:
+                  - type: array
+                    items: { type: string, enum: [ev, arbitrage, middles, low_hold, odds] }
+                  - type: 'null'
+              sports:      { type: [array, 'null'], items: { type: string } }
+              sportsbooks: { type: [array, 'null'], items: { type: string } }
+              leagues:     { type: [array, 'null'], items: { type: string } }
+              markets:     { type: [array, 'null'], items: { type: string } }
+              eventIds:    { type: [array, 'null'], items: { type: string } }
+              min_ev:      { type: [number, 'null'] }
+              min_profit:  { type: [number, 'null'] }
+
+    # ── Server → Client (initial snapshots) ─────────────────────────────────
+    OpportunitiesSnapshot:
+      name: opportunities_snapshot
+      title: Initial opportunities for one channel
+      summary: |
+        One message per subscribed opportunity channel during the initial
+        load. The top-level key matches the channel: `ev`, `arbitrage`,
+        `middles`, or `low_hold`. Large snapshots are chunked — when split,
+        each frame includes `chunk` and `totalChunks`.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type:        { type: string, const: opportunities_snapshot }
+              chunk:       { type: integer, minimum: 1 }
+              totalChunks: { type: integer, minimum: 1 }
+              ev:          { type: array, items: { $ref: '#/components/schemas/EvOpportunity' } }
+              arbitrage:   { type: array, items: { $ref: '#/components/schemas/ArbOpportunity' } }
+              middles:     { type: array, items: { $ref: '#/components/schemas/MiddleOpportunity' } }
+              low_hold:    { type: array, items: { $ref: '#/components/schemas/LowHoldOpportunity' } }
+
+    Initial:
+      name: initial
+      title: Initial odds snapshot, per sportsbook
+      summary: One message per book; large books are split (≤1000 odds per frame).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [source, data]
+            properties:
+              type:   { type: string, const: initial }
+              source: { type: string, description: "Sportsbook ID." }
+              data:
+                type: array
+                description: Array of NormalizedOdds entries (see REST `/odds` schema in openapi.json).
+                items: { type: object, additionalProperties: true }
+              count:  { type: integer }
+
+    SnapshotComplete:
+      name: snapshot:complete
+      title: Initial-data sentinel
+      summary: All `opportunities_snapshot` and `initial` frames have been sent. Safe to hide loading UI.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type:        { type: string, const: snapshot:complete }
+              books:       { type: array, items: { type: string } }
+              resumed:     { type: boolean, description: "True when the connection used `resume=true`." }
+              progressive: { type: boolean, description: "True when odds were chunked per book." }
+
+    # ── Server → Client (odds deltas) ───────────────────────────────────────
+    OddsUpdate:
+      name: odds:update
+      title: Incremental odds update
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [source, data]
+            properties:
+              type:   { type: string, const: odds:update }
+              source: { type: string }
+              data:
+                type: array
+                items: { type: object, additionalProperties: true }
+              count: { type: integer }
+
+    OddsRemoved:
+      name: odds:removed
+      title: Odds removed by a book
+      summary: Market was taken down, line was settled, or selection was withdrawn.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [source, ids]
+            properties:
+              type:   { type: string, const: odds:removed }
+              source: { type: string }
+              ids:    { type: array, items: { type: string } }
+              count:  { type: integer }
+
+    # ── Server → Client (opportunity deltas) ────────────────────────────────
+    EvDetected:
+      name: ev:detected
+      title: New +EV opportunity
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [data]
+            properties:
+              type: { type: string, const: ev:detected }
+              data:
+                type: array
+                items: { $ref: '#/components/schemas/EvOpportunity' }
+
+    EvExpired:
+      name: ev:expired
+      title: +EV opportunities no longer available
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: ev:expired }
+              data: { $ref: '#/components/schemas/ExpiredIds' }
+
+    ArbDetected:
+      name: arb:detected
+      title: New arbitrage opportunity
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [data]
+            properties:
+              type: { type: string, const: arb:detected }
+              data:
+                type: array
+                items: { $ref: '#/components/schemas/ArbOpportunity' }
+
+    ArbExpired:
+      name: arb:expired
+      title: Arbitrage opportunities no longer available
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: arb:expired }
+              data: { $ref: '#/components/schemas/ExpiredIds' }
+
+    MiddlesDetected:
+      name: middles:detected
+      title: New middle opportunity
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [data]
+            properties:
+              type: { type: string, const: middles:detected }
+              data:
+                type: array
+                items: { $ref: '#/components/schemas/MiddleOpportunity' }
+
+    MiddlesExpired:
+      name: middles:expired
+      title: Middle opportunities no longer available
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: middles:expired }
+              data: { $ref: '#/components/schemas/ExpiredIds' }
+
+    LowHoldDetected:
+      name: low_hold:detected
+      title: New low-hold opportunity
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [data]
+            properties:
+              type: { type: string, const: low_hold:detected }
+              data:
+                type: array
+                items: { $ref: '#/components/schemas/LowHoldOpportunity' }
+
+    LowHoldExpired:
+      name: low_hold:expired
+      title: Low-hold opportunities no longer available
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: low_hold:expired }
+              data: { $ref: '#/components/schemas/ExpiredIds' }
+
+    # ── Server → Client (control) ───────────────────────────────────────────
+    Heartbeat:
+      name: heartbeat
+      title: Server keepalive
+      summary: Sent every ~30s. Distinct from `pong` (which is the reply to a client `ping`).
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: heartbeat }
+
+    Pong:
+      name: pong
+      title: Reply to a client ping
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            properties:
+              type: { type: string, const: pong }
+
+    Error:
+      name: error
+      title: Non-fatal or fatal error
+      summary: |
+        Application-layer error frame. Non-fatal errors keep the connection
+        open (e.g. unknown message type). Auth and rate-limit errors are
+        delivered via WebSocket close codes — see "Close codes" below.
+      contentType: application/json
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/ServerEnvelope'
+          - type: object
+            required: [code, message]
+            properties:
+              type:    { type: string, const: error }
+              code:    { type: string, description: "Stable error code (e.g. `unknown_type`, `invalid_filter`)." }
+              message: { type: string }
+
+  schemas:
+    ServerEnvelope:
+      type: object
+      description: Common fields stamped on every server-pushed message.
+      required: [type, seq]
+      properties:
+        type:
+          type: string
+          description: Message type discriminator.
+        seq:
+          type: integer
+          description: Per-connection sequence number, monotonically increasing.
+        global_seq:
+          type: integer
+          description: Server-wide sequence number. Present on most opportunity and odds messages — store the latest seen for replay on reconnect.
+        replay:
+          type: boolean
+          description: Set to `true` on messages that were re-emitted from the replay buffer after a `from_seq` reconnect.
+        timestamp:
+          type: string
+          format: date-time
+          description: Server emit time (RFC 3339).
+
+    TierFeatures:
+      type: object
+      description: Boolean map of opportunity types the connecting tier may receive.
+      properties:
+        ev:        { type: boolean }
+        arbitrage: { type: boolean }
+        middles:   { type: boolean }
+        low_hold:  { type: boolean }
+
+    BookAllowance:
+      type: object
+      description: Book limits enforced for the connection.
+      properties:
+        max:
+          type: integer
+          description: Maximum allowed books (`-1` = unlimited).
+        allowed:
+          oneOf:
+            - type: array
+              items: { type: string }
+            - type: 'null'
+          description: Whitelist of allowed sportsbooks, or `null` if unrestricted.
+
+    ExpiredIds:
+      type: object
+      description: Payload shape used by every `*:expired` message.
+      required: [expired]
+      properties:
+        expired:
+          type: array
+          items: { type: string }
+          description: Stable opportunity identifiers no longer offered.
+
+    EvOpportunity:
+      type: object
+      description: |
+        +EV opportunity. Field set mirrors the REST `/opportunities/ev` row;
+        canonical schema lives in openapi.json (`EVOpportunity`).
+      properties:
+        id:                { type: string }
+        game_id:           { type: string }
+        ev_percentage:     { type: number }
+        odds_american:     { type: integer }
+        odds_decimal:      { type: number }
+        no_vig_odds:       { type: integer }
+        selection:         { type: string }
+        market:            { type: string }
+        line:              { type: [number, 'null'] }
+        sportsbook:        { type: string }
+        game:              { type: string }
+        sport:             { type: string }
+        league:            { type: string }
+        home_team:         { type: string }
+        away_team:         { type: string }
+        start_time:        { type: string, format: date-time }
+        is_live:           { type: boolean }
+        confidence_score:  { type: number }
+        kelly_percent:     { type: number }
+        book_count:        { type: integer }
+        detected_at:       { type: string, format: date-time }
+      additionalProperties: true
+
+    ArbOpportunity:
+      type: object
+      description: Arbitrage opportunity (mirrors REST `ArbitrageOpportunity`).
+      properties:
+        id:             { type: string }
+        event_id:       { type: string }
+        event_name:     { type: string }
+        sport:          { type: string }
+        league:         { type: string }
+        market_type:    { type: string }
+        line:           { type: [number, 'null'] }
+        profit_percent: { type: number }
+        implied_total:  { type: number }
+        is_live:        { type: boolean }
+        legs:
+          type: array
+          items:
+            type: object
+            properties:
+              sportsbook:           { type: string }
+              selection:            { type: string }
+              odds_american:        { type: integer }
+              odds_decimal:         { type: number }
+              implied_probability:  { type: number }
+              stake_percent:        { type: number }
+        detected_at: { type: string, format: date-time }
+      additionalProperties: true
+
+    MiddleOpportunity:
+      type: object
+      description: Middle opportunity (mirrors REST `MiddleOpportunity`).
+      properties:
+        id:                  { type: string }
+        event_id:            { type: string }
+        event_name:          { type: string }
+        sport:               { type: string }
+        league:              { type: string }
+        market_type:         { type: string }
+        side1:               { $ref: '#/components/schemas/MiddleSide' }
+        side2:               { $ref: '#/components/schemas/MiddleSide' }
+        middle_size:         { type: number }
+        middle_numbers:      { type: array, items: { type: integer } }
+        middle_probability:  { type: number }
+        expected_value:      { type: number }
+        roi_percentage:      { type: number }
+        quality_score:       { type: number }
+        detected_at:         { type: string, format: date-time }
+      additionalProperties: true
+
+    MiddleSide:
+      type: object
+      properties:
+        book:             { type: string }
+        selection:        { type: string }
+        line:             { type: number }
+        odds:
+          type: object
+          properties:
+            american:         { type: integer }
+            decimal:          { type: number }
+            probability:      { type: number }
+            fair_probability: { type: number }
+        stake_percent:    { type: number }
+        odds_age_seconds: { type: number }
+        deep_link:        { type: [string, 'null'] }
+
+    LowHoldOpportunity:
+      type: object
+      description: Low-hold opportunity (mirrors REST `LowHoldOpportunity`).
+      properties:
+        id:              { type: string }
+        event_id:        { type: string }
+        event_name:      { type: string }
+        sport:           { type: string }
+        league:          { type: string }
+        market_type:     { type: string }
+        line:            { type: [number, 'null'] }
+        home_team:       { type: string }
+        away_team:       { type: string }
+        start_time:      { type: string, format: date-time }
+        hold_percentage: { type: number }
+        is_live:         { type: boolean }
+        all_books:       { type: array, items: { type: string } }
+        side1:           { $ref: '#/components/schemas/LowHoldSide' }
+        side2:           { $ref: '#/components/schemas/LowHoldSide' }
+        detected_at:     { type: string, format: date-time }
+      additionalProperties: true
+
+    LowHoldSide:
+      type: object
+      properties:
+        selection: { type: string }
+        books:     { type: array, items: { type: string } }
+        line:      { type: [number, 'null'] }
+        odds:
+          type: object
+          properties:
+            american:            { type: integer }
+            decimal:             { type: number }
+            implied_probability: { type: number }
+            fair_probability:    { type: number }
+        deep_links:
+          type: object
+          additionalProperties: { type: string }
+          description: Map of book ID → state-aware deep link URL.

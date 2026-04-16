@@ -177,9 +177,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -244,6 +249,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -257,9 +265,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -298,6 +311,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -311,9 +327,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -380,6 +401,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -393,9 +417,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -497,6 +526,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -510,9 +542,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -551,6 +588,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -564,9 +604,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "responses": {
@@ -617,6 +662,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
@@ -630,9 +678,14 @@
           "Reference Data"
         ],
         "security": [
-          {},
           {
             "ApiKeyHeader": []
+          },
+          {
+            "BearerAuth": []
+          },
+          {
+            "ApiKeyQuery": []
           }
         ],
         "parameters": [
@@ -704,6 +757,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }

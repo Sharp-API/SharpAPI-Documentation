@@ -1,0 +1,159 @@
+---
+description: "SharpAPI response conventions — envelope shapes, timestamps, error format, field casing, and the rules that every REST endpoint follows."
+---
+
+import { Callout } from 'nextra/components'
+
+# Response Conventions
+
+SharpAPI returns predictable response shapes across every REST endpoint. This page codifies those conventions so you can build generic parsers, not per-endpoint special cases.
+
+<Callout type="info">
+  This page describes the REST conventions. SSE streams are covered in [SSE Stream](/en/api-reference/stream), and the bidirectional WebSocket protocol has its own [AsyncAPI 3.0 spec](/asyncapi.yaml).
+</Callout>
+
+## HTTP status codes, not envelopes
+
+The HTTP status code is the source of truth for success or failure. Response bodies do **not** carry a `success` flag — it would duplicate information already on `response.status` and invites clients to check the wrong place.
+
+| Status | Meaning |
+|---|---|
+| `200` | Success with a body |
+| `201` | Created (API key creation) |
+| `204` | Success, no body (key deletion) |
+| `302` | Redirect (deeplinks) |
+| `400` | Validation error — client-side bug |
+| `401` | Missing or invalid API key |
+| `403` | Tier doesn't include the requested feature |
+| `404` | Resource doesn't exist (or opaque ID didn't match) |
+| `429` | Rate limit exceeded |
+| `5xx` | Upstream or internal server error |
+
+## Success envelope shapes
+
+Two top-level shapes. Both put `data` first and `updated_at` last, with an optional pagination block in between.
+
+### Non-paginated response
+
+Used for singletons, reference data, and summary endpoints. `data` is whatever the endpoint returns — a single resource, an array, or a map.
+
+```json
+{
+  "data": { ... },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+### Paginated list response
+
+Used for endpoints that support `limit` / `offset` / `cursor`.
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 50,
+    "total": 1247,
+    "has_more": true,
+    "next_offset": 50
+  },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+`count` is the length of the current `data` page, `total` is the full matching set. `next_offset` is present only when `has_more` is `true`.
+
+### Endpoint-specific extensions
+
+A handful of endpoints add extra top-level keys alongside `data`. These are additive — generic parsers that read `data` + `pagination` + `updated_at` keep working.
+
+| Field | Emitted by | Meaning |
+|---|---|---|
+| `overflow: true` | `/odds`, `/odds/delta` | `total > 10_000` — consumer should pull a fresh snapshot via `/odds` instead of paginating through delta. |
+| `removed: [...]` | `/odds/delta` | IDs of odds removed since `?since=`. |
+| `missing: [...]` | `POST /odds/batch` | Event IDs that were requested but not found. |
+
+## Error envelope
+
+Every non-2xx response returns a single `error` object.
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 3 seconds.",
+    "docs": "https://sharpapi.io/docs/rate-limits",
+    "retryAfter": 3
+  }
+}
+```
+
+| Field | Always present? | Notes |
+|---|---|---|
+| `code` | Yes | Stable string. Check this, not the prose message. |
+| `message` | Yes | Human-readable English. Safe to surface to end users. |
+| `docs` | Sometimes | Link to the relevant doc page. |
+| `retryAfter` | On 429 / 5xx | Seconds until the client should retry. |
+| `tier` | On 403 | The tier that *would* unlock the endpoint. |
+
+### Common error codes
+
+`missing_api_key`, `invalid_api_key`, `validation_error`, `invalid_request`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
+
+## Timestamps
+
+Every timestamp in a SharpAPI response is **RFC 3339 / ISO 8601 with UTC** — string form like `2026-04-16T19:29:38.920698424Z`. Nanosecond precision from the server; clients can safely parse with second or millisecond precision.
+
+Two fields you'll see often:
+
+- **`updated_at`** — when the server emitted the response. Top-level on every success response.
+- **`fetched_at`** — when the upstream sportsbook was last polled (present in odds payloads).
+
+Older, stream-layer timestamps appear as Unix-seconds floats (`timestamp`) alongside their RFC 3339 counterpart (`ts`) on WebSocket messages.
+
+## Field casing
+
+**Snake case everywhere.** Fields inside `data`, `pagination`, `meta`, `error`, and every WebSocket / SSE message use `snake_case` — `event_id`, `market_type`, `profit_percent`, `detected_at`, `odds_american`, `stake_percent`.
+
+The few `camelCase` leftovers you might spot (e.g. `eventIds` in a WebSocket `subscribe` payload *input*) are client-to-server request shapes. Everything server-to-client is snake_case.
+
+## Canonical IDs
+
+Most identifiers are stable, opaque, and joinable across endpoints.
+
+| Field | Format | Example |
+|---|---|---|
+| `event_id` | `{league}_{home}_{away}_{date}` | `mlb_guardians_orioles_2026-04-16` |
+| `game_id` | Same as `event_id` in runner output | `nba_thunder_timberwolves_2026-03-15` |
+| `hash_id` (middles) | 16-char lowercase hex | `cc229ed94a2ee679` |
+| `betting_tool_id` | Human-readable canonical key | `middle:prematch:mlb_...:total_runs:...` |
+| API key | Prefixed token | `sk_live_...` |
+
+Join `/splits` and `/odds` by `event_id`. Track an opportunity across polls by `hash_id`.
+
+## Rate limit headers
+
+Every authenticated response includes:
+
+| Header | Meaning |
+|---|---|
+| `X-RateLimit-Limit` | Requests allowed per minute for your tier. |
+| `X-RateLimit-Remaining` | Requests remaining in the current window. |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets. |
+| `X-Data-Delay` | Odds delay in seconds for your tier (`0` = real-time). |
+| `X-Request-Id` | Unique request identifier — include this in support requests. |
+
+## What this is *not*
+
+- **No `success` field** on responses. HTTP status codes do that job.
+- **No envelope-of-envelopes.** The top-level object is the envelope; `meta.updated_at` nesting is not used.
+- **No mixed casing.** Any response field is snake_case. Any WebSocket *input* field may be camelCase — everything else is snake_case.
+
+## Machine-readable source of truth
+
+- REST surface: [`openapi.json`](/openapi.json) (OpenAPI 3.1)
+- WebSocket surface: [`asyncapi.yaml`](/asyncapi.yaml) (AsyncAPI 3.0)
+
+Both files are published as static assets and can be diffed in CI. If this page drifts from the spec, the spec wins — the spec is generated from the deployed server.

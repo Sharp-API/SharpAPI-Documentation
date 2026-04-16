@@ -424,7 +424,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -512,7 +512,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -583,7 +583,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -706,7 +706,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -789,7 +789,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -840,7 +840,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -940,7 +940,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -1143,7 +1143,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -1193,7 +1193,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -1553,7 +1553,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -1617,7 +1617,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2176,7 +2176,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2227,7 +2227,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2500,7 +2500,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2560,7 +2560,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2620,7 +2620,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2691,7 +2691,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2775,7 +2775,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -2868,7 +2868,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -3160,7 +3160,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -3323,7 +3323,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -3411,7 +3411,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/SuccessEnvelope"
+                      "$ref": "#/components/schemas/DataEnvelope"
                     },
                     {
                       "type": "object",
@@ -3821,41 +3821,15 @@
       }
     },
     "schemas": {
-      "SuccessEnvelope": {
-        "type": "object",
-        "required": [
-          "success",
-          "data"
-        ],
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "const": true
-          },
-          "data": {},
-          "meta": {
-            "type": "object",
-            "properties": {
-              "updated_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          }
-        }
-      },
       "PaginatedEnvelope": {
         "type": "object",
+        "description": "Standard shape for paginated list responses. No `success` flag \u2014 HTTP status codes indicate success/failure.",
         "required": [
-          "success",
           "data",
-          "pagination"
+          "pagination",
+          "updated_at"
         ],
         "properties": {
-          "success": {
-            "type": "boolean",
-            "const": true
-          },
           "data": {
             "type": "array",
             "items": {}
@@ -3863,22 +3837,10 @@
           "pagination": {
             "$ref": "#/components/schemas/Pagination"
           },
-          "meta": {
-            "type": "object",
-            "properties": {
-              "count": {
-                "type": "integer",
-                "description": "Number of items in this page"
-              },
-              "total": {
-                "type": "integer",
-                "description": "Total matching items"
-              },
-              "updated_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server emit time (RFC 3339)."
           }
         }
       },
@@ -5973,6 +5935,22 @@
                 }
               }
             }
+          }
+        }
+      },
+      "DataEnvelope": {
+        "type": "object",
+        "description": "Standard shape for non-paginated responses. Emitted by endpoints that return a single resource or a small fixed list. No `success` flag \u2014 HTTP status codes indicate success/failure.",
+        "required": [
+          "data",
+          "updated_at"
+        ],
+        "properties": {
+          "data": {},
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server emit time (RFC 3339)."
           }
         }
       }

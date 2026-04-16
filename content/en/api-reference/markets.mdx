@@ -13,7 +13,7 @@ GET /api/v1/markets
 ```
 
 <Callout type="info">
-This is a **public endpoint** -- no authentication required. Unauthenticated requests are rate-limited to 10 requests/minute. Authenticated requests receive your tier's full rate limit.
+Requires an API key. Available on all tiers (Free included). Unauthenticated requests return `401`.
 </Callout>
 
 ## Query Parameters
@@ -27,16 +27,20 @@ This is a **public endpoint** -- no authentication required. Unauthenticated req
 <Tabs items={['cURL', 'JavaScript', 'Python']}>
   <Tabs.Tab>
 ```bash
-# List all markets (no auth required)
-curl -X GET "https://api.sharpapi.io/api/v1/markets"
+# List all markets
+curl -X GET "https://api.sharpapi.io/api/v1/markets" \
+  -H "X-API-Key: YOUR_API_KEY"
 
 # Filter by sport
-curl -X GET "https://api.sharpapi.io/api/v1/markets?sport=basketball"
+curl -X GET "https://api.sharpapi.io/api/v1/markets?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
-const response = await fetch('https://api.sharpapi.io/api/v1/markets');
+const response = await fetch('https://api.sharpapi.io/api/v1/markets', {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+});
 const { data, meta } = await response.json();
 
 // List markets with event counts
@@ -51,7 +55,10 @@ data.forEach(m => {
 ```python
 import requests
 
-response = requests.get('https://api.sharpapi.io/api/v1/markets')
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/markets',
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
 result = response.json()
 
 for market in result['data']:

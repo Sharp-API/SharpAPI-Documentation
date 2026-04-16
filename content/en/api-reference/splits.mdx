@@ -47,44 +47,49 @@ Comparing DraftKings (recreational) vs Circa (sharp) splits reveals where profes
 
 ```json
 {
-  "success": true,
   "data": [
     {
-      "event_id": "nba_thunder_timberwolves_2026-03-15",
-      "sport": "basketball",
-      "league": "nba",
-      "book": "draftkings",
-      "away_team": "Minnesota Timberwolves",
-      "home_team": "Oklahoma City Thunder",
+      "event_id": "mlb_guardians_orioles_2026-04-16",
+      "sport": "baseball",
+      "league": "mlb",
+      "sportsbook": "draftkings",
+      "away_team": "Baltimore Orioles",
+      "home_team": "Cleveland Guardians",
       "spread": {
-        "away_line": 9.5,
-        "home_line": -9.5,
-        "handle_pct": { "away": 0.55, "home": 0.45 },
-        "bets_pct": { "away": 0.59, "home": 0.41 }
+        "away_odds": -1.5,
+        "home_odds": 1.5,
+        "handle_pct": { "away": 0.22, "home": 0.78 },
+        "bets_pct":   { "away": 0.20, "home": 0.80 }
       },
       "total": {
-        "line": 225.5,
-        "handle_pct": { "over": 0.51, "under": 0.49 },
-        "bets_pct": { "over": 0.67, "under": 0.33 }
+        "line": 8,
+        "handle_pct": { "over": 0.53, "under": 0.47 },
+        "bets_pct":   { "over": 0.57, "under": 0.43 }
       },
       "moneyline": {
-        "away_odds": 310,
-        "home_odds": -395,
-        "handle_pct": { "away": 0.51, "home": 0.49 },
-        "bets_pct": { "away": 0.22, "home": 0.78 }
+        "away_odds": 104,
+        "home_odds": -126,
+        "handle_pct": { "away": 0.28, "home": 0.72 },
+        "bets_pct":   { "away": 0.33, "home": 0.67 }
       },
-      "fetched_at": "2026-03-15T14:30:00Z"
+      "fetched_at": "2026-04-16T19:25:28.363825+00:00"
     }
   ],
-  "meta": {
-    "total": 25,
+  "pagination": {
     "limit": 100,
     "offset": 0,
-    "sources": ["draftkings", "circa"],
-    "sports": ["basketball", "mma"]
-  }
+    "count": 1,
+    "total": 41,
+    "has_more": false,
+    "next_offset": null
+  },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
 }
 ```
+
+<Callout type="warning">
+  In the `/splits` response the spread carries *line* values inside the `away_odds`/`home_odds` keys (e.g. `-1.5` / `+1.5`) — the field naming is a known inconsistency. The historical endpoint uses `away_line`/`home_line` for the same data.
+</Callout>
 
 ## Response Fields
 
@@ -93,11 +98,11 @@ Comparing DraftKings (recreational) vs Circa (sharp) splits reveals where profes
 | `event_id` | string | Canonical event ID — use this to join with `/odds` data |
 | `sport` | string | Atlas-normalized sport name |
 | `league` | string | Atlas-normalized league name |
-| `book` | string | Source sportsbook for the splits data |
+| `sportsbook` | string | Source sportsbook for the splits data (`draftkings` or `circa`) |
 | `away_team` | string | Away team name |
 | `home_team` | string | Home team name |
-| `spread.away_line` | number | Away spread line (e.g., +9.5) |
-| `spread.home_line` | number | Home spread line (e.g., -9.5) |
+| `spread.away_odds` | number | Away spread *line* value (e.g., `-1.5`) — see callout above |
+| `spread.home_odds` | number | Home spread *line* value (e.g., `+1.5`) |
 | `spread.handle_pct` | object | Money % on each side (`away`, `home`; 0.0-1.0) |
 | `spread.bets_pct` | object | Ticket % on each side (`away`, `home`; 0.0-1.0) |
 | `total.line` | number | Over/under line (e.g., 225.5) |
@@ -159,55 +164,56 @@ GET /api/v1/splits/history?event_id={event_id}
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `event_id` | string | Yes | Canonical event ID |
-| `sportsbook` | string | No | Filter by book (comma-separated) |
-| `limit` | integer | No | Max entries (default 100, max 200) |
+| `sportsbook` | string | No | Filter by book (comma-separated). When set, `limit` is applied client-side after fetching all matching entries. |
+| `start_time` | string | No | Lower bound. RFC 3339 (`2026-04-16T13:00:00Z`) or Unix seconds (`1776344602`). |
+| `end_time` | string | No | Upper bound, same formats. |
+| `limit` | integer | No | Max entries (default 100, max 200). |
 
 ### Response
 
-Entries are sorted oldest-first, showing how splits evolved over the game day.
+Entries are sorted oldest-first. This endpoint emits the success envelope (`success`/`data`/`meta`) — distinct from `/splits` which emits `data`/`pagination`/`updated_at`.
+
+The history payload uses `book` (not `sportsbook`) and the spread carries `away_line`/`home_line` (not `away_odds`/`home_odds`). Both are known inconsistencies vs `/splits`.
 
 ```json
 {
   "success": true,
   "data": [
     {
-      "book": "draftkings",
-      "ts": "2026-03-15T14:30:00Z",
-      "timestamp": 1710513000,
+      "book": "circa",
+      "ts": "2026-04-16T13:03:21.071966+00:00",
+      "timestamp": 1776344602.36,
       "spread": {
-        "handle_pct": { "away": 0.55, "home": 0.45 },
-        "bets_pct": { "away": 0.59, "home": 0.41 }
+        "away_line": -1.5,
+        "home_line": 1.5,
+        "handle_pct": { "away": 0.37, "home": 0.63 },
+        "bets_pct":   { "away": 0.27, "home": 0.73 }
       },
       "total": {
-        "handle_pct": { "over": 0.51, "under": 0.49 },
-        "bets_pct": { "over": 0.67, "under": 0.33 }
+        "line": 8,
+        "handle_pct": { "over": 0.43, "under": 0.57 },
+        "bets_pct":   { "over": 0.55, "under": 0.45 }
       },
       "moneyline": {
-        "handle_pct": { "away": 0.51, "home": 0.49 },
-        "bets_pct": { "away": 0.22, "home": 0.78 }
-      }
-    },
-    {
-      "book": "draftkings",
-      "ts": "2026-03-15T14:35:00Z",
-      "timestamp": 1710513300,
-      "spread": {
-        "handle_pct": { "away": 0.58, "home": 0.42 },
-        "bets_pct": { "away": 0.60, "home": 0.40 }
+        "away_odds": 104,
+        "home_odds": -126,
+        "handle_pct": { "away": 0.35, "home": 0.65 },
+        "bets_pct":   { "away": 0.35, "home": 0.65 }
       }
     }
   ],
   "meta": {
-    "event_id": "nba_thunder_timberwolves_2026-03-15",
-    "total": 2,
-    "books": ["draftkings", "circa"],
-    "oldest": "2026-03-15T14:30:00Z",
-    "newest": "2026-03-15T14:35:00Z"
+    "event_id": "mlb_guardians_orioles_2026-04-16",
+    "total": 3,
+    "books": ["circa", "draftkings"],
+    "oldest": "2026-04-16T13:03:22.360588312Z",
+    "newest": "2026-04-16T13:08:41.199237823Z",
+    "updated_at": "2026-04-16T19:28:50.525875452Z"
   }
 }
 ```
 
-Data is collected every 5 minutes and retained for 48 hours.
+Data is collected every ~5 minutes and retained for 48 hours via a Valkey sorted set (`splits_history:{event_id}`) scored by Unix timestamp.
 
 <Tabs items={['Full History', 'DraftKings Only']}>
   <Tabs.Tab>

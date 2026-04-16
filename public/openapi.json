@@ -50,6 +50,10 @@
       "description": "Account info, usage, and key management"
     },
     {
+      "name": "Betting Splits",
+      "description": "Public betting splits \u2014 handle % and bet % from DraftKings (recreational) and Circa Sports (sharp-friendly)."
+    },
+    {
       "name": "Deep Links",
       "description": "Sportsbook deep link generation"
     },
@@ -168,6 +172,220 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/splits": {
+      "get": {
+        "operationId": "listSplits",
+        "summary": "List public betting splits",
+        "description": "Returns the latest snapshot of public betting splits (handle % and bet %) for every tracked event. Data is sourced from DraftKings (recreational) and Circa Sports (sharp-friendly), refreshed every 5 minutes. Available on all tiers.",
+        "tags": [
+          "Betting Splits"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sport"
+          },
+          {
+            "$ref": "#/components/parameters/league"
+          },
+          {
+            "$ref": "#/components/parameters/sportsbook"
+          },
+          {
+            "$ref": "#/components/parameters/event"
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "description": "Filter to events that have splits for a market. Comma-separated.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "spread",
+                "total",
+                "moneyline"
+              ]
+            },
+            "example": "spread,moneyline"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of splits, one entry per (event, sportsbook).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "pagination",
+                    "updated_at"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SplitsGame"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/splits/history": {
+      "get": {
+        "operationId": "getSplitsHistory",
+        "summary": "Splits history for one event",
+        "description": "Returns the time series of splits snapshots for a single event from the Valkey sorted set `splits_history:{event_id}`. Snapshots are captured every ~5 minutes and retained for 48 hours. Available on all tiers.",
+        "tags": [
+          "Betting Splits"
+        ],
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "query",
+            "required": true,
+            "description": "Canonical event ID (e.g. `mlb_guardians_orioles_2026-04-16`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/sportsbook"
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "Lower bound for snapshot timestamp. Accepts RFC 3339 (`2026-04-16T13:00:00Z`) or Unix seconds (`1776344602`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "Upper bound for snapshot timestamp. Same formats as `start_time`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum entries returned. 1-200, default 100. Ignored when a `sportsbook` filter is set (server returns all matching, then trims).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshots ordered oldest-first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SplitsHistoryEntry"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "event_id": {
+                          "type": "string"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "books": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Distinct source sportsbooks present in this response."
+                        },
+                        "oldest": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "newest": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required `event_id` query parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "invalid_request",
+                    "message": "event_id query parameter is required"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
           }
         }
       }
@@ -6057,6 +6275,293 @@
           "timestamp": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "SplitsGame": {
+        "type": "object",
+        "description": "Public betting splits for a single event from one source sportsbook.",
+        "required": [
+          "event_id",
+          "sport",
+          "league",
+          "sportsbook"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "description": "Canonical event ID (joinable with /odds)"
+          },
+          "sport": {
+            "type": "string"
+          },
+          "league": {
+            "type": "string"
+          },
+          "sportsbook": {
+            "type": "string",
+            "enum": [
+              "draftkings",
+              "circa"
+            ],
+            "description": "Source sportsbook for the splits data."
+          },
+          "away_team": {
+            "type": "string"
+          },
+          "home_team": {
+            "type": "string"
+          },
+          "spread": {
+            "type": "object",
+            "description": "Spread market splits. NOTE: `away_odds` and `home_odds` here carry spread *line* values (e.g. -1.5/+1.5), not American odds. Field naming is a known inconsistency vs `/splits/history` which uses `away_line`/`home_line`.",
+            "properties": {
+              "away_odds": {
+                "type": "number"
+              },
+              "home_odds": {
+                "type": "number"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "home": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "home": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "line": {
+                "type": "number"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "over": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "under": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "over": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "under": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            }
+          },
+          "moneyline": {
+            "type": "object",
+            "properties": {
+              "away_odds": {
+                "type": "number",
+                "description": "American odds"
+              },
+              "home_odds": {
+                "type": "number",
+                "description": "American odds"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "home": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "home": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            }
+          },
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SplitsHistoryEntry": {
+        "type": "object",
+        "description": "A single timestamped splits snapshot for an event from one source.",
+        "required": [
+          "book",
+          "ts",
+          "timestamp"
+        ],
+        "properties": {
+          "book": {
+            "type": "string",
+            "enum": [
+              "draftkings",
+              "circa"
+            ],
+            "description": "Source sportsbook. NOTE: this endpoint uses `book`; `/splits` uses `sportsbook` for the same concept (known inconsistency)."
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Snapshot timestamp (RFC 3339)."
+          },
+          "timestamp": {
+            "type": "number",
+            "description": "Snapshot timestamp (Unix seconds, fractional)."
+          },
+          "spread": {
+            "type": "object",
+            "properties": {
+              "away_line": {
+                "type": "number"
+              },
+              "home_line": {
+                "type": "number"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number"
+                  },
+                  "home": {
+                    "type": "number"
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number"
+                  },
+                  "home": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "line": {
+                "type": "number"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "over": {
+                    "type": "number"
+                  },
+                  "under": {
+                    "type": "number"
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "over": {
+                    "type": "number"
+                  },
+                  "under": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "moneyline": {
+            "type": "object",
+            "properties": {
+              "away_odds": {
+                "type": "number"
+              },
+              "home_odds": {
+                "type": "number"
+              },
+              "handle_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number"
+                  },
+                  "home": {
+                    "type": "number"
+                  }
+                }
+              },
+              "bets_pct": {
+                "type": "object",
+                "properties": {
+                  "away": {
+                    "type": "number"
+                  },
+                  "home": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
           }
         }
       }

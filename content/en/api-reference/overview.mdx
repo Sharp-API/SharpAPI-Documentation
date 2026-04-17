@@ -208,6 +208,7 @@ All errors follow a consistent format:
 | `error.code` | Machine-readable error code |
 | `error.message` | Human-readable description |
 | `error.docs` | Link to relevant documentation (optional — included on auth, tier, rate limit, and streaming errors) |
+| `error.correct_endpoint` | The correct endpoint to use (optional — included on `unknown_endpoint` errors when the API recognizes the path as a known wrong route) |
 | `error.retry_after` | Seconds until retry is allowed (optional — included on `rate_limited` errors) |
 
 ## Standard Response Headers
@@ -313,5 +314,6 @@ All odds are returned as flat fields on each odds object:
 | `tier_restricted` | 403 | Endpoint not available on your tier |
 | `invalid_request` | 400 | Malformed request parameters |
 | `not_found` | 404 | Resource not found |
+| `unknown_endpoint` | 410 | Wrong API path — response includes `correct_endpoint` with the right route (e.g. `/api/v1/arbitrage` → `/api/v1/opportunities/arbitrage`) |
 | `upstream_error` | 502 | Temporary data fetch issue |
 | `internal_error` | 500 | Server error |

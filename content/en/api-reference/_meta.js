@@ -69,6 +69,12 @@ export default {
   account: "Account Info",
   "account-usage": "Usage Stats",
   "account-keys": "API Key Management",
+  "---Historical": {
+    type: "separator",
+    title: "Historical (Sharp+)",
+  },
+  "historical-clv": "Closing Line Value (CLV)",
+  "historical-odds-closing": "Closing Odds by Date",
   "---Enterprise": {
     type: "separator",
     title: "Enterprise",

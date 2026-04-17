@@ -3,6 +3,7 @@ import { Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import Link from 'next/link'
 import { PostHogProvider } from '../../components/PostHogProvider'
+import { SiteStructuredData } from '../../components/StructuredData'
 
 import 'nextra-theme-docs/style.css'
 import '../../styles/globals.css'
@@ -51,7 +52,9 @@ export default async function LangLayout({ children, params }) {
   const { lang } = await params
   return (
     <html lang={lang} dir="ltr" suppressHydrationWarning>
-      <Head color={{ hue: 210 }} />
+      <Head color={{ hue: 210 }}>
+        <SiteStructuredData />
+      </Head>
       <body>
         <PostHogProvider>
           <Layout

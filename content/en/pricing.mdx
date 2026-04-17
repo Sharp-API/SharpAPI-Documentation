@@ -76,6 +76,8 @@ Choose the plan that fits your betting strategy. All plans include access to our
     - Real-time data
     - All sportsbooks
     - All Pro features
+    - Closing Line Value (CLV)
+    - Closing Odds History (30 days)
     - Priority Support
 
     Get Started
@@ -100,7 +102,6 @@ Need higher limits, custom features, or an SLA? Contact us for enterprise pricin
 
 - Custom rate limits
 - Custom concurrent streams
-- [Historical Odds](/en/api-reference/enterprise) - Odds movements and closing lines
 - [Futures](/en/api-reference/enterprise) - Futures markets and cross-book odds
 - [Game State](/en/api-reference/gamestate) - Live scores aggregated across sportsbooks
 - Dedicated support
@@ -124,6 +125,8 @@ Need higher limits, custom features, or an SLA? Contact us for enterprise pricin
 | `GET /opportunities/arbitrage` | No | Yes | Yes | Yes | Yes |
 | `GET /opportunities/middles` | No | No | Yes | Yes | Yes |
 | `GET /opportunities/low_hold` | No | No | Yes | Yes | Yes |
+| `GET /historical/clv` | No | No | No | Yes | Yes |
+| `GET /historical/odds/closing` | No | No | No | Yes | Yes |
 | `GET /futures` | No | No | No | No | Yes |
 | `GET /gamestate` | No | No | No | No | Yes |
 | CSV Export | No | No | Yes | Yes | Yes |

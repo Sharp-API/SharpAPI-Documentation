@@ -1,0 +1,135 @@
+---
+description: "Understand the difference between live (in-play) and pre-match odds in SharpAPI — what each means, how books behave during live play, and what to expect from DraftKings and FanDuel when building live betting tools."
+---
+
+import { Callout } from 'nextra/components'
+
+# Live vs. Pre-Match Odds
+
+SharpAPI collects odds from sportsbooks in two states: **pre-match** (before a game starts) and **live** (in-play, after the game begins). These are fundamentally different markets with different update patterns, depth, and reliability — especially across different book types.
+
+## What Is Pre-Match?
+
+Pre-match odds are set before a game begins. This is where:
+
+- **Market depth is greatest** — books offer their full menu of lines, spreads, totals, and player props
+- **Updates are measured** — lines move hours or days before tip-off, usually in response to sharp action or news
+- **All books participate fully** — every book in the API has pre-match coverage for their supported sports
+
+Pre-match is the backbone of most +EV and arbitrage workflows. The overwhelming majority of odds in the API at any given time are pre-match.
+
+## What Is Live (In-Play)?
+
+Live odds are active during a game. They reflect real-time probabilities as the game state changes — a team scores, a player gets hurt, or time runs out. You can filter to live-only odds using the `live=true` query parameter.
+
+```bash
+# Live odds only
+GET /api/v1/odds?live=true&sport=basketball&league=nba
+
+# Pre-match odds only
+GET /api/v1/odds?live=false&sport=basketball&league=nba
+```
+
+Each odds item carries an `is_live` boolean field indicating its state at the time of collection:
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "event_id": "nba_cavaliers_celtics_2026-04-18",
+  "sport": "basketball",
+  "league": "nba",
+  "market_type": "moneyline",
+  "odds_american": -140,
+  "is_live": true
+}
+```
+
+## How Books Behave During Live Play
+
+This is where expectations diverge significantly between sharp books and US retail books.
+
+### Sharp Books (Pinnacle, Circa, Bookmaker)
+
+Sharp books treat live betting as a core product:
+
+- **Rarely suspend** — markets stay open during scoring plays, injuries, and timeouts. Pinnacle's live suspension rate is a fraction of US books.
+- **Deep market menus** — Pinnacle offers 20–50+ live markets per event across major sports, including live spreads, totals, alternative lines, and team totals
+- **Fast updates** — lines move within seconds of game events; prices reflect current game state almost immediately
+- **Continuous price discovery** — the live line is the sharpest available read on current win probability
+
+Pinnacle's live odds are used as the **sharp reference price** in +EV calculations, just as they are for pre-match.
+
+<Callout type="warning">
+Pinnacle, Circa, Bookmaker, and other sharp books require **Sharp tier** or higher. Requesting sharp book data on Free, Hobby, or Pro tier returns a `403 tier_restricted` error.
+</Callout>
+
+### US Retail Books (DraftKings, FanDuel, BetMGM, Caesars)
+
+US regulated books have live betting, but with important limitations:
+
+| Behavior | Sharp Books | US Books (DK/FD) |
+|----------|-------------|-------------------|
+| Market suspension during scoring plays | Rare | Very frequent |
+| Market suspension during reviews/timeouts | Occasional | Standard practice |
+| Live market menu depth | 20–50+ markets | 3–10 markets |
+| Live odds update interval | 1–5 seconds | 15–60+ seconds |
+| Live props availability | Yes (Pinnacle) | Limited or none |
+
+**Suspension is the key issue.** When an NBA team scores, DraftKings and FanDuel typically pull their live moneylines, spreads, and totals off the board while they reprice. During peak action (4th quarter of a close game), these books may be suspended more often than they are open. This is a regulatory risk-management pattern, not an API limitation.
+
+<Callout type="info">
+When a DK or FD market is suspended, it simply disappears from the API — there is no `status: suspended` field. If you call `GET /api/v1/odds?live=true&sportsbook=draftkings` during a scoring drive, you may get zero results for that event even though the game is in progress.
+</Callout>
+
+### What This Means in Practice
+
+**If you are building a live odds dashboard** that needs continuous coverage without gaps, you cannot rely on DraftKings or FanDuel alone. Plan for:
+- Frequent null windows — design your frontend to handle "no current price" gracefully
+- Data staleness — the last live price you saw from DK may be 30–90 seconds old before markets reopen
+
+**If you are building a live +EV scanner**, the essential piece is Pinnacle as your sharp reference. Without a live Pinnacle price, you cannot calculate whether DK/FD are offering value. This requires **Sharp tier**.
+
+**If you are building a pre-match tool**, DraftKings and FanDuel are fully viable on **Free tier**. Pre-match coverage is comprehensive, suspension is not a factor, and update frequency is more than sufficient.
+
+## Book Coverage Summary
+
+| Book | `has_live_odds` | Practical Live Quality | Tier Required |
+|------|-----------------|------------------------|---------------|
+| Pinnacle | Yes | Excellent — deep, fast, rarely suspends | Sharp |
+| Bookmaker | Yes | Excellent — wide market menu, global | Sharp |
+| Circa Sports | Yes | Good — sharp US book, focused menu | Sharp |
+| Bet365 | Yes | Good — large international menu | Pro |
+| BetMGM | Yes | Moderate — regular suspensions | Hobby |
+| Caesars | Yes | Moderate — regular suspensions | Hobby |
+| DraftKings | Yes | Limited — frequent suspensions, thin menu | Free |
+| FanDuel | Yes | Limited — frequent suspensions, thin menu | Free |
+| Novig | No | Pre-match only | Free |
+| Polymarket | No | Pre-match only (prediction market) | Free |
+
+<Callout type="info">
+`has_live_odds: true` means the sportsbook offers in-play betting and SharpAPI collects those prices when they are available. It does not guarantee continuous coverage — US books suspend frequently enough that live data has meaningful gaps.
+</Callout>
+
+## Recommended Approaches by Use Case
+
+### Live +EV or Live Arbitrage
+- **Required**: Sharp tier (for Pinnacle as reference)
+- **Pattern**: Poll `?live=true&sportsbook=pinnacle` as your reference price; poll US books for the soft price; compute EV when both are non-null
+- **Handle**: null soft prices gracefully — they occur constantly during live play
+
+### Live Odds Display (Dashboard)
+- **Viable**: Pro tier or higher
+- **Pattern**: Fetch `?live=true` on a 5–10 second interval; display last-seen price with a "last updated" timestamp; show a "market suspended" state when no price is returned
+- **Avoid**: assuming a missing price means odds are unavailable forever — markets typically reopen within 30–90 seconds
+
+### Pre-Match Only (Most Common)
+- **Viable**: Free tier with DraftKings + FanDuel
+- **Pattern**: Use `?live=false` if you want to explicitly exclude in-play lines from your results
+- **Note**: Omitting the `live` parameter returns both pre-match and live odds mixed together
+
+## Related
+
+- [Odds Snapshot](/en/api-reference/odds) — `live` query parameter reference
+- [Sportsbooks](/en/api-reference/sportsbooks) — Full book list with `has_live_odds` and tier requirements
+- [Live Game State](/en/api-reference/gamestate) — Scores and clocks for in-play events (Enterprise tier)
+- [+EV Opportunities](/en/api-reference/opportunities-ev) — Pre-computed +EV using Pinnacle as the sharp reference

@@ -129,7 +129,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `odds_probability` | number | Updated implied probability (e.g. `0.6`) |
 | `line` | number \| null | Updated line/spread (e.g. `-3.5`), or `null` for moneyline |
 | `is_live` | boolean | Whether the event is currently live |
-| `odds_changed_at` | string | ISO 8601 timestamp of when the odds changed |
+| `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at). |
 
 **Envelope fields:**
 

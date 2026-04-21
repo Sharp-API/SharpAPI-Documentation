@@ -383,6 +383,10 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 | `pinnacle` | Pinnacle | Yes | Yes | **Sharp** |
 {/* AUTO:END:sharp-books */}
 
+<Callout type="info">
+**Reading Pinnacle timestamps.** `odds_changed_at` on a Pinnacle row is their trading-desk timestamp, not our pipeline's. Pinnacle holds lines steady when the market has not moved — an idle value of 30+ minutes is common on MLB player props and NBA markets. Use `last_seen_at` for pipeline freshness. See [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at) for what "stale" actually means on their feed.
+</Callout>
+
 ### International
 
 {/* AUTO:START:intl-books */}

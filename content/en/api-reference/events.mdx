@@ -321,17 +321,30 @@ data = response.json()
 
 ## Migration from Previous Endpoints
 
-This endpoint consolidates four previous endpoints into one:
+Several legacy event sub-paths from earlier API versions are kept as deprecation signposts — hitting them returns **`410 Gone`** with a machine-readable hint pointing at the correct endpoint.
 
-| Old Endpoint | New Equivalent |
+| Deprecated Path | Use Instead |
 |-------------|----------------|
-| `GET /schedule` | `GET /events` |
-| `GET /schedule/live` | `GET /events?live=true` |
-| `GET /events/live` | `GET /events?live=true` |
 | `GET /events/search?q=celtics` | `GET /events?q=celtics` |
+| `GET /events/list` | `GET /events` |
+| `GET /events/all` | `GET /events` |
+| `GET /events/find` | `GET /events` |
+
+### 410 Response Shape
+
+```json
+{
+  "error": {
+    "code": "unknown_endpoint",
+    "message": "There is no /api/v1/events/search endpoint. Use GET /api/v1/events — results can be filtered with ?sport=, ?league=, and ?book= query parameters.",
+    "correct_endpoint": "/api/v1/events",
+    "docs": "https://docs.sharpapi.io/api-reference"
+  }
+}
+```
 
 <Callout type="warning">
-The previous endpoints used **camelCase** field names (`homeTeam`, `awayTeam`, `isLive`, `bookCount`). The v1 API uses **snake_case** exclusively (`home_team`, `away_team`, `is_live`, `book_count`). Update your client code accordingly.
+Pre-v1 responses used **camelCase** field names (`homeTeam`, `awayTeam`, `isLive`, `bookCount`). The v1 API uses **snake_case** exclusively (`home_team`, `away_team`, `is_live`, `book_count`). Update your client code accordingly.
 </Callout>
 
 ### Key changes from previous versions

@@ -313,14 +313,47 @@ All odds are returned as flat fields on each odds object:
 
 ## Error Codes
 
+The canonical list of error codes emitted by the API. The string in `error.code` is the stable contract — check it rather than the prose `message`.
+
+### HTTP error codes
+
+Emitted in REST responses.
+
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `unauthorized` | 401 | Missing or invalid API key |
-| `forbidden` | 403 | Feature requires higher tier |
-| `rate_limited` | 429 | Too many requests |
-| `tier_restricted` | 403 | Endpoint not available on your tier |
-| `invalid_request` | 400 | Malformed request parameters |
+| `missing_api_key` | 401 | No API key supplied via `X-API-Key`, `?api_key=`, or `Authorization: Bearer` |
+| `invalid_api_key` | 401 | API key was supplied but is not recognized |
+| `expired_api_key` | 401 | API key has expired — generate a new one in the dashboard |
+| `disabled_api_key` | 401 | API key is disabled, usually because the subscription lapsed |
+| `unauthorized` | 401 | Bearer-token auth failed on admin or `/api/v1/monitoring/*` endpoints (distinct from `invalid_api_key`) |
+| `invalid_token` | 401 | Clerk session token failed verification (dashboard-only endpoints) |
+| `tier_restricted` | 403 | Endpoint or feature is not available on your tier — response includes `tier` and `required_tier` |
 | `not_found` | 404 | Resource not found |
+| `method_not_allowed` | 405 | HTTP method is not supported on this route |
+| `gone` | 410 | Event has ended or expired — use `/api/v1/events` for current events |
 | `unknown_endpoint` | 410 | Wrong API path — response includes `correct_endpoint` with the right route (e.g. `/api/v1/arbitrage` → `/api/v1/opportunities/arbitrage`) |
-| `upstream_error` | 502 | Temporary data fetch issue |
-| `internal_error` | 500 | Server error |
+| `validation_error` | 400 | Request body or query parameters failed validation |
+| `rate_limited` | 429 | Per-minute request rate limit exceeded — response includes `retry_after` |
+| `concurrent_request_cap` | 429 | Too many in-flight requests for your tier — reduce parallelism or upgrade |
+| `too_many_streams` | 429 | Maximum concurrent SSE or WebSocket streams exceeded for this API key |
+| `backpressure` | — | Emitted as an SSE `event: error` (not an HTTP status) when the client cannot keep up; server then closes the stream |
+| `upstream_error` | 502 | Temporary issue reaching an upstream sportsbook or auth provider |
+| `service_unavailable` | 503 | A required service (e.g. key management) is not configured or is offline |
+| `internal_error` | 500 | Unexpected server error — retry with backoff and contact support with `X-Request-Id` if it persists |
+
+<Callout type="info">
+`bad_request` and `invalid_request` are **deprecated** — both were collapsed into `validation_error`. Clients that match on the old strings should add `validation_error` to their error map.
+</Callout>
+
+### WebSocket frame error codes
+
+Emitted only inside `{"type": "error", "code": "..."}` frames on an open WebSocket connection. They describe client-protocol mistakes and do not correspond to an HTTP status.
+
+| Code | Meaning |
+|------|---------|
+| `invalid_message` | Frame could not be parsed as JSON or did not match the expected shape |
+| `unknown_message_type` | `type` field is not one of the documented values (`auth`, `subscribe`, `filter`, `refresh_token`, `ping`) |
+| `missing_token` | `auth` or `refresh_token` frame did not include a `token` field |
+| `missing_channels` | `subscribe` frame did not include a non-empty `channels` array |
+| `not_authenticated` | Frame requires an authenticated session (sent `subscribe`, `filter`, or `refresh_token` before `auth`) |
+| `already_authenticated` | Client sent a second `auth` frame after the first one succeeded |

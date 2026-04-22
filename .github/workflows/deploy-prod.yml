@@ -58,6 +58,14 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Check links
+        # Spins up a local static server on out/ and crawls every
+        # internal link with linkinator. Catches dead anchors and
+        # rotten internal paths before they ship to docs.sharpapi.io.
+        # External URLs are skipped — their drift is a third-party
+        # concern and would fail CI on transient upstream outages.
+        run: pnpm check-links
+
   backup-deployment:
     name: Backup Current Deployment
     runs-on: ubuntu-latest

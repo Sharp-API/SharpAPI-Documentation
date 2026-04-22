@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Check links
+        run: pnpm check-links
+
   deploy-preview:
     name: Deploy Preview
     needs: validate

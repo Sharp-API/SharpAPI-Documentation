@@ -48,6 +48,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        # `next build` performs its own tsc-equivalent pass, but only
+        # for files reachable from routes. This runs tsc against the
+        # whole repo so MDX page scripts, shared utils, and unused
+        # helpers don't drift types.
+        run: pnpm typecheck
+
       - name: Build
         run: pnpm build
 

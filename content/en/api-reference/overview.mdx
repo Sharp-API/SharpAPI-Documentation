@@ -37,7 +37,7 @@ This spec covers all endpoints, request/response schemas, and authentication req
 
 ## Endpoint Summary
 
-SharpAPI exposes 33 routes across 6 namespaces plus reference and health endpoints.
+SharpAPI exposes 35 routes across 7 namespaces plus reference and health endpoints.
 
 ### Odds
 
@@ -65,6 +65,13 @@ SharpAPI exposes 33 routes across 6 namespaces plus reference and health endpoin
 | `GET` | `/api/v1/opportunities/ev` | Yes | Pro |
 | `GET` | `/api/v1/opportunities/arbitrage` | Yes | Hobby |
 | `GET` | `/api/v1/opportunities/middles` | Yes | Pro |
+
+### Splits
+
+| Method | Path | Auth | Min Tier |
+|--------|------|------|----------|
+| `GET` | `/api/v1/splits` | Yes | Pro |
+| `GET` | `/api/v1/splits/history` | Yes | Pro |
 
 ### Streaming
 

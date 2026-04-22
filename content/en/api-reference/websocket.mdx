@@ -567,10 +567,23 @@ Error notification. The connection may remain open (for non-fatal errors) or clo
 {
   "type": "error",
   "seq": 152,
-  "code": "unknown_type",
+  "code": "unknown_message_type",
   "message": "Unknown message type: foobar"
 }
 ```
+
+The WebSocket layer emits a small, fixed set of frame-level error codes for client-protocol mistakes. They are distinct from the HTTP error codes returned by REST endpoints.
+
+| Code | Meaning |
+|------|---------|
+| `invalid_message` | Frame could not be parsed as JSON or did not match the expected shape |
+| `unknown_message_type` | `type` field is not one of `auth`, `subscribe`, `filter`, `refresh_token`, `ping` |
+| `missing_token` | `auth` or `refresh_token` frame did not include a `token` field |
+| `missing_channels` | `subscribe` frame did not include a non-empty `channels` array |
+| `not_authenticated` | Sent `subscribe`, `filter`, or `refresh_token` before `auth` succeeded |
+| `already_authenticated` | Client sent a second `auth` frame after the first one succeeded |
+
+WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restricted`, and `too_many_streams` codes — these cause the server to close the connection after the frame is sent. See [API Overview → Error Codes](/en/api-reference/overview#error-codes) for the full list.
 
 ## Close Codes
 

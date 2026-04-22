@@ -39,7 +39,7 @@ The maximum number of events per batch request depends on your tier:
 | **Enterprise** | 100 |
 
 <Callout type="warning">
-Exceeding the batch limit for your tier will return a `400 invalid_request` error. Split large requests into multiple batches if needed.
+Exceeding the batch limit for your tier will return a `400 validation_error` error. Split large requests into multiple batches if needed.
 </Callout>
 
 ## Example Requests
@@ -207,7 +207,7 @@ X-Request-Id: req_batch_abc123
 ```json
 {
   "error": {
-    "code": "invalid_request",
+    "code": "validation_error",
     "message": "Batch limit exceeded. Your tier (hobby) allows 10 events per batch, but 25 were requested.",
     "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
   }
@@ -218,7 +218,7 @@ X-Request-Id: req_batch_abc123
 ```json
 {
   "error": {
-    "code": "invalid_request",
+    "code": "validation_error",
     "message": "The 'event_ids' field is required and must be a non-empty array of event IDs.",
     "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
   }

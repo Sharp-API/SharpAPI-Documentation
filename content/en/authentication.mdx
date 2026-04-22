@@ -134,16 +134,22 @@ Authenticated requests receive higher rate limits based on your subscription tie
 
 ## Error Codes
 
+Auth-related codes you'll see most often. For the full list of 19 HTTP codes plus the 6 WebSocket frame codes, see [API Overview → Error Codes](/en/api-reference/overview#error-codes).
+
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `unauthorized` | 401 | API key missing or invalid |
-| `forbidden` | 403 | Feature requires higher tier |
-| `rate_limited` | 429 | Too many requests |
-| `tier_restricted` | 403 | Endpoint not available on your tier |
-| `invalid_request` | 400 | Malformed request parameters |
-| `not_found` | 404 | Resource not found |
-| `upstream_error` | 502 | Temporary issue fetching data |
-| `internal_error` | 500 | Server error |
+| `missing_api_key` | 401 | No API key was supplied |
+| `invalid_api_key` | 401 | API key was supplied but is not recognized |
+| `expired_api_key` | 401 | API key has expired |
+| `disabled_api_key` | 401 | API key is disabled, usually because the subscription lapsed |
+| `unauthorized` | 401 | Bearer-token auth failed on admin or monitoring endpoints (distinct from `invalid_api_key`) |
+| `invalid_token` | 401 | Clerk dashboard session token failed verification |
+| `tier_restricted` | 403 | Endpoint or feature not available on your tier |
+| `rate_limited` | 429 | Too many requests — see `retry_after` |
+| `too_many_streams` | 429 | Maximum concurrent SSE / WebSocket connections reached |
+| `validation_error` | 400 | Malformed request parameters (replaces the deprecated `bad_request` / `invalid_request`) |
+| `upstream_error` | 502 | Temporary issue reaching upstream |
+| `internal_error` | 500 | Unexpected server error |
 
 ### Error Response Format
 

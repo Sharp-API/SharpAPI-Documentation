@@ -519,7 +519,7 @@ Each open SSE connection counts as one stream against your limit.
 | Enterprise | Custom |
 
 <Callout type="warning">
-Exceeding your stream limit returns a `429` error with code `stream_limit_exceeded`. Close unused streams before opening new ones.
+Exceeding your stream limit returns a `429` error with code `too_many_streams`. Close unused streams before opening new ones.
 </Callout>
 
 ### Managing Streams
@@ -546,10 +546,10 @@ These close the connection. Handle them in `onerror`:
 
 | Error Code | HTTP Status | Description | Resolution |
 |------------|-------------|-------------|------------|
-| `stream_limit_exceeded` | 429 | Too many concurrent streams | Close unused streams |
+| `too_many_streams` | 429 | Too many concurrent streams | Close unused streams |
 | `tier_restricted` | 403 | Streaming not available on your tier | Add WebSocket add-on |
-| `unauthorized` | 401 | Invalid API key | Check your API key |
-| `invalid_request` | 400 | Invalid filter parameters | Check query params |
+| `invalid_api_key` | 401 | API key missing or invalid | Check your API key |
+| `validation_error` | 400 | Invalid filter parameters | Check query params |
 
 ## Best Practices
 

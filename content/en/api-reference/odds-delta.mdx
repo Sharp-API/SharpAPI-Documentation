@@ -40,7 +40,7 @@ Use the `server_time` from each response as the `since` value for your next requ
 | `offset` | integer | 0 | Pagination offset |
 
 <Callout type="warning">
-The `since` parameter is **required**. Omitting it returns a `400 invalid_request` error.
+The `since` parameter is **required**. Omitting it returns a `400 validation_error` error.
 </Callout>
 
 ## Example Requests
@@ -164,7 +164,7 @@ X-Request-Id: req_delta_abc123
 ```json
 {
   "error": {
-    "code": "invalid_request",
+    "code": "validation_error",
     "message": "The 'since' parameter is required for the delta endpoint",
     "docs": "https://docs.sharpapi.io/en/api-reference/odds-delta"
   }

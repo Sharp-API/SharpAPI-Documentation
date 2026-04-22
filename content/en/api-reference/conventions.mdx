@@ -100,7 +100,9 @@ Every non-2xx response returns a single `error` object.
 
 ### Common error codes
 
-`missing_api_key`, `invalid_api_key`, `validation_error`, `invalid_request`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
+`missing_api_key`, `invalid_api_key`, `validation_error`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
+
+See the full list (19 HTTP codes + 6 WebSocket frame codes, with HTTP statuses) in [API Overview → Error Codes](/en/api-reference/overview#error-codes). `bad_request` and `invalid_request` are deprecated — both were collapsed into `validation_error`.
 
 ## Timestamps
 

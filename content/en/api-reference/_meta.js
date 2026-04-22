@@ -18,6 +18,7 @@ export default {
   "odds-best": "Best Odds",
   "odds-comparison": "Odds Comparison",
   "odds-batch": "Batch Odds",
+  "odds-closing": "Closing Line",
   "---Teams": {
     type: "separator",
     title: "Teams",

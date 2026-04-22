@@ -37,11 +37,6 @@ export default {
     title: "Betting Splits",
   },
   splits: "Betting Splits",
-  "---GameState": {
-    type: "separator",
-    title: "Game State",
-  },
-  gamestate: "Live Game State",
   "---Opportunities": {
     type: "separator",
     title: "Opportunities",

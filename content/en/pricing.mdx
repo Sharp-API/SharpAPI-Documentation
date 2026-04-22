@@ -16,7 +16,7 @@ Choose the plan that fits your betting strategy. All plans include access to our
 | **Hobby** | $79/mo | 120 | Add-on* | Real-time | 5 | Odds, Schedule, Arbitrage |
 | **Pro** | $229/mo | 300 | Add-on* | Real-time | 15 | + EV, Middles, Low Hold, Splits |
 | **Sharp** | $399/mo | 1,000 | Add-on* | Real-time | All 32 | + Priority Support |
-| **Enterprise** | Custom | Custom | Custom | Real-time | All | + History, Futures, Game State, SLA |
+| **Enterprise** | Custom | Custom | Custom | Real-time | All | + History, Futures, SLA |
 
 <Callout type="info">
 *Streaming requires the **WebSocket Add-on** ($99/mo) which enables 10 concurrent SSE streams.
@@ -103,7 +103,6 @@ Need higher limits, custom features, or an SLA? Contact us for enterprise pricin
 - Custom concurrent streams
 - [Historical Odds](/en/api-reference/enterprise) - Odds movements and closing lines
 - [Futures](/en/api-reference/enterprise) - Futures markets and cross-book odds
-- [Game State](/en/api-reference/gamestate) - Live scores aggregated across sportsbooks
 - Dedicated support
 - Service Level Agreement (SLA)
 - Custom integrations
@@ -128,7 +127,6 @@ Need higher limits, custom features, or an SLA? Contact us for enterprise pricin
 | `GET /splits` | No | No | Yes | Yes | Yes |
 | `GET /splits/history` | No | No | Yes | Yes | Yes |
 | `GET /futures` | No | No | No | No | Yes |
-| `GET /gamestate` | No | No | No | No | Yes |
 | CSV Export | No | No | Yes | Yes | Yes |
 | SSE Streaming | No | +$99/mo | +$99/mo | +$99/mo | Included |
 | Priority Support | No | No | No | Yes | Yes |

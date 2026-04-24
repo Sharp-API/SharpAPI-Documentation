@@ -147,6 +147,42 @@ Every authenticated response includes:
 | `X-Data-Delay` | Odds delay in seconds for your tier (`0` = real-time). |
 | `X-Request-Id` | Unique request identifier — include this in support requests. |
 
+## Conditional requests and ETag
+
+Every cacheable `200` response carries a strong `ETag` header — a content hash of the response body. Send it back on your next request via `If-None-Match` to get a `304 Not Modified` with no body when the content hasn't changed. Saves bandwidth on large payloads (`/odds` responses can be multi-MB) and lets you poll more aggressively without re-downloading unchanged data.
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+
+HTTP/1.1 200 OK
+ETag: "9dc023776c4b382"
+Cache-Control: private, max-age=0, must-revalidate
+Content-Type: application/json
+
+{ "data": [...], "updated_at": "..." }
+```
+
+On the next poll, echo the `ETag`:
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+If-None-Match: "9dc023776c4b382"
+
+HTTP/1.1 304 Not Modified
+ETag: "9dc023776c4b382"
+```
+
+**Supported on** every cached GET: `/odds`, `/odds/delta`, `/odds/best`, `/odds/comparison`, `/events`, `/events/:id`, `/sportsbooks`, `/sports`, `/leagues`, `/markets`, `/teams`, `/opportunities/*`.
+
+**Notes:**
+- ETag is **strong** — a byte-for-byte match of the response body. Two bytewise-identical responses always share an ETag; any change produces a new one.
+- `If-None-Match: *` always matches, so it forces a `304` whenever *any* cached response exists (useful for "is there anything new?" probes).
+- `Cache-Control: private, max-age=0, must-revalidate` signals that responses are per-caller — don't share them across users via a shared proxy.
+- ETags are **tier-scoped**. A `free`-tier ETag won't match a `pro`-tier request for the same URL because the responses are filtered differently. You only need to handle this if you change tiers mid-session.
+- Most HTTP clients handle `If-None-Match` automatically when you enable their cache (e.g. `requests-cache` in Python, `undici` + `CacheStore` in Node.js). For hand-rolled polling, cache the last ETag per URL in memory and send it on the next request.
+
 ## What this is *not*
 
 - **No `success` field** on responses. HTTP status codes do that job.

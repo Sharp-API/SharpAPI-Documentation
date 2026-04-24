@@ -1,5 +1,5 @@
 ---
-description: "GET /api/v1/gamestate — Aggregated live game state (scores, periods, clocks, situational data) merged across sportsbooks into a single authoritative view per event. Enterprise tier only."
+description: "GET /api/v1/gamestate — Aggregated live game state (scores, periods, clocks, situational data) merged across sportsbooks into a single authoritative view per event. Available on the Game State add-on ($79/mo) or Enterprise tier."
 ---
 
 import { Callout, Tabs } from 'nextra/components'
@@ -18,12 +18,17 @@ GET /api/v1/gamestate/{sport}
 
 ## Authentication
 
-Requires API key. **Enterprise tier only.** Non-Enterprise tiers receive
-`403 tier_restricted`.
+Requires API key. Available on **the Game State add-on ($79/mo)** or the
+**Enterprise tier**. Keys without either receive `403 tier_restricted`
+with `addon: "game_state"` in the error body. Add the add-on from the
+[billing page](https://sharpapi.io/dashboard/billing) on any paid plan
+(Hobby / Pro / Sharp); Enterprise keys get it included.
 
 Live game state also streams over the `gamestate` channel on
 [SSE](/api-reference/stream) and [WebSocket](/api-reference/websocket)
-— see [Streaming](#streaming) below.
+— see [Streaming](#streaming) below. (Streaming access requires the
+WebSocket add-on or Enterprise, in addition to the Game State
+requirement above.)
 
 ## Path Parameters
 
@@ -245,14 +250,17 @@ events when events drop from the live set.
 
 ## Rate Limits & Quotas
 
-Same Enterprise-tier limits as other endpoints — see
-[Pricing](https://sharpapi.io/pricing). `/gamestate` counts the same
-as other REST calls toward the per-minute quota.
+Rate limits follow your **base tier**, not the add-on — Hobby keys keep
+their 120 req/min, Pro keep 300, Sharp keep 1,000, Enterprise custom.
+See [Pricing](https://sharpapi.io/pricing). `/gamestate` counts the
+same as other REST calls toward the per-minute quota.
 
 ## Troubleshooting
 
-- **403 `tier_restricted`** — your key doesn't have the gamestate
-  feature. Upgrade to Enterprise.
+- **403 `tier_restricted`** with `addon: "game_state"` — your key
+  doesn't have the Game State add-on. Add it from
+  [Billing](https://sharpapi.io/dashboard/billing) for $79/mo, or
+  upgrade to Enterprise.
 - **Empty `data` object** — no live events in scope. This is common
   between events on smaller sport schedules. Poll again.
 - **Events with `stale: true`** — the primary book has gone silent.

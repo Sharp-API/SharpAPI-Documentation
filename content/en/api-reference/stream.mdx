@@ -29,7 +29,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `channel` | string | `opportunities` | What to stream: `odds`, `opportunities`, or `all` |
+| `channel` | string | `opportunities` | What to stream: `odds`, `opportunities`, `gamestate` (Enterprise only), or `all` |
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated |
 | `league` | string | all | Filter by league(s), comma-separated |
@@ -46,6 +46,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 |---------|-----------------|----------|
 | `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Track odds movements |
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alert on opportunities |
+| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live scores, periods, clocks, and situational data per event. **Enterprise tier only.** See [Live Game State](/api-reference/gamestate) for the full field catalog. |
 | `all` | All event types | Full real-time picture |
 
 ### Convenience Routes
@@ -54,6 +55,8 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 |-------|---------------|
 | `GET /api/v1/stream/odds` | `/api/v1/stream?channel=odds` |
 | `GET /api/v1/stream/opportunities` | `/api/v1/stream?channel=opportunities` |
+| `GET /api/v1/stream/gamestate` | `/api/v1/stream?channel=gamestate` |
+| `GET /api/v1/stream/all` | `/api/v1/stream?channel=all` |
 | `GET /api/v1/stream/events/:eventId` | `/api/v1/stream?channel=odds&event=:eventId` |
 
 ## SSE Event Types

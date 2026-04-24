@@ -3311,15 +3311,15 @@
     },
     "/gamestate": {
       "get": {
-        "operationId": "listGameStateSports",
-        "summary": "List game state sports",
-        "description": "Returns a summary of sports with available game state data. Requires **Enterprise** tier.",
+        "operationId": "listAllGameState",
+        "summary": "Live game state for every sport",
+        "description": "Returns aggregated live game state (scores, periods, clocks, situational data) for every sport with active events. Merged across sportsbooks with a consensus-based algorithm so a single misbehaving book can't skew the result. Requires **Enterprise** tier.",
         "tags": [
           "Game State"
         ],
         "responses": {
           "200": {
-            "description": "Available game state sports",
+            "description": "Live game state keyed by sport then event_id",
             "content": {
               "application/json": {
                 "schema": {
@@ -3332,24 +3332,11 @@
                       "properties": {
                         "data": {
                           "type": "object",
-                          "properties": {
-                            "sports": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "sport": {
-                                    "type": "string"
-                                  },
-                                  "event_count": {
-                                    "type": "integer"
-                                  },
-                                  "ttl": {
-                                    "type": "integer",
-                                    "description": "TTL in seconds for this sport's data"
-                                  }
-                                }
-                              }
+                          "description": "Map of sport name to a map of event_id → EventGameState",
+                          "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "$ref": "#/components/schemas/EventGameState"
                             }
                           }
                         }
@@ -3358,21 +3345,41 @@
                   ]
                 },
                 "example": {
-                  "success": true,
                   "data": {
-                    "sports": [
-                      {
-                        "sport": "basketball",
-                        "event_count": 8,
-                        "ttl": 120
-                      },
-                      {
-                        "sport": "football",
-                        "event_count": 3,
-                        "ttl": 120
+                    "soccer": {
+                      "argentina_-_primera_division_bocajuniors_defensayjusticia_2026-04-23": {
+                        "home_team": "Defensa y Justicia",
+                        "away_team": "Boca Juniors",
+                        "sport": "soccer",
+                        "league": "argentina_-_primera_division",
+                        "home_score": 0,
+                        "away_score": 1,
+                        "game_period": "2H",
+                        "game_clock": "49:06",
+                        "is_live": true,
+                        "possession": "away",
+                        "corners_home": 1,
+                        "corners_away": 0,
+                        "primary_book": "draftkings",
+                        "book_count": 6
                       }
-                    ]
-                  }
+                    },
+                    "baseball": {
+                      "mlb_redsox_yankees_2026-04-23": {
+                        "home_team": "New York Yankees",
+                        "away_team": "Boston Red Sox",
+                        "sport": "baseball",
+                        "league": "mlb",
+                        "home_score": 2,
+                        "away_score": 1,
+                        "game_period": "T5",
+                        "is_live": true,
+                        "primary_book": "fliff",
+                        "book_count": 9
+                      }
+                    }
+                  },
+                  "updated_at": "2026-04-23T23:55:01.234Z"
                 }
               }
             }
@@ -3388,9 +3395,9 @@
     },
     "/gamestate/{sport}": {
       "get": {
-        "operationId": "getGameState",
-        "summary": "Get game state for a sport",
-        "description": "Returns live game state data for all events in a sport. Requires **Enterprise** tier.",
+        "operationId": "getGameStateForSport",
+        "summary": "Live game state for a single sport",
+        "description": "Returns aggregated live game state for events in one sport. Response shape matches `GET /gamestate` but `data` contains a single key (the path `sport`). Unknown sports return an empty `data` object, never 404. Requires **Enterprise** tier.",
         "tags": [
           "Game State"
         ],
@@ -3400,14 +3407,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "soccer"
             },
-            "example": "basketball"
+            "description": "Atlas sport id. Case-insensitive. Known values: `baseball`, `basketball`, `football`, `hockey`, `soccer`, `tennis`, `table_tennis`, `cricket`, `esports`, `snooker`, `other`."
           }
         ],
         "responses": {
           "200": {
-            "description": "Game state data for all live events",
+            "description": "Live game state for the requested sport (envelope identical to `/gamestate`, just scoped to one sport)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3420,13 +3428,36 @@
                       "properties": {
                         "data": {
                           "type": "object",
+                          "description": "Map with a single key (the path sport) whose value is a map of event_id → EventGameState.",
                           "additionalProperties": {
-                            "$ref": "#/components/schemas/EventGameState"
+                            "type": "object",
+                            "additionalProperties": {
+                              "$ref": "#/components/schemas/EventGameState"
+                            }
                           }
                         }
                       }
                     }
                   ]
+                },
+                "example": {
+                  "data": {
+                    "soccer": {
+                      "chile_-_primera_division_concepcion_palestino_2026-04-24": {
+                        "home_team": "Palestino",
+                        "away_team": "Concepción",
+                        "sport": "soccer",
+                        "league": "chile_-_primera_division",
+                        "home_score": 0,
+                        "away_score": 0,
+                        "is_live": true,
+                        "primary_book": "unibet",
+                        "book_count": 1,
+                        "stale": true
+                      }
+                    }
+                  },
+                  "updated_at": "2026-04-23T23:55:01.234Z"
                 }
               }
             }
@@ -3436,9 +3467,6 @@
           },
           "403": {
             "$ref": "#/components/responses/TierRestricted"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -4256,56 +4284,158 @@
       },
       "EventGameState": {
         "type": "object",
-        "description": "Live game state data. Only present for live events with score data.",
+        "description": "Aggregated live game state for a single event, merged across the sportsbooks covering it. Scores are consensus-selected; temporal fields use sport-aware clock direction; situational fields priority-fill from a fixed book ranking. Every field is optional except the always-present core set — sport coverage varies, so e.g. tennis rows carry sets_home/server while hockey rows carry power_play.",
         "required": [
+          "home_team",
+          "away_team",
+          "sport",
+          "league",
           "home_score",
-          "score_type"
+          "away_score",
+          "is_live",
+          "primary_book",
+          "book_count"
         ],
         "properties": {
+          "home_team": {
+            "type": "string",
+            "description": "Normalized home team name."
+          },
+          "away_team": {
+            "type": "string",
+            "description": "Normalized away team name."
+          },
+          "sport": {
+            "type": "string",
+            "description": "Atlas sport id (e.g. `baseball`, `soccer`)."
+          },
+          "league": {
+            "type": "string",
+            "description": "Atlas league id (e.g. `mlb`, `england_-_premier_league`)."
+          },
           "home_score": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Current home score in the natural unit for the sport (runs, points, goals, sets — tennis uses summed set points)."
           },
           "away_score": {
             "type": "integer",
-            "nullable": true
+            "description": "Current away score."
           },
-          "period": {
-            "type": "string",
-            "nullable": true,
-            "description": "Current period (e.g., \"Q3\", \"2nd Half\", \"3rd Period\")"
+          "is_live": {
+            "type": "boolean",
+            "description": "Always `true` for events returned by this endpoint."
           },
-          "clock": {
+          "primary_book": {
             "type": "string",
-            "nullable": true,
-            "description": "Game clock (e.g., \"5:42\")"
+            "description": "The sportsbook whose scores were selected by the merge. Consensus-respecting — if ≥2 books agree on a score the highest-priority book in that group wins."
           },
-          "score_type": {
+          "book_count": {
+            "type": "integer",
+            "description": "Number of sportsbooks that contributed live state for this event at merge time."
+          },
+          "game_period": {
             "type": "string",
-            "description": "Score format for this sport (e.g., \"points\", \"runs\", \"goals\")"
+            "description": "Current period. Sport-specific format: `T5` (MLB top 5), `Q3` (NBA Q3), `2H` (soccer 2nd half), `P2` (NHL P2), `S2` (tennis set 2), `FT` (full time)."
+          },
+          "game_clock": {
+            "type": "string",
+            "description": "Game clock. Countup format (`49:06`) for soccer; countdown format (`5:42`) for basketball/hockey/football."
           },
           "possession": {
             "type": "string",
-            "nullable": true
+            "enum": ["home", "away"],
+            "description": "Which team has possession (team sports) or is receiving (tennis)."
           },
-          "is_timeout": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "fouls_home": {
-            "type": "integer",
-            "nullable": true
-          },
-          "fouls_away": {
-            "type": "integer",
-            "nullable": true
-          },
-          "power_play": {
+          "server": {
             "type": "string",
-            "nullable": true
+            "enum": ["home", "away"],
+            "description": "Tennis only — current server."
           },
           "last_play": {
             "type": "string",
-            "nullable": true
+            "description": "Sport-specific last-play description."
+          },
+          "is_timeout": {
+            "type": "boolean",
+            "description": "`true` during a timeout."
+          },
+          "fouls_home": {
+            "type": "integer",
+            "description": "Team fouls (basketball, soccer)."
+          },
+          "fouls_away": {
+            "type": "integer"
+          },
+          "corners_home": {
+            "type": "integer",
+            "description": "Soccer only."
+          },
+          "corners_away": {
+            "type": "integer"
+          },
+          "yellow_cards_home": {
+            "type": "integer",
+            "description": "Soccer only."
+          },
+          "yellow_cards_away": {
+            "type": "integer"
+          },
+          "red_cards_home": {
+            "type": "integer",
+            "description": "Soccer only."
+          },
+          "red_cards_away": {
+            "type": "integer"
+          },
+          "power_play": {
+            "type": "string",
+            "enum": ["home", "away"],
+            "description": "Hockey only — which team is on the power play."
+          },
+          "sets_home": {
+            "type": "integer",
+            "description": "Tennis only — sets won."
+          },
+          "sets_away": {
+            "type": "integer"
+          },
+          "hits_home": {
+            "type": "integer",
+            "description": "Baseball only."
+          },
+          "hits_away": {
+            "type": "integer"
+          },
+          "home_pitcher": {
+            "type": "string",
+            "description": "Baseball only — starting pitcher display name."
+          },
+          "away_pitcher": {
+            "type": "string"
+          },
+          "wickets_home": {
+            "type": "integer",
+            "description": "Cricket only — dismissals."
+          },
+          "wickets_away": {
+            "type": "integer"
+          },
+          "overs": {
+            "type": "number",
+            "description": "Cricket only."
+          },
+          "batting_team": {
+            "type": "string",
+            "enum": ["home", "away"],
+            "description": "Cricket only."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "Only emitted when `true`. Indicates the `primary_book`'s livestate key TTL fell below the aggregator's freshness threshold (~10s) at merge time — scores reflect the last known values; the book has gone quiet. Absence of the field means fresh."
+          },
+          "aggregator_stale": {
+            "type": "boolean",
+            "description": "Only emitted when `true`. Indicates the SharpAPI aggregator itself hasn't advanced the gen counter for this event's sport in more than ~30s. Broader signal than `stale` — suggests a pipeline hiccup, not a single-book issue."
           }
         }
       },

@@ -1,0 +1,268 @@
+---
+description: "GET /api/v1/gamestate — Aggregated live game state (scores, periods, clocks, situational data) merged across sportsbooks into a single authoritative view per event. Enterprise tier only."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Live Game State
+
+Aggregated live game state — scores, periods, clocks, possession, and
+sport-specific situational data — merged across sportsbooks into a
+single authoritative view per event. One row per live fixture,
+consensus-selected from the books covering it.
+
+```
+GET /api/v1/gamestate
+GET /api/v1/gamestate/{sport}
+```
+
+## Authentication
+
+Requires API key. **Enterprise tier only.** Non-Enterprise tiers receive
+`403 tier_restricted`.
+
+Live game state also streams over the `gamestate` channel on
+[SSE](/api-reference/stream) and [WebSocket](/api-reference/websocket)
+— see [Streaming](#streaming) below.
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sport` | string | (optional) Single sport to return. Matches a known Atlas sport (`baseball`, `basketball`, `football`, `hockey`, `soccer`, `tennis`, `table_tennis`, `cricket`, `esports`, `snooker`, `other`). Case-insensitive. Unknown sports return an empty `data` object. |
+
+Without the path parameter, returns every sport with live events.
+
+## Response Envelope
+
+```json
+{
+  "data": {
+    "<sport>": {
+      "<event_id>": { ...event state... }
+    }
+  },
+  "updated_at": "2026-04-23T23:55:01.234Z"
+}
+```
+
+Every event state is keyed by its canonical `event_id` within its sport
+bucket. `updated_at` is the server's time when this response was built
+— use it to gauge freshness if polling.
+
+## Event State Fields
+
+Every field is optional except where noted. Presence varies by sport —
+tennis events carry `sets_home` / `server`; hockey events carry
+`power_play`; soccer events carry `corners_*` / `yellow_cards_*`; etc.
+
+### Always present
+
+| Field | Type | Notes |
+|---|---|---|
+| `home_team` | string | Normalized home team name |
+| `away_team` | string | Normalized away team name |
+| `sport` | string | Sport bucket (`baseball`, `soccer`, …) |
+| `league` | string | Atlas league id (e.g. `mlb`, `england_-_premier_league`) |
+| `home_score` | integer | Current home score in the natural unit for the sport (runs, points, goals, sets — tennis uses summed set points) |
+| `away_score` | integer | Current away score |
+| `is_live` | boolean | Always `true` in this endpoint (non-live events aren't included) |
+| `primary_book` | string | The book the merged scores were selected from. Consensus-respecting — higher-quality books win ties |
+| `book_count` | integer | Number of sportsbooks that contributed live state for this event at merge time |
+
+### Temporal (most team sports)
+
+| Field | Type | Example |
+|---|---|---|
+| `game_period` | string | `"T5"` (MLB top of 5th), `"Q3"` (NBA Q3), `"2H"` (soccer 2nd half), `"P2"` (NHL), `"S2"` (tennis 2nd set), `"FT"` (full time) |
+| `game_clock` | string | `"49:06"` for countup sports (soccer), `"5:42"` for countdown sports (basketball, hockey) |
+
+### Situational
+
+| Field | Type | Notes |
+|---|---|---|
+| `possession` | `"home" \| "away"` | Which team has possession (team sports) or is serving (tennis) |
+| `server` | `"home" \| "away"` | Tennis only — current server |
+| `last_play` | string | Sport-specific last-play description when available |
+| `is_timeout` | boolean | `true` during a timeout |
+
+### Sport-specific
+
+| Field | Sport | Type |
+|---|---|---|
+| `fouls_home`, `fouls_away` | basketball, soccer | integer |
+| `corners_home`, `corners_away` | soccer | integer |
+| `yellow_cards_home`, `yellow_cards_away` | soccer | integer |
+| `red_cards_home`, `red_cards_away` | soccer | integer |
+| `power_play` | hockey | `"home" \| "away"` |
+| `sets_home`, `sets_away` | tennis | integer (sets won) |
+| `hits_home`, `hits_away` | baseball | integer |
+| `home_pitcher`, `away_pitcher` | baseball | string — starting pitcher display name |
+| `wickets_home`, `wickets_away` | cricket | integer |
+| `overs` | cricket | float |
+| `batting_team` | cricket | `"home" \| "away"` |
+
+### Freshness
+
+| Field | Type | Meaning |
+|---|---|---|
+| `stale` | `true` (omitted otherwise) | The `primary_book`'s livestate key TTL dropped below the aggregator's freshness threshold (~10s) at merge time. Scores are the last known values; the book has gone quiet. Treat the event's scores and period as potentially lagging the real game state. |
+| `aggregator_stale` | `true` (omitted otherwise) | The SharpAPI aggregator itself hasn't written a new `gamestate:{sport}` shard for this sport in more than ~30s. Broader signal than `stale` — indicates a pipeline hiccup, not a single-book issue. If you see this persistently, reach out to support. |
+
+<Callout type="info">
+**Absence = fresh.** Both `stale` and `aggregator_stale` are only
+written when truthy, keeping the payload compact. If you don't see
+them on an event, the data is considered fresh.
+</Callout>
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# All live events across every sport
+curl "https://api.sharpapi.io/api/v1/gamestate" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# One sport
+curl "https://api.sharpapi.io/api/v1/gamestate/soccer" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const res = await fetch('https://api.sharpapi.io/api/v1/gamestate/soccer', {
+  headers: { 'X-API-Key': process.env.SHARPAPI_KEY }
+});
+const { data, updated_at } = await res.json();
+for (const [eventId, state] of Object.entries(data.soccer ?? {})) {
+  if (state.stale || state.aggregator_stale) continue;  // skip lagging rows
+  console.log(
+    `${state.home_team} ${state.home_score}-${state.away_score} ${state.away_team}`,
+    `(${state.game_period ?? '?'} ${state.game_clock ?? ''}, ${state.primary_book})`
+  );
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import httpx, os
+r = httpx.get(
+    "https://api.sharpapi.io/api/v1/gamestate/soccer",
+    headers={"X-API-Key": os.environ["SHARPAPI_KEY"]},
+)
+body = r.json()
+for event_id, state in body["data"].get("soccer", {}).items():
+    if state.get("stale") or state.get("aggregator_stale"):
+        continue  # skip lagging rows
+    print(
+        f"{state['home_team']} {state['home_score']}-{state['away_score']} "
+        f"{state['away_team']} ({state.get('game_period')} "
+        f"{state.get('game_clock','')}, {state['primary_book']})"
+    )
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Example Response
+
+```json
+{
+  "data": {
+    "soccer": {
+      "argentina_-_primera_division_bocajuniors_defensayjusticia_2026-04-23": {
+        "home_team": "Defensa y Justicia",
+        "away_team": "Boca Juniors",
+        "sport": "soccer",
+        "league": "argentina_-_primera_division",
+        "home_score": 0,
+        "away_score": 1,
+        "game_period": "2H",
+        "game_clock": "49:06",
+        "is_live": true,
+        "possession": "away",
+        "corners_home": 1,
+        "corners_away": 0,
+        "fouls_home": 0,
+        "fouls_away": 0,
+        "yellow_cards_home": 0,
+        "yellow_cards_away": 0,
+        "red_cards_home": 0,
+        "red_cards_away": 0,
+        "primary_book": "draftkings",
+        "book_count": 6
+      },
+      "chile_-_primera_division_concepcion_palestino_2026-04-24": {
+        "home_team": "Palestino",
+        "away_team": "Concepción",
+        "sport": "soccer",
+        "league": "chile_-_primera_division",
+        "home_score": 0,
+        "away_score": 0,
+        "is_live": true,
+        "primary_book": "unibet",
+        "book_count": 1,
+        "stale": true
+      }
+    }
+  },
+  "updated_at": "2026-04-23T23:55:01.234Z"
+}
+```
+
+## Cross-Book Merge Model
+
+Each event's fields are merged from every sportsbook's livestate
+snapshot via a three-class algorithm:
+
+- **Class A — Scores** are picked by consensus: among books at the most
+  advanced period rank, the highest-total score with ≥2 backers wins. A
+  single book reporting an outlier score (common in the first seconds
+  of a score change, or from a misbehaving adapter) is rejected.
+- **Class B — Temporal fields** (`game_period`, `game_clock`) are
+  selected by sport-aware clock direction — countdown vs countup — and
+  period rank.
+- **Class C — Situational fields** (`possession`, `corners_*`, etc.)
+  are priority-filled from a fixed book ranking.
+
+`primary_book` reports which book the winning scores came from.
+`book_count` is the total number of books that contributed any state
+for the event at merge time.
+
+## Streaming
+
+Every update that the REST endpoint would surface on the next poll
+also fires a `gamestate:update` event on the streaming channels:
+
+- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream#gamestate)
+- **WebSocket**: subscribe to `{channels: ["gamestate"]}` on
+  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket)
+
+Streaming clients receive an initial `gamestate:snapshot` with the full
+current state (a flat list of event rows), then `gamestate:update`
+events carrying changed rows as they merge, and `gamestate:removed`
+events when events drop from the live set.
+
+## Rate Limits & Quotas
+
+Same Enterprise-tier limits as other endpoints — see
+[Pricing](https://sharpapi.io/pricing). `/gamestate` counts the same
+as other REST calls toward the per-minute quota.
+
+## Troubleshooting
+
+- **403 `tier_restricted`** — your key doesn't have the gamestate
+  feature. Upgrade to Enterprise.
+- **Empty `data` object** — no live events in scope. This is common
+  between events on smaller sport schedules. Poll again.
+- **Events with `stale: true`** — the primary book has gone silent.
+  Scores may lag; consider filtering them out or surfacing a UI
+  indicator.
+- **Events with `aggregator_stale: true`** — the SharpAPI aggregator
+  hasn't refreshed that sport in >30s. If persistent, reach out to
+  support; a brief bump can happen during redeploys.
+- **Same match appears twice under different `event_id`s** — known
+  limitation for some regional leagues where sportsbooks use
+  inconsistent league naming. Use `(home_team, away_team)` as a
+  secondary dedup key on the client until the remaining alias gaps
+  close.

@@ -333,12 +333,14 @@ Emitted in REST responses.
 | `gone` | 410 | Event has ended or expired — use `/api/v1/events` for current events |
 | `unknown_endpoint` | 410 | Wrong API path — response includes `correct_endpoint` with the right route (e.g. `/api/v1/arbitrage` → `/api/v1/opportunities/arbitrage`) |
 | `validation_error` | 400 | Request body or query parameters failed validation |
+| `offset_too_large` | 400 | `offset` exceeds the per-endpoint maximum (currently 500 on `/odds` and `/odds/delta`). Switch to cursor-based pagination or advance `since` |
 | `rate_limited` | 429 | Per-minute request rate limit exceeded — response includes `retry_after` |
 | `concurrent_request_cap` | 429 | Too many in-flight requests for your tier — reduce parallelism or upgrade |
 | `too_many_streams` | 429 | Maximum concurrent SSE or WebSocket streams exceeded for this API key |
 | `backpressure` | — | Emitted as an SSE `event: error` (not an HTTP status) when the client cannot keep up; server then closes the stream |
 | `upstream_error` | 502 | Temporary issue reaching an upstream sportsbook or auth provider |
 | `service_unavailable` | 503 | A required service (e.g. key management) is not configured or is offline |
+| `not_ready` | 503 | A backing store the endpoint depends on (e.g. ClickHouse, closing-line capture) is not yet ready to serve the request. Retry with backoff |
 | `internal_error` | 500 | Unexpected server error — retry with backoff and contact support with `X-Request-Id` if it persists |
 
 <Callout type="info">

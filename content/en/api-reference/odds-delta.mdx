@@ -36,11 +36,15 @@ Use the `server_time` from each response as the `since` value for your next requ
 | `min_odds` | number | - | Minimum American odds filter (e.g., `-110`) |
 | `max_odds` | number | - | Maximum American odds filter (e.g., `+200`) |
 | `state` | string | — | US state code for sportsbook deep links (e.g., `nj`, `ny`, `il`). When set, `deep_link` URLs include `?state=XX` so the redirect targets the correct state-specific sportsbook domain. |
-| `limit` | integer | 50 | Max results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset |
+| `limit` | integer | 50 | Max results per page (max 500) |
+| `offset` | integer | 0 | Pagination offset. **Must be ≤ 500.** For older changes, advance `since` to the previous response's `server_time` rather than using offset. |
 
 <Callout type="warning">
 The `since` parameter is **required**. Omitting it returns a `400 validation_error` error.
+</Callout>
+
+<Callout type="info">
+**`since` has a 10-minute retention window for removals.** Odds removals older than 10 minutes are pruned from memory. If you send a `since` older than that, the `data` array still honors your timestamp, but the `removed` list can only contain odds removed within the last 10 minutes — and `since_clamped: true` will be set on the response. Advance `since` at the cadence in the Polling Pattern section below to avoid this.
 </Callout>
 
 ## Example Requests
@@ -171,6 +175,17 @@ X-Request-Id: req_delta_abc123
 }
 ```
 
+***400 Offset too large***
+```json
+{
+  "error": {
+    "code": "offset_too_large",
+    "message": "offset must be <= 500; advance `since` to the previous response's `updated_at` to retrieve older changes",
+    "max_offset": 500
+  }
+}
+```
+
 ***401 Unauthorized***
 ```json
 {
@@ -192,6 +207,15 @@ The `meta` object includes two additional fields:
 |-------|------|-------------|
 | `meta.server_time` | string | ISO 8601 server timestamp. Use as the `since` value for your next request |
 | `meta.books_changed` | array | List of sportsbook IDs that had updates in this delta |
+
+### Truncation and Clamping Flags
+
+Two optional top-level boolean flags appear only when the server had to apply a safety limit to the response. Well-behaved clients polling at the recommended cadence never see them.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `removed_truncated` | boolean | Present and `true` when the `removed` array hit the 1000-entry server cap. There are more removed odds the server didn't include. Usually means your `since` is too old or your filters are too broad — narrow the window or filter set and re-poll. |
+| `since_clamped` | boolean | Present and `true` when `since` was older than the server's 10-minute removal retention. The `data` array still honors your original `since`, but `removed` is restricted to the last 10 minutes of removals. Advance `since` to `meta.server_time` each call to avoid this. |
 
 ## Polling Pattern
 

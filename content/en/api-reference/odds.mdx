@@ -37,8 +37,8 @@ The sportsbooks returned in your results depend on your subscription tier. Free 
 | `group_by` | string | — | Group results by field (e.g., `event`) |
 | `state` | string | — | US state code for sportsbook deep links (e.g., `nj`, `ny`, `il`). When set, `deep_link` URLs include `?state=XX` so the redirect targets the correct state-specific sportsbook domain. Only affects books with state-dependent URLs (BetMGM, Caesars, BetRivers). |
 | `limit` | integer | 50 | Max results per page (max 200) |
-| `offset` | integer | 0 | Pagination offset. May produce duplicate rows when live data updates between requests — use `cursor` for multi-page scans. |
-| `cursor` | string | — | Opaque cursor from `next_cursor` in a previous response. **Recommended for multi-page scans** — stable against live data changes. Takes precedence over `offset` when both are provided. |
+| `offset` | integer | 0 | Pagination offset. **Must be ≤ 500.** Values above 500 return `400 offset_too_large` — use `cursor` for deeper pagination. May produce duplicate rows when live data updates between requests. |
+| `cursor` | string | — | Opaque cursor from `next_cursor` in a previous response. **Required for deep pagination (past offset 500)** and recommended for any multi-page scan — stable against live data changes. Takes precedence over `offset` when both are provided. |
 
 <Callout type="info">
 Use comma-separated values to filter by multiple sportsbooks: `sportsbook=draftkings,fanduel,betmgm`
@@ -159,7 +159,17 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nfl&limit=200&cursor=eyJlIjoiMz
 
 Cursors are opaque — do not parse or construct them. They encode the sort position of the last item on the current page and are only valid for the same filter parameters.
 
-`?offset=N` continues to work and is appropriate for single-page requests or direct position access. It is not recommended for iterating through live data.
+`?offset=N` continues to work for shallow pagination (up to offset 500) and is appropriate for single-page requests or direct position access. Beyond 500, the API returns `400 offset_too_large` — the server would otherwise have to sort the full filtered result set on every page, which is much cheaper to avoid than to optimize per-request. Use `cursor` for anything deeper.
+
+```json
+{
+  "error": {
+    "code": "offset_too_large",
+    "message": "offset must be <= 500; use `cursor=` from the previous response for deeper pagination",
+    "max_offset": 500
+  }
+}
+```
 
 ## Response
 

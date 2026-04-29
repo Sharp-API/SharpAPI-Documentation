@@ -20,6 +20,10 @@ This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. Al
 **Multi-book results:** When multiple sportsbooks are +EV on the same selection, the API returns a separate opportunity for **each** book. For example, if DraftKings is +105, FanDuel is +103, and BetMGM is +101 on the same moneyline, you'll see three entries — each with its own `sportsbook`, `odds_american`, `ev_percentage`, `kelly_percent`, and `confidence_score`. Results are sorted by EV% descending by default, so the best-odds book appears first. Use the `sportsbook` filter to narrow to specific books.
 </Callout>
 
+<Callout type="warning">
+**Live game state:** EV rows do not carry scores, period, or clock. Live game state is served exclusively by the [Game State](/en/api-reference/gamestate) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
+</Callout>
+
 ## Authentication
 
 Requires API key. **Pro tier or higher required.** Your account must have the `ev` feature enabled.

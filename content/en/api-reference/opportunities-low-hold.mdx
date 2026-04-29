@@ -16,6 +16,10 @@ GET /api/v1/opportunities/low_hold
 
 Requires API key. **Pro tier or higher required.** Your account must have the `low_hold` feature enabled.
 
+<Callout type="warning">
+**Breaking change:** The `game_state` field (score/period/clock) was removed from this response. Live game state is now served exclusively by the [Game State](/en/api-reference/gamestate) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
+</Callout>
+
 ## Query Parameters
 
 | Parameter | Type | Default | Description |
@@ -108,7 +112,6 @@ for hold in data['data']:
       "start_time": "2026-02-08T19:00:00Z",
       "line": null,
       "hold_percentage": 1.8,
-      "game_state": null,
       "side1": {
         "selection": "Los Angeles Lakers",
         "books": ["draftkings", "betmgm"],

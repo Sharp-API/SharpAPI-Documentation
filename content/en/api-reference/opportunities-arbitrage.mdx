@@ -34,6 +34,10 @@ Requires API key. **Hobby tier or higher required.** Your account must have the 
 **Profit cap:** Opportunities with profit above 10% are automatically filtered out. These are almost always phantom arbs caused by stale or suspended odds rather than real opportunities.
 </Callout>
 
+<Callout type="warning">
+**Breaking change:** The `game_state` field (score/period/clock) was removed from this response. Live game state is now served exclusively by the [Game State](/en/api-reference/gamestate) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
+</Callout>
+
 ### Filtering Multiple Values
 
 Use comma-separated values for multi-select filters:
@@ -110,7 +114,6 @@ for arb in data['data']:
       "possibly_stale": false,
       "oldest_odds_age_seconds": 8,
       "warnings": [],
-      "game_state": null,
       "ev_available": true,
       "ev_percentage": 3.5,
       "is_player_prop": false,
@@ -237,7 +240,6 @@ X-Request-Id: req_arb789xyz012
 | `possibly_stale` | boolean | Whether odds may have moved since detection |
 | `oldest_odds_age_seconds` | number\|null | Age of the stalest leg's odds in seconds |
 | `warnings` | string[] | Warning flags. Possible values: `LIVE_GAME`, `LIVE_HIGH_PROFIT_SUSPICIOUS`, `LOW_IMPLIED_TOTAL`, `POTENTIALLY_STALE_ODDS`, `VERY_STALE_ODDS` |
-| `game_state` | object\|null | Live game state (`period`, `clock`, `score_home`, `score_away`) |
 | `ev_available` | boolean | Whether an EV opportunity exists on this market |
 | `ev_percentage` | number\|null | EV percentage if available |
 | `is_player_prop` | boolean | Whether this is a player prop market |

@@ -1,5 +1,13 @@
 name: Handle Upstream API Endpoint Change
 
+# Receives `repository_dispatch` events from upstream repos (sharp-api-go)
+# when handler files change. Dedups to ONE rolling open issue per UTC day —
+# subsequent dispatches the same day append a comment instead of opening a
+# new issue. This bounds noise at ≤1 new issue/day even at firehose rates.
+#
+# Earlier version (pre-2026-05) opened a fresh issue per dispatch, which
+# produced 185 unread tickets between Feb 18 and Mar 19, 2026.
+
 on:
   repository_dispatch:
     types: [upstream-api-endpoint-change]
@@ -9,49 +17,75 @@ permissions:
   contents: read
 
 jobs:
-  create-review-issue:
+  upsert-review-issue:
     runs-on: self-hosted
     timeout-minutes: 5
 
     steps:
-      - name: Create tracking issue
+      - name: Upsert daily docs-review issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           SOURCE: ${{ github.event.client_payload.source_repo }}
           CHANGED: ${{ github.event.client_payload.changed_files }}
           COMMIT: ${{ github.event.client_payload.commit }}
         run: |
-          BODY="## Upstream API Endpoint Change
+          set -euo pipefail
 
-          **Source repo**: ${SOURCE}
-          **Commit**: ${COMMIT}
-          **Changed files**: ${CHANGED}
+          TODAY=$(date -u +%Y-%m-%d)
+          TITLE="Docs review: upstream API changes (${TODAY})"
+          SHORT="${COMMIT:0:7}"
+          # One bullet per dispatched commit — used both as the entry that
+          # seeds a fresh daily issue's body, and as the comment appended to
+          # an existing one.
+          # Source repos all live under the Mlaz-code org (api-adapters,
+          # sharp-api-go, sharpapi-site, docs.sharpapi.io). SDK repos under
+          # Sharp-API don't dispatch to docs, so hardcoding Mlaz-code is safe.
+          ENTRY="- [\`${SHORT}\`](${{ github.server_url }}/Mlaz-code/${SOURCE}/commit/${COMMIT}) — **${SOURCE}** — \`${CHANGED}\`"
 
-          ### Review Checklist
+          EXISTING_NUM=$(gh issue list \
+              --repo "$REPO" \
+              --state open \
+              --label upstream \
+              --limit 50 \
+              --json number,title \
+            | jq -r --arg t "$TITLE" '.[] | select(.title == $t) | .number' \
+            | head -1)
 
-          - [ ] Check if API reference docs need updating for changed endpoints
-          - [ ] Verify request/response examples still match actual API behavior
-          - [ ] Update any new query parameters or headers
-          - [ ] Add documentation for any new endpoints
-          - [ ] Update SDK examples if affected
-          - [ ] Test code examples against live API
+          if [ -n "$EXISTING_NUM" ]; then
+            gh issue comment "$EXISTING_NUM" --repo "$REPO" --body "$ENTRY"
+            echo "Appended ${SHORT} to existing issue #${EXISTING_NUM}"
+            echo "## Upstream notification: appended to #${EXISTING_NUM}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            BODY_FILE=$(mktemp)
+            {
+              printf '## Upstream API change(s) on %s\n\n' "$TODAY"
+              printf '%s\n\n' "$ENTRY"
+              printf '### Review checklist\n\n'
+              printf -- '- [ ] Update API reference for changed endpoints\n'
+              printf -- '- [ ] Verify request/response examples still match actual API behavior\n'
+              printf -- '- [ ] Update query params, headers, or response fields if changed\n'
+              printf -- '- [ ] Add docs for any new endpoints\n'
+              printf -- '- [ ] Update SDK examples (`sharpapi-python` / `sharpapi-ts`) if affected\n\n'
+              printf '### Context\n\n'
+              printf 'Auto-created by `repository_dispatch` from upstream repos when handler files change. Subsequent dispatches today append comments to this issue. Close it once today'\''s docs review is done.\n'
+            } > "$BODY_FILE"
+            NEW_NUM=$(gh issue create \
+              --repo "$REPO" \
+              --title "$TITLE" \
+              --label "upstream,docs-update" \
+              --body-file "$BODY_FILE" \
+              | sed -nE 's|.*/issues/([0-9]+).*|\1|p')
+            rm -f "$BODY_FILE"
+            echo "Opened new issue #${NEW_NUM} for ${TODAY}"
+            echo "## Upstream notification: opened #${NEW_NUM}" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-          ### Context
-
-          This issue was auto-created by a \`repository_dispatch\` event from **${SOURCE}**.
-          API route handlers were modified, which may require documentation updates.
-
-          If no action is needed, close this issue with a comment explaining why."
-
-          gh issue create \
-            --repo "${{ github.repository }}" \
-            --title "Upstream API endpoint change from ${SOURCE}" \
-            --label "upstream,docs-update" \
-            --body "$BODY" || echo "::warning::Issue creation failed"
-
-      - name: Log to summary
+      - name: Log payload to summary
+        if: always()
         run: |
-          echo "## Upstream Notification Received" >> $GITHUB_STEP_SUMMARY
-          echo "**Source**: ${{ github.event.client_payload.source_repo }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Changed files**: ${{ github.event.client_payload.changed_files }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit**: ${{ github.event.client_payload.commit }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "**Source**: ${{ github.event.client_payload.source_repo }}"
+            echo "**Commit**: ${{ github.event.client_payload.commit }}"
+            echo "**Changed**: ${{ github.event.client_payload.changed_files }}"
+          } >> "$GITHUB_STEP_SUMMARY"

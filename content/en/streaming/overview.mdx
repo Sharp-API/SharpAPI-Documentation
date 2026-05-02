@@ -56,10 +56,14 @@ SSE automatically reconnects on disconnect. The server uses `Last-Event-ID` to r
 | Tier | Streaming Access |
 |------|------------------|
 | Free | Not available |
-| Hobby + Add-on ($99/mo) | 10 concurrent streams |
-| Pro + Add-on ($99/mo) | 10 concurrent streams |
-| Sharp + Add-on ($99/mo) | 10 concurrent streams |
+| Hobby + Add-on ($99/mo) | 1 stream (newer-wins displacement) |
+| Pro + Add-on ($99/mo) | 1 stream (newer-wins displacement) |
+| Sharp + Add-on ($99/mo) | 1 stream (newer-wins displacement) |
 | Enterprise | Included (custom limits) |
+
+<Callout type="warning">
+**Newer-wins displacement:** opening a second stream from the same API key closes the first one. One well-managed connection is sufficient for most use cases — see [Single-Connection Patterns](/en/streaming/single-connection) for techniques. Fleet deployments needing multiple simultaneous streams can request a higher limit via [sales](mailto:sales@sharpapi.io).
+</Callout>
 
 ## Quick Start
 

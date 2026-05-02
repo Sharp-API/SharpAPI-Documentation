@@ -592,7 +592,7 @@ WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restrict
 | `1000` | Normal close | Client or server initiated clean close |
 | `4001` | Authentication failure | Check your API key |
 | `4003` | No streaming access | Add WebSocket add-on ($99/mo) or upgrade to Enterprise |
-| `4029` | Stream limit exceeded | Close unused connections (max 10 concurrent) |
+| `4029` | Stream limit exceeded | Close unused connections (default: 1 per key; newer connection wins) |
 
 ## Sequence Numbers
 
@@ -895,7 +895,7 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 8. **Implement reconnection** -- Unlike SSE, WebSocket does not auto-reconnect. Use exponential backoff (1s, 2s, 4s, ...) with `from_seq` replay for brief outages
 9. **Wait for `snapshot:complete`** -- This signals all initial data has been sent. Hide loading states after receiving it
 10. **Handle `odds:removed`** -- Remove odds from your local state when you receive this message to avoid showing stale data
-11. **Close unused connections** -- Each connection counts against your 10-stream limit
+11. **Close unused connections** -- Each key allows 1 concurrent stream by default; a second connection on the same key displaces the older one (close `4001`)
 
 ## Related
 

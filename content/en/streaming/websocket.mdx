@@ -155,9 +155,14 @@ The server keeps a 2-minute replay buffer. Pass `resume=true&from_seq=N` on reco
 | Code | Meaning | Action |
 |------|---------|--------|
 | `1000` | Normal close | No action needed |
+| `1006` | Abnormal closure (client-side) | Network drop — always reconnect |
 | `4001` | Bad or missing API key | Fix your API key |
 | `4003` | No streaming access | Purchase WebSocket add-on |
 | `4029` | Too many connections | Close unused connections first |
+
+<Callout type="warning">
+**Code 1006 is RFC 6455 reserved and never sent by the server.** Your WebSocket library generates it locally when the TCP connection drops without a closing handshake (network failure, process kill). Always reconnect when you see it — the example below already does this correctly by only skipping reconnect on `1000`.
+</Callout>
 
 ## Full API Reference
 

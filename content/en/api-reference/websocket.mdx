@@ -590,9 +590,14 @@ WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restrict
 | Code | Meaning | Resolution |
 |------|---------|------------|
 | `1000` | Normal close | Client or server initiated clean close |
+| `1006` | Abnormal closure (client-side) | Network drop or process kill — always reconnect |
 | `4001` | Authentication failure | Check your API key |
 | `4003` | No streaming access | Add WebSocket add-on ($99/mo) or upgrade to Enterprise |
 | `4029` | Stream limit exceeded | Close unused connections (max 10 concurrent) |
+
+<Callout type="warning">
+**Code 1006 is RFC 6455 reserved and is never transmitted over the wire.** Your WebSocket library generates it locally when the TCP connection is lost without a proper closing handshake (network failure, process kill, OS-level timeout). The server did not send it. Always reconnect on 1006.
+</Callout>
 
 ## Sequence Numbers
 

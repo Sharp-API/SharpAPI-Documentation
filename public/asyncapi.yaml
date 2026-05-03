@@ -12,18 +12,18 @@ info:
 
     ## Subprotocols
 
-    The server negotiates one of two subprotocols on upgrade. Pass the chosen
-    name in the `Sec-WebSocket-Protocol` header (browsers: second arg to the
-    `WebSocket` constructor).
+    Public clients negotiate `sharpapi-v1` by passing it in the
+    `Sec-WebSocket-Protocol` header (browsers: second arg to the `WebSocket`
+    constructor). It carries JSON throughout.
 
-    | Subprotocol      | Wire format for `data` payloads          | When to use                       |
-    |------------------|------------------------------------------|-----------------------------------|
-    | `sharpapi-v1`    | JSON throughout                          | Browsers, simple clients          |
-    | `sharpapi-v1.5`  | JSON control frames + MessagePack data   | High-throughput servers, SDKs     |
+    | Subprotocol   | Wire format for `data` payloads | When to use         |
+    |---------------|---------------------------------|---------------------|
+    | `sharpapi-v1` | JSON throughout                 | All public clients  |
 
-    Both protocols deliver the same logical messages with the same field names;
-    `sharpapi-v1.5` swaps the `data` payload binary encoding for ~30% smaller
-    frames at the cost of needing a MessagePack decoder.
+    The server may also accept additional subprotocols reserved for first-party
+    SDKs and internal services. Those are not part of the documented public API
+    and may change without notice — public clients should always negotiate
+    `sharpapi-v1`.
 
     ## Authentication
 

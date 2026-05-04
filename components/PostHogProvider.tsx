@@ -4,6 +4,36 @@ import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
 
+// Patterns for errors that are browser/extension noise, not real bugs
+const IGNORED_PATTERNS = [
+  /ResizeObserver loop/,
+  /^Script error\.?$/,
+  /chrome-extension:\/\//,
+  /moz-extension:\/\//,
+  /ChunkLoadError/,
+  /Loading chunk/,
+  /prism_bash_exports/,  // browser extension (PrismJS-based dev tools) injecting into the page
+]
+
+function shouldIgnore(message: string): boolean {
+  return IGNORED_PATTERNS.some(p => p.test(message))
+}
+
+function extractMessage(value: unknown): string {
+  if (value instanceof Error)
+    return value.message || value.name || 'Error'
+  if (typeof value === 'string')
+    return value
+  if (value && typeof value === 'object' && 'message' in value)
+    return String((value as { message: unknown }).message)
+  try {
+    return String(value)
+  }
+  catch {
+    return 'unknown'
+  }
+}
+
 if (typeof window !== 'undefined') {
   posthog.init('phc_NwXZnWwvpuCzrhpjDGcrmh8TVLIx8B20hbXq0gYdz5a', {
     api_host: '/ingest',
@@ -11,8 +41,43 @@ if (typeof window !== 'undefined') {
     person_profiles: 'identified_only',
     capture_pageview: true,
     capture_pageleave: true,
+    capture_exceptions: false,
     cross_subdomain_cookie: true,
     persistence: 'localStorage+cookie',
+  })
+
+  // Custom exception capture with extension-noise filtering.
+  // capture_exceptions: false disables PostHog's built-in autocapture,
+  // which was recording browser-extension errors (e.g. prism_bash_exports)
+  // as if they were docs-site bugs.
+  window.addEventListener('error', (event) => {
+    const error = event.error
+    const message = error ? extractMessage(error) : (event.message || 'unknown')
+    if (shouldIgnore(message))
+      return
+
+    posthog.captureException(error ?? new Error(message), {
+      $exception_message: message,
+      $exception_source: 'window_onerror',
+      $exception_lineno: event.lineno,
+      $exception_colno: event.colno,
+      $exception_filename: event.filename,
+    })
+  })
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason
+    const message = extractMessage(reason)
+    if (shouldIgnore(message))
+      return
+
+    posthog.captureException(
+      reason instanceof Error ? reason : new Error(message),
+      {
+        $exception_message: message,
+        $exception_source: 'unhandledrejection',
+      },
+    )
   })
 }
 

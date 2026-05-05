@@ -1,5 +1,5 @@
 ---
-description: "SharpAPI provides real-time sports betting odds from 32 sportsbooks with +EV detection, arbitrage alerts, and SSE streaming via REST API. Start building in minutes."
+description: "SharpAPI provides real-time sports betting odds and no-vig fair odds from 32 sportsbooks, with +EV detection, arbitrage alerts, and SSE streaming via REST API. Start building in minutes."
 ---
 
 import { Cards, Callout } from 'nextra/components'
@@ -11,6 +11,7 @@ SharpAPI is a real-time sports betting odds aggregation platform that provides:
 - **Real-time Odds** - Sub-second odds updates from major sportsbooks via REST or SSE streaming
 - **+EV Detection** - Automatic expected value calculation using sharp book references
 - **Arbitrage Alerts** - Cross-book arbitrage detection with optimal stake calculations
+- **No-Vig Odds** - Fair odds with bookmaker margin removed, using Pinnacle as the sharp reference
 - **SSE Streaming** - Server-Sent Events for real-time push notifications
 
 ## Base URL
@@ -31,6 +32,7 @@ All API requests should use `api.sharpapi.io` as the base URL.
 | +EV detection | Automated | Manual |
 | Arbitrage w/ stakes | Optimal sizing | Detection only |
 | Sharp book reference | Pinnacle | Varies |
+| No-vig fair odds | Included | Not available |
 
 ## Pricing
 
@@ -58,7 +60,7 @@ Streaming requires WebSocket add-on ($99/mo). See [Pricing](/en/pricing) for det
 - Rebet
 
 ### Sharp Books
-- Pinnacle (reference for +EV calculations)
+- Pinnacle (reference for +EV and no-vig calculations)
 - Bookmaker
 - Circa Sports
 
@@ -78,7 +80,7 @@ Streaming requires WebSocket add-on ($99/mo). See [Pricing](/en/pricing) for det
 ### Exchanges
 - ProphetX
 - Betfair
-- Novig
+- Novig (commission-free no-vig exchange)
 
 ### Prediction Markets
 - Polymarket

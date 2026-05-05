@@ -5,7 +5,6 @@
   "cleanUrls": true,
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ content/ pages/ public/ scripts/ styles/ theme.config.tsx next.config.mjs proxy.ts package.json vercel.json",
   "redirects": [
-    { "source": "/", "destination": "/en", "permanent": true },
     { "source": "/streaming", "destination": "/en/streaming/overview", "permanent": true },
     { "source": "/streaming/overview", "destination": "/en/streaming/overview", "permanent": true },
     { "source": "/streaming/:path*", "destination": "/en/streaming/:path*", "permanent": true },
@@ -33,6 +32,7 @@
     { "source": "/en/sitemap.xml", "destination": "/sitemap.xml", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/", "destination": "/en" },
     { "source": "/ingest/static/:path*", "destination": "https://us-assets.i.posthog.com/static/:path*" },
     { "source": "/ingest/:path+/", "destination": "https://us.i.posthog.com/:path+/" },
     { "source": "/ingest/:path*", "destination": "https://us.i.posthog.com/:path*" }

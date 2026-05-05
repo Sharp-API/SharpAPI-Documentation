@@ -1,0 +1,144 @@
+---
+description: "Build a Discord or Telegram bot that alerts you to positive expected value (+EV) betting opportunities in real-time using SharpAPI SSE streaming. Full JavaScript example."
+---
+
+# Value Betting Bot
+
+This example builds a Discord/Telegram bot that alerts you to +EV opportunities in real-time.
+
+## Architecture
+
+```
+SharpAPI SSE Stream → Bot Server → Discord/Telegram
+```
+
+## Implementation
+
+### 1. Set Up Dependencies
+
+```bash
+npm install eventsource discord.js dotenv
+```
+
+### 2. Create the Bot
+
+```javascript
+// ev-bot.js
+import EventSource from 'eventsource';
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+
+const SHARP_API_KEY = process.env.SHARP_API_KEY;
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
+
+// Discord setup
+const discord = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+discord.once('ready', () => {
+  console.log('Discord bot ready');
+  startEVStream();
+});
+
+// EV Stream
+function startEVStream() {
+  const url = `https://api.sharpapi.io/api/v1/stream?channel=opportunities&min_ev=3.0&api_key=${SHARP_API_KEY}`;
+  const es = new EventSource(url);
+
+  es.addEventListener('ev:detected', async (e) => {
+    const { opportunities } = JSON.parse(e.data).data;
+
+    for (const opp of opportunities) {
+      await sendAlert(opp);
+    }
+  });
+
+  es.onerror = (err) => {
+    console.error('Stream error:', err);
+  };
+}
+
+// Send Discord alert
+async function sendAlert(opp) {
+  const channel = await discord.channels.fetch(CHANNEL_ID);
+
+  const embed = new EmbedBuilder()
+    .setColor(opp.ev_percentage >= 5 ? 0xFF0000 : 0x00FF00)
+    .setTitle(`${opp.ev_percentage >= 5 ? '🔥' : '✅'} +EV Alert`)
+    .setDescription(`**${opp.game}**`)
+    .addFields(
+      { name: 'Selection', value: opp.selection, inline: true },
+      { name: 'Book', value: opp.sportsbook, inline: true },
+      { name: 'Odds', value: String(opp.odds_american), inline: true },
+      { name: 'EV', value: `+${opp.ev_percentage}%`, inline: true },
+      { name: 'Kelly', value: `${opp.kelly_percent.toFixed(2)}%`, inline: true },
+      { name: 'Devig', value: `${opp.no_vig_odds} (${opp.sharp_book})`, inline: true },
+    )
+    .setTimestamp();
+
+  await channel.send({ embeds: [embed] });
+}
+
+discord.login(DISCORD_TOKEN);
+```
+
+### 3. Run It
+
+```bash
+SHARP_API_KEY=sk_live_xxx \
+DISCORD_TOKEN=xxx \
+DISCORD_CHANNEL_ID=xxx \
+node ev-bot.js
+```
+
+## Filtering
+
+Customize which alerts you receive:
+
+```javascript
+es.addEventListener('ev:detected', async (e) => {
+  const { opportunities } = JSON.parse(e.data).data;
+
+  for (const opp of opportunities) {
+    // Only high EV
+    if (opp.ev_percentage < 5) continue;
+
+    // Only certain sports
+    if (!['nba', 'nfl'].includes(opp.sport)) continue;
+
+    // Only certain books
+    if (!['draftkings', 'fanduel'].includes(opp.sportsbook)) continue;
+
+    await sendAlert(opp);
+  }
+});
+```
+
+## Telegram Version
+
+```javascript
+import TelegramBot from 'node-telegram-bot-api';
+
+const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: false });
+const chatId = process.env.TELEGRAM_CHAT_ID;
+
+async function sendTelegramAlert(opp) {
+  const message = `
+${opp.ev_percentage >= 5 ? '🔥' : '✅'} *+EV Alert*
+
+*${opp.game}*
+Selection: ${opp.selection}
+Book: ${opp.sportsbook}
+Odds: ${opp.odds_american}
+EV: +${opp.ev_percentage}%
+Kelly: ${opp.kelly_percent.toFixed(2)}%
+  `.trim();
+
+  await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+}
+```
+
+## See Also
+
+- [EV Calculation Concepts](/concepts/ev-calculation) - How SharpAPI calculates expected value
+- [Arbitrage Scanner Example](/examples/arbitrage-scanner) - Similar bot for real-time arb detection
+- [+EV Opportunities API](/api-reference/opportunities-ev) - Endpoint reference

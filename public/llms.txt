@@ -7,9 +7,9 @@
 - [API Documentation](https://docs.sharpapi.io): Full API reference, guides, and examples
 - [Full LLM Documentation](https://docs.sharpapi.io/llms-full.txt): Complete API documentation in plain text for LLM consumption
 - [OpenAPI Specification](https://docs.sharpapi.io/openapi.json): OpenAPI 3.1.0 spec with all endpoints, schemas, and examples
-- [Quick Start](https://docs.sharpapi.io/en/quickstart): Get started in 2 minutes
-- [Authentication](https://docs.sharpapi.io/en/authentication): API key setup and auth methods
-- [Pricing](https://docs.sharpapi.io/en/pricing): Subscription tiers and feature comparison
+- [Quick Start](https://docs.sharpapi.io/quickstart): Get started in 2 minutes
+- [Authentication](https://docs.sharpapi.io/authentication): API key setup and auth methods
+- [Pricing](https://docs.sharpapi.io/pricing): Subscription tiers and feature comparison
 
 ## API
 
@@ -39,8 +39,8 @@
 
 ## Optional
 
-- [TypeScript SDK](https://docs.sharpapi.io/en/sdks/typescript): `npm install @sharp-api/client`
-- [Python SDK](https://docs.sharpapi.io/en/sdks/python): `pip install sharpapi`
-- [Streaming Guide](https://docs.sharpapi.io/en/streaming/overview): SSE and WebSocket setup
-- [Arbitrage Concepts](https://docs.sharpapi.io/en/concepts/arbitrage): How arbitrage detection works
-- [EV Calculation](https://docs.sharpapi.io/en/concepts/ev-calculation): Expected value methodology
+- [TypeScript SDK](https://docs.sharpapi.io/sdks/typescript): `npm install @sharp-api/client`
+- [Python SDK](https://docs.sharpapi.io/sdks/python): `pip install sharpapi`
+- [Streaming Guide](https://docs.sharpapi.io/streaming/overview): SSE and WebSocket setup
+- [Arbitrage Concepts](https://docs.sharpapi.io/concepts/arbitrage): How arbitrage detection works
+- [EV Calculation](https://docs.sharpapi.io/concepts/ev-calculation): Expected value methodology

@@ -1,0 +1,190 @@
+---
+description: "Compare SharpAPI pricing tiers from Free to Enterprise. See rate limits, streaming access, sportsbook availability, and detailed feature breakdown for each plan."
+---
+
+import { Cards, Callout } from 'nextra/components'
+
+# Pricing
+
+Choose the plan that fits your betting strategy. All plans include access to our comprehensive odds database.
+
+## Subscription Tiers
+
+| Tier | Price | Req/Min | Streams | Data Delay | Books | Features |
+|------|-------|---------|---------|------------|-------|----------|
+| **Free** | $0/mo | 12 | 0 | 60s | 2 | Odds, Schedule |
+| **Hobby** | $79/mo | 120 | Add-on* | Real-time | 5 | Odds, Schedule, Arbitrage |
+| **Pro** | $229/mo | 300 | Add-on* | Real-time | 15 | + EV, Middles, Low Hold, Splits |
+| **Sharp** | $399/mo | 1,000 | Add-on* | Real-time | All 32 | + Priority Support |
+| **Enterprise** | Custom | Custom | Custom | Real-time | All | + History, Futures, SLA |
+
+<Callout type="info">
+*Streaming requires the **WebSocket Add-on** ($99/mo). All paid tiers default to **1 concurrent stream per key** with newer-wins displacement (a second connection kicks the first). Need multiple simultaneous streams for fleet deployments? [Contact sales](mailto:sales@sharpapi.io). SSE and WebSocket share the same add-on and the same limit.
+</Callout>
+
+## Plan Details
+
+<Cards>
+  <Cards.Card title="Free" href="https://sharpapi.io/sign-up">
+    **$0/month**
+
+    For testing and exploration
+    - 12 requests/minute
+    - No streaming
+    - 60s data delay
+    - 2 sportsbooks
+    - Odds and Schedule only
+
+    Get Started Free
+  </Cards.Card>
+
+  <Cards.Card title="Hobby" href="https://sharpapi.io/sign-up">
+    **$79/month**
+
+    For casual bettors
+    - 120 requests/minute
+    - No streaming*
+    - Real-time data
+    - 5 sportsbooks
+    - Odds, Schedule, Arbitrage
+
+    Get Started
+  </Cards.Card>
+
+  <Cards.Card title="Pro" href="https://sharpapi.io/sign-up">
+    **$229/month**
+
+    For serious bettors
+    - 300 requests/minute
+    - No streaming*
+    - Real-time data
+    - 15 sportsbooks
+    - +EV Detection
+    - Arbitrage Alerts
+    - Middles Detection
+    - Low Hold Detection
+    - Betting Splits
+
+    Get Started
+  </Cards.Card>
+
+  <Cards.Card title="Sharp" href="https://sharpapi.io/sign-up">
+    **$399/month**
+
+    For professionals
+    - 1,000 requests/minute
+    - No streaming*
+    - Real-time data
+    - All sportsbooks
+    - All Pro features
+    - Closing Line Value (CLV)
+    - Closing Odds History (30 days)
+    - Priority Support
+
+    Get Started
+  </Cards.Card>
+</Cards>
+
+## WebSocket Add-on
+
+**$99/month** - Add real-time streaming to any paid tier.
+
+- 1 concurrent SSE/WebSocket stream per key (newer-wins displacement)
+- Sub-second latency
+- Works with Hobby, Pro, Sharp, and Enterprise tiers
+- Fleet limits (>1 stream) available on request
+
+<Callout type="warning">
+The WebSocket add-on requires a paid subscription. Free tier does not support streaming.
+</Callout>
+
+## Enterprise
+
+Need higher limits, custom features, or an SLA? Contact us for enterprise pricing.
+
+- Custom rate limits
+- Custom concurrent streams
+- [Futures](/api-reference/enterprise) - Futures markets and cross-book odds
+- Dedicated support
+- Service Level Agreement (SLA)
+- Custom integrations
+
+[Contact Sales](mailto:sales@sharpapi.io)
+
+## Feature Comparison
+
+| Feature | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| `GET /odds` | Yes | Yes | Yes | Yes | Yes |
+| `GET /odds/best` | Yes | Yes | Yes | Yes | Yes |
+| `GET /events` | Yes | Yes | Yes | Yes | Yes |
+| `GET /sportsbooks` | Yes | Yes | Yes | Yes | Yes |
+| `GET /sports` | Yes | Yes | Yes | Yes | Yes |
+| `GET /leagues` | Yes | Yes | Yes | Yes | Yes |
+| `GET /markets` | Yes | Yes | Yes | Yes | Yes |
+| `GET /opportunities/ev` | No | No | Yes | Yes | Yes |
+| `GET /opportunities/arbitrage` | No | Yes | Yes | Yes | Yes |
+| `GET /opportunities/middles` | No | No | Yes | Yes | Yes |
+| `GET /opportunities/low_hold` | No | No | Yes | Yes | Yes |
+| `GET /splits` | No | No | Yes | Yes | Yes |
+| `GET /splits/history` | No | No | Yes | Yes | Yes |
+| `GET /odds/closing` | No | No | Yes | Yes | Yes |
+| `GET /historical/clv` | No | No | No | Yes | Yes |
+| `GET /historical/odds/closing` | No | No | No | Yes | Yes |
+| `GET /futures` | No | No | No | No | Yes |
+| CSV Export | No | No | Yes | Yes | Yes |
+| Streaming (SSE + WS) | No | +$99/mo | +$99/mo | +$99/mo | Included |
+| Priority Support | No | No | No | Yes | Yes |
+| SLA | No | No | No | No | Yes |
+
+## Rate Limiting
+
+All API requests are rate limited per API key. Rate limit headers are included in every response:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1703123460
+```
+
+### Rate Limit Response
+
+When you exceed your rate limit, you'll receive a `429` response:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
+}
+```
+
+<Callout type="info">
+Use the `retry_after` value (in seconds) to implement exponential backoff.
+</Callout>
+
+## Data Delay
+
+- **Free tier**: 60-second delay on all odds data
+- **Paid tiers**: Real-time data with sub-second latency
+
+## Sportsbook Access
+
+The number of sportsbooks you can access depends on your tier:
+
+| Tier | Books | Example Access |
+|------|-------|----------------|
+| Free | 2 | DraftKings, FanDuel |
+| Hobby | 5 | + BetMGM, Caesars, theScore Bet |
+| Pro | 15 | + Bet365, BetRivers, and more |
+| Sharp/Enterprise | All | All 32 supported books |
+
+## Tier Upgrades
+
+Upgrade your subscription at any time. Changes take effect immediately with no downtime.
+
+- Prorated billing for mid-cycle upgrades
+- Instant access to new features
+- Keep your existing API key

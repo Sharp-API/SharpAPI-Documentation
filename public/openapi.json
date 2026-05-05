@@ -13,8 +13,8 @@
       "name": "Proprietary",
       "url": "https://sharpapi.io/terms"
     },
-    "x-generated-at": "2026-04-16T19:00:23-04:00",
-    "x-commit-sha": "60018c8"
+    "x-generated-at": "2026-04-23T20:18:17-04:00",
+    "x-commit-sha": "69262f7"
   },
   "servers": [
     {
@@ -4343,12 +4343,18 @@
           },
           "possession": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Which team has possession (team sports) or is receiving (tennis)."
           },
           "server": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Tennis only — current server."
           },
           "last_play": {
@@ -4389,7 +4395,10 @@
           },
           "power_play": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Hockey only — which team is on the power play."
           },
           "sets_home": {
@@ -4426,7 +4435,10 @@
           },
           "batting_team": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Cricket only."
           },
           "stale": {

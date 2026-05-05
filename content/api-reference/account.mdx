@@ -1,0 +1,196 @@
+---
+description: "GET /api/v1/account — Retrieve your account details, subscription tier, rate limits, and enabled features for your SharpAPI API key. Verify access level and plan configuration."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Account Info
+
+Retrieve your account details, tier information, rate limits, and enabled features.
+
+```
+GET /api/v1/account
+```
+
+<Callout type="info">
+This endpoint replaces the former `/me` endpoint. The response format has been updated to use the standard v1 envelope.
+</Callout>
+
+## Authentication
+
+Requires API key. **Available to all tiers.**
+
+## Example Requests
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/account" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+console.log(`Tier: ${data.key.tier}`);
+console.log(`Rate limit: ${data.limits.requests_per_minute} req/min`);
+console.log(`Max books: ${data.limits.max_books}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/account',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+account = response.json()['data']
+
+print(f"Tier: {account['key']['tier']}")
+print(f"Features: {account['features']}")
+print(f"Add-ons: {account['addons']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "data": {
+    "key": {
+      "id": "key_abc123def456",
+      "tier": "pro"
+    },
+    "limits": {
+      "requests_per_minute": 300,
+      "max_streams": 10,
+      "odds_delay_seconds": 0,
+      "max_books": 15
+    },
+    "features": {
+      "ev": true,
+      "arbitrage": true,
+      "middles": true,
+      "streaming": true
+    },
+    "addons": ["websocket"],
+    "streaming_trial": {
+      "active": false,
+      "eligible": false,
+      "used": true,
+      "activated_at": "2026-01-15T12:00:00Z",
+      "expires_at": "2026-01-15T16:00:00Z"
+    }
+  },
+  "meta": {
+    "updated_at": "2026-02-08T14:44:32.123Z"
+  }
+}
+```
+
+### Response Headers
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 287
+X-RateLimit-Reset: 1707401100
+X-Data-Delay: 0
+X-Request-Id: req_acct123xyz
+```
+
+### Error Responses
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/authentication"
+  }
+}
+```
+
+## Response Fields
+
+### Key Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Identifier for the API key used in this request |
+| `tier` | string | Subscription tier: `free`, `hobby`, `pro`, `sharp`, or `enterprise` |
+| `user_id` | string | User identifier (when available) |
+
+### Limits Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `requests_per_minute` | number | Maximum API requests allowed per minute |
+| `max_streams` | number | Maximum concurrent SSE/WebSocket streams (0 if streaming not enabled) |
+| `odds_delay_seconds` | number | Odds data delay in seconds (`0` for paid tiers, `60` for free) |
+| `max_books` | number | Maximum sportsbooks accessible on your tier |
+
+### Features Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ev` | boolean | Access to +EV opportunity detection |
+| `arbitrage` | boolean | Access to arbitrage detection |
+| `middles` | boolean | Access to middles detection |
+| `streaming` | boolean | Access to SSE/WebSocket streaming (via add-on, trial, or enterprise) |
+
+### Add-ons
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `addons` | string[] | Active add-ons (e.g., `["websocket"]`) |
+
+### Streaming Trial Object (Optional)
+
+Present when the user has an active trial, is eligible, or has used a trial.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether a streaming trial is currently active |
+| `eligible` | boolean | Whether the user is eligible for a trial |
+| `used` | boolean | Whether the user has already used their trial |
+| `activated_at` | string | ISO 8601 timestamp when the trial was activated |
+| `expires_at` | string | ISO 8601 timestamp when the trial expires |
+| `remaining_hours` | number | Hours remaining on the trial |
+
+## Use Cases
+
+### Check Feature Access Before Making Requests
+
+```javascript
+const { data: account } = await fetch(
+  'https://api.sharpapi.io/api/v1/account',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+).then(r => r.json());
+
+if (!account.features.ev) {
+  console.log('Upgrade to Pro tier for +EV detection');
+} else {
+  // Proceed with EV endpoint
+  const evData = await fetch(
+    'https://api.sharpapi.io/api/v1/opportunities/ev',
+    { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+  ).then(r => r.json());
+}
+```
+
+## Related Endpoints
+
+- [Usage Stats](/api-reference/account-usage) - Detailed request and streaming usage
+- [API Key Management](/api-reference/account-keys) - Create, rotate, and delete API keys
+- [Authentication](/authentication) - How to authenticate requests
+- [Pricing](/pricing) - Compare tier features and limits

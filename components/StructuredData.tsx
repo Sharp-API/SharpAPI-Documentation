@@ -55,18 +55,15 @@ export function PageBreadcrumb({ pathname, title }: PageBreadcrumbProps) {
   if (parts.length === 0)
     return null
 
-  // Skip the leading locale segment in the user-visible chain.
-  // Always root the chain at "Docs" → optional subsection → leaf page.
-  const trail = parts[0]?.length === 2 || parts[0] === 'pt-BR' ? parts.slice(1) : parts
   const items: Array<Record<string, unknown>> = [{
     '@type': 'ListItem',
     'position': 1,
     'name': 'Docs',
-    'item': `${SITE_URL}/${parts[0]}`,
+    'item': SITE_URL,
   }]
-  trail.forEach((segment, i) => {
-    const href = `${SITE_URL}/${parts[0]}/${trail.slice(0, i + 1).join('/')}`
-    const name = i === trail.length - 1 && title
+  parts.forEach((segment, i) => {
+    const href = `${SITE_URL}/${parts.slice(0, i + 1).join('/')}`
+    const name = i === parts.length - 1 && title
       ? title
       : segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
     items.push({

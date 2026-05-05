@@ -1,0 +1,112 @@
+---
+description: "Understand how sports betting arbitrage works — the math behind guaranteed-profit arbs, how SharpAPI detects them across sportsbooks, and practical staking strategies."
+---
+
+# What is Arbitrage?
+
+Arbitrage ("arb") exploits price differences between sportsbooks to guarantee profit regardless of outcome.
+
+```
+Book A: Team X +150 (implied 40%)
+Book B: Team Y -130 (implied 56.5%)
+Total implied: 96.5% < 100% = ARBITRAGE
+```
+
+## How It Works
+
+### Example: Two-Way Market
+
+**Game: Lakers vs Warriors**
+
+| Sportsbook | Selection | Odds | Implied Prob |
+|------------|-----------|------|--------------|
+| DraftKings | Lakers | +145 | 40.8% |
+| Pinnacle | Warriors | -135 | 57.4% |
+| **Total** | | | **98.2%** |
+
+Since 98.2% < 100%, arbitrage exists!
+
+**Profit calculation:**
+```
+Profit % = (100 / 98.2) - 100 = 1.83%
+```
+
+### Calculating Stakes
+
+To guarantee equal return regardless of outcome:
+
+```javascript
+const total = 1/2.45 + 1/1.74;  // Sum of implied probs
+const stake1 = (1/2.45) / total;  // 41.5%
+const stake2 = (1/1.74) / total;  // 58.5%
+```
+
+**With $1000 total:**
+
+| Bet | Stake | Odds | If Wins |
+|-----|-------|------|---------|
+| Lakers @ DK | $415 | +145 | $1,017 |
+| Warriors @ Pinnacle | $585 | -135 | $1,018 |
+
+**Guaranteed profit: ~$18 (1.8%)**
+
+## Three-Way Markets
+
+Soccer and hockey have draws, creating 3-way arbs:
+
+```
+Team A: +200 (33.3%)
+Draw:   +250 (28.6%)
+Team B: +180 (35.7%)
+Total: 97.6% → 2.4% arb
+```
+
+## Why Arbs Exist
+
+1. **Timing differences** - Books update at different speeds
+2. **Opinion differences** - Books have different risk models
+3. **Promotions** - Boosted odds create artificial arbs
+4. **Errors** - Occasionally, a book makes a mistake
+
+## Arb Hunting Challenges
+
+> **Warning:**
+**Sportsbooks don't like arbers:**
+- Accounts get limited or banned
+- Withdrawals may be delayed
+- You may be restricted to small bets
+
+
+### Tips to Avoid Detection
+
+1. **Round bet amounts** - $47.32 looks suspicious, $50 doesn't
+2. **Mix in recreational bets** - Don't only bet arbs
+3. **Withdraw gradually** - Large withdrawals trigger reviews
+4. **Use multiple accounts** - Spread action (where legal)
+
+## SharpAPI Arb Features
+
+| Feature | Benefit |
+|---------|---------|
+| **Real-time detection** | Sub-second alerts via SSE |
+| **Optimal stakes** | Pre-calculated stake percentages |
+| **Multi-book coverage** | Cross-reference 6+ books |
+| **Profit filtering** | Set minimum profit threshold |
+
+## Arb vs EV Betting
+
+| Aspect | Arbitrage | +EV Betting |
+|--------|-----------|-------------|
+| Risk | Zero (guaranteed) | Variance exists |
+| Profit per bet | 1-3% typical | 2-10% edge |
+| Account risk | High (limits) | Lower |
+| Capital required | High (both sides) | Lower |
+| Sustainability | Limited | Long-term viable |
+
+> **Tip:**
+  Many sharp bettors prefer +EV over arb because accounts last longer and edges are often larger. See [EV Calculation](/concepts/ev-calculation) for the math behind +EV.
+
+## Build an Arb Scanner
+
+Ready to automate arb detection? See the [Arbitrage Scanner Example](/examples/arbitrage-scanner) for a complete Python implementation with Discord alerts.
+

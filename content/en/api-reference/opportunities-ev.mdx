@@ -129,7 +129,7 @@ for opp in data['data']:
       "start_time": "2026-02-08T19:00:00Z",
       "is_live": false,
       "confidence_score": 87,
-      "kelly_percent": 0.021,
+      "kelly_percent": 2.1,
       "book_count": 5,
       "arb_available": false,
       "arb_profit": null,
@@ -164,7 +164,7 @@ for opp in data['data']:
       "start_time": "2026-02-08T19:00:00Z",
       "is_live": false,
       "confidence_score": 82,
-      "kelly_percent": 0.015,
+      "kelly_percent": 1.5,
       "book_count": 5,
       "arb_available": false,
       "arb_profit": null,
@@ -294,7 +294,7 @@ X-Request-Id: req_abc123def456
 | `start_time` | string\|null | ISO 8601 event start time |
 | `is_live` | boolean | Whether the event is currently live |
 | `confidence_score` | number | Multi-factor confidence score (0-100) |
-| `kelly_percent` | number\|null | Kelly criterion optimal bet fraction (0.0 to 1.0) |
+| `kelly_percent` | number\|null | Full-Kelly optimal bet **percentage** of bankroll (0–100, e.g. `2.1` = 2.1% of bankroll). Most practitioners apply a fractional Kelly multiplier (¼ or ½) before sizing — see [Kelly Criterion](#kelly-criterion) below. |
 | `book_count` | number | Number of sportsbooks offering this market |
 | `arb_available` | boolean | Whether an arbitrage exists on this market |
 | `arb_profit` | number\|null | Arbitrage profit percentage if available |
@@ -391,20 +391,26 @@ We recommend setting `min_ev=2` for most use cases. Marginal EV (below 2%) can b
 
 ## Kelly Criterion
 
-The `kelly_percent` field tells you the optimal fraction of your bankroll to wager according to the Kelly criterion (0.0 to 1.0, e.g. `0.021` = 2.1%):
+The `kelly_percent` field is the optimal **percentage** of your bankroll (0–100) to wager according to the full Kelly criterion. A value of `2.1` means full Kelly recommends 2.1% of bankroll; a value of `34.4` means 34.4%.
 
 ```
-Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1)
+Kelly% = (fair_prob × decimal_odds - 1) / (decimal_odds - 1) × 100
 ```
+
+<Callout type="warning">
+**This is full Kelly, computed from the model's fair probability with no quality-of-signal adjustment.** Full Kelly is mathematically optimal only when the true probability is known exactly. In practice, sharp anchors carry uncertainty (single sharp reference, late-arriving live odds, low cross-validation), and full Kelly can produce dangerously large stake suggestions. See `confidence_score`, `cross_ref_count`, and `warnings` (e.g. `SINGLE_SHARP_REF`, `LIVE_STALE_ODDS`) before sizing.
+
+**Use a fractional Kelly multiplier**: most practitioners apply ¼ or ½ Kelly (`kelly_percent × 0.25` or `× 0.5`). Cap any single bet at 1–2% of bankroll regardless of what `kelly_percent` reports, especially when `warnings` is non-empty or `confidence_score < 80`.
+</Callout>
 
 ### Kelly Sizing Guide
 
-| Kelly % | Risk Level | Recommendation |
+| `kelly_percent` | Risk Level | Recommendation |
 |---------|------------|----------------|
-| < 1% | Low | Small edge, consider skipping |
-| 1 - 3% | Moderate | Standard bet size |
-| 3 - 5% | Aggressive | Strong edge, but size carefully |
-| 5%+ | Very aggressive | Excellent edge; consider fractional Kelly (half or quarter) |
+| < 1 | Low | Small edge, consider skipping |
+| 1 – 3 | Moderate | Standard bet size — quarter Kelly = 0.25–0.75% of bankroll |
+| 3 – 5 | Aggressive | Strong edge — quarter Kelly = 0.75–1.25% of bankroll |
+| 5+ | Very aggressive | Excellent edge or sharp-signal artifact; cap at 1–2% of bankroll regardless |
 
 <Callout type="warning">
 **Variance Warning:** +EV does not guarantee profit on every bet. Over 100 bets at 5% EV, actual results can range widely. The edge only materializes over hundreds or thousands of bets. Never bet more than you can afford to lose.
@@ -413,7 +419,7 @@ Kelly% = (edge / odds_to_1) = (fair_prob x decimal_odds - 1) / (decimal_odds - 1
 ## Best Practices
 
 1. **Set a minimum EV threshold** - Use `min_ev=2` or higher to focus on meaningful edges
-2. **Use Kelly sizing** - Use `kelly_percent` to determine bet size (multiply by bankroll)
+2. **Use Kelly sizing** - `kelly_percent` is a percentage (e.g. `2.1` = 2.1% of bankroll). Apply a fractional Kelly multiplier (¼ or ½) before sizing
 3. **Filter by confidence** - Use `confidence_score` to prioritize high-confidence opportunities
 4. **Monitor `market_width`** - Narrow markets (low width) indicate more efficient pricing and more reliable EV calculations
 5. **Act quickly** - +EV opportunities are fleeting; lines move fast

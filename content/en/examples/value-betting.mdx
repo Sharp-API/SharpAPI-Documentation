@@ -70,7 +70,7 @@ async function sendAlert(opp) {
       { name: 'Book', value: opp.sportsbook, inline: true },
       { name: 'Odds', value: String(opp.odds_american), inline: true },
       { name: 'EV', value: `+${opp.ev_percentage}%`, inline: true },
-      { name: 'Kelly', value: `${opp.kelly_percent}`, inline: true },
+      { name: 'Kelly', value: `${opp.kelly_percent.toFixed(2)}%`, inline: true },
       { name: 'Devig', value: `${opp.no_vig_odds} (${opp.sharp_book})`, inline: true },
     )
     .setTimestamp();
@@ -130,7 +130,7 @@ Selection: ${opp.selection}
 Book: ${opp.sportsbook}
 Odds: ${opp.odds_american}
 EV: +${opp.ev_percentage}%
-Kelly: ${opp.kelly_percent}
+Kelly: ${opp.kelly_percent.toFixed(2)}%
   `.trim();
 
   await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });

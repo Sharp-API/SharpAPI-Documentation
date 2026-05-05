@@ -41,7 +41,7 @@ evs = client.ev.get(min_ev=3.0, sport="basketball")
 for opp in evs.data:
     print(f"+{opp.ev_percentage:.1f}% EV on {opp.selection} @ {opp.sportsbook}")
     if opp.kelly_percent:
-        print(f"  Kelly: {opp.kelly_percent:.1%}, Confidence: {opp.confidence_score}")
+        print(f"  Kelly: {opp.kelly_percent:.2f}%, Confidence: {opp.confidence_score}")
 
 # Best odds across sportsbooks
 odds = client.odds.best(league="nba", market="moneyline")
@@ -83,7 +83,7 @@ for opp in evs.data:
     print(f"+{opp.ev_percentage:.1f}% on {opp.selection} @ {opp.sportsbook}")
     print(f"  Fair probability: {opp.fair_probability}")
     print(f"  Devig: {opp.devig_method} via {opp.sharp_book}")
-    print(f"  Kelly: {opp.kelly_percent:.1%}")
+    print(f"  Kelly: {opp.kelly_percent:.2f}%")
     print(f"  Confidence: {opp.confidence_score}/100")
 ```
 

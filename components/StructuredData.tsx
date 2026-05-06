@@ -3,7 +3,11 @@
  *
  * Emitted on every docs page via app/[lang]/layout.tsx:
  *   - Organization (sitewide)
- *   - WebSite with SearchAction (enables in-search sitelinks search box)
+ *   - WebSite (sitewide)
+ *   - WebAPI (sitewide — describes the SharpAPI REST API as a machine-readable entity)
+ *
+ * Emitted per API reference page via app/[lang]/[[...mdxPath]]/page.tsx:
+ *   - APIReference (TechArticle subtype) for each /api-reference/* page
  *
  * BreadcrumbList is generated per-page from the pathname; see PageBreadcrumb.
  */
@@ -41,7 +45,55 @@ export function SiteStructuredData() {
           'publisher': { '@type': 'Organization', 'name': 'SharpAPI', 'url': MAIN_URL },
         })}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          '@context': 'https://schema.org',
+          '@type': 'WebAPI',
+          'name': 'SharpAPI REST API',
+          'description': 'Real-time sports betting odds API with +EV detection, arbitrage alerts, and SSE streaming across 43 sportsbooks.',
+          'url': `${SITE_URL}/en/api-reference/overview`,
+          'documentation': SITE_URL,
+          'termsOfService': `${MAIN_URL}/terms`,
+          'provider': {
+            '@type': 'Organization',
+            'name': 'SharpAPI',
+            'url': MAIN_URL,
+          },
+        })}
+      />
     </>
+  )
+}
+
+interface ApiReferenceJsonLdProps {
+  title: string
+  description: string
+  url: string
+}
+
+export function ApiReferenceJsonLd({ title, description, url }: ApiReferenceJsonLdProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={jsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'APIReference',
+        'name': title,
+        'description': description,
+        'url': url,
+        'isPartOf': {
+          '@type': 'WebAPI',
+          'name': 'SharpAPI REST API',
+          'url': `${SITE_URL}/en/api-reference/overview`,
+          'provider': {
+            '@type': 'Organization',
+            'name': 'SharpAPI',
+            'url': MAIN_URL,
+          },
+        },
+      })}
+    />
   )
 }
 

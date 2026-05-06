@@ -1,29 +1,93 @@
+# Last updated: 2026-05-06
+# AI content map: https://docs.sharpapi.io/llms.txt
+
 User-agent: *
 Allow: /
 
-# AI Crawlers - explicitly allowed
+# OpenAI
 User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
+# Anthropic
 User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
 Allow: /
 
 User-agent: Claude-Web
 Allow: /
 
+# Perplexity
 User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Google
+User-agent: Google-Extended
+Allow: /
+
+# Apple
+User-agent: Applebot
 Allow: /
 
 User-agent: Applebot-Extended
 Allow: /
 
+# Cohere
 User-agent: cohere-ai
 Allow: /
 
-User-agent: Google-Extended
+# Meta
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# Amazon
+User-agent: Amazonbot
+Allow: /
+
+# ByteDance
+User-agent: Bytespider
+Allow: /
+
+# Common Crawl
+User-agent: CCBot
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckAssistBot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Diffbot
+User-agent: Diffbot
+Allow: /
+
+# Social preview (link unfurling)
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot
 Allow: /
 
 Sitemap: https://docs.sharpapi.io/sitemap.xml

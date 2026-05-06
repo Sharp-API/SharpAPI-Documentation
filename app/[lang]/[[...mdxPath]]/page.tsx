@@ -1,6 +1,6 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages'
 import { useMDXComponents } from '../../../mdx-components'
-import { PageBreadcrumb } from '../../../components/StructuredData'
+import { ApiReferenceJsonLd, PageBreadcrumb } from '../../../components/StructuredData'
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath')
 
@@ -34,9 +34,19 @@ export default async function Page(props) {
   const pathname = params.mdxPath
     ? `/${params.lang}/${params.mdxPath.join('/')}`
     : `/${params.lang}`
+  const isApiRef = params.mdxPath?.[0] === 'api-reference'
+  const pageUrl = `https://docs.sharpapi.io${pathname}`
+
   return (
     <>
       <PageBreadcrumb pathname={pathname} title={metadata?.title as string | undefined} />
+      {isApiRef && metadata?.title && (
+        <ApiReferenceJsonLd
+          title={String(metadata.title)}
+          description={String(metadata.description ?? '')}
+          url={pageUrl}
+        />
+      )}
       <Wrapper toc={toc} metadata={metadata}>
         <MDXContent {...props} params={params} />
       </Wrapper>

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: 'SharpAPI Docs',
     template: '%s - SharpAPI Docs',
   },
-  description: 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 16+ sportsbooks.',
+  description: 'SharpAPI documentation — real-time sports betting odds API with +EV detection, arbitrage alerts, low-hold markets, and SSE streaming from 43 sportsbooks.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

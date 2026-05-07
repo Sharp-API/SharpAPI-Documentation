@@ -13,6 +13,12 @@ const IGNORED_PATTERNS = [
   /ChunkLoadError/,
   /Loading chunk/,
   /prism_bash_exports/,  // browser extension (PrismJS-based dev tools) injecting into the page
+  // React hydration errors (#418, #423, #425) — mismatches are from Nextra internals
+  // (next-themes localStorage reads, Switchers conditional rendering). Suppressed at
+  // the DOM level via suppressHydrationWarning; PostHog sees them as noise.
+  /Hydration failed/,
+  /There was an error while hydrating/,
+  /Text content did not match/,
 ]
 
 function shouldIgnore(message: string): boolean {
@@ -111,7 +117,7 @@ function DocsEventCapture() {
   return null
 }
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+export function PostHogProvider({ children }: { children?: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       <DocsEventCapture />

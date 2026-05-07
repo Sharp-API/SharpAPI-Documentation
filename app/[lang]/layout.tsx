@@ -51,7 +51,7 @@ export default async function LangLayout({ children, params }) {
       <Head color={{ hue: 210 }}>
         <SiteStructuredData />
       </Head>
-      <body>
+      <body suppressHydrationWarning>
         <PostHogProvider>
           <Layout
             pageMap={await getPageMap(`/${lang}`)}
@@ -60,9 +60,6 @@ export default async function LangLayout({ children, params }) {
             toc={{ backToTop: true }}
             feedback={{ content: null }}
             editLink={null}
-            i18n={[
-              { locale: 'en', name: 'English' },
-            ]}
             navbar={
               <Navbar logo={logo}>
                 {navbarExtra}

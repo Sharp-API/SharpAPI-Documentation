@@ -79,7 +79,7 @@ Any MCP client that supports Streamable HTTP transport can connect:
 
 ## Available Tools
 
-The MCP server exposes 12 tools that map to SharpAPI's REST API:
+The MCP server exposes 17 tools that map to SharpAPI's REST API:
 
 ### Reference Data
 
@@ -88,15 +88,25 @@ The MCP server exposes 12 tools that map to SharpAPI's REST API:
 | `get_sports` | List all sports with event and live counts |
 | `get_leagues` | List leagues, filterable by sport |
 | `get_sportsbooks` | List all sportsbooks with metadata |
+| `get_markets` | List all market types (moneyline, spread, total, player props…) |
 
 ### Odds & Events
 
-| Tool | Description |
-|------|-------------|
-| `get_events` | Search events by sport, league, or team name |
-| `get_odds` | Get current odds with filters |
-| `get_best_odds` | Best odds across all books for each selection |
-| `compare_odds` | Side-by-side odds comparison for an event |
+| Tool | Description | Min Tier |
+|------|-------------|----------|
+| `get_events` | Search events by sport, league, or team name | All |
+| `get_odds` | Get current odds with filters | All |
+| `get_odds_delta` | Incremental sync — only odds changed since a timestamp | All |
+| `get_best_odds` | Best odds across all books for each selection | All |
+| `compare_odds` | Side-by-side odds comparison for an event | All |
+| `get_closing_lines` | Captured closing lines for CLV analysis | Pro |
+
+### Futures
+
+| Tool | Description | Min Tier |
+|------|-------------|----------|
+| `get_futures_odds` | Season-long markets (championship, MVP, win totals) | Pro |
+| `compare_futures_lines` | Cross-book comparison on a futures market | Pro |
 
 ### Opportunities
 

@@ -1,12 +1,9 @@
 name: Handle Upstream API Endpoint Change
 
-# Receives `repository_dispatch` events from upstream repos (sharp-api-go)
-# when handler files change. Dedups to ONE rolling open issue per UTC day —
-# subsequent dispatches the same day append a comment instead of opening a
-# new issue. This bounds noise at ≤1 new issue/day even at firehose rates.
-#
-# Earlier version (pre-2026-05) opened a fresh issue per dispatch, which
-# produced 185 unread tickets between Feb 18 and Mar 19, 2026.
+# Receives `repository_dispatch` events from upstream repos when handler
+# files change. Dedups to ONE rolling open issue per UTC day — subsequent
+# dispatches the same day append a comment instead of opening a new issue.
+# This bounds noise at ≤1 new issue/day even at firehose rates.
 
 on:
   repository_dispatch:
@@ -18,7 +15,7 @@ permissions:
 
 jobs:
   upsert-review-issue:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:

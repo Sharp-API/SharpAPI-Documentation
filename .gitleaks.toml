@@ -1,0 +1,35 @@
+# Gitleaks config — extends the default rule set with allowlists for
+# documented placeholder values. Real secrets are still caught.
+#
+# Run locally:  gitleaks git --redact=0 --log-level warn
+# CI:           any standard gitleaks-action invocation will read this file.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documentation placeholders — these strings appear in code samples and API examples and are intentionally never real keys."
+regexes = [
+  # SharpAPI key placeholders used throughout the docs and OpenAPI spec
+  '''sk_live_(your_key|xxx|abc123def456|REDACTED|\.\.\.)\b''',
+  '''sk_test_(pro|hobby|sharp|free|your_key|xxx)\b''',
+  '''sharpapi_(new|rotated)[a-z0-9]{20,40}''',
+  # Generic placeholders
+  '''YOUR_API_KEY''',
+  '''<YOUR_[A-Z_]+>''',
+]
+
+[[allowlists]]
+description = "curl-auth-header false positives in docs — fires on placeholder credentials only. A curl line containing a real-looking token (e.g. sk_live_[A-Za-z0-9]{20,}) is NOT matched here and will still be flagged."
+paths = [
+  '''content/.+\.mdx$''',
+  '''public/llms-full\.txt$''',
+  '''public/openapi\.json$''',
+  '''public/asyncapi\.yaml$''',
+]
+regexTarget = "match"
+regexes = [
+  '''X-API-Key:\s*(sk_live_(your_key|xxx|\.\.\.|REDACTED)|sk_test_(pro|hobby|sharp|free|xxx)|YOUR_API_KEY|\$\{?[A-Z_]+\}?)''',
+  '''Authorization:\s*Bearer\s+(sk_live_(your_key|xxx|\.\.\.|REDACTED)|YOUR_API_KEY|\$\{?[A-Z_]+\}?)''',
+  '''api_key=(sk_live_(your_key|xxx|\.\.\.|REDACTED)|YOUR_API_KEY|\$\{?[A-Z_]+\}?)''',
+]

@@ -39,7 +39,7 @@ const footerContent = (
       <a href="https://sharpapi.io">Home</a>
       <a href="https://sharpapi.io/pricing">Pricing</a>
       <a href="https://status.sharpapi.io/en/" target="_blank" rel="noopener noreferrer">Status</a>
-      <a href="https://github.com/Mlaz-code/SharpAPI-Documentation" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://github.com/Sharp-API/SharpAPI-Documentation" target="_blank" rel="noopener noreferrer">GitHub</a>
     </nav>
   </div>
 )

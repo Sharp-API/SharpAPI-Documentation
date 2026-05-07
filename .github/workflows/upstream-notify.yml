@@ -34,10 +34,10 @@ jobs:
           SHORT="${COMMIT:0:7}"
           # One bullet per dispatched commit — used both as the entry that
           # seeds a fresh daily issue's body, and as the comment appended to
-          # an existing one. All dispatching repos live under the same
-          # GitHub org as this one, so we use github.repository_owner.
-          OWNER="${GITHUB_REPOSITORY_OWNER}"
-          ENTRY="- [\`${SHORT}\`](${{ github.server_url }}/${OWNER}/${SOURCE}/commit/${COMMIT}) — **${SOURCE}** — \`${CHANGED}\`"
+          # an existing one. The dispatching repos live in a different
+          # org from this docs repo, so we don't use github.repository_owner.
+          UPSTREAM_OWNER="${UPSTREAM_OWNER:-Mlaz-code}"
+          ENTRY="- [\`${SHORT}\`](${{ github.server_url }}/${UPSTREAM_OWNER}/${SOURCE}/commit/${COMMIT}) — **${SOURCE}** — \`${CHANGED}\`"
 
           EXISTING_NUM=$(gh issue list \
               --repo "$REPO" \

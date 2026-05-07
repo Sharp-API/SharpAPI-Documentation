@@ -29,7 +29,7 @@ body = """
 trim = true
 footer = ""
 postprocessors = [
-  { pattern = '\$REPO', replace = "https://github.com/Mlaz-code/docs.sharpapi.io" },
+  { pattern = '\$REPO', replace = "https://github.com/Mlaz-code/SharpAPI-Documentation" },
 ]
 
 [git]
@@ -55,4 +55,4 @@ sort_commits = "newest"
 
 [remote.github]
 owner = "Mlaz-code"
-repo = "docs.sharpapi.io"
+repo = "SharpAPI-Documentation"

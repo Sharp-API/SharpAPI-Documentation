@@ -91,7 +91,9 @@ for team in result['data'][:10]:
   "data": [
     {
       "id": "arsenal",
+      "numerical_id": 1042,
       "name": "Arsenal",
+      "abbreviation": "ARS",
       "sport": "soccer",
       "leagues": [
         "EPL",
@@ -107,7 +109,9 @@ for team in result['data'][:10]:
     },
     {
       "id": "alabama-crimson-tide",
+      "numerical_id": 318,
       "name": "Alabama Crimson Tide",
+      "abbreviation": "ALA",
       "sport": "basketball",
       "leagues": [
         "NCAAB"
@@ -138,12 +142,24 @@ for team in result['data'][:10]:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique team identifier (slug format, e.g., `alabama-crimson-tide`) |
+| `numerical_id` | integer \| null | Stable integer key for the team (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Display name (e.g., `Alabama Crimson Tide`) |
+| `abbreviation` | string \| null | Short code (e.g., `ALA`, `ARS`, `NYY`). New (May 2026) — populated where a broadly-recognized abbreviation exists. |
 | `sport` | string | Primary sport (e.g., `basketball`, `soccer`, `football`, `hockey`) |
 | `leagues` | array | Leagues this team appears in (e.g., `["NBA", "NCAAB"]`) |
 | `aliases` | array | Alternative names used by different sportsbooks (e.g., `["Alabama", "Bama"]`) |
 | `event_count` | integer | Number of current events involving this team |
 | `live_count` | integer | Number of currently live events involving this team |
+
+### New (May 2026): `numerical_id` and `abbreviation`
+
+`numerical_id` is a frozen, dense-from-1 integer assigned per team in the SharpAPI atlas (~5,000+ entries across all sports). `abbreviation` is the team's short code where one is broadly known (US major leagues, EPL, ATP/WTA — `NYY`, `ARS`, `LAL`, etc.).
+
+- **Frozen:** `numerical_id` is never reused or remapped, even if the team renames or moves leagues.
+- **Optional:** both fields are absent (or `null`) for teams that haven't been mapped or don't have a standard short code. The slug `id` and `name` are always present.
+- **Domain-scoped:** `numerical_id` is unique across teams only.
+
+Every odds row and opportunity leg also carries `home` and `away` blocks with the same shape (`{id, numerical_id, name, abbreviation}`), so you don't need to second-fetch this endpoint just to label rows. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
 
 ## Meta Object
 

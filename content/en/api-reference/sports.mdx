@@ -66,6 +66,7 @@ for sport in result['data']:
   "data": [
     {
       "id": "basketball",
+      "numerical_id": 1,
       "name": "Basketball",
       "leagues": ["nba", "ncaab", "wnba"],
       "event_count": 42,
@@ -73,6 +74,7 @@ for sport in result['data']:
     },
     {
       "id": "football",
+      "numerical_id": 2,
       "name": "Football",
       "leagues": ["nfl", "ncaaf"],
       "event_count": 28,
@@ -80,6 +82,7 @@ for sport in result['data']:
     },
     {
       "id": "hockey",
+      "numerical_id": 4,
       "name": "Hockey",
       "leagues": ["nhl"],
       "event_count": 15,
@@ -87,6 +90,7 @@ for sport in result['data']:
     },
     {
       "id": "baseball",
+      "numerical_id": 3,
       "name": "Baseball",
       "leagues": ["mlb"],
       "event_count": 0,
@@ -141,10 +145,21 @@ for sport in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Sport identifier (lowercase, use in API filters) |
+| `numerical_id` | integer \| null | Stable integer key for the sport (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Human-readable sport name |
 | `leagues` | string[] | League IDs within this sport |
 | `event_count` | integer | Total events currently available with odds |
 | `live_count` | integer | Events currently live/in-play |
+
+### New (May 2026): `numerical_id`
+
+`numerical_id` is a frozen, dense-from-1 integer assigned per sport in the SharpAPI atlas. Use it as a compact storage key when you don't need the human-readable slug.
+
+- **Frozen:** never reused or remapped once assigned.
+- **Optional:** absent (or `null`) for sports that haven't been mapped yet — the slug `id` is always present.
+- **Domain-scoped:** unique across sports only; pair with the entity domain to disambiguate.
+
+See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full semantics, plus the matching `sport_ref` block emitted on every odds row and opportunity leg.
 
 ## Available Sports
 

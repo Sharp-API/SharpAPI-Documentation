@@ -1,0 +1,110 @@
+---
+description: "Entity reference IDs — numerical_id semantics, nested team/sport/league/market/sportsbook objects, and how to use them for joins, indexing, and cross-feed mapping."
+---
+
+import { Callout } from 'nextra/components'
+
+# Entity reference IDs
+
+SharpAPI emits stable, integer-keyed identifiers (`numerical_id`) on every reference entity, plus self-describing nested reference objects on every odds row and opportunity leg. This page documents what those IDs guarantee, how to use them, and how they relate to the existing string IDs.
+
+<Callout type="info">
+  **New (May 2026).** Both `numerical_id` and the nested reference objects are **additive**. Existing string IDs (`sport: "baseball"`, `league: "mlb"`, `sportsbook: "pinnacle"`, `home_team: "New York Yankees"`) remain in every response and are not deprecated. There is no removal timeline — both shapes are supported indefinitely.
+</Callout>
+
+## What's new
+
+Each reference endpoint (`/sports`, `/leagues`, `/sportsbooks`, `/markets`, `/teams`) now returns a `numerical_id` integer alongside the existing slug `id`. `/teams` additionally returns an `abbreviation` field where one is known.
+
+Each odds row (and each leg of an EV / arbitrage / middle opportunity) now carries six optional **nested reference objects** that bundle the entity's `id`, display label, and `numerical_id` directly with the row — no second lookup against `/sports` or `/teams` needed:
+
+```json
+{
+  "home":           { "id": "new_york_yankees", "numerical_id": 20, "name": "New York Yankees", "abbreviation": "NYY" },
+  "away":           { "id": "boston_red_sox",   "numerical_id":  5, "name": "Boston Red Sox",   "abbreviation": "BOS" },
+  "sport_ref":      { "id": "baseball",         "numerical_id":  3, "name": "Baseball" },
+  "league_ref":     { "id": "mlb",              "numerical_id": 354, "label": "MLB" },
+  "market_ref":     { "id": "moneyline",        "numerical_id": 878, "label": "Moneyline" },
+  "sportsbook_ref": { "id": "pinnacle",         "numerical_id":  28, "label": "Pinnacle" }
+}
+```
+
+## `numerical_id` semantics
+
+Each `numerical_id` is allocated from a frozen, per-domain registry under `api-adapters/sharp_atlas/`. The contract is:
+
+| Property | Guarantee |
+|---|---|
+| **Frozen** | Once assigned, a `numerical_id` is never reused, reissued, or remapped to a different entity. The Yankees' `numerical_id: 20` will be `20` until the API is retired. |
+| **Dense from 1** | IDs start at `1` and are issued sequentially per domain. There are no negative or zero IDs and no large skips. Sports, leagues, sportsbooks, markets, and teams each have an independent dense range. |
+| **Domain-scoped** | A `numerical_id` is only unique within its domain (sport, league, sportsbook, market, team). `numerical_id: 3` on a sport is unrelated to `numerical_id: 3` on a team. Pair the integer with the domain to disambiguate. |
+| **Assigned, not derived** | IDs are explicitly tracked in the atlas JSONs — they are not hashes of the slug or computed from sort order. Adding a new entity allocates the next free integer; renaming a slug does not change its `numerical_id`. |
+| **Not a sportsbook ID** | This is SharpAPI's identifier, not the sportsbook's internal one. A book's native event/market/selection IDs are still emitted on a per-row basis — see `external_event_id`, `selection_id`, `market_id`, and `external_ids` on the [Events](/en/api-reference/events) endpoint. |
+
+## When fields are absent
+
+The nested reference objects are emitted **only when the underlying entity has been mapped in the atlas**. For unmapped entities — typically long-tail leagues, exotic markets, or freshly added sportsbooks before catalog assignment — the corresponding `*_ref` block is omitted (or has `numerical_id: null`) and the existing string field on the row is the only ID you'll see.
+
+In practice:
+
+- Major sports, leagues, and books are fully mapped — expect every `*_ref` block to be present.
+- Player-prop markets and corners/cards/period markets in soccer have the broadest catalog; some niche prop types are still being assigned.
+- Team `abbreviation` is populated where one is broadly known (US major leagues, EPL, ATP/WTA short codes). For minor / international teams it may be absent.
+
+Consumers should treat every nested block as **optional**. Generic clients should fall back to the flat string field (`sport`, `league`, `sportsbook`, `home_team`, `away_team`, `market_type`) when the corresponding `*_ref` is not present.
+
+## Recommended usage
+
+### Indexing & joins
+Use `numerical_id` as the primary key when storing odds/opportunities in your own database. Integer keys are smaller, cheaper to index, and stable across slug renames or display-label tweaks.
+
+### Cross-feed mapping
+If you ingest from multiple data providers, `numerical_id` gives you a fast equality check inside SharpAPI rows. For mapping **across** vendors, the slug `id` (`mlb`, `pinnacle`, `new_york_yankees`) is still the more portable join key — slugs are human-readable and tend to overlap across vendors more than integer IDs do.
+
+### UI display
+Use `name` (sports, teams) or `label` (leagues, markets, sportsbooks) for display; the `abbreviation` on `home`/`away` is appropriate for compact cells.
+
+### Streaming
+The same nested objects appear on `/api/v1/stream/odds` SSE frames and on WebSocket v1 / v1.5 odds payloads — no separate stream is required.
+
+## Field reference
+
+### Reference endpoints
+
+Every reference endpoint adds `numerical_id` to its existing object schema. `/teams` additionally adds `abbreviation`.
+
+| Endpoint | Added field | Type | Notes |
+|---|---|---|---|
+| [`/sports`](/en/api-reference/sports) | `numerical_id` | integer \| null | Sport-scoped domain |
+| [`/leagues`](/en/api-reference/leagues) | `numerical_id` | integer \| null | League-scoped domain |
+| [`/sportsbooks`](/en/api-reference/sportsbooks) | `numerical_id` | integer \| null | Sportsbook-scoped domain |
+| [`/markets`](/en/api-reference/markets) | `numerical_id` | integer \| null | Market-type-scoped domain |
+| [`/teams`](/en/api-reference/teams) | `numerical_id`, `abbreviation` | integer \| null, string \| null | Team-scoped domain |
+
+### Nested reference blocks on odds & opportunity legs
+
+| Block | Where | Fields | Purpose |
+|---|---|---|---|
+| `home`, `away` | Every odds row, every opportunity leg | `id`, `numerical_id`, `name`, `abbreviation` | Resolve the two competitors without a separate `/teams` call. |
+| `sport_ref` | Same | `id`, `numerical_id`, `name` | Display-ready sport reference. |
+| `league_ref` | Same | `id`, `numerical_id`, `label` | Display-ready league reference. |
+| `market_ref` | Same | `id`, `numerical_id`, `label` | Display-ready market reference (canonical market type). |
+| `sportsbook_ref` | Same | `id`, `numerical_id`, `label` | Display-ready sportsbook reference. |
+
+All inner fields are **optional** within a block. A block may be present with a `null` `numerical_id` if the slug has been mapped but the integer assignment is pending; both `numerical_id` and the entire block may also be absent for unmapped entities.
+
+## Migration
+
+There is nothing to migrate. Continue using the flat string fields if they cover your needs. Adopt the `*_ref` blocks and `numerical_id` selectively when:
+
+- you need a stable integer key for storage,
+- you want display-ready labels without a second API call,
+- or you're building a cross-feed normalization layer.
+
+The flat fields and the nested blocks describe the same row — they will not contradict each other.
+
+## Related
+
+- [Sports](/en/api-reference/sports), [Leagues](/en/api-reference/leagues), [Sportsbooks](/en/api-reference/sportsbooks), [Markets](/en/api-reference/markets), [Teams](/en/api-reference/teams) — reference endpoints with the new `numerical_id` field
+- [Odds Snapshot](/en/api-reference/odds), [+EV Opportunities](/en/api-reference/opportunities-ev), [Arbitrage](/en/api-reference/opportunities-arbitrage), [Middles](/en/api-reference/opportunities-middles) — endpoints with nested reference blocks
+- [Event Matching](/en/concepts/event-matching) — how SharpAPI joins the same fixture across books

@@ -3,7 +3,7 @@
 **Test Execution Date:** January 24, 2026  
 **Test Suite Version:** 1.0  
 **Base URL:** `https://sharpapi.io/api/v1`  
-**API Key:** `sk_live_REDACTED` (masked)
+**API Key:** `[redacted]`
 
 ---
 

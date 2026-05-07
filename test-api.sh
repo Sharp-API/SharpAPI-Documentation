@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 BASE_URL="https://sharpapi.io/api/v1"
-API_KEY="sk_live_REDACTED"
+API_KEY="${SHARPAPI_API_KEY:?Set SHARPAPI_API_KEY environment variable to a SharpAPI key}"
 TIMEOUT=10
 STREAM_TIMEOUT=5
 

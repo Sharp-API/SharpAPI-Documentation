@@ -109,6 +109,7 @@ Desktop.ini
 # =============================================================================
 # Claude Code / agents
 # =============================================================================
+CLAUDE.md
 .claude/settings.json
 .claude/settings.local.json
 .claude/agent-memory/

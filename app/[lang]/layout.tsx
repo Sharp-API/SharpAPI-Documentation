@@ -6,7 +6,7 @@ import { PostHogProvider } from '../../components/PostHogProvider'
 import { SiteStructuredData } from '../../components/StructuredData'
 
 import 'nextra-theme-docs/style.css'
-import '../../styles/globals.css'
+import '../globals.css'
 
 export function generateStaticParams() {
   return [{ lang: 'en' }]

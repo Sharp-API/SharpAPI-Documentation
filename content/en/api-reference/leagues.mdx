@@ -255,58 +255,25 @@ for league in result['data']:
 | `event_count` | integer | Total events currently available with odds |
 | `live_count` | integer | Events currently live/in-play |
 
-## Leagues by Sport
+## Common Leagues
 
-### Basketball
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `nba` | NBA | National Basketball Association |
-| `ncaab` | NCAAB | NCAA Men's Basketball |
-| `wnba` | WNBA | Women's National Basketball Association |
+The endpoint is the canonical source of truth — call `GET /api/v1/leagues` for the complete, up-to-date list. The atlas registry catalogs **600+ leagues across 30+ sports** including UEFA continental competitions, multiple basketball circuits per country, and full tennis/golf/MMA/esports/cricket coverage. The illustrative subset below shows the highest-volume entries you'll typically filter on:
 
-### Football
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `nfl` | NFL | National Football League |
-| `ncaaf` | NCAAF | NCAA Football |
-
-### Hockey
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `nhl` | NHL | National Hockey League |
-
-### Baseball
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `mlb` | MLB | Major League Baseball |
-
-### Soccer
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `epl` | English Premier League | English Premier League |
-| `la_liga` | La Liga | Spanish La Liga |
-| `serie_a` | Serie A | Italian Serie A |
-| `bundesliga` | Bundesliga | German Bundesliga |
-| `mls` | MLS | Major League Soccer |
-
-### Tennis
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `atp` | ATP | Association of Tennis Professionals |
-| `wta` | WTA | Women's Tennis Association |
-
-### MMA
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `ufc` | UFC | Ultimate Fighting Championship |
-
-### Golf
-| ID | Display Name | Description |
-|----|-------------|-------------|
-| `pga` | PGA Tour | Professional Golfers' Association Tour |
+| Sport | Common league IDs |
+|-------|-------------------|
+| Basketball | `nba`, `ncaab`, `wnba` |
+| Football | `nfl`, `ncaaf` |
+| Hockey | `nhl` |
+| Baseball | `mlb` |
+| Soccer | `england_-_premier_league`, `spain_-_la_liga`, `italy_-_serie_a`, `germany_-_bundesliga`, `france_-_ligue_1`, `uefa_-_champions_league`, `usa_-_major_league_soccer` |
+| Tennis | `atp`, `wta`, `atp_challenger`, `itf_men`, `itf_women` |
+| MMA | `ufc`, `pfl` |
+| Golf | `pga`, `liv`, `dp_world_tour`, `lpga` |
 
 <Callout type="info">
-The `event_count` and `live_count` values are dynamic. Off-season leagues (e.g., MLB in winter, WNBA in fall) will show 0 events.
+- League IDs use canonical slug form (`england_-_premier_league`, not `epl`). Some short forms are accepted as filter input for backward compatibility, but the canonical slug is what `/leagues` returns and what other endpoints emit on response payloads.
+- The `event_count` and `live_count` values are dynamic. Off-season leagues (e.g., MLB in winter, WNBA in fall) show 0 events but stay in the catalog.
+- For programmatic access (e.g. building dropdown filters), call `/api/v1/leagues` and use the response — never hard-code a list.
 </Callout>
 
 ## Using Leagues in Filters

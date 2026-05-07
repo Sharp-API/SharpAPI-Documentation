@@ -94,6 +94,11 @@ for team in result['data'][:10]:
       "numerical_id": 1042,
       "name": "Arsenal",
       "abbreviation": "ARS",
+      "logo": "https://cdn.opticodds.com/team-logos/soccer/12.png",
+      "city": "London",
+      "mascot": "Arsenal",
+      "conference": "England - Premier League",
+      "division": null,
       "sport": "soccer",
       "leagues": [
         "EPL",
@@ -112,6 +117,11 @@ for team in result['data'][:10]:
       "numerical_id": 318,
       "name": "Alabama Crimson Tide",
       "abbreviation": "ALA",
+      "logo": "https://cdn.opticodds.com/team-logos/basketball/333.png",
+      "city": "Alabama",
+      "mascot": "Crimson Tide",
+      "conference": "SEC",
+      "division": null,
       "sport": "basketball",
       "leagues": [
         "NCAAB"
@@ -145,21 +155,26 @@ for team in result['data'][:10]:
 | `numerical_id` | integer \| null | Stable integer key for the team (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Display name (e.g., `Alabama Crimson Tide`) |
 | `abbreviation` | string \| null | Short code (e.g., `ALA`, `ARS`, `NYY`). New (May 2026) — populated where a broadly-recognized abbreviation exists. |
+| `logo` | string \| null | Full CDN URL for the team crest. New (May 2026) — populated for ~93% of teams. Treat the host as opaque. |
+| `city` | string \| null | The team's geographic anchor (e.g., `Boston`, `Los Angeles`). New (May 2026). |
+| `mascot` | string \| null | The team mascot / nickname portion of the name (e.g., `Yankees`, `Lakers`). New (May 2026). |
+| `conference` | string \| null | League-defined conference (e.g., `AL`, `Eastern`, `AFC`). Format varies per league. New (May 2026). |
+| `division` | string \| null | League-defined sub-grouping within the conference (e.g., `East Division`, `AFC West`). New (May 2026). |
 | `sport` | string | Primary sport (e.g., `basketball`, `soccer`, `football`, `hockey`) |
 | `leagues` | array | Leagues this team appears in (e.g., `["NBA", "NCAAB"]`) |
 | `aliases` | array | Alternative names used by different sportsbooks (e.g., `["Alabama", "Bama"]`) |
 | `event_count` | integer | Number of current events involving this team |
 | `live_count` | integer | Number of currently live events involving this team |
 
-### New (May 2026): `numerical_id` and `abbreviation`
+### New (May 2026): `numerical_id`, `abbreviation`, and team metadata
 
-`numerical_id` is a frozen, dense-from-1 integer assigned per team in the SharpAPI atlas (~5,000+ entries across all sports). `abbreviation` is the team's short code where one is broadly known (US major leagues, EPL, ATP/WTA — `NYY`, `ARS`, `LAL`, etc.).
+`numerical_id` is a frozen, dense-from-1 integer assigned per team in the SharpAPI atlas (~24,000 entries across all sports). The new metadata fields (`abbreviation`, `logo`, `city`, `mascot`, `conference`, `division`) are sourced from the SharpAPI atlas and populated for the broad majority of teams (≈93% on `logo`, with comparable coverage on the rest).
 
 - **Frozen:** `numerical_id` is never reused or remapped, even if the team renames or moves leagues.
-- **Optional:** both fields are absent (or `null`) for teams that haven't been mapped or don't have a standard short code. The slug `id` and `name` are always present.
+- **Optional:** every new field is absent (or `null`) for teams that haven't been mapped or for individual-sport competitors (tennis players, MMA fighters, golfers, drivers — they're not "teams" in the conventional sense). The slug `id` and `name` are always present.
 - **Domain-scoped:** `numerical_id` is unique across teams only.
 
-Every odds row and opportunity leg also carries `home` and `away` blocks with the same shape (`{id, numerical_id, name, abbreviation}`), so you don't need to second-fetch this endpoint just to label rows. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
+Every odds row and opportunity leg also carries `home` and `away` blocks with the same shape (`{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`), so you don't need to second-fetch this endpoint just to label rows. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
 
 ## Meta Object
 

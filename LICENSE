@@ -1,0 +1,26 @@
+Copyright (c) 2026 SharpAPI. All rights reserved.
+
+The contents of this repository — including but not limited to documentation
+text, MDX content, OpenAPI specifications, AsyncAPI specifications, code
+samples, configuration, and build tooling — are proprietary to SharpAPI.
+
+No part of this repository may be reproduced, distributed, or transmitted in
+any form or by any means, including photocopying, recording, or other
+electronic or mechanical methods, without the prior written permission of
+SharpAPI, except in the following limited cases:
+
+  1. Code samples shown inside documentation pages (in `content/`, `public/`,
+     and the rendered site) may be copied and adapted by SharpAPI customers
+     and prospective customers solely for the purpose of integrating with the
+     SharpAPI service.
+
+  2. Brief excerpts may be quoted in articles, reviews, or technical
+     discussions with attribution to SharpAPI and a link to
+     https://sharpapi.io.
+
+This repository is published openly to support transparent documentation and
+community-contributed corrections via pull requests. Public visibility does
+not constitute a grant of any license to the contents beyond the limited
+cases above.
+
+For licensing inquiries, contact: support@sharpapi.io

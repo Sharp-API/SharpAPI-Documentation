@@ -1,9 +1,27 @@
+# Dependencies
 node_modules/
+
+# Build output
 .next/
 out/
+tsconfig.tsbuildinfo
+
+# Deploy
 .vercel/
 .vercel
-.env*.local
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local workspace
+.local/
+.worktrees/
+~/
+
+# Claude / agents
 .claude/settings.json
+.claude/settings.local.json
 .claude/agent-memory/
-tsconfig.tsbuildinfo
+.claude/skills/

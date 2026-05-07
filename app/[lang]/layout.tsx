@@ -13,18 +13,9 @@ export function generateStaticParams() {
 }
 
 const logo = (
-  <Link
-    href="https://sharpapi.io"
-    style={{
-      textDecoration: 'none',
-      color: 'inherit',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-    }}
-  >
-    <img src="/logo.svg" alt="SharpAPI" width={24} height={24} />
-    <span style={{ fontWeight: 700 }}>SharpAPI</span>
+  <Link href="https://sharpapi.io" className="sa-logo">
+    <img src="/logo.svg" alt="SharpAPI" />
+    <span>SharpAPI</span>
   </Link>
 )
 
@@ -33,19 +24,24 @@ const navbarExtra = (
     href="https://sharpapi.io"
     target="_blank"
     rel="noopener noreferrer"
-    style={{
-      padding: '0.5rem 1rem',
-      marginLeft: '0.5rem',
-      backgroundColor: '#3b82f6',
-      color: 'white',
-      borderRadius: '0.375rem',
-      fontSize: '0.875rem',
-      fontWeight: 500,
-      textDecoration: 'none',
-    }}
+    className="sa-cta"
   >
     Back to SharpAPI →
   </a>
+)
+
+const footerContent = (
+  <div className="sa-footer">
+    <div className="sa-footer__copy">
+      © {new Date().getFullYear()} SharpAPI · Built with ♠️ for sharp bettors
+    </div>
+    <nav className="sa-footer__links" aria-label="Footer">
+      <a href="https://sharpapi.io">Home</a>
+      <a href="https://sharpapi.io/pricing">Pricing</a>
+      <a href="https://status.sharpapi.io/en/" target="_blank" rel="noopener noreferrer">Status</a>
+      <a href="https://github.com/Mlaz-code/docs.sharpapi.io" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </div>
 )
 
 export default async function LangLayout({ children, params }) {
@@ -68,21 +64,11 @@ export default async function LangLayout({ children, params }) {
               { locale: 'en', name: 'English' },
             ]}
             navbar={
-              <Navbar
-                logo={logo}
-                children={navbarExtra}
-              />
+              <Navbar logo={logo}>
+                {navbarExtra}
+              </Navbar>
             }
-            footer={
-              <Footer>
-                <div style={{ textAlign: 'center' }}>
-                  <div>{new Date().getFullYear()} SharpAPI. Built with ♠️ for sharp bettors.</div>
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <a href="https://status.sharpapi.io/en/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>Status</a>
-                  </div>
-                </div>
-              </Footer>
-            }
+            footer={<Footer>{footerContent}</Footer>}
           >
             {children}
           </Layout>

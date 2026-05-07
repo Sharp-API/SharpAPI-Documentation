@@ -18,17 +18,24 @@ bun.lockb
 out/
 build/
 dist/
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 next-env.d.ts.local
+*.tgz
+*.tar.gz
 
 # =============================================================================
-# Caches (Next.js, ESLint, Stylelint, Turbo, SWC, linkinator, pagefind)
+# Caches (Next.js, ESLint, Stylelint, Prettier, Biome, Turbo, SWC, Vite,
+# Parcel, linkinator, pagefind)
 # =============================================================================
 .cache/
 .turbo/
 .swc/
+.vite/
+.parcel-cache/
 .eslintcache
 .stylelintcache
+.prettiercache
+.biomecache
 .linkinator.config.json.cache
 
 # =============================================================================
@@ -90,9 +97,38 @@ Desktop.ini
 *.code-workspace
 *.swp
 *.swo
+*.swn
+*.swl
 *~
+Session.vim
+tags
+tags.lock
+tags.temp
+.netrwhist
+\#*\#
+.\#*
 .fleet/
 .zed/
+
+# =============================================================================
+# AI editors / agent tooling (deny-by-default; nothing in here is repo content)
+# =============================================================================
+.cursor/
+.cursorrules
+.aider*
+.continue/
+.codeium/
+.windsurf/
+.copilot/
+
+# =============================================================================
+# Claude Code / agents — deny-by-default
+# Currently nothing in .claude/ is tracked. If you ever want to ship a
+# specific file (e.g. a shared agent definition), add an explicit
+# `!.claude/path/to/file` allow-list entry below.
+# =============================================================================
+CLAUDE.md
+.claude/
 
 # =============================================================================
 # Local workspace clutter
@@ -101,27 +137,32 @@ Desktop.ini
 .worktrees/
 ~/
 .tdev/
+tmp/
+temp/
 *.bak
 *.orig
 *.rej
 *.tmp
+*.pid
+*.seed
+core.*
 
 # =============================================================================
-# Claude Code / agents
+# Local databases (sqlite, generic dumps)
 # =============================================================================
-CLAUDE.md
-.claude/settings.json
-.claude/settings.local.json
-.claude/agent-memory/
-.claude/memory/
-.claude/projects/
-.claude/skills/
-.claude/local/
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+*.db
+*.sql
+
+# =============================================================================
+# Husky internals (auto-generated if Husky is ever added)
+# =============================================================================
+.husky/_/
 
 # =============================================================================
 # Misc tooling
 # =============================================================================
 .sentryclirc
 .envrc
-*.pid
-*.seed

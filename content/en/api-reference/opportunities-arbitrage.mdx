@@ -262,8 +262,8 @@ X-Request-Id: req_arb789xyz012
 | `external_event_id` | string\|null | Sportsbook's native event ID |
 | `selection_id` | string\|null | Sportsbook's selection/outcome ID |
 | `market_id` | string\|null | Sportsbook's market ID |
-| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
-| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation}`. |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
 | `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
@@ -281,8 +281,28 @@ Every arbitrage leg now carries six optional nested reference objects, mirroring
       "selection": "Los Angeles Lakers",
       "odds_american": 145,
 
-      "home":           { "id": "los_angeles_lakers", "numerical_id": 14, "name": "Los Angeles Lakers", "abbreviation": "LAL" },
-      "away":           { "id": "boston_celtics",     "numerical_id":  3, "name": "Boston Celtics",     "abbreviation": "BOS" },
+      "home": {
+        "id": "los_angeles_lakers",
+        "numerical_id": 14,
+        "name": "Los Angeles Lakers",
+        "abbreviation": "LAL",
+        "logo": "https://cdn.opticodds.com/team-logos/basketball/13.png",
+        "city": "Los Angeles",
+        "mascot": "Lakers",
+        "conference": "Western",
+        "division": "Pacific Division"
+      },
+      "away": {
+        "id": "boston_celtics",
+        "numerical_id":  3,
+        "name": "Boston Celtics",
+        "abbreviation": "BOS",
+        "logo": "https://cdn.opticodds.com/team-logos/basketball/2.png",
+        "city": "Boston",
+        "mascot": "Celtics",
+        "conference": "Eastern",
+        "division": "Atlantic Division"
+      },
       "sport_ref":      { "id": "basketball", "numerical_id":   1, "name": "Basketball" },
       "league_ref":     { "id": "nba",        "numerical_id":  87, "label": "NBA" },
       "market_ref":     { "id": "moneyline",  "numerical_id": 878, "label": "Moneyline" },

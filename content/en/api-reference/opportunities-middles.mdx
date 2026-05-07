@@ -245,8 +245,8 @@ X-Request-Id: req_mid456abc789
 | `stake_percent` | number | Recommended stake allocation (% of total) |
 | `odds_age_seconds` | number\|null | Age of this side's odds at detection time |
 | `deep_link` | string\|null | Direct link to place this bet at the sportsbook |
-| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
-| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation}`. |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
 | `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
@@ -264,8 +264,28 @@ X-Request-Id: req_mid456abc789
     "line": -2.5,
     "odds": { "american": -110, "decimal": 1.909, "probability": 0.524, "fair_probability": 0.524 },
 
-    "home":           { "id": "kansas_city_chiefs", "numerical_id": 11, "name": "Kansas City Chiefs", "abbreviation": "KC"  },
-    "away":           { "id": "buffalo_bills",      "numerical_id":  4, "name": "Buffalo Bills",      "abbreviation": "BUF" },
+    "home": {
+      "id": "kansas_city_chiefs",
+      "numerical_id": 11,
+      "name": "Kansas City Chiefs",
+      "abbreviation": "KC",
+      "logo": "https://cdn.opticodds.com/team-logos/football/14.png",
+      "city": "Kansas City",
+      "mascot": "Chiefs",
+      "conference": "AFC",
+      "division": "AFC West"
+    },
+    "away": {
+      "id": "buffalo_bills",
+      "numerical_id":  4,
+      "name": "Buffalo Bills",
+      "abbreviation": "BUF",
+      "logo": "https://cdn.opticodds.com/team-logos/football/4.png",
+      "city": "Buffalo",
+      "mascot": "Bills",
+      "conference": "AFC",
+      "division": "AFC East"
+    },
     "sport_ref":      { "id": "football",   "numerical_id":   2, "name": "Football" },
     "league_ref":     { "id": "nfl",        "numerical_id":  90, "label": "NFL" },
     "market_ref":     { "id": "point_spread","numerical_id": 880, "label": "Point Spread" },

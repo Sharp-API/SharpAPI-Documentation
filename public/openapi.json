@@ -13,8 +13,8 @@
       "name": "Proprietary",
       "url": "https://sharpapi.io/terms"
     },
-    "x-generated-at": "2026-04-16T19:00:23-04:00",
-    "x-commit-sha": "60018c8"
+    "x-generated-at": "2026-04-23T20:18:17-04:00",
+    "x-commit-sha": "39e2c5d"
   },
   "servers": [
     {
@@ -476,68 +476,6 @@
         }
       }
     },
-    "/sports/{sportId}": {
-      "get": {
-        "operationId": "getSport",
-        "summary": "Get sport by ID",
-        "description": "Returns details for a single sport.",
-        "tags": [
-          "Reference Data"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyQuery": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "sportId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "basketball"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sport details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/DataEnvelope"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/Sport"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
     "/leagues": {
       "get": {
         "operationId": "listLeagues",
@@ -749,68 +687,6 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
-          }
-        }
-      }
-    },
-    "/sportsbooks/{bookId}": {
-      "get": {
-        "operationId": "getSportsbook",
-        "summary": "Get sportsbook by ID",
-        "description": "Returns details for a single sportsbook.",
-        "tags": [
-          "Reference Data"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "BearerAuth": []
-          },
-          {
-            "ApiKeyQuery": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "bookId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "draftkings"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sportsbook details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/DataEnvelope"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/Sportsbook"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -4343,12 +4219,18 @@
           },
           "possession": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Which team has possession (team sports) or is receiving (tennis)."
           },
           "server": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Tennis only — current server."
           },
           "last_play": {
@@ -4389,7 +4271,10 @@
           },
           "power_play": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Hockey only — which team is on the power play."
           },
           "sets_home": {
@@ -4426,7 +4311,10 @@
           },
           "batting_team": {
             "type": "string",
-            "enum": ["home", "away"],
+            "enum": [
+              "home",
+              "away"
+            ],
             "description": "Cricket only."
           },
           "stale": {

@@ -31,7 +31,7 @@ export function SiteStructuredData() {
           'url': MAIN_URL,
           'logo': `${MAIN_URL}/logo.svg`,
           'sameAs': [
-            'https://github.com/Mlaz-code',
+            'https://github.com/Sharp-API',
           ],
         })}
       />

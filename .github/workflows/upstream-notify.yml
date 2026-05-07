@@ -26,17 +26,25 @@ jobs:
           SOURCE: ${{ github.event.client_payload.source_repo }}
           CHANGED: ${{ github.event.client_payload.changed_files }}
           COMMIT: ${{ github.event.client_payload.commit }}
+          # GitHub org that owns the dispatching upstream repos. Set as a
+          # repo-level secret so the value isn't baked into a public file.
+          # Configure once: gh secret set UPSTREAM_OWNER --body '<org>'
+          UPSTREAM_OWNER: ${{ secrets.UPSTREAM_OWNER }}
         run: |
           set -euo pipefail
+
+          if [ -z "${UPSTREAM_OWNER}" ]; then
+            echo "::error::UPSTREAM_OWNER secret is not set. Configure it with:"
+            echo "::error::  gh secret set UPSTREAM_OWNER --body '<org-name>' --repo ${REPO}"
+            exit 1
+          fi
 
           TODAY=$(date -u +%Y-%m-%d)
           TITLE="Docs review: upstream API changes (${TODAY})"
           SHORT="${COMMIT:0:7}"
           # One bullet per dispatched commit — used both as the entry that
           # seeds a fresh daily issue's body, and as the comment appended to
-          # an existing one. The dispatching repos live in a different
-          # org from this docs repo, so we don't use github.repository_owner.
-          UPSTREAM_OWNER="${UPSTREAM_OWNER:-Mlaz-code}"
+          # an existing one.
           ENTRY="- [\`${SHORT}\`](${{ github.server_url }}/${UPSTREAM_OWNER}/${SOURCE}/commit/${COMMIT}) — **${SOURCE}** — \`${CHANGED}\`"
 
           EXISTING_NUM=$(gh issue list \

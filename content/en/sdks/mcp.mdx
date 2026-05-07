@@ -7,7 +7,7 @@ import { Callout, Tabs } from 'nextra/components'
 # MCP Server (AI Assistants)
 
 <Callout type="info">
-SharpAPI includes a built-in MCP server at `https://api.sharpapi.io/mcp` — connect Claude Desktop, Claude Code, or any MCP-compatible AI assistant to query live odds and opportunities through natural language.
+SharpAPI includes a built-in MCP server at `https://mcp.sharpapi.io/mcp` — connect Claude Desktop, Claude Code, or any MCP-compatible AI assistant to query live odds and opportunities through natural language.
 </Callout>
 
 ## What is MCP?
@@ -34,7 +34,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
   "mcpServers": {
     "sharpapi": {
       "type": "streamable-http",
-      "url": "https://api.sharpapi.io/mcp",
+      "url": "https://mcp.sharpapi.io/mcp",
       "headers": {
         "X-API-Key": "sk_live_..."
       }
@@ -55,7 +55,7 @@ Add to your Claude Code MCP settings:
   "mcpServers": {
     "sharpapi": {
       "type": "streamable-http",
-      "url": "https://api.sharpapi.io/mcp",
+      "url": "https://mcp.sharpapi.io/mcp",
       "headers": {
         "X-API-Key": "sk_live_..."
       }
@@ -69,7 +69,7 @@ Add to your Claude Code MCP settings:
 
 Any MCP client that supports Streamable HTTP transport can connect:
 
-- **Endpoint:** `POST https://api.sharpapi.io/mcp`
+- **Endpoint:** `POST https://mcp.sharpapi.io/mcp`
 - **Auth:** `X-API-Key` header, `Authorization: Bearer` header, or `api_key` query parameter
 - **Protocol:** JSON-RPC 2.0 over HTTP (MCP Streamable HTTP transport)
 - **Version:** `2025-03-26`

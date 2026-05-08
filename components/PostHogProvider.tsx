@@ -12,10 +12,19 @@ const IGNORED_PATTERNS = [
   /moz-extension:\/\//,
   /ChunkLoadError/,
   /Loading chunk/,
-  /prism_bash_exports/,  // browser extension (PrismJS-based dev tools) injecting into the page
-  // React hydration errors (#418, #423, #425) — mismatches are from Nextra internals
-  // (next-themes localStorage reads, Switchers conditional rendering). Suppressed at
-  // the DOM level via suppressHydrationWarning; PostHog sees them as noise.
+  // PrismJS-based browser extensions inject a global Prism whose dynamic-import
+  // chunks fail to resolve. Generalized from the prism_bash_exports special-case
+  // shipped in SHA-2240 to also cover prism_python_exports and future variants.
+  /prism_\w+_exports/,
+  /Export 'prism_/,
+  /local binding for export 'prism_/,
+  // React hydration/render errors (#418, #423, #425) — mismatches are from Nextra
+  // internals (next-themes localStorage reads, Switchers conditional rendering).
+  // Suppressed at the DOM level via suppressHydrationWarning. The unminified-message
+  // patterns below remain for dev/local builds; production minification emits as
+  // "Minified React error #N" — that's the form PostHog actually captures, so we
+  // need to match both shapes.
+  /Minified React error #(310|418|423|425)/,
   /Hydration failed/,
   /There was an error while hydrating/,
   /Text content did not match/,

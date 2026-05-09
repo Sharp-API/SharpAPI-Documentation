@@ -1,0 +1,174 @@
+---
+description: "Construa um scanner de arbitragem para apostas esportivas em tempo real com streaming SSE da SharpAPI. Exemplo completo com cálculos de stake otimizados e notificações de alertas em múltiplas plataformas."
+---
+
+# Scanner de Arbitragem
+
+Construa um scanner que monitora múltiplas sportsbooks em busca de oportunidades de arbitragem.
+
+## Recursos
+
+- Detecção de arbitragem em tempo real via SSE
+- Cálculos de stake
+- Alertas em múltiplas plataformas
+- Logs e análises
+
+## Implementação
+
+### Scanner Básico
+
+```python
+import json
+import logging
+from datetime import datetime
+import requests
+import sseclient
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('arb-scanner')
+
+class ArbScanner:
+    def __init__(self, api_key: str, min_profit: float = 1.0):
+        self.api_key = api_key
+        self.min_profit = min_profit
+        self.seen_arbs = set()
+
+    def start(self):
+        url = f'https://api.sharpapi.io/api/v1/stream?channel=opportunities&min_profit={self.min_profit}'
+        headers = {'X-API-Key': self.api_key}
+
+        logger.info(f'Starting arb scanner (min profit: {self.min_profit}%)')
+
+        response = requests.get(url, headers=headers, stream=True)
+        client = sseclient.SSEClient(response)
+
+        for event in client.events():
+            if event.event == 'initial':
+                self._handle_initial(json.loads(event.data))
+            elif event.event == 'arbitrage':
+                self._handle_arb(json.loads(event.data))
+
+    def _handle_initial(self, data):
+        opps = data['data']['opportunities']
+        logger.info(f'Initial: {len(opps)} opportunities')
+
+        for opp in opps:
+            self._process_arb(opp)
+
+    def _handle_arb(self, data):
+        for opp in data['data']['opportunities']:
+            self._process_arb(opp)
+
+    def _process_arb(self, opp):
+        arb_id = f"{opp['event_id']}:{opp['market_type']}"
+
+        if arb_id in self.seen_arbs:
+            return
+
+        self.seen_arbs.add(arb_id)
+
+        logger.info(f"💰 ARB FOUND: {opp['profit_percent']:.2f}%")
+        logger.info(f"   Event: {opp['event_name']}")
+
+        for leg in opp['legs']:
+            logger.info(f"   → {leg['sportsbook']}: {leg['selection']} @ {leg['odds_american']} ({leg['stake_percent']:.1f}%)")
+
+        # Send alert
+        self._send_alert(opp)
+
+    def _send_alert(self, opp):
+        # Implement your alert logic here
+        pass
+
+
+if __name__ == '__main__':
+    scanner = ArbScanner(
+        api_key='YOUR_API_KEY',
+        min_profit=1.5
+    )
+    scanner.start()
+```
+
+### Com Calculadora de Stake
+
+```python
+class StakeCalculator:
+    def __init__(self, bankroll: float):
+        self.bankroll = bankroll
+
+    def calculate(self, arb: dict) -> list:
+        """Calculate actual dollar amounts to bet."""
+        bets = []
+
+        for leg in arb['legs']:
+            stake = self.bankroll * (leg['stake_percent'] / 100)
+
+            bets.append({
+                'sportsbook': leg['sportsbook'],
+                'selection': leg['selection'],
+                'odds': leg['odds_american'],
+                'stake': round(stake, 2),
+                'potential_return': round(stake * leg['odds_decimal'], 2),
+            })
+
+        return bets
+
+
+# Usage
+calc = StakeCalculator(bankroll=1000)
+
+def process_arb(opp):
+    bets = calc.calculate(opp)
+    profit = opp['profit_percent'] * 10  # $10 per 1% on $1000
+
+    print(f"💰 {opp['event_name']} - ${profit:.2f} profit")
+    for bet in bets:
+        print(f"   Bet ${bet['stake']} on {bet['selection']} @ {bet['sportsbook']}")
+```
+
+### Integração com Discord
+
+```python
+import discord
+from discord import Webhook
+import aiohttp
+
+class DiscordAlerter:
+    def __init__(self, webhook_url: str):
+        self.webhook_url = webhook_url
+
+    async def send_arb(self, opp: dict, stakes: list):
+        async with aiohttp.ClientSession() as session:
+            webhook = Webhook.from_url(self.webhook_url, session=session)
+
+            embed = discord.Embed(
+                title=f"💰 {opp['profit_percent']:.2f}% Arbitrage",
+                description=opp['event_name'],
+                color=0x00FF00,
+            )
+
+            for stake in stakes:
+                embed.add_field(
+                    name=stake['sportsbook'],
+                    value=f"${stake['stake']} on {stake['selection']} @ {stake['odds']}",
+                    inline=False,
+                )
+
+            await webhook.send(embed=embed)
+```
+
+## Melhores Práticas
+
+
+  #### Aja rapidamente
+    Oportunidades de arbitragem desaparecem em segundos. Automatize sempre que possível.
+  
+  #### Arredonde os stakes
+    $47,32 parece suspeito. Arredonde para $45 ou $50.
+  
+  #### Acompanhe os resultados
+    Registre todas as arbitragens para análise e fins fiscais.
+  
+  #### Lide com falhas
+    Se uma perna (leg) falhar, você fica exposto. Tenha um plano.
+  

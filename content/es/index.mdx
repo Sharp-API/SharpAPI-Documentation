@@ -1,0 +1,135 @@
+---
+description: "SharpAPI ofrece cuotas de apuestas deportivas en tiempo real e integración con la API de Novig desde 42 casas de apuestas, con detección de +EV, cuotas justas sin vig, alertas de arbitraje y streaming SSE mediante API REST."
+---
+
+import { Cards, Callout } from 'nextra/components'
+
+# SharpAPI — API de Novig y cuotas de apuestas deportivas
+
+SharpAPI es una plataforma de agregación de cuotas de apuestas deportivas en tiempo real que proporciona:
+
+- **Cuotas en tiempo real** - Actualizaciones de cuotas en menos de un segundo desde las principales casas de apuestas mediante REST o streaming SSE
+- **Detección de +EV** - Cálculo automático del valor esperado utilizando casas sharp como referencia
+- **Alertas de arbitraje** - Detección de arbitraje entre casas con cálculo óptimo de apuestas
+- **Cuotas sin vig** - Cuotas justas con el margen del corredor eliminado, usando Pinnacle como referencia sharp
+- **Streaming SSE** - Server-Sent Events para notificaciones push en tiempo real
+
+## URL base
+
+```
+https://api.sharpapi.io/api/v1
+```
+
+<Callout type="info">
+Todas las solicitudes a la API deben usar `api.sharpapi.io` como URL base.
+</Callout>
+
+## ¿Por qué SharpAPI?
+
+| Característica | SharpAPI | Competencia |
+|---------|----------|-------------|
+| Latencia de menos de un segundo | Streaming SSE | Polling de 40-60 s |
+| Detección de +EV | Automatizada | Manual |
+| Arbitraje con apuestas | Dimensionamiento óptimo | Solo detección |
+| Referencia de casa sharp | Pinnacle | Variable |
+| Cuotas justas sin vig | Incluidas | No disponible |
+
+## Precios
+
+| Plan | Precio | Sol./min | Características |
+|------|-------|---------|----------|
+| **Free** | 0 USD/mes | 12 | Cuotas, calendario |
+| **Hobby** | 79 USD/mes | 120 | Cuotas, calendario, arbitraje |
+| **Pro** | 229 USD/mes | 300 | + EV, middles |
+| **Sharp** | 399 USD/mes | 1.000 | Todo + soporte prioritario |
+
+El streaming requiere el complemento WebSocket (99 USD/mes). Consulta [Precios](/es/pricing) para más información.
+
+## Casas de apuestas compatibles
+
+### Principales casas de EE. UU.
+- DraftKings
+- FanDuel
+- BetMGM
+- Caesars
+- Fanatics
+- BetRivers
+- Hard Rock Bet
+- theScore Bet
+- Bally Bet
+- Rebet
+
+### Casas sharp
+- Pinnacle (referencia para los cálculos de +EV y sin vig)
+- Bookmaker
+- Circa Sports
+
+### Offshore / Internacionales
+- Bet365
+- Bovada
+- BetOnline
+- Betway
+- Sky Bet
+- Unibet
+- Ladbrokes
+- Betfred
+- 1xBet
+- Stake
+- Cloudbet
+
+### Exchanges
+- ProphetX
+- Betfair
+- **Novig** — exchange sin vig y sin comisiones; obtén las cuotas de la API de Novig a través de un único endpoint de SharpAPI
+
+### Mercados de predicción
+- Polymarket
+- Kalshi
+
+**32 casas de apuestas** con agregación de cuotas en tiempo real, incluyendo exchanges y mercados de predicción.
+
+## Enlaces rápidos
+
+<Cards>
+  <Cards.Card title="Obtener API key" href="https://sharpapi.io/sign-up">
+    Regístrate gratis
+  </Cards.Card>
+  <Cards.Card title="Inicio rápido" href="/es/quickstart">
+    Primera llamada a la API en 2 minutos
+  </Cards.Card>
+  <Cards.Card title="Referencia de la API" href="/es/api-reference/overview">
+    Documentación completa de endpoints
+  </Cards.Card>
+  <Cards.Card title="Precios" href="/es/pricing">
+    Compara planes y características
+  </Cards.Card>
+</Cards>
+
+## Endpoints principales
+
+| Endpoint | Descripción | Plan |
+|----------|-------------|------|
+| `GET /odds` | Snapshot de cuotas actuales | Todos |
+| `GET /odds/best` | Mejores cuotas entre casas | Todos |
+| `GET /events` | Eventos y calendario | Todos |
+| `GET /opportunities/ev` | Oportunidades de +EV | Pro+ |
+| `GET /opportunities/arbitrage` | Oportunidades de arbitraje | Hobby+ |
+| `GET /opportunities/low_hold` | [Líneas de low hold](/es/api-reference/opportunities-low-hold) | Pro+ |
+| `GET /stream` | Stream de cuotas en tiempo real | Complemento |
+
+## Autenticación
+
+Envía tu API key usando uno de estos métodos:
+
+```bash
+# Header (recomendado)
+curl -H "X-API-Key: sk_live_xxx" https://api.sharpapi.io/api/v1/odds
+
+# Bearer token
+curl -H "Authorization: Bearer sk_live_xxx" https://api.sharpapi.io/api/v1/odds
+
+# Query parameter (para SSE)
+curl "https://api.sharpapi.io/api/v1/stream?api_key=sk_live_xxx"
+```
+
+Consulta [Autenticación](/es/authentication) para más información.

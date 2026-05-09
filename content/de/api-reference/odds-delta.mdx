@@ -1,0 +1,242 @@
+---
+description: "GET /api/v1/odds/delta — Ruft nur Quoten ab, die sich seit einem bestimmten Zeitstempel geändert haben. Ideal für Polling-Clients, die inkrementelle Aktualisierungen ohne erneutes Abrufen vollständiger Snapshots benötigen."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Quoten-Delta
+
+Ruft nur die Quoten ab, die sich seit einem bestimmten Zeitstempel geändert haben. Dieser Endpoint gibt dasselbe Quotenformat wie `/odds` zurück, jedoch gefiltert auf Einträge, die nach Ihrem `since`-Wert aktualisiert wurden, was ihn ideal für Polling-Clients macht, die inkrementelle Aktualisierungen ohne erneutes Abrufen des vollständigen Snapshots wünschen.
+
+```
+GET /api/v1/odds/delta
+```
+
+## Authentifizierung
+
+Erfordert API key. Verfügbar für **alle Tarife**.
+
+<Callout type="info">
+Verwenden Sie den `server_time`-Wert aus jeder Antwort als `since`-Wert für Ihre nächste Anfrage. Damit stellen Sie sicher, dass Sie keine Aktualisierungen verpassen und keine Duplikate erhalten.
+</Callout>
+
+## Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `since` | string | **erforderlich** | ISO 8601-Zeitstempel. Gibt nur Quoten zurück, die nach diesem Zeitpunkt aktualisiert wurden (z. B. `2026-02-11T12:00:00Z`) |
+| `sportsbook` | string | alle | Kommagetrennte Sportsbook-IDs (z. B. `draftkings,fanduel`) |
+| `sport` | string | alle | Filter nach Sportart (z. B. `basketball`, `football`) |
+| `league` | string | alle | Filter nach Liga (z. B. `nba`, `nfl`) |
+| `market` | string | alle | Filter nach Markttyp (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase – siehe [Quoten: Markt-Kategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `event` | string | - | Filter nach Event-ID |
+| `live` | boolean | false | Gibt nur Live-/In-Play-Events zurück |
+| `sort` | string | - | Sortierfeld mit optionalem `-`-Präfix für absteigende Sortierung (z. B. `-odds_american`, `odds_probability`) |
+| `fields` | string | alle | Kommagetrennte Feldnamen, die einbezogen werden sollen (z. B. `id,sportsbook,odds_american`) |
+| `min_odds` | number | - | Filter für minimale amerikanische Quoten (z. B. `-110`) |
+| `max_odds` | number | - | Filter für maximale amerikanische Quoten (z. B. `+200`) |
+| `state` | string | — | US-Bundesstaatscode für Sportsbook-Deeplinks (z. B. `nj`, `ny`, `il`). Wenn gesetzt, enthalten `deep_link`-URLs `?state=XX`, sodass die Weiterleitung auf die korrekte bundesstaatsspezifische Sportsbook-Domain erfolgt. |
+| `limit` | integer | 50 | Maximale Ergebnisse pro Seite (max. 500) |
+| `offset` | integer | 0 | Paginierungs-Offset. **Muss ≤ 500 sein.** Für ältere Änderungen sollten Sie `since` auf den `server_time`-Wert der vorherigen Antwort setzen, statt offset zu verwenden. |
+
+<Callout type="warning">
+Der `since`-Parameter ist **erforderlich**. Wird er weggelassen, wird ein `400 validation_error`-Fehler zurückgegeben.
+</Callout>
+
+<Callout type="info">
+**`since` hat ein 10-minütiges Aufbewahrungsfenster für Entfernungen.** Quoten-Entfernungen, die älter als 10 Minuten sind, werden aus dem Speicher entfernt. Wenn Sie einen `since`-Wert senden, der älter ist, berücksichtigt das `data`-Array weiterhin Ihren Zeitstempel, aber die `removed`-Liste kann nur Quoten enthalten, die innerhalb der letzten 10 Minuten entfernt wurden – und `since_clamped: true` wird in der Antwort gesetzt. Erhöhen Sie `since` in der im Abschnitt Polling-Muster unten genannten Frequenz, um dies zu vermeiden.
+</Callout>
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Alle Quotenänderungen der letzten 30 Sekunden abrufen
+curl -X GET "https://api.sharpapi.io/api/v1/odds/delta?since=2026-02-11T12:00:00Z&league=nba" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+let since = new Date(Date.now() - 30000).toISOString();
+
+async function pollDelta() {
+  const response = await fetch(
+    `https://api.sharpapi.io/api/v1/odds/delta?since=${since}&league=nba`,
+    { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+  );
+  const { data, meta } = await response.json();
+
+  console.log(`${data.length} odds changed, books updated: ${meta.books_changed.join(', ')}`);
+
+  // Use server_time as the next since value
+  since = meta.server_time;
+}
+
+// Poll every 5 seconds
+setInterval(pollDelta, 5000);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+import time
+from datetime import datetime, timezone, timedelta
+
+since = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+
+while True:
+    response = requests.get(
+        'https://api.sharpapi.io/api/v1/odds/delta',
+        params={'since': since, 'league': 'nba'},
+        headers={'X-API-Key': 'YOUR_API_KEY'}
+    )
+    result = response.json()
+
+    print(f"{len(result['data'])} odds changed")
+    print(f"Books updated: {result['meta']['books_changed']}")
+
+    # Use server_time as the next since value
+    since = result['meta']['server_time']
+    time.sleep(5)
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "event_id": "33483153",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "selection_type": "away",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "odds_probability": 0.60,
+      "line": null,
+      "event_start_time": "2026-02-11T19:00:00Z",
+      "last_seen_at": "2026-02-11T12:00:15.125Z",
+      "is_live": false,
+      "status": "upcoming"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 1,
+    "server_time": "2026-02-11T12:00:20.000Z",
+    "books_changed": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "filters": {
+      "since": "2026-02-11T12:00:00Z",
+      "league": "nba"
+    }
+  }
+}
+```
+
+### Antwort-Header
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_delta_abc123
+```
+
+### Fehlerantworten
+
+***400 Fehlender since-Parameter***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "The 'since' parameter is required for the delta endpoint",
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-delta"
+  }
+}
+```
+
+***400 Offset zu groß***
+```json
+{
+  "error": {
+    "code": "offset_too_large",
+    "message": "offset must be <= 500; advance `since` to the previous response's `updated_at` to retrieve older changes",
+    "max_offset": 500
+  }
+}
+```
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+## Delta-Antwort-Schema
+
+Das `data`-Array enthält dieselben Quotenobjekte wie der [`/odds`](/de/api-reference/odds)-Endpoint. Es werden nur Quoten einbezogen, die nach dem `since`-Zeitstempel aktualisiert wurden.
+
+Das `meta`-Objekt enthält zwei zusätzliche Felder:
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `meta.server_time` | string | ISO 8601-Server-Zeitstempel. Verwenden Sie diesen als `since`-Wert für Ihre nächste Anfrage |
+| `meta.books_changed` | array | Liste der Sportsbook-IDs, die in diesem Delta Aktualisierungen aufwiesen |
+
+### Truncation- und Clamping-Flags
+
+Zwei optionale boolesche Flags auf oberster Ebene erscheinen nur, wenn der Server eine Sicherheitsbegrenzung auf die Antwort anwenden musste. Korrekt arbeitende Clients, die in der empfohlenen Frequenz pollen, sehen diese nie.
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `removed_truncated` | boolean | Vorhanden und `true`, wenn das `removed`-Array das serverseitige Limit von 1000 Einträgen erreicht hat. Es gibt weitere entfernte Quoten, die der Server nicht einbezogen hat. Bedeutet in der Regel, dass Ihr `since`-Wert zu alt oder Ihre Filter zu breit angelegt sind – verkleinern Sie das Zeitfenster oder die Filtermenge und führen Sie ein erneutes Polling durch. |
+| `since_clamped` | boolean | Vorhanden und `true`, wenn `since` älter als das 10-minütige Aufbewahrungsfenster für Entfernungen des Servers war. Das `data`-Array berücksichtigt weiterhin Ihren ursprünglichen `since`-Wert, aber `removed` ist auf die letzten 10 Minuten an Entfernungen beschränkt. Setzen Sie `since` bei jedem Aufruf auf `meta.server_time`, um dies zu vermeiden. |
+
+## Polling-Muster
+
+Das empfohlene Polling-Muster verwendet `server_time`, um Anfragen zu verketten:
+
+1. Stellen Sie eine erste Anfrage mit `since` auf einen aktuellen Zeitstempel
+2. Lesen Sie `meta.server_time` aus der Antwort
+3. Verwenden Sie diesen `server_time`-Wert als `since`-Wert in Ihrer nächsten Anfrage
+4. Wiederholen Sie dies in Ihrem gewünschten Intervall (z. B. alle 5 Sekunden)
+
+Damit wird Folgendes sichergestellt:
+- **Keine Lücken** – `server_time` ist die Serveruhr, sodass Sie aufgrund von Uhrenabweichungen keine Aktualisierungen verpassen
+- **Keine Duplikate** – jedes Delta-Fenster überschneidet sich nicht
+- **Minimaler Payload** – nur geänderte Quoten werden zurückgegeben
+
+<Callout type="info">
+Wenn sich seit Ihrem `since`-Zeitstempel keine Quoten geändert haben, hat die Antwort ein leeres `data`-Array und `count: 0`. Dies ist normal und in ruhigen Zeiten zu erwarten.
+</Callout>
+
+## Verwandte Endpoints
+
+- [Quoten-Snapshot](/de/api-reference/odds) – Den vollständigen aktuellen Quoten-Snapshot abrufen
+- [SSE-Stream](/de/api-reference/stream) – Push-Aktualisierungen in Echtzeit über Server-Sent Events
+- [WebSocket-Stream](/de/api-reference/websocket) – Push-Aktualisierungen in Echtzeit über WebSocket

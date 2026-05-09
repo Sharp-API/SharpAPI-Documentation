@@ -1,0 +1,361 @@
+---
+description: "Vollständige SharpAPI v1 REST API-Referenz — Authentifizierung, Paginierung, Filterung, Fehlerbehandlung, Rate Limits und Konventionen, die für alle API-Endpoints gelten."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# API-Referenz Übersicht
+
+Vollständige Referenz für die SharpAPI v1 REST API. Alle Endpoints geben JSON zurück und folgen einheitlichen Konventionen für Authentifizierung, Filterung, Paginierung und Fehlerbehandlung.
+
+## Basis-URL
+
+```
+https://api.sharpapi.io/api/v1
+```
+
+<Callout type="warning">
+Verwenden Sie immer `api.sharpapi.io` als Basis-URL, nicht `sharpapi.io`.
+</Callout>
+
+## OpenAPI-Spezifikation
+
+Die vollständige OpenAPI 3.1-Spezifikation steht zum Import in Tools wie Postman, Insomnia oder Code-Generatoren zur Verfügung:
+
+- [OpenAPI-Spezifikation herunterladen (JSON)](https://docs.sharpapi.io/openapi.json)
+
+<Callout type="info">
+Diese Spezifikation deckt alle Endpoints, Request-/Response-Schemas und Authentifizierungsanforderungen ab.
+</Callout>
+
+## Request-Format
+
+- Alle Anfragen verwenden HTTPS
+- Authentifizierung über `X-API-Key`-Header, `Authorization: Bearer`-Header oder `api_key`-Query-Parameter
+- Request-Bodies (sofern zutreffend) verwenden JSON mit `Content-Type: application/json`
+- Alle Feldnamen sind in `snake_case`
+
+## Endpoint-Übersicht
+
+SharpAPI bietet 35 Routen über 7 Namespaces hinweg, zuzüglich Referenz- und Health-Endpoints.
+
+### Odds
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/odds` | Ja | Free |
+| `GET` | `/api/v1/odds/delta` | Ja | Free |
+| `GET` | `/api/v1/odds/best` | Ja | Free |
+| `GET` | `/api/v1/odds/comparison` | Ja | Free |
+| `POST` | `/api/v1/odds/batch` | Ja | Free |
+
+### Events
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/events` | Ja | Free |
+| `GET` | `/api/v1/events/:eventId` | Ja | Free |
+| `GET` | `/api/v1/events/:eventId/odds` | Ja | Free |
+| `GET` | `/api/v1/events/:eventId/markets` | Ja | Free |
+
+### Opportunities
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/opportunities/ev` | Ja | Pro |
+| `GET` | `/api/v1/opportunities/arbitrage` | Ja | Hobby |
+| `GET` | `/api/v1/opportunities/middles` | Ja | Pro |
+
+### Splits
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/splits` | Ja | Pro |
+| `GET` | `/api/v1/splits/history` | Ja | Pro |
+
+### Streaming
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/stream` | Ja | Add-on |
+
+### Account
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/account` | Ja | Free |
+| `GET` | `/api/v1/account/usage` | Ja | Free |
+| `GET` | `/api/v1/account/keys` | Ja | Free |
+| `POST` | `/api/v1/account/keys` | Ja | Free |
+| `DELETE` | `/api/v1/account/keys/:keyId` | Ja | Free |
+| `POST` | `/api/v1/account/keys/:keyId/rotate` | Ja | Free |
+
+### Referenzdaten (öffentlich)
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/sports` | Nein | - |
+| `GET` | `/api/v1/leagues` | Nein | - |
+| `GET` | `/api/v1/sportsbooks` | Nein | - |
+| `GET` | `/api/v1/markets` | Nein | - |
+| `GET` | `/api/v1/teams` | Nein | - |
+
+### Enterprise
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/futures` | Ja | Enterprise |
+| `GET` | `/api/v1/futures/odds` | Ja | Enterprise |
+
+### Health
+
+| Methode | Pfad | Auth | Min. Tier |
+|---------|------|------|-----------|
+| `GET` | `/api/v1/health` | Nein | - |
+
+## Response-Format
+
+### Erfolgs-Envelope
+
+Alle erfolgreichen Antworten verpacken Daten in einem konsistenten Envelope:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sport": "basketball",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "odds_probability": 0.60,
+      "is_live": false
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "has_more": true,
+    "next_offset": 50,
+    "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
+  },
+  "meta": {
+    "count": 1,
+    "total": 3095,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50,
+      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {
+      "sportsbook": "draftkings",
+      "league": "nba"
+    }
+  }
+}
+```
+
+| Feld | Beschreibung |
+|------|--------------|
+| `success` | `true` für alle erfolgreichen Antworten |
+| `data` | Array von Ergebnissen (oder einzelnes Objekt für Detail-Endpoints) |
+| `pagination.limit` | Maximale Anzahl von Elementen pro Seite (Standard: 50, Max: 200) |
+| `pagination.offset` | Aktueller Offset in den Ergebnissen |
+| `pagination.has_more` | Ob weitere Ergebnisse über diese Seite hinaus existieren |
+| `pagination.next_offset` | Offset-Wert für die nächste Seite (veraltet — verwenden Sie `next_cursor` für Live-Daten-Endpoints) |
+| `pagination.next_cursor` | Opaker Cursor für die nächste Seite. Übergeben als `?cursor=` — stabil gegenüber Live-Datenänderungen. Empfohlen für mehrseitige Scans. |
+| `meta.count` | Anzahl der in dieser Antwort zurückgegebenen Elemente |
+| `meta.total` | Gesamtanzahl übereinstimmender Elemente über alle Seiten hinweg |
+| `meta.pagination` | Identisch mit dem `pagination` auf oberster Ebene (zur Abwärtskompatibilität enthalten) |
+| `meta.updated_at` | ISO 8601-Zeitstempel der letzten Datenaktualisierung |
+| `meta.filters` | Echo der auf diese Anfrage angewendeten Filter |
+
+### Antwort für einzelne Ressource
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "evt_abc123",
+    "sport": "nba",
+    "home_team": "PHI 76ers",
+    "away_team": "PHO Suns",
+    "start_time": "2026-01-26T19:00:00Z"
+  },
+  "meta": {
+    "updated_at": "2026-01-26T02:10:37.846Z"
+  }
+}
+```
+
+### Fehler-Envelope
+
+Alle Fehler folgen einem einheitlichen Format:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Upgrade your plan or wait 45 seconds.",
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
+  }
+}
+```
+
+| Feld | Beschreibung |
+|------|--------------|
+| `error.code` | Maschinenlesbarer Fehlercode |
+| `error.message` | Menschenlesbare Beschreibung |
+| `error.docs` | Link zur relevanten Dokumentation (optional — enthalten bei Auth-, Tier-, Rate-Limit- und Streaming-Fehlern) |
+| `error.correct_endpoint` | Der korrekte zu verwendende Endpoint (optional — enthalten bei `unknown_endpoint`-Fehlern, wenn die API den Pfad als bekannte falsche Route erkennt) |
+| `error.retry_after` | Sekunden bis ein Wiederholungsversuch erlaubt ist (optional — enthalten bei `rate_limited`-Fehlern) |
+
+## Standard-Response-Header
+
+Jede API-Antwort enthält diese Header:
+
+| Header | Beispiel | Beschreibung |
+|--------|----------|--------------|
+| `X-RateLimit-Limit` | `300` | Maximale Anfragen pro Minute für Ihr Tier |
+| `X-RateLimit-Remaining` | `299` | Verbleibende Anfragen im aktuellen Zeitfenster |
+| `X-RateLimit-Reset` | `1705804800` | Unix-Zeitstempel, wann das Rate Limit zurückgesetzt wird |
+| `X-Data-Delay` | `0` | Datenverzögerung in Sekunden (`60` für Free, `0` für kostenpflichtige Tiers) |
+| `X-Request-Id` | `req_a1b2c3d4` | Eindeutige Anfrage-ID für Debugging und Support |
+
+<Callout type="info">
+Geben Sie den `X-Request-Id`-Wert an, wenn Sie sich bezüglich einer bestimmten Anfrage an den Support wenden.
+</Callout>
+
+## Tier-Vergleich
+
+| Funktion | Free | Hobby | Pro | Sharp | Enterprise |
+|----------|------|-------|-----|-------|------------|
+| **Sportsbooks** | 2 (DK, FD) | 5 | 15 | Alle 32 | Alle 32 |
+| **Datenverzögerung** | 60s | 0s | 0s | 0s | 0s |
+| **Anfragen/Min** | 12 | 120 | 300 | 1.000 | Individuell |
+| **Pinnacle** | Nein | Nein | Ja | Ja | Ja |
+| **EV / Arb / Middles** | Nein | Nein | Ja | Ja | Ja |
+| **Streaming** | Nein | Add-on | Add-on | Add-on | Inklusive |
+| **Batch max. Events** | 10 | 10 | 50 | 50 | 100 |
+
+<Callout>
+Streaming erfordert das WebSocket-Add-on (99 USD/Monat) bei kostenpflichtigen Tiers. Enterprise enthält Streaming ohne Aufpreis.
+</Callout>
+
+## Filterung
+
+Alle Listen-Endpoints unterstützen Filterung über Query-Parameter. Filter verwenden **singuläre Parameternamen** und akzeptieren **kommagetrennte Werte** für Mehrfachauswahl.
+
+### Filter-Parameter
+
+| Parameter | Typ | Beispiel | Beschreibung |
+|-----------|-----|----------|--------------|
+| `sportsbook` | string | `draftkings,fanduel` | Nach einem oder mehreren Sportsbooks filtern |
+| `sport` | string | `basketball,football` | Nach Sportart filtern |
+| `league` | string | `nba,nfl` | Nach Liga filtern |
+| `market` | string | `moneyline,spread` | Nach Markttyp filtern |
+| `event` | string | `evt_abc123` | Nach Event-ID filtern |
+| `live` | boolean | `true` | Nur laufende Live-Events |
+| `sort` | string | `-odds_american` | Sortierfeld mit optionalem `-`-Präfix für absteigend |
+| `fields` | string | `id,sportsbook,odds_american` | Kommagetrennte Felder, die in die Antwort aufgenommen werden sollen |
+| `min_odds` | number | `-110` | Minimaler American-Odds-Filter |
+| `max_odds` | number | `200` | Maximaler American-Odds-Filter |
+| `group_by` | string | `event` | Ergebnisse nach Feld gruppieren |
+| `limit` | number | `25` | Ergebnisse pro Seite (Standard: 50, Max: 200) |
+| `offset` | number | `50` | Paginierungs-Offset. Kann bei Live-Endpoints zu doppelten Zeilen führen, wenn sich Daten zwischen Anfragen ändern. |
+| `cursor` | string | — | Opaker Cursor aus `next_cursor`. Empfohlen für mehrseitige Scans über Live-Daten — beseitigt Offset-Drift. |
+
+### Beispiele
+
+```bash
+# Multiple sportsbooks (comma-separated)
+curl "https://api.sharpapi.io/api/v1/odds?sportsbook=draftkings,fanduel" \
+  -H "X-API-Key: YOUR_KEY"
+
+# Combine filters
+curl "https://api.sharpapi.io/api/v1/odds?league=nba,nhl&sportsbook=pinnacle&live=true" \
+  -H "X-API-Key: YOUR_KEY"
+
+# Paginate through results
+curl "https://api.sharpapi.io/api/v1/odds?limit=25&offset=50" \
+  -H "X-API-Key: YOUR_KEY"
+```
+
+<Callout type="info">
+Parameternamen sind immer **singulär** (`sportsbook`, nicht `sportsbooks`). Verwenden Sie Kommas, um mehrere Werte zu übergeben: `sportsbook=draftkings,fanduel`.
+</Callout>
+
+## Odds-Formate
+
+Alle Odds werden als flache Felder auf jedem Odds-Objekt zurückgegeben:
+
+```json
+{
+  "odds_american": -110,
+  "odds_decimal": 1.909,
+  "odds_probability": 0.5238
+}
+```
+
+| Feld | Beispiel | Beschreibung |
+|------|----------|--------------|
+| `odds_american` | -110, +150 | Standard-US-Format |
+| `odds_decimal` | 1.909, 2.50 | Multiplikator-Format |
+| `odds_probability` | 0.5238 | Implizierte Wahrscheinlichkeit (0 bis 1) |
+
+## Fehlercodes
+
+Die kanonische Liste der von der API ausgegebenen Fehlercodes. Der String in `error.code` ist der stabile Vertrag — prüfen Sie diesen anstelle des prosaischen `message`-Felds.
+
+### HTTP-Fehlercodes
+
+In REST-Antworten ausgegeben.
+
+| Code | HTTP-Status | Beschreibung |
+|------|-------------|--------------|
+| `missing_api_key` | 401 | Kein API-Schlüssel über `X-API-Key`, `?api_key=` oder `Authorization: Bearer` übermittelt |
+| `invalid_api_key` | 401 | API-Schlüssel wurde übermittelt, aber nicht erkannt |
+| `expired_api_key` | 401 | API-Schlüssel ist abgelaufen — generieren Sie einen neuen im Dashboard |
+| `disabled_api_key` | 401 | API-Schlüssel ist deaktiviert, üblicherweise weil das Abonnement abgelaufen ist |
+| `unauthorized` | 401 | Bearer-Token-Authentifizierung fehlgeschlagen bei Admin- oder `/api/v1/monitoring/*`-Endpoints (unterscheidet sich von `invalid_api_key`) |
+| `invalid_token` | 401 | Clerk-Session-Token-Verifizierung fehlgeschlagen (nur Dashboard-Endpoints) |
+| `tier_restricted` | 403 | Endpoint oder Funktion ist in Ihrem Tier nicht verfügbar — Antwort enthält `tier` und `required_tier` |
+| `not_found` | 404 | Ressource nicht gefunden |
+| `method_not_allowed` | 405 | HTTP-Methode wird auf dieser Route nicht unterstützt |
+| `gone` | 410 | Event ist beendet oder abgelaufen — verwenden Sie `/api/v1/events` für aktuelle Events |
+| `unknown_endpoint` | 410 | Falscher API-Pfad — Antwort enthält `correct_endpoint` mit der richtigen Route (z. B. `/api/v1/arbitrage` → `/api/v1/opportunities/arbitrage`) |
+| `validation_error` | 400 | Request-Body oder Query-Parameter haben die Validierung nicht bestanden |
+| `offset_too_large` | 400 | `offset` überschreitet das pro-Endpoint-Maximum (derzeit 500 bei `/odds` und `/odds/delta`). Wechseln Sie zu cursor-basierter Paginierung oder erhöhen Sie `since` |
+| `rate_limited` | 429 | Anfragen-pro-Minute-Rate-Limit überschritten — Antwort enthält `retry_after` |
+| `concurrent_request_cap` | 429 | Zu viele laufende Anfragen für Ihr Tier — reduzieren Sie die Parallelität oder upgraden Sie |
+| `too_many_streams` | 429 | Maximale Anzahl gleichzeitiger SSE- oder WebSocket-Streams für diesen API-Schlüssel überschritten |
+| `backpressure` | — | Wird als SSE `event: error` ausgegeben (kein HTTP-Status), wenn der Client nicht mithalten kann; der Server schließt anschließend den Stream |
+| `upstream_error` | 502 | Vorübergehendes Problem beim Erreichen eines Upstream-Sportsbooks oder Auth-Anbieters |
+| `service_unavailable` | 503 | Ein erforderlicher Dienst (z. B. Schlüsselverwaltung) ist nicht konfiguriert oder offline |
+| `not_ready` | 503 | Ein vom Endpoint abhängiger Backing Store (z. B. ClickHouse, Closing-Line-Capture) ist noch nicht bereit, die Anfrage zu bedienen. Mit Backoff erneut versuchen |
+| `internal_error` | 500 | Unerwarteter Serverfehler — mit Backoff erneut versuchen und bei anhaltendem Problem den Support mit `X-Request-Id` kontaktieren |
+
+<Callout type="info">
+`bad_request` und `invalid_request` sind **veraltet** — beide wurden in `validation_error` zusammengeführt. Clients, die auf die alten Strings prüfen, sollten `validation_error` zu ihrer Fehlerzuordnung hinzufügen.
+</Callout>
+
+### WebSocket-Frame-Fehlercodes
+
+Werden ausschließlich innerhalb von `{"type": "error", "code": "..."}`-Frames auf einer offenen WebSocket-Verbindung ausgegeben. Sie beschreiben Client-Protokoll-Fehler und entsprechen keinem HTTP-Status.
+
+| Code | Bedeutung |
+|------|-----------|
+| `invalid_message` | Frame konnte nicht als JSON geparst werden oder entsprach nicht der erwarteten Struktur |
+| `unknown_message_type` | `type`-Feld ist keiner der dokumentierten Werte (`auth`, `subscribe`, `filter`, `refresh_token`, `ping`) |
+| `missing_token` | `auth`- oder `refresh_token`-Frame enthielt kein `token`-Feld |
+| `missing_channels` | `subscribe`-Frame enthielt kein nicht-leeres `channels`-Array |
+| `not_authenticated` | Frame erfordert eine authentifizierte Session (`subscribe`, `filter` oder `refresh_token` vor `auth` gesendet) |
+| `already_authenticated` | Client hat einen zweiten `auth`-Frame nach erfolgreichem ersten gesendet |

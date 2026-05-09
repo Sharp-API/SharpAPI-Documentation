@@ -1,0 +1,258 @@
+---
+description: "GET /api/v1/odds/best — Erhalten Sie die besten verfügbaren Quoten für jede Auswahl über alle Sportwettenanbieter hinweg mit Vergleichen pro Buch, Edge-Berechnungen und impliziter Wahrscheinlichkeit."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Beste Quoten
+
+Erhalten Sie die besten verfügbaren Quoten für jede Auswahl über alle Sportwettenanbieter hinweg. Dieser Endpoint vergleicht Quoten von jedem Buch, das in Ihrem Tarif verfügbar ist, und gibt die günstigste Linie für jede Auswahl zurück, zusammen mit Vergleichen pro Buch und Edge-Berechnungen.
+
+```
+GET /api/v1/odds/best
+```
+
+## Authentifizierung
+
+Erfordert API-Schlüssel. Verfügbar für **alle Tarife**.
+
+<Callout type="info">
+Best Odds ist in allen Tarifen verfügbar, einschließlich Free. Die verglichenen Sportwettenanbieter hängen vom Buchzugriff Ihres Tarifs ab (Free vergleicht DraftKings und FanDuel; Pro+ schließt Pinnacle ein).
+</Callout>
+
+## Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sport` | string | alle | Filter nach Sportart(en), kommagetrennt (z. B. `basketball`, `football`) |
+| `league` | string | alle | Filter nach Liga(en), kommagetrennt (z. B. `nba`, `nfl`) |
+| `market` | string | alle | Filter nach Markttyp(en), kommagetrennt (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase — siehe [Odds: Marktkategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `event` | string | — | Filter nach Event-ID(s), kommagetrennt |
+| `live` | boolean | — | `true` = nur live, `false` = nur prematch, weglassen = beides |
+| `min_odds` | number | — | Filter für minimale American Odds |
+| `max_odds` | number | — | Filter für maximale American Odds |
+| `limit` | integer | 50 | Maximale Ergebnisse pro Seite (max. 200) |
+| `offset` | integer | 0 | Paginierungs-Offset (max. 5000) |
+
+<Callout type="info">
+Veraltete Quoten (älter als 5 Minuten für Pre-Game, 1 Minute für Live) werden automatisch von Best-Odds-Vergleichen ausgeschlossen, um irreführende Ergebnisse zu vermeiden.
+</Callout>
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/odds/best?league=nba&market=spread" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/odds/best?league=nba&market=spread',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+
+data.forEach(item => {
+  console.log(
+    `${item.selection}: Best ${item.best_odds.american} at ${item.best_book}` +
+    ` (${item.all_books.length} books compared)`
+  );
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/odds/best',
+    params={'league': 'nba', 'market': 'spread'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+result = response.json()
+
+for item in result['data']:
+    best = item['best_odds']['american']
+    book = item['best_book']
+    books = len(item['all_books'])
+    print(f"{item['selection']}: Best {best} at {book} ({books} books compared)")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "event_id": "evt_nba_lal_bos_20260126",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "spread",
+      "selection": "Boston Celtics",
+      "line": -6.5,
+      "best_odds": {
+        "american": -105,
+        "decimal": 1.952,
+        "odds_probability": 0.512
+      },
+      "best_book": "fanduel",
+      "all_books": [
+        {
+          "book": "fanduel",
+          "odds": { "american": -105, "decimal": 1.952 },
+          "edge": 0.007,
+          "line": -6.5,
+          "last_seen_at": "2026-01-26T10:30:00.000Z"
+        },
+        {
+          "book": "draftkings",
+          "odds": { "american": -110, "decimal": 1.909 },
+          "edge": 0.0,
+          "line": -6.5,
+          "last_seen_at": "2026-01-26T10:29:55.000Z"
+        },
+        {
+          "book": "betmgm",
+          "odds": { "american": -108, "decimal": 1.926 },
+          "edge": 0.003,
+          "line": -6.5,
+          "last_seen_at": "2026-01-26T10:29:50.000Z"
+        },
+        {
+          "book": "pinnacle",
+          "odds": { "american": -108, "decimal": 1.926 },
+          "edge": 0.003,
+          "line": -6.5,
+          "last_seen_at": "2026-01-26T10:29:45.000Z"
+        }
+      ],
+      "last_seen_at": "2026-01-26T10:30:00.000Z"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 48,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T10:30:05.000Z",
+    "filters": {
+      "league": "nba",
+      "market": "spread"
+    }
+  }
+}
+```
+
+### Antwort-Header
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 298
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_best_789xyz
+```
+
+### Fehlerantworten
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 30 seconds.",
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
+  }
+}
+```
+
+## Schema des Best-Odds-Objekts
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `event_id` | string | Event-Kennung |
+| `event_name` | string | Anzeigename des Events (z. B. „Lakers @ Celtics") |
+| `sport` | string | Sportart-Slug |
+| `league` | string | Liga-Slug |
+| `market_type` | string | Markttyp (z. B. `moneyline`, `spread`, `total`) |
+| `selection` | string | Name der Auswahl (Teamname, Over/Under) |
+| `line` | number \| null | Linienwert (für Spreads/Totals) |
+| `best_odds` | object | Beste verfügbare Quoten über alle Bücher hinweg |
+| `best_odds.american` | number | Beste American Odds |
+| `best_odds.decimal` | number | Beste Dezimalquoten |
+| `best_odds.probability` | number | Implizite Wahrscheinlichkeit der besten Quoten |
+| `best_book` | string | Sportwettenanbieter-ID mit den besten Quoten |
+| `all_books` | array | Quoten aller Sportwettenanbieter für diese Auswahl |
+| `all_books[].book` | string | Sportwettenanbieter-ID |
+| `all_books[].odds` | object | Odds-Objekt (`american`, `decimal`) |
+| `all_books[].edge` | number | Edge gegenüber den schlechtesten verfügbaren Quoten (Prozentpunkte) |
+| `all_books[].line` | number \| null | Linie bei diesem Sportwettenanbieter |
+| `all_books[].last_seen_at` | string | Wann unsere Pipeline die Zeile dieses Buches zuletzt beobachtet hat — Aktualitätssignal der Pipeline |
+| `all_books[].odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buches zuletzt tatsächlich geändert hat. Bei Pinnacle wird dies über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at). |
+| `last_seen_at` | string | ISO-8601-Zeitstempel der Best-Odds-Bestimmung |
+| `player_name` | string\|undefined | Spielername (nur bei Player-Prop-Märkten) |
+| `stat_category` | string\|undefined | Statistik-Kategorie, z. B. `points`, `rebounds` (nur bei Player-Prop-Märkten) |
+
+<Callout type="info">
+Pinnacle wird üblicherweise als Sharp-Referenz verwendet. Wenn Pinnacle in `all_books` verfügbar ist, können Sie es anhand von `book: "pinnacle"` identifizieren und seine Quoten mit Soft Books vergleichen, um +EV-Gelegenheiten zu finden.
+</Callout>
+
+## Warum beste Quoten wichtig sind
+
+Die besten verfügbaren Quoten zu finden, ist die Grundlage für profitables Sportwetten:
+
+### 1. Line Shopping spart Geld
+
+Der Unterschied zwischen -105 und -110 mag klein erscheinen, aber er summiert sich im Laufe der Zeit dramatisch:
+
+| Quoten | Gewinn bei $100-Einsatz | Break-Even-Gewinnrate |
+|------|-------------|-------------------|
+| -115 | +$87 | 53,5 % |
+| -110 | +$91 | 52,4 % |
+| -105 | +$95 | 51,2 % |
+| +100 | +$100 | 50,0 % |
+
+### 2. Langfristige Auswirkungen
+
+Über 1.000 Wetten bei einer Gewinnrate von 52 %:
+
+| Konsistente Quoten | Nettoergebnis |
+|-----------------|------------|
+| -115 | **-$44 Verlust** |
+| -110 | **+$18 Gewinn** |
+| -105 | **+$80 Gewinn** |
+
+### 3. Edge-Vergleich
+
+Das `edge`-Feld jedes Buches in `all_books` zeigt, wie viel besser (oder schlechter) die Quoten dieses Buches im Vergleich zur schlechtesten verfügbaren Linie sind, und hilft Ihnen, den Wert des Vergleichs über mehrere Bücher hinweg zu quantifizieren.
+
+## Verwandte Endpoints
+
+- [Odds Snapshot](/de/api-reference/odds) - Erhalten Sie Rohquoten von einzelnen Sportwettenanbietern
+- [Odds Delta](/de/api-reference/odds-delta) - Erhalten Sie nur Quoten, die sich seit einem bestimmten Zeitstempel geändert haben
+- [Odds Comparison](/de/api-reference/odds-comparison) - Vergleichen Sie Quoten Seite an Seite über mehrere Bücher hinweg
+- [Sportsbooks](/de/api-reference/sportsbooks) - Sehen Sie, welche Bücher verfügbar sind und welchen Status sie haben

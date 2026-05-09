@@ -1,0 +1,160 @@
+---
+description: "Verstehen Sie den Unterschied zwischen Live-Quoten (In-Play) und Pre-Match-Quoten in SharpAPI — was beide bedeuten, wie sich Buchmacher während des Live-Spiels verhalten und was Sie von DraftKings und FanDuel beim Aufbau von Live-Wett-Tools erwarten können."
+---
+
+import { Callout } from 'nextra/components'
+
+# Live- vs. Pre-Match-Quoten
+
+SharpAPI sammelt Quoten von Sportwettenanbietern in zwei Zuständen: **Pre-Match** (vor Spielbeginn) und **Live** (In-Play, nach Spielbeginn). Dies sind grundlegend unterschiedliche Märkte mit unterschiedlichen Aktualisierungsmustern, Markttiefe und Zuverlässigkeit — insbesondere bei verschiedenen Buchmachertypen.
+
+## Was ist Pre-Match?
+
+Pre-Match-Quoten werden vor Spielbeginn festgelegt. Hier gilt:
+
+- **Die Markttiefe ist am größten** — Buchmacher bieten ihr volles Angebot an Linien, Spreads, Totals und Spieler-Props an
+- **Aktualisierungen sind moderat** — Linien bewegen sich Stunden oder Tage vor dem Anpfiff, üblicherweise als Reaktion auf Sharp-Action oder Nachrichten
+- **Alle Buchmacher nehmen vollständig teil** — jeder Buchmacher in der API verfügt über Pre-Match-Abdeckung für seine unterstützten Sportarten
+
+Pre-Match ist das Rückgrat der meisten +EV- und Arbitrage-Workflows. Die überwiegende Mehrheit der Quoten in der API zu einem beliebigen Zeitpunkt sind Pre-Match-Quoten.
+
+## Was ist Live (In-Play)?
+
+Live-Quoten sind während eines Spiels aktiv. Sie spiegeln Echtzeit-Wahrscheinlichkeiten wider, während sich der Spielzustand ändert — ein Team punktet, ein Spieler verletzt sich oder die Zeit läuft ab. Sie können mit dem Query-Parameter `live=true` ausschließlich nach Live-Quoten filtern.
+
+```bash
+# Nur Live-Quoten
+GET /api/v1/odds?live=true&sport=basketball&league=nba
+
+# Nur Pre-Match-Quoten
+GET /api/v1/odds?live=false&sport=basketball&league=nba
+```
+
+Jedes Quoten-Element enthält ein boolesches Feld `is_live`, das seinen Zustand zum Zeitpunkt der Erfassung angibt:
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "event_id": "nba_cavaliers_celtics_2026-04-18",
+  "sport": "basketball",
+  "league": "nba",
+  "market_type": "moneyline",
+  "odds_american": -140,
+  "is_live": true
+}
+```
+
+## Wie Buchmacher Quoten liefern
+
+Der Übertragungsmechanismus ist die Hauptursache für die Unterschiede in der Aktualität zwischen den Buchmachertypen — nicht nur das Polling-Intervall.
+
+### Push vs. Poll
+
+| Buchmacher | Übertragungsmechanismus | Quell-Latenz |
+|------|-------------------|----------------|
+| Pinnacle | **MQTT-Push** — SharpAPI abonniert den WebSocket/MQTT-Feed von Pinnacle; Quoten kommen an, sobald der Buchmacher sie streamt | p50 ~0,8 s, p95 ~3,8–4,2 s (Tail-Latenz während Phasen mit häufigen Reconnects) |
+| DraftKings | **HTTP-Poll** — SharpAPI ruft den DK-Endpoint nach einem Zeitplan ab | p50 ~8 s, p95 ~21 s |
+| FanDuel | **HTTP-Poll** — SharpAPI ruft den FD-Endpoint nach einem Zeitplan ab | p50 ~2,7 s, p95 ~5,9 s |
+| Andere Sharp-Buchmacher | MQTT-/WS-Push (Bookmaker, Circa) oder schnelles Polling (Bet365) | Ähnlich wie Pinnacle |
+| US-Retail-Buchmacher | HTTP-Poll | Ähnlich wie DK/FD |
+
+Pinnacles MQTT-Push bedeutet, dass SharpAPI einen Preis in dem Moment erhält, in dem der Buchmacher ihn sendet — keine Polling-Verzögerung steht im Weg. Für DraftKings und FanDuel spiegeln die obigen p50/p95-Werte den vollständigen Round-Trip wider: die Zeit von der Aktualisierung der Linie durch den Buchmacher bis SharpAPI den neuen Preis hat. Diese Zahlen stammen aus Prometheus-Messungen vom April 2026.
+
+<Callout type="info">
+Pinnacles p95-Tail-Latenz (3,8–4,2 s) spiegelt den Reconnect-Overhead in volatilen Phasen wider. Es wird kontinuierlich an der Infrastruktur gearbeitet, um diese zu reduzieren. Der Median (0,8 s) ist ein zuverlässiger Richtwert für den Normalbetrieb — verwenden Sie den p95-Wert, um Ihr Toleranzbudget für live-sensitive Strategien zu dimensionieren.
+</Callout>
+
+## Wie sich Buchmacher während des Live-Spiels verhalten
+
+Hier weichen die Erwartungen zwischen Sharp-Buchmachern und US-Retail-Buchmachern erheblich voneinander ab.
+
+### Sharp-Buchmacher (Pinnacle, Circa, Bookmaker)
+
+Sharp-Buchmacher behandeln Live-Wetten als Kernprodukt:
+
+- **Selten ausgesetzt** — Märkte bleiben während Punktezügen, Verletzungen und Auszeiten geöffnet. Die Live-Aussetzungsrate von Pinnacle ist ein Bruchteil der von US-Buchmachern.
+- **Tiefe Marktangebote** — Pinnacle bietet pro Event 20–50+ Live-Märkte über die wichtigsten Sportarten hinweg, einschließlich Live-Spreads, Totals, alternativen Linien und Team-Totals
+- **Push-Übertragung** — Der Pinnacle-MQTT-Feed liefert typischerweise unter 1 s Median; Preise spiegeln den Spielzustand schnell wider
+- **Kontinuierliche Preisfindung** — die Live-Linie ist die schärfste verfügbare Bewertung der aktuellen Gewinnwahrscheinlichkeit
+
+Die Live-Quoten von Pinnacle werden als **Sharp-Referenzpreis** in +EV-Berechnungen verwendet, ebenso wie für Pre-Match.
+
+<Callout type="warning">
+Pinnacle, Circa, Bookmaker und andere Sharp-Buchmacher erfordern den **Sharp-Tier** oder höher. Anfragen für Sharp-Buchmacher-Daten in den Tiers Free, Hobby oder Pro geben einen `403 tier_restricted`-Fehler zurück.
+</Callout>
+
+### US-Retail-Buchmacher (DraftKings, FanDuel, BetMGM, Caesars)
+
+US-regulierte Buchmacher bieten Live-Wetten an, jedoch mit wichtigen Einschränkungen:
+
+| Verhalten | Sharp-Buchmacher | US-Buchmacher (DK/FD) |
+|----------|-------------|-------------------|
+| Übertragungsmechanismus | MQTT-/WS-Push | HTTP-Poll |
+| Aktualität (p50) | ~0,8 s (Pinnacle) | 8 s (DK) / 2,7 s (FD) |
+| Aktualität (p95) | ~3,8–4,2 s (Pinnacle) | 21 s (DK) / 5,9 s (FD) |
+| Marktaussetzung bei Punktezügen | Selten | Sehr häufig |
+| Marktaussetzung bei Reviews/Auszeiten | Gelegentlich | Standardpraxis |
+| Tiefe des Live-Marktangebots | 20–50+ Märkte | 3–10 Märkte |
+| Verfügbarkeit von Live-Props | Ja (Pinnacle) | Begrenzt oder keine |
+
+**Aussetzungen sind das Hauptproblem.** Wenn ein NBA-Team punktet, ziehen DraftKings und FanDuel typischerweise ihre Live-Moneylines, Spreads und Totals vom Brett, während sie neu bepreisen. In Hochphasen (4. Viertel eines knappen Spiels) können diese Buchmacher häufiger ausgesetzt als geöffnet sein. Dies ist ein regulatorisches Risikomanagement-Muster, keine API-Einschränkung.
+
+<Callout type="info">
+Wenn ein DK- oder FD-Markt ausgesetzt ist, verschwindet er einfach aus der API — es gibt kein `status: suspended`-Feld. Wenn Sie `GET /api/v1/odds?live=true&sportsbook=draftkings` während eines Punktezugs aufrufen, erhalten Sie möglicherweise keine Ergebnisse für dieses Event, obwohl das Spiel läuft.
+</Callout>
+
+### Was das in der Praxis bedeutet
+
+**Wenn Sie ein Live-Quoten-Dashboard erstellen**, das eine kontinuierliche Abdeckung ohne Lücken benötigt, können Sie sich nicht allein auf DraftKings oder FanDuel verlassen. Planen Sie ein:
+- Häufige Null-Fenster — gestalten Sie Ihr Frontend so, dass es „kein aktueller Preis" elegant verarbeitet
+- Datenaktualität — der letzte Live-Preis, den Sie von DK gesehen haben, kann 30–90 Sekunden alt sein, bevor die Märkte wieder öffnen
+
+**Wenn Sie einen Live-+EV-Scanner erstellen**, ist Pinnacle als Ihre Sharp-Referenz das wesentliche Element. Ohne einen Live-Pinnacle-Preis können Sie nicht berechnen, ob DK/FD einen Mehrwert bieten. Dies erfordert den **Sharp-Tier**.
+
+**Wenn Sie ein Pre-Match-Tool erstellen**, sind DraftKings und FanDuel im **Free-Tier** vollständig nutzbar. Die Pre-Match-Abdeckung ist umfassend, Aussetzungen sind kein Faktor und die Aktualisierungsfrequenz ist mehr als ausreichend.
+
+## Übersicht zur Buchmacher-Abdeckung
+
+| Buchmacher | `has_live_odds` | Praktische Live-Qualität | Erforderlicher Tier |
+|------|-----------------|------------------------|---------------|
+| Pinnacle | Ja | Ausgezeichnet — tief, schnell, setzt selten aus | Sharp |
+| Bookmaker | Ja | Ausgezeichnet — breites Marktangebot, global | Sharp |
+| Circa Sports | Ja | Gut — Sharp-US-Buchmacher, fokussiertes Angebot | Sharp |
+| Bet365 | Ja | Gut — großes internationales Angebot | Pro |
+| BetMGM | Ja | Mittelmäßig — regelmäßige Aussetzungen | Hobby |
+| Caesars | Ja | Mittelmäßig — regelmäßige Aussetzungen | Hobby |
+| DraftKings | Ja | Begrenzt — häufige Aussetzungen, dünnes Angebot | Free |
+| FanDuel | Ja | Begrenzt — häufige Aussetzungen, dünnes Angebot | Free |
+| Novig | Nein | Nur Pre-Match | Free |
+| Polymarket | Nein | Nur Pre-Match (Prognosemarkt) | Free |
+
+<Callout type="info">
+`has_live_odds: true` bedeutet, dass der Sportwettenanbieter In-Play-Wetten anbietet und SharpAPI diese Preise erfasst, wenn sie verfügbar sind. Es garantiert keine kontinuierliche Abdeckung — US-Buchmacher setzen häufig genug aus, sodass Live-Daten erhebliche Lücken aufweisen.
+</Callout>
+
+## Empfohlene Vorgehensweisen nach Anwendungsfall
+
+### Live-+EV oder Live-Arbitrage
+- **Erforderlich**: Sharp-Tier (für Pinnacle als Referenz)
+- **Muster**: Pollen Sie `?live=true&sportsbook=pinnacle` als Ihren Referenzpreis; pollen Sie US-Buchmacher für den Soft-Preis; berechnen Sie EV, wenn beide nicht null sind
+- **Behandeln**: Null-Soft-Preise elegant — sie treten während des Live-Spiels ständig auf
+
+### Live-Quoten-Anzeige (Dashboard)
+- **Geeignet**: Pro-Tier oder höher
+- **Muster**: Rufen Sie `?live=true` in einem Intervall von 5–10 Sekunden ab; zeigen Sie den zuletzt gesehenen Preis mit einem Zeitstempel „Zuletzt aktualisiert" an; zeigen Sie einen Status „Markt ausgesetzt" an, wenn kein Preis zurückgegeben wird
+- **Vermeiden**: anzunehmen, dass ein fehlender Preis bedeutet, dass Quoten dauerhaft nicht verfügbar sind — Märkte öffnen typischerweise innerhalb von 30–90 Sekunden wieder
+
+### Nur Pre-Match (am häufigsten)
+- **Geeignet**: Free-Tier mit DraftKings + FanDuel
+- **Muster**: Verwenden Sie `?live=false`, wenn Sie In-Play-Linien explizit aus Ihren Ergebnissen ausschließen möchten
+- **Hinweis**: Wenn der Parameter `live` weggelassen wird, werden sowohl Pre-Match- als auch Live-Quoten gemischt zurückgegeben
+
+<Callout type="warning">
+Der Free-Tier ist auf **12 Anfragen pro 60 Sekunden** begrenzt. Allein dieses Limit schließt Live-Polling unabhängig vom Buchmacher aus — bei einem 5-Sekunden-Intervall würden Sie das Limit in weniger als einer Minute erreichen. Live-Wett-Strategien erfordern den **Pro-Tier oder höher**.
+</Callout>
+
+## Verwandte Themen
+
+- [Odds-Snapshot](/de/api-reference/odds) — Referenz zum Query-Parameter `live`
+- [Sportwettenanbieter](/de/api-reference/sportsbooks) — Vollständige Buchmacherliste mit `has_live_odds` und Tier-Anforderungen
+- [+EV-Möglichkeiten](/de/api-reference/opportunities-ev) — Vorberechnete +EV-Werte mit Pinnacle als Sharp-Referenz

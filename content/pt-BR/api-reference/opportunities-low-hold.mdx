@@ -1,0 +1,356 @@
+---
+description: "GET /api/v1/opportunities/low_hold — Encontre mercados com o menor vig (hold) entre sportsbooks para as linhas mais apertadas disponíveis. Ideal para apostadores experientes que buscam juice mínimo."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Oportunidades de Low Hold
+
+Encontre mercados com o menor vig (hold) entre sportsbooks — as linhas mais apertadas disponíveis.
+
+```
+GET /api/v1/opportunities/low_hold
+```
+
+## Autenticação
+
+Requer chave de API. **Tier Pro ou superior obrigatório.** Sua conta deve ter o recurso `low_hold` habilitado.
+
+<Callout type="warning">
+**Mudança incompatível:** O campo `game_state` (placar/período/relógio) foi removido desta resposta. O estado ao vivo do jogo agora é servido exclusivamente pelo endpoint [Game State](/pt-BR/api-reference/gamestate) e pelo canal de stream `gamestate`. Faça o join das linhas com o estado do jogo por `event_id`.
+</Callout>
+
+## Parâmetros de Query
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `sport` | string | todos | Filtrar por esporte(s), separados por vírgula (ex: `basketball`, `football`) |
+| `league` | string | todas | Filtrar por liga(s), separadas por vírgula (ex: `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | permitidos pelo tier | Filtrar por sportsbook(s), separados por vírgula. Limites do tier são aplicados. |
+| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por vírgula |
+| `max_hold` | number | 5.0 | Percentual máximo de hold (vig). Menor = linhas mais apertadas. |
+| `live` | boolean | — | `true` = somente ao vivo, `false` = somente pré-jogo, omitir = ambos |
+| `state` | string | `pa` | Código de estado dos EUA para geração de deep link (ex: `pa`, `nj`, `co`, `mi`) |
+| `sort` | string | `hold` | Campo de ordenação: `hold` (menor primeiro, padrão), `market`, `sport` |
+| `limit` | integer | 50 | Resultados por página (máx 200) |
+| `offset` | integer | 0 | Offset de paginação (máx 5000) |
+
+### Filtrando Múltiplos Valores
+
+Use valores separados por vírgula para filtros de seleção múltipla:
+
+```
+?sport=basketball,football&league=nba,nfl&max_hold=3
+```
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Moneylines de low-hold abaixo de 2% de vig
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/low_hold?league=nba&max_hold=2&market=moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Com state para deep links
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/low_hold?league=nfl&state=nj" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/low_hold?league=nba&max_hold=2',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, pagination } = await response.json();
+
+for (const hold of data) {
+  console.log(`${hold.event_name} [${hold.market_type}]: ${hold.hold_percentage}% hold`);
+  console.log(`  ${hold.side1.selection} @ ${hold.side1.odds.american} (${hold.side1.books.join(', ')})`);
+  console.log(`  ${hold.side2.selection} @ ${hold.side2.odds.american} (${hold.side2.books.join(', ')})`);
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/low_hold',
+    params={'league': 'nba', 'max_hold': 2, 'state': 'nj'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+
+for hold in data['data']:
+    print(f"{hold['event_name']} [{hold['market_type']}]: {hold['hold_percentage']}% hold")
+    s1, s2 = hold['side1'], hold['side2']
+    print(f"  {s1['selection']} @ {s1['odds']['american']} ({', '.join(s1['books'])})")
+    print(f"  {s2['selection']} @ {s2['odds']['american']} ({', '.join(s2['books'])})")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "lh_nba_lal_bos_ml_0",
+      "event_id": "evt_nba_lal_bos_20260208",
+      "event_name": "Los Angeles Lakers @ Boston Celtics",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "moneyline",
+      "home_team": "Boston Celtics",
+      "away_team": "Los Angeles Lakers",
+      "start_time": "2026-02-08T19:00:00Z",
+      "line": null,
+      "hold_percentage": 1.8,
+      "side1": {
+        "selection": "Los Angeles Lakers",
+        "books": ["draftkings", "betmgm"],
+        "line": null,
+        "odds": {
+          "american": 145,
+          "decimal": 2.45,
+          "implied_probability": 0.408,
+          "fair_probability": 0.415
+        },
+        "deep_links": {
+          "draftkings": "https://sportsbook.draftkings.com/...",
+          "betmgm": "https://sports.betmgm.com/..."
+        }
+      },
+      "side2": {
+        "selection": "Boston Celtics",
+        "books": ["pinnacle", "fanduel"],
+        "line": null,
+        "odds": {
+          "american": -155,
+          "decimal": 1.645,
+          "implied_probability": 0.608,
+          "fair_probability": 0.585
+        },
+        "deep_links": {
+          "pinnacle": null,
+          "fanduel": "https://sportsbook.fanduel.com/..."
+        }
+      },
+      "side3": null,
+      "is_live": false,
+      "is_alternate_line": false,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
+      "all_books": ["draftkings", "betmgm", "pinnacle", "fanduel"],
+      "confidence": 92,
+      "odds_age_seconds": 5,
+      "possibly_stale": false,
+      "detected_at": "2026-02-08T14:22:10.456Z"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 87,
+    "has_more": true,
+    "next_offset": 50
+  },
+  "meta": {
+    "source": "cache",
+    "summary": {
+      "count": 87,
+      "avg_hold": 2.4,
+      "min_hold": 0.8,
+      "by_market": {
+        "moneyline": 35,
+        "point_spread": 30,
+        "total_points": 22
+      },
+      "by_sport": {
+        "basketball": 87
+      }
+    },
+    "filters": {
+      "sport": null,
+      "league": ["nba"],
+      "sportsbook": null,
+      "market": null,
+      "max_hold": 5.0,
+      "live": null,
+      "state": "pa"
+    }
+  }
+}
+```
+
+### Headers da Resposta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 296
+X-RateLimit-Reset: 1707401000
+X-Data-Delay: 0
+X-Request-Id: req_lh123abc456
+```
+
+### Respostas de Erro
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***403 Tier Required***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "This endpoint requires Pro tier or higher",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "docs": "https://docs.sharpapi.io/en/api-reference/overview"
+  }
+}
+```
+
+## Campos da Resposta
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | string | Identificador único de low-hold (hash) |
+| `event_id` | string | Identificador do evento |
+| `event_name` | string | Nome legível do evento |
+| `sport` | string | Identificador do esporte (minúsculo) |
+| `league` | string | Identificador da liga |
+| `market_type` | string | Tipo de mercado (`moneyline`, `point_spread`, `total_points`, etc.) |
+| `home_team` | string | Nome do time da casa |
+| `away_team` | string | Nome do time visitante |
+| `start_time` | string\|null | Horário de início do evento em ISO 8601 |
+| `line` | number\|null | Linha de spread/total (ex: `-3.5`, `220.5`) |
+| `hold_percentage` | number | Percentual de hold/vig do mercado (ex: `1.8` = 1.8%) |
+| `side1` | object | Primeiro lado do mercado |
+| `side2` | object | Segundo lado do mercado |
+| `side3` | object\|null | Terceiro lado (apenas para mercados de 3 vias, como moneyline de futebol) |
+| `is_live` | boolean | Se o evento está ao vivo no momento |
+| `is_alternate_line` | boolean | Se utiliza uma linha não-padrão |
+| `is_player_prop` | boolean | Se é um mercado de player prop |
+| `player_name` | string\|null | Nome do jogador (se for player prop) |
+| `stat_category` | string\|null | Tipo de estatística (se for player prop, ex: `points`, `rebounds`) |
+| `all_books` | string[] | Todos os sportsbooks participantes deste mercado |
+| `confidence` | number | Métrica de confiança (0-100) |
+| `odds_age_seconds` | number | Idade da odd mais antiga em segundos |
+| `possibly_stale` | boolean | Se os dados de odds podem ter se movido desde a detecção |
+| `detected_at` | string | Quando a oportunidade foi detectada (ISO 8601) |
+
+### Objeto Side
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `selection` | string | Nome da seleção (ex: "Lakers", "Over") |
+| `books` | string[] | Sportsbooks oferecendo o melhor preço neste lado |
+| `line` | number\|null | Valor da linha para este lado |
+| `odds.american` | number | Odds americanas |
+| `odds.decimal` | number | Odds decimais |
+| `odds.implied_probability` | number | Probabilidade implícita (0-1) |
+| `odds.fair_probability` | number | Probabilidade justa ajustada pelo hold |
+| `deep_links` | object | Mapa do nome do sportsbook para a URL do deep link (ou `null` se indisponível) |
+
+<Callout type="info">
+Os deep links são gerados com base no parâmetro de query `state`. Passe o código do estado dos EUA do seu usuário (ex: `?state=nj`) para obter as URLs corretas dos sportsbooks para a jurisdição dele.
+</Callout>
+
+---
+
+## O Que É Hold?
+
+**Hold** (também chamado de **vig** ou **juice**) é a margem embutida do sportsbook em um mercado. É a diferença entre a soma das probabilidades implícitas e 100%.
+
+```
+Hold % = (implied_prob_side1 + implied_prob_side2 - 1) × 100
+```
+
+### Exemplo
+
+```
+DraftKings:  Lakers +145 (implícita 40,8%)
+Pinnacle:    Celtics -155 (implícita 60,8%)
+Combinada:   101,6%
+Hold:        1,6%
+```
+
+Um hold de 1,6% significa que o sportsbook fica com cerca de US$ 1,60 de cada US$ 100 apostados neste mercado. Hold menor = melhor valor para apostadores.
+
+### Por Que Low Hold Importa
+
+| Hold % | Qualidade | Fonte Típica |
+|--------|---------|----------------|
+| < 1,5% | Excelente | Sharp books, melhor preço entre books |
+| 1,5 - 3% | Bom | Mercados competitivos |
+| 3 - 5% | Médio | Precificação varejista padrão |
+| 5%+ | Ruim | Props, mercados exóticos |
+
+Mercados de low-hold dão a você odds melhores independentemente de qual lado você apostar. Combinados com detecção de +EV, eles ajudam a maximizar os retornos esperados.
+
+### Low Hold vs Arbitragem
+
+| | Low Hold | Arbitragem |
+|---|---------|-----------|
+| **Hold** | Baixo, mas > 0% | Abaixo de 0% (hold negativo) |
+| **Risco** | Normal (você escolhe um lado) | Zero (aposta nos dois lados) |
+| **Caso de uso** | Obter o melhor preço | Garantir lucro |
+| **Volume** | Centenas disponíveis | Raro (dígitos únicos) |
+
+Oportunidades de low-hold são muito mais comuns do que arbitragens. Elas representam as linhas mais apertadas disponíveis entre os books — ideais para apostadores que querem o melhor preço sem precisar apostar em ambos os lados.
+
+## Mercados de Três Vias
+
+Para esportes com três resultados possíveis (futebol, resultado final do hóquei), a resposta inclui `side3`:
+
+```json
+{
+  "side1": { "selection": "Home Win", "..." : "..." },
+  "side2": { "selection": "Draw", "..." : "..." },
+  "side3": { "selection": "Away Win", "..." : "..." },
+  "hold_percentage": 2.1
+}
+```
+
+O cálculo do hold se estende a todos os três lados: `implied_prob_1 + implied_prob_2 + implied_prob_3 - 1`.
+
+## Boas Práticas
+
+1. **Defina um `max_hold` apertado** — Use `max_hold=2` ou `max_hold=3` para focar nos mercados de melhor valor
+2. **Passe o parâmetro `state`** — Obtenha deep links precisos para a jurisdição do seu usuário
+3. **Combine com dados de +EV** — Low hold + EV positivo é a combinação ideal
+4. **Verifique `possibly_stale`** — Pule oportunidades em que as odds podem já ter se movido
+5. **Use streaming** — Assine eventos `low_hold:detected` via [SSE](/pt-BR/api-reference/stream) ou [WebSocket](/pt-BR/api-reference/websocket) para alertas em tempo real
+6. **Monitore `all_books`** — Mais books participando geralmente significa precificação mais confiável
+
+## Endpoints Relacionados
+
+- [Oportunidades de +EV](/pt-BR/api-reference/opportunities-ev) — Apostas com valor esperado positivo
+- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) — Lucro garantido entre books
+- [Middles](/pt-BR/api-reference/opportunities-middles) — Oportunidades de discrepância de linha
+- [Melhores Odds](/pt-BR/api-reference/odds-best) — Encontre o melhor preço entre todos os books

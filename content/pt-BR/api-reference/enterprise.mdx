@@ -1,0 +1,52 @@
+---
+description: "Endpoints exclusivos para Enterprise da SharpAPI — acesse mercados de futures em todas as casas de apostas suportadas."
+---
+
+import { Callout } from 'nextra/components'
+
+# Endpoints Enterprise
+
+Endpoints avançados disponíveis exclusivamente para assinantes do plano Enterprise.
+
+<Callout type="warning">
+Todos os endpoints desta página exigem uma assinatura **Enterprise**. Planos inferiores receberão um erro `403 tier_restricted`.
+</Callout>
+
+## Futures
+
+### GET /api/v1/futures
+
+Obtenha o catálogo de futures — mercados de futures disponíveis nas casas de apostas.
+
+```
+GET /api/v1/futures
+```
+
+#### Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filtrar por esporte(s), separados por vírgula |
+| `league` | string | all | Filtrar por liga(s), separadas por vírgula |
+| `sportsbook` | string | all | Filtrar por casa(s) de apostas, separadas por vírgula |
+| `limit` | integer | 50 | Resultados por página (máximo 200) |
+| `offset` | integer | 0 | Deslocamento de paginação |
+
+### GET /api/v1/futures/odds
+
+Obtenha as odds para mercados de futures.
+
+```
+GET /api/v1/futures/odds
+```
+
+#### Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filtrar por esporte(s), separados por vírgula |
+| `league` | string | all | Filtrar por liga(s), separadas por vírgula |
+| `sportsbook` | string | all | Filtrar por casa(s) de apostas, separadas por vírgula |
+| `market` | string | all | Filtrar por tipo de mercado |
+| `limit` | integer | 50 | Resultados por página (máximo 200) |
+| `offset` | integer | 0 | Deslocamento de paginação |

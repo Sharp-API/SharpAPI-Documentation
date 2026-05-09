@@ -1,0 +1,52 @@
+---
+description: "SharpAPI Enterprise-Tarif API-Endpunkte — Futures-Marktkatalog und Quoten über alle 43 unterstützten Sportsbooks. Erfordert Enterprise-Abonnement; niedrigere Tarife erhalten 403 tier_restricted."
+---
+
+import { Callout } from 'nextra/components'
+
+# Enterprise-Endpunkte
+
+Erweiterte Endpunkte, die ausschließlich Abonnenten des Enterprise-Tarifs zur Verfügung stehen.
+
+<Callout type="warning">
+Alle Endpunkte auf dieser Seite erfordern ein **Enterprise**-Abonnement. Niedrigere Tarife erhalten einen `403 tier_restricted`-Fehler.
+</Callout>
+
+## Futures
+
+### GET /api/v1/futures
+
+Ruft den Futures-Katalog ab — verfügbare Futures-Märkte über alle Sportsbooks hinweg.
+
+```
+GET /api/v1/futures
+```
+
+#### Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filtern nach Sportart(en), kommagetrennt |
+| `league` | string | all | Filtern nach Liga(en), kommagetrennt |
+| `sportsbook` | string | all | Filtern nach Sportsbook(s), kommagetrennt |
+| `limit` | integer | 50 | Ergebnisse pro Seite (max. 200) |
+| `offset` | integer | 0 | Paginierungs-Offset |
+
+### GET /api/v1/futures/odds
+
+Ruft Quoten für Futures-Märkte ab.
+
+```
+GET /api/v1/futures/odds
+```
+
+#### Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filtern nach Sportart(en), kommagetrennt |
+| `league` | string | all | Filtern nach Liga(en), kommagetrennt |
+| `sportsbook` | string | all | Filtern nach Sportsbook(s), kommagetrennt |
+| `market` | string | all | Filtern nach Markttyp |
+| `limit` | integer | 50 | Ergebnisse pro Seite (max. 200) |
+| `offset` | integer | 0 | Paginierungs-Offset |

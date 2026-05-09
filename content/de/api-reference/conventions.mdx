@@ -1,0 +1,197 @@
+---
+description: "SharpAPI Antwortkonventionen — Envelope-Strukturen, Zeitstempel, Fehlerformat, Feldschreibweise und die Regeln, denen jeder REST-Endpoint folgt."
+---
+
+import { Callout } from 'nextra/components'
+
+# Antwortkonventionen
+
+SharpAPI liefert vorhersehbare Antwortstrukturen über jeden REST-Endpoint hinweg. Diese Seite kodifiziert diese Konventionen, damit Sie generische Parser bauen können statt Sonderfälle pro Endpoint.
+
+<Callout type="info">
+  Diese Seite beschreibt die REST-Konventionen. SSE-Streams werden in [SSE Stream](/de/api-reference/stream) behandelt, und das bidirektionale WebSocket-Protokoll hat seine eigene [AsyncAPI 3.0 Spezifikation](/asyncapi.yaml).
+</Callout>
+
+## HTTP-Statuscodes, keine Envelopes
+
+Der HTTP-Statuscode ist die Quelle der Wahrheit für Erfolg oder Misserfolg. Antwort-Bodies tragen **kein** `success`-Flag — es würde Informationen duplizieren, die bereits auf `response.status` vorhanden sind, und Clients dazu verleiten, an der falschen Stelle zu prüfen.
+
+| Status | Bedeutung |
+|---|---|
+| `200` | Erfolg mit Body |
+| `201` | Erstellt (API-Key-Erstellung) |
+| `204` | Erfolg, kein Body (Schlüssellöschung) |
+| `302` | Redirect (Deeplinks) |
+| `400` | Validierungsfehler — clientseitiger Bug |
+| `401` | Fehlender oder ungültiger API key |
+| `403` | Tier enthält das angeforderte Feature nicht |
+| `404` | Ressource existiert nicht (oder undurchsichtige ID stimmte nicht überein) |
+| `429` | Rate limit überschritten |
+| `5xx` | Upstream- oder interner Serverfehler |
+
+## Erfolgs-Envelope-Strukturen
+
+Zwei Top-Level-Strukturen. Beide stellen `data` an die erste Stelle und `updated_at` an die letzte, mit einem optionalen Paginierungsblock dazwischen.
+
+### Nicht-paginierte Antwort
+
+Verwendet für Singletons, Referenzdaten und Zusammenfassungs-Endpoints. `data` ist das, was der Endpoint zurückgibt — eine einzelne Ressource, ein Array oder eine Map.
+
+```json
+{
+  "data": { ... },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+### Paginierte Listenantwort
+
+Verwendet für Endpoints, die `limit` / `offset` / `cursor` unterstützen.
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 50,
+    "total": 1247,
+    "has_more": true,
+    "next_offset": 50
+  },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+`count` ist die Länge der aktuellen `data`-Seite, `total` ist die vollständige Übereinstimmungsmenge. `next_offset` ist nur vorhanden, wenn `has_more` `true` ist.
+
+### Endpoint-spezifische Erweiterungen
+
+Eine Handvoll Endpoints fügen zusätzliche Top-Level-Schlüssel neben `data` hinzu. Diese sind additiv — generische Parser, die `data` + `pagination` + `updated_at` lesen, funktionieren weiterhin.
+
+| Feld | Ausgegeben von | Bedeutung |
+|---|---|---|
+| `overflow: true` | `/odds`, `/odds/delta` | `total > 10_000` — Konsument sollte einen frischen Snapshot über `/odds` abrufen, anstatt durch Delta zu paginieren. |
+| `removed: [...]` | `/odds/delta` | IDs von Quoten, die seit `?since=` entfernt wurden. |
+| `missing: [...]` | `POST /odds/batch` | Event-IDs, die angefordert, aber nicht gefunden wurden. |
+
+## Fehler-Envelope
+
+Jede Nicht-2xx-Antwort gibt ein einzelnes `error`-Objekt zurück.
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 3 seconds.",
+    "docs": "https://sharpapi.io/docs/rate-limits",
+    "retryAfter": 3
+  }
+}
+```
+
+| Feld | Immer vorhanden? | Anmerkungen |
+|---|---|---|
+| `code` | Ja | Stabile Zeichenkette. Prüfen Sie diese, nicht den Prosa-Text. |
+| `message` | Ja | Menschenlesbares Englisch. Sicher, um sie Endbenutzern anzuzeigen. |
+| `docs` | Manchmal | Link zur relevanten Dokumentationsseite. |
+| `retryAfter` | Bei 429 / 5xx | Sekunden, bis der Client erneut versuchen sollte. |
+| `tier` | Bei 403 | Das Tier, das den Endpoint *freischalten würde*. |
+
+### Häufige Fehlercodes
+
+`missing_api_key`, `invalid_api_key`, `validation_error`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
+
+Die vollständige Liste (21 HTTP-Codes + 6 WebSocket-Frame-Codes, mit HTTP-Statussen) finden Sie in [API Übersicht → Fehlercodes](/de/api-reference/overview#error-codes). `bad_request` und `invalid_request` sind veraltet — beide wurden zu `validation_error` zusammengefasst.
+
+## Zeitstempel
+
+Jeder Zeitstempel in einer SharpAPI-Antwort ist **RFC 3339 / ISO 8601 mit UTC** — Zeichenkettenform wie `2026-04-16T19:29:38.920698424Z`. Nanosekundengenauigkeit vom Server; Clients können sicher mit Sekunden- oder Millisekundengenauigkeit parsen.
+
+Zwei Felder, die Sie häufig sehen werden:
+
+- **`updated_at`** — wann der Server die Antwort ausgegeben hat. Top-Level bei jeder Erfolgsantwort.
+- **`fetched_at`** — wann das Upstream-Sportsbook zuletzt abgefragt wurde (vorhanden in Quoten-Payloads).
+
+Ältere Zeitstempel der Stream-Schicht erscheinen als Unix-Sekunden-Floats (`timestamp`) zusammen mit ihrem RFC 3339 Gegenstück (`ts`) bei WebSocket-Nachrichten.
+
+## Feldschreibweise
+
+**Snake Case überall.** Felder innerhalb von `data`, `pagination`, `meta`, `error` und jeder WebSocket- / SSE-Nachricht verwenden `snake_case` — `event_id`, `market_type`, `profit_percent`, `detected_at`, `odds_american`, `stake_percent`.
+
+Die wenigen `camelCase`-Überreste, die Sie möglicherweise entdecken (z. B. `eventIds` in einem WebSocket `subscribe`-Payload-*Input*), sind Client-zu-Server-Anfragestrukturen. Alles vom Server zum Client ist snake_case.
+
+## Kanonische IDs
+
+Die meisten Bezeichner sind stabil, undurchsichtig und über Endpoints hinweg verknüpfbar.
+
+| Feld | Format | Beispiel |
+|---|---|---|
+| `event_id` | `{league}_{home}_{away}_{date}` | `mlb_guardians_orioles_2026-04-16` |
+| `game_id` | Identisch mit `event_id` in der Runner-Ausgabe | `nba_thunder_timberwolves_2026-03-15` |
+| `hash_id` (Middles) | 16-stellige Kleinbuchstaben-Hex | `cc229ed94a2ee679` |
+| `betting_tool_id` | Menschenlesbarer kanonischer Schlüssel | `middle:prematch:mlb_...:total_runs:...` |
+| API key | Token mit Präfix | `sk_live_...` |
+
+Verknüpfen Sie `/splits` und `/odds` über `event_id`. Verfolgen Sie eine Gelegenheit über mehrere Abfragen hinweg über `hash_id`.
+
+## Rate-Limit-Header
+
+Jede authentifizierte Antwort enthält:
+
+| Header | Bedeutung |
+|---|---|
+| `X-RateLimit-Limit` | Erlaubte Anfragen pro Minute für Ihr Tier. |
+| `X-RateLimit-Remaining` | Verbleibende Anfragen im aktuellen Zeitfenster. |
+| `X-RateLimit-Reset` | Unix-Zeitstempel, wann das Zeitfenster zurückgesetzt wird. |
+| `X-Data-Delay` | Quotenverzögerung in Sekunden für Ihr Tier (`0` = Echtzeit). |
+| `X-Request-Id` | Eindeutige Anfragekennung — fügen Sie diese in Support-Anfragen ein. |
+
+## Bedingte Anfragen und ETag
+
+Jede zwischenspeicherbare `200`-Antwort trägt einen starken `ETag`-Header — einen Inhaltshash des Antwort-Bodys. Senden Sie ihn bei Ihrer nächsten Anfrage über `If-None-Match` zurück, um eine `304 Not Modified` ohne Body zu erhalten, wenn sich der Inhalt nicht geändert hat. Spart Bandbreite bei großen Payloads (`/odds`-Antworten können mehrere MB groß sein) und lässt Sie aggressiver pollen, ohne unveränderte Daten erneut herunterzuladen.
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+
+HTTP/1.1 200 OK
+ETag: "9dc023776c4b382"
+Cache-Control: private, max-age=0, must-revalidate
+Content-Type: application/json
+
+{ "data": [...], "updated_at": "..." }
+```
+
+Bei der nächsten Abfrage geben Sie den `ETag` zurück.
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+If-None-Match: "9dc023776c4b382"
+
+HTTP/1.1 304 Not Modified
+ETag: "9dc023776c4b382"
+```
+
+**Unterstützt für** jedes zwischengespeicherte GET: `/odds`, `/odds/delta`, `/odds/best`, `/odds/comparison`, `/events`, `/events/:id`, `/sportsbooks`, `/sports`, `/leagues`, `/markets`, `/teams`, `/opportunities/*`.
+
+**Anmerkungen:**
+- ETag ist **stark** — eine byteweise Übereinstimmung des Antwort-Bodys. Zwei byteweise identische Antworten teilen sich immer einen ETag; jede Änderung erzeugt einen neuen.
+- `If-None-Match: *` stimmt immer überein, erzwingt also ein `304`, wann immer *irgendeine* zwischengespeicherte Antwort existiert (nützlich für „Gibt es etwas Neues?"-Sondierungen).
+- `Cache-Control: private, max-age=0, must-revalidate` signalisiert, dass Antworten pro Aufrufer sind — teilen Sie sie nicht über einen gemeinsamen Proxy zwischen Benutzern.
+- ETags sind **Tier-spezifisch**. Ein `free`-Tier-ETag wird nicht mit einer `pro`-Tier-Anfrage für dieselbe URL übereinstimmen, da die Antworten unterschiedlich gefiltert werden. Sie müssen dies nur behandeln, wenn Sie Tiers während einer Sitzung wechseln.
+- Die meisten HTTP-Clients behandeln `If-None-Match` automatisch, wenn Sie ihren Cache aktivieren (z. B. `requests-cache` in Python, `undici` + `CacheStore` in Node.js). Für selbst implementiertes Polling speichern Sie den letzten ETag pro URL im Speicher und senden ihn bei der nächsten Anfrage.
+
+## Was dies *nicht* ist
+
+- **Kein `success`-Feld** in Antworten. HTTP-Statuscodes erledigen diese Aufgabe.
+- **Kein Envelope-of-Envelopes.** Das Top-Level-Objekt ist das Envelope; `meta.updated_at`-Verschachtelung wird nicht verwendet.
+- **Keine gemischte Schreibweise.** Jedes Antwortfeld ist snake_case. Jedes WebSocket-*Input*-Feld kann camelCase sein — alles andere ist snake_case.
+
+## Maschinenlesbare Quelle der Wahrheit
+
+- REST-Oberfläche: [`openapi.json`](/openapi.json) (OpenAPI 3.1)
+- WebSocket-Oberfläche: [`asyncapi.yaml`](/asyncapi.yaml) (AsyncAPI 3.0)
+
+Beide Dateien werden als statische Assets veröffentlicht und können in CI verglichen werden. Wenn diese Seite von der Spezifikation abweicht, gewinnt die Spezifikation — die Spezifikation wird vom bereitgestellten Server generiert.

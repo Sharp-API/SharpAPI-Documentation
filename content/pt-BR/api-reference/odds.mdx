@@ -1,0 +1,464 @@
+---
+description: "GET /api/v1/odds — Obtenha um snapshot das odds atuais das casas de apostas com filtragem por esporte, liga, casa de apostas, tipo de mercado e status ao vivo. Resultados paginados em 32 casas."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Snapshot de Odds
+
+Obtenha um snapshot das odds atuais das casas de apostas.
+
+```
+GET /api/v1/odds
+```
+
+## Autenticação
+
+Requer API key. Disponível para **todos os tiers**.
+
+<Callout type="warning">
+As casas de apostas retornadas em seus resultados dependem do seu tier de assinatura. Usuários do tier Free recebem odds apenas da DraftKings e FanDuel. Veja [Acesso a Casas por Tier](#acesso-a-casas-por-tier) abaixo.
+</Callout>
+
+## Parâmetros de Query
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `sportsbook` | string | permitidas pelo tier | IDs de casas de apostas separados por vírgula (ex.: `draftkings,fanduel`). Limites de tier são aplicados. |
+| `sport` | string | todos | Filtrar por esporte(s), separados por vírgula (ex.: `basketball`, `football`). Suporta aliases de categoria. |
+| `league` | string | todas | Filtrar por liga(s), separadas por vírgula (ex.: `nba`, `nfl`, `nhl`) |
+| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por vírgula. Suporta [aliases de categoria](#aliases-de-categoria-de-mercado) (`main`, `spread`, `total`, `props`) ou tipos exatos (`point_spread`, `player_points`). |
+| `event` | string | — | Filtrar por ID(s) de evento, separados por vírgula |
+| `live` | boolean | — | `true` = apenas ao vivo, `false` = apenas pré-jogo, omitir = ambos |
+| `sort` | string | — | Campo de ordenação com prefixo opcional `-` para descendente (ex.: `-odds_american`, `odds_probability`) |
+| `fields` | string | todos | Nomes de campos separados por vírgula a incluir na resposta (ex.: `id,sportsbook,odds_american`) |
+| `min_odds` | number | — | Filtro de odds americanas mínimas (ex.: `-110`) |
+| `max_odds` | number | — | Filtro de odds americanas máximas (ex.: `+200`) |
+| `group_by` | string | — | Agrupar resultados por campo (ex.: `event`) |
+| `state` | string | — | Código do estado dos EUA para deep links de casas de apostas (ex.: `nj`, `ny`, `il`). Quando definido, URLs de `deep_link` incluem `?state=XX` para que o redirecionamento aponte para o domínio da casa de apostas específico do estado correto. Afeta apenas casas com URLs dependentes do estado (BetMGM, Caesars, BetRivers). |
+| `limit` | integer | 50 | Máximo de resultados por página (máx. 200) |
+| `offset` | integer | 0 | Offset de paginação. **Deve ser ≤ 500.** Valores acima de 500 retornam `400 offset_too_large` — use `cursor` para paginação mais profunda. Pode produzir linhas duplicadas quando dados ao vivo são atualizados entre requisições. |
+| `cursor` | string | — | Cursor opaco do `next_cursor` em uma resposta anterior. **Necessário para paginação profunda (além do offset 500)** e recomendado para qualquer varredura de múltiplas páginas — estável diante de mudanças de dados ao vivo. Tem precedência sobre `offset` quando ambos são fornecidos. |
+
+<Callout type="info">
+Use valores separados por vírgula para filtrar por múltiplas casas de apostas: `sportsbook=draftkings,fanduel,betmgm`
+</Callout>
+
+### Aliases de Categoria de Mercado
+
+Em vez de listar tipos de mercado individuais, você pode usar um alias de categoria para corresponder a um grupo de mercados relacionados. Aliases e tipos exatos podem ser misturados livremente em uma lista separada por vírgulas.
+
+| Alias | Expande para |
+|-------|------------|
+| `main` | `moneyline`, `point_spread`, `total_points` |
+| `spread` | `point_spread`, `puck_line`, `run_line`, `set_handicap` |
+| `total` | `total_points`, `total_goals`, `total_runs`, `total_games`, `total_rounds`, `team_total` |
+| `props` | Todos os tipos de mercado `player_*` (correspondência por prefixo) |
+
+```bash
+# Buscar todos os mercados "main" (moneyline + spreads + totals)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&market=main" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Misturar um alias com um tipo exato
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread,moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Todos os mercados de player props
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&market=props" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+<Callout type="info">
+O alias `props` usa correspondência por prefixo, portanto inclui automaticamente qualquer tipo de mercado começando com `player_` (ex.: `player_points`, `player_rebounds`, `player_assists`, `player_strikeouts`, etc.).
+</Callout>
+
+## Exemplos de Requisição
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings&market=moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+// Buscar todas as odds de moneyline da NBA usando paginação baseada em cursor (recomendado)
+async function fetchAllOdds() {
+  const results = [];
+  let cursor = null;
+
+  do {
+    const url = new URL('https://api.sharpapi.io/api/v1/odds');
+    url.searchParams.set('league', 'nba');
+    url.searchParams.set('sportsbook', 'draftkings');
+    url.searchParams.set('market', 'moneyline');
+    url.searchParams.set('limit', '200');
+    if (cursor) url.searchParams.set('cursor', cursor);
+
+    const { data, pagination } = await fetch(url, {
+      headers: { 'X-API-Key': 'YOUR_API_KEY' }
+    }).then(r => r.json());
+
+    results.push(...data);
+    cursor = pagination.has_more ? pagination.next_cursor : null;
+  } while (cursor);
+
+  return results;
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+# Buscar todas as odds de moneyline da NBA usando paginação baseada em cursor (recomendado)
+def fetch_all_odds():
+    results = []
+    params = {'league': 'nba', 'sportsbook': 'draftkings', 'market': 'moneyline', 'limit': 200}
+    cursor = None
+
+    while True:
+        if cursor:
+            params['cursor'] = cursor
+        resp = requests.get(
+            'https://api.sharpapi.io/api/v1/odds',
+            params=params,
+            headers={'X-API-Key': 'YOUR_API_KEY'}
+        ).json()
+
+        results.extend(resp['data'])
+        pagination = resp['pagination']
+        if not pagination['has_more']:
+            break
+        cursor = pagination['next_cursor']
+
+    return results
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Paginação
+
+<Callout type="warning">
+**Use paginação baseada em cursor para varreduras de múltiplas páginas.** O endpoint `/odds` serve dados ao vivo que são atualizados a cada ~15 segundos. Com paginação baseada em offset, linhas podem mudar de posição entre requisições, causando duplicatas nos limites de página. A paginação baseada em cursor ancora cada página ao último item visto — sem desvios.
+</Callout>
+
+Cada resposta inclui tanto `next_cursor` (estável) quanto `next_offset` (legado) no objeto `pagination`. Para varreduras sequenciais do conjunto completo de dados, sempre use `next_cursor`.
+
+```bash
+# Primeira página — sem necessidade de cursor
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&limit=200" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Páginas subsequentes — passe next_cursor da resposta anterior
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&limit=200&cursor=eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+Cursores são opacos — não os analise nem os construa. Eles codificam a posição de ordenação do último item na página atual e só são válidos para os mesmos parâmetros de filtro.
+
+`?offset=N` continua funcionando para paginação rasa (até offset 500) e é apropriado para requisições de página única ou acesso direto por posição. Além de 500, a API retorna `400 offset_too_large` — caso contrário, o servidor teria que ordenar todo o conjunto filtrado de resultados a cada página, o que é muito mais barato evitar do que otimizar por requisição. Use `cursor` para qualquer coisa mais profunda.
+
+```json
+{
+  "error": {
+    "code": "offset_too_large",
+    "message": "offset must be <= 500; use `cursor=` from the previous response for deeper pagination",
+    "max_offset": 500
+  }
+}
+```
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "event_id": "33483153",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "selection_type": "away",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "odds_probability": 0.60,
+      "line": null,
+      "event_start_time": "2026-01-26T19:00:00Z",
+      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "is_live": false
+    },
+    {
+      "id": "draftkings_33483153_moneyline_PHI",
+      "sportsbook": "draftkings",
+      "event_id": "33483153",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHI 76ers",
+      "selection_type": "home",
+      "odds_american": 130,
+      "odds_decimal": 2.30,
+      "odds_probability": 0.4348,
+      "line": null,
+      "event_start_time": "2026-01-26T19:00:00Z",
+      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "is_live": false
+    }
+  ],
+  "meta": {
+    "count": 2,
+    "total": 3095,
+    "books_available": ["draftkings", "fanduel", "betmgm", "caesars", "pinnacle"],
+    "books_returned": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50,
+      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {
+      "league": "nba",
+      "sportsbook": "draftkings",
+      "market": "moneyline"
+    }
+  }
+}
+```
+
+### Cabeçalhos de Resposta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_abc123def456
+```
+
+| Cabeçalho | Descrição |
+|--------|-------------|
+| `X-RateLimit-Limit` | Máximo de requisições por minuto para o seu tier |
+| `X-RateLimit-Remaining` | Requisições restantes na janela atual |
+| `X-RateLimit-Reset` | Timestamp Unix de quando o rate limit é redefinido |
+| `X-Data-Delay` | Atraso dos dados em segundos (0 para tempo real, 60 para o tier Free) |
+| `X-Request-Id` | Identificador único da requisição para depuração |
+
+### Respostas de Erro
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***403 Tier Restricted***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Sportsbook 'pinnacle' requires Sharp tier or higher",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 45 seconds.",
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
+  }
+}
+```
+
+## Schema do Objeto Odds
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | string | Identificador único de odds |
+| `sportsbook` | string | ID da casa de apostas (ex.: `draftkings`) |
+| `event_id` | string | Identificador do evento |
+| `sport` | string | Slug do esporte (ex.: `basketball`, `football`) |
+| `league` | string | Slug da liga (ex.: `nba`, `nfl`) |
+| `home_team` | string | Nome do time mandante |
+| `away_team` | string | Nome do time visitante |
+| `market_type` | string | `moneyline`, `spread`, `total`, `player_prop`, etc. |
+| `selection` | string | A seleção (nome do time, Over/Under, nome do jogador) |
+| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `odds_american` | number | Odds americanas (ex.: -110, +150) |
+| `odds_decimal` | number | Odds decimais (ex.: 1.909) |
+| `odds_probability` | number | Probabilidade implícita (ex.: 0.5238) |
+| `line` | number \| null | Valor da linha de spread ou total (`null` para moneyline) |
+| `event_start_time` | string | Hora de início do evento em ISO 8601 |
+| `last_seen_at` | string | Timestamp ISO 8601 da última observação desta linha pelo nosso adaptador. Atualiza a cada ciclo de ingestão — este é o sinal de frescor do pipeline. |
+| `odds_changed_at` | string | Timestamp ISO 8601 da atualização da própria fonte da casa de apostas para esta linha, quando disponível. Na Pinnacle, é mantido enquanto o preço/linha/flag `is_live` permanecerem inalterados (veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at)). Use `last_seen_at` para frescor do pipeline. |
+| `is_live` | boolean | Se o evento está atualmente ao vivo |
+| `player_name` | string\|undefined | Nome do jogador (apenas mercados de player prop) |
+| `stat_category` | string\|undefined | Categoria estatística, ex.: `points`, `rebounds` (apenas mercados de player prop) |
+| `public_bet_pct` | number\|undefined | Porcentagem de tickets de apostas públicos (0.0-1.0). Atualmente apenas BetMGM. |
+| `max_bet` | number\|undefined | Valor máximo de aposta (USD) para este tipo de mercado. Atualmente apenas Pinnacle. |
+
+## Ordenação
+
+Use o parâmetro `sort` para ordenar resultados por qualquer campo. Adicione o prefixo `-` para ordem descendente.
+
+```bash
+# Ordenar por melhores odds americanas (descendente)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&sort=-odds_american" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Ordenar por odds_probability (ascendente)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&sort=odds_probability" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Ordenar por hora de início do evento
+curl "https://api.sharpapi.io/api/v1/odds?sort=event_start_time" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+Campos de ordenação válidos: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `last_seen_at`, `sportsbook`, `league`, `sport`.
+
+## Seleção de Campos
+
+Use o parâmetro `fields` para retornar apenas campos específicos, reduzindo o tamanho do payload.
+
+```bash
+# Retornar apenas id, sportsbook e odds americanas
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&fields=id,sportsbook,odds_american" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+A resposta incluirá apenas os campos solicitados para cada objeto de odds:
+
+```json
+{
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "odds_american": -150
+    }
+  ]
+}
+```
+
+## Filtragem por Faixa de Odds
+
+Use `min_odds` e `max_odds` para filtrar pelo valor das odds americanas.
+
+```bash
+# Retornar apenas odds positivas (+100 e acima)
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&min_odds=100" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Retornar apenas odds entre -200 e +200
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&min_odds=-200&max_odds=200" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Resposta Agrupada por Evento
+
+Use `group_by=event` para agrupar odds por evento em vez de uma lista plana. Isso é útil para construir UIs centradas em eventos.
+
+```bash
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "event_id": "33483153",
+      "event_name": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "start_time": "2026-01-26T19:00:00Z",
+      "is_live": false,
+      "odds": [
+        {
+          "id": "draftkings_33483153_moneyline_PHO",
+          "sportsbook": "draftkings",
+          "market_type": "moneyline",
+          "selection": "PHO Suns",
+          "selection_type": "away",
+          "odds_american": -150,
+          "odds_decimal": 1.667,
+          "odds_probability": 0.60,
+          "line": null,
+          "last_seen_at": "2026-01-26T02:10:24.125Z"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "group_by": "event",
+    "books_available": 5,
+    "filters": { "league": "nba" },
+    "updated_at": "2026-01-26T02:10:37.846Z"
+  }
+}
+```
+
+## Acesso a Casas por Tier
+
+As casas de apostas incluídas em seus resultados de odds dependem do seu tier de assinatura:
+
+| Tier | Casas Disponíveis | Casas de Apostas Incluídas |
+|------|-----------------|----------------------|
+| **Free** | 2 | DraftKings, FanDuel |
+| **Hobby** | 5 | + BetMGM, Caesars, theScore Bet |
+| **Pro** | 15 | + Bet365, BetRivers, e mais |
+| **Sharp** | Todas as 32 | Todas as casas de apostas disponíveis |
+| **Enterprise** | Todas as 32 | Todas as casas de apostas disponíveis |
+
+<Callout type="warning">
+**Pinnacle** (sharp book) requer **tier Sharp ou superior**. Solicitar `sportsbook=pinnacle` em um tier Free, Hobby ou Pro retornará um erro `403 tier_restricted`.
+</Callout>
+
+## Exemplos de Filtragem
+
+```bash
+# Obter odds ao vivo da NBA de todas as casas disponíveis
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&live=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Obter odds de moneyline e spread para um evento específico
+curl "https://api.sharpapi.io/api/v1/odds?event=33483153&market=moneyline,spread" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Paginar por todas as odds de spread da NFL (use next_cursor de cada resposta)
+curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread&limit=200" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Endpoints Relacionados
+
+- [Odds Delta](/pt-BR/api-reference/odds-delta) - Obtenha apenas odds que mudaram desde um determinado timestamp
+- [Best Odds](/pt-BR/api-reference/odds-best) - Obtenha as melhores odds em todas as casas para cada seleção
+- [Odds Comparison](/pt-BR/api-reference/odds-comparison) - Compare odds entre casas lado a lado
+- [Batch Odds](/pt-BR/api-reference/odds-batch) - Busque odds para múltiplos eventos em uma única requisição
+- [Markets](/pt-BR/api-reference/markets) - Liste tipos de mercado disponíveis
+- [Sportsbooks](/pt-BR/api-reference/sportsbooks) - Liste casas de apostas disponíveis e seus status

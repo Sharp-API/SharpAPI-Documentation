@@ -1,0 +1,196 @@
+---
+description: "Como cobrir muitos esportes, ligas, casas, eventos e tipos de oportunidade em uma única conexão SSE ou WebSocket. Filtros separados por vírgula e multiplexação de canais eliminam a necessidade de múltiplos streams paralelos."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Uma Conexão, Muitos Tópicos
+
+Um único stream do SharpAPI pode cobrir tudo o que você precisa — múltiplos esportes, múltiplas ligas, múltiplas casas, múltiplos eventos e odds + todos os tipos de oportunidade — em um único socket. Você quase nunca precisa abrir um stream por filtro.
+
+<Callout type="info">
+O limite de streams concorrentes por chave é **1 por padrão para todos os tiers pagos**, com deslocamento newer-wins (o mais novo vence): uma segunda conexão da mesma chave derruba a anterior. Esta página mostra os padrões que tornam uma única conexão suficiente. Se você realmente precisa de sockets paralelos (múltiplos processos / máquinas), veja [Frota & Multi-Processo](#fleet--multi-process) abaixo.
+</Callout>
+
+## Por que uma conexão é suficiente
+
+Cada filtro de identidade no endpoint de stream aceita uma **lista separada por vírgulas**, e o parâmetro `channel` (`all`) mescla eventos de odds e oportunidades no mesmo stream de eventos. O servidor pré-serializa cada ciclo uma vez e aplica seus filtros por conexão, então filtros amplos são baratos — não há penalidade de eficiência por assinar "tudo o que importa para você" em um socket vs. dividir em vários.
+
+| Filtro | Valor único | Múltiplos valores |
+|--------|--------------|-----------------|
+| `sport` | `sport=basketball` | `sport=basketball,football,ice_hockey` |
+| `league` | `league=nba` | `league=nba,nfl,mlb,nhl` |
+| `sportsbook` | `sportsbook=draftkings` | `sportsbook=draftkings,fanduel,pinnacle` |
+| `market` | `market=moneyline` | `market=moneyline,point_spread,total_points` |
+| `event` | `event=evt_abc` | `event=evt_abc,evt_def,evt_ghi` |
+| `channel` (SSE) | `channel=odds` | `channel=all` (odds + oportunidades) |
+| `channels` (WS) | `channels=ev` | `channels=ev,odds,arbitrage,middles,low_hold` |
+
+## Padrões
+
+### Multi-esporte: NBA + NFL + MLB em um único socket
+
+Em vez de abrir três streams, passe as três ligas para um só:
+
+<Tabs items={['JavaScript', 'Python']}>
+  <Tabs.Tab>
+```javascript
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream' +
+  '?channel=all' +
+  '&league=nba,nfl,mlb' +
+  '&api_key=YOUR_KEY'
+);
+
+es.addEventListener('odds:update', (e) => {
+  const { odds, book } = JSON.parse(e.data);
+  // odds[].league tells you which league this update is for
+  for (const o of odds) routeByLeague(o);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import sseclient, requests, json
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/stream',
+    params={'channel': 'all', 'league': 'nba,nfl,mlb'},
+    headers={'X-API-Key': 'YOUR_KEY'},
+    stream=True,
+)
+for event in sseclient.SSEClient(response).events():
+    if event.event == 'odds:update':
+        data = json.loads(event.data)
+        for o in data['odds']:
+            route_by_league(o)
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Odds + todos os tipos de oportunidade em um único socket
+
+Defina `channel=all` (SSE) ou inclua todos os tipos de oportunidade em `channels=` (WS):
+
+<Tabs items={['SSE', 'WebSocket']}>
+  <Tabs.Tab>
+```javascript
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&api_key=YOUR_KEY'
+);
+
+es.addEventListener('odds:update',     handleOddsDelta);
+es.addEventListener('ev:detected',     handleEV);
+es.addEventListener('arb:detected',    handleArb);
+es.addEventListener('middles:detected', handleMiddle);
+es.addEventListener('low_hold:detected', handleLowHold);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io' +
+  '?api_key=YOUR_KEY' +
+  '&channels=odds,ev,arbitrage,middles,low_hold'
+);
+```
+  </Tabs.Tab>
+</Tabs>
+
+O servidor marca cada mensagem com seu tipo de evento — seu handler despacha por nome do evento, exatamente como se você tivesse aberto cinco streams separados.
+
+### Rastreando N eventos específicos
+
+Se você quer atualizações precisas em uma lista fixa de eventos (por exemplo, dez jogos hoje à noite), passe todos eles para `event=`:
+
+```javascript
+const eventIds = [
+  'nba_lal_bos_2026-04-30', 'nba_phx_dal_2026-04-30',
+  'nfl_kc_buf_2026-05-01', /* ... */
+].join(',');
+
+const es = new EventSource(
+  `https://api.sharpapi.io/api/v1/stream?channel=all&event=${eventIds}&api_key=YOUR_KEY`
+);
+```
+
+Isso substitui o padrão de abrir um socket `/stream/events/{eventId}` por evento.
+
+### Divisões por casa ou por mercado
+
+Mesma ideia para casas e mercados:
+
+```javascript
+// Track Pinnacle sharp moves + DK/FD live prices, moneyline + spreads only:
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream' +
+  '?channel=odds' +
+  '&sportsbook=pinnacle,draftkings,fanduel' +
+  '&market=moneyline,point_spread' +
+  '&api_key=YOUR_KEY'
+);
+```
+
+### Re-assinatura dinâmica (WebSocket)
+
+O controle bidirecional do WebSocket permite alterar filtros no meio da conexão sem derrubar o socket. Use isso quando o seu conjunto de tópicos "interessantes" mudar ao longo do dia (por exemplo, o usuário abre / fecha visualizações em um dashboard):
+
+```javascript
+const ws = new WebSocket('wss://ws.sharpapi.io?api_key=YOUR_KEY');
+
+// Initial subscription
+ws.onopen = () => ws.send(JSON.stringify({
+  type: 'subscribe',
+  channels: ['odds', 'ev'],
+  filters: { sport: ['basketball'], league: ['nba'] },
+}));
+
+// Later — user adds NFL to their dashboard
+function addNFL() {
+  ws.send(JSON.stringify({
+    type: 'subscribe',
+    filters: { sport: ['basketball', 'football'], league: ['nba', 'nfl'] },
+  }));
+}
+```
+
+Veja a [Referência da API WebSocket](/pt-BR/api-reference/websocket) para o schema completo da mensagem de subscribe.
+
+## Frota & multi-processo
+
+O único caso em que uma única conexão realmente não funciona: **processos ou máquinas separados que não conseguem compartilhar um socket.** Exemplos:
+
+- Dez bots de trading rodando em dez máquinas, cada um precisando do seu próprio feed em tempo real.
+- Pool de workers onde N workers consomem um stream independentemente.
+- Serviço de backend + dashboard de browser, ambos autenticados como o mesmo usuário.
+
+O limite padrão de 1 stream significa que uma segunda conexão na mesma chave irá deslocar a primeira (código de fechamento `4001 displaced by newer session` no WS, encerramento do writer no SSE). A escapatória prevista é um **override de `maxStreams` por chave** nos metadados do Unkey, dimensionado para a frota. Isso é configurado em planos Enterprise — entre em contato com [hello@sharpapi.io](mailto:hello@sharpapi.io) para provisionar um limite mais alto para uma chave específica.
+
+Para todo o resto — mesmo assinaturas muito amplas — os padrões acima permitem que um socket cubra o que parece serem dez preocupações separadas.
+
+## Custo do lado do servidor
+
+Não há razão de eficiência para dividir. O caminho quente do servidor:
+
+1. Calcula o diff por ciclo da casa **uma vez**.
+2. Pré-serializa os payloads não filtrados de alterados/removidos **uma vez**.
+3. Para cada cliente conectado, aplica o filtro dele e serializa o subconjunto correspondente (ou envia os bytes pré-serializados diretamente quando o cliente não tem filtros de conteúdo).
+
+Um cliente com `league=nba,nfl,mlb,nhl` custa quase o mesmo que quatro clientes com uma liga cada — menos quatro sockets, quatro handshakes TLS, quatro conjuntos de cabeçalhos HTTP e quatro ciclos de `connected`/`snapshot`. O padrão de conexão única também é melhor para **consistência de delta**: você vê todas as atualizações na ordem em que o servidor as produziu, em vez de intercalá-las entre sockets com backpressure independente.
+
+## Checklist de migração
+
+Se você está migrando de uma arquitetura multi-stream:
+
+1. **Combine os filtros de identidade** — colete cada valor de `sport`, `league`, `sportsbook`, `market` e `event` dos seus streams antigos e una-os com vírgulas em uma única URL.
+2. **Use `channel=all`** (SSE) ou cada valor necessário de `channels=` (WS) em vez de um stream por tipo de evento.
+3. **Despache no seu handler** — leia `odds[].league` / `odds[].sportsbook` / `event.event` para rotear mensagens internamente, exatamente como antes.
+4. **Descarte sua lógica de reconexão N-vezes** — um socket significa um único caminho de reconexão. SSE reconecta automaticamente; para WS, veja o [padrão de reconexão](/pt-BR/streaming/websocket#reconnection).
+5. **Mantenha os thresholds `min_ev` / `min_profit`** — eles ainda restringem o stream de oportunidades no servidor e reduzem a largura de banda.
+
+## Veja também
+
+- [Visão Geral de Streaming](/pt-BR/streaming/overview) — comparação de protocolos e início rápido
+- [Guia de Streaming WebSocket](/pt-BR/streaming/websocket) — mensagens de subscribe, reconexão
+- [Referência da API SSE](/pt-BR/api-reference/stream) — lista completa de parâmetros de filtro
+- [Referência da API WebSocket](/pt-BR/api-reference/websocket) — schema de subscribe, códigos de fechamento

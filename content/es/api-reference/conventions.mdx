@@ -1,0 +1,197 @@
+---
+description: "Convenciones de respuesta de SharpAPI: estructuras del envoltorio, marcas de tiempo, formato de errores, uso de mayúsculas en los campos y las reglas que sigue cada endpoint REST."
+---
+
+import { Callout } from 'nextra/components'
+
+# Convenciones de respuesta
+
+SharpAPI devuelve estructuras de respuesta predecibles en todos los endpoints REST. Esta página recoge dichas convenciones para que puedas crear analizadores genéricos en lugar de casos especiales por endpoint.
+
+<Callout type="info">
+  Esta página describe las convenciones REST. Los flujos SSE se tratan en [Flujo SSE](/es/api-reference/stream), y el protocolo WebSocket bidireccional dispone de su propia [especificación AsyncAPI 3.0](/asyncapi.yaml).
+</Callout>
+
+## Códigos de estado HTTP, no envoltorios
+
+El código de estado HTTP es la fuente de verdad para indicar éxito o fallo. Los cuerpos de respuesta **no** incluyen un indicador `success`, ya que duplicaría información que ya está en `response.status` y empuja a los clientes a comprobarlo en el sitio equivocado.
+
+| Estado | Significado |
+|---|---|
+| `200` | Éxito con cuerpo |
+| `201` | Creado (creación de API key) |
+| `204` | Éxito, sin cuerpo (eliminación de key) |
+| `302` | Redirección (deeplinks) |
+| `400` | Error de validación: fallo en el cliente |
+| `401` | API key ausente o inválida |
+| `403` | El nivel de suscripción no incluye la función solicitada |
+| `404` | El recurso no existe (o el ID opaco no coincide) |
+| `429` | Límite de tasa superado |
+| `5xx` | Error de servidor interno o upstream |
+
+## Estructuras del envoltorio de éxito
+
+Hay dos estructuras de nivel superior. Ambas colocan `data` al principio y `updated_at` al final, con un bloque opcional de paginación entre ambos.
+
+### Respuesta sin paginación
+
+Se utiliza para singletons, datos de referencia y endpoints de resumen. `data` es lo que devuelva el endpoint: un único recurso, un array o un mapa.
+
+```json
+{
+  "data": { ... },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+### Respuesta de listado paginada
+
+Se utiliza para endpoints que admiten `limit` / `offset` / `cursor`.
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 50,
+    "total": 1247,
+    "has_more": true,
+    "next_offset": 50
+  },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+`count` es la longitud de la página `data` actual y `total` es el conjunto completo de coincidencias. `next_offset` solo aparece cuando `has_more` es `true`.
+
+### Extensiones específicas de cada endpoint
+
+Algunos endpoints añaden claves adicionales de nivel superior junto a `data`. Son aditivas: los analizadores genéricos que leen `data` + `pagination` + `updated_at` siguen funcionando.
+
+| Campo | Emitido por | Significado |
+|---|---|---|
+| `overflow: true` | `/odds`, `/odds/delta` | `total > 10_000`: el consumidor debería obtener una snapshot nueva mediante `/odds` en lugar de paginar a través del delta. |
+| `removed: [...]` | `/odds/delta` | IDs de las cuotas eliminadas desde `?since=`. |
+| `missing: [...]` | `POST /odds/batch` | IDs de eventos que se solicitaron pero no se encontraron. |
+
+## Envoltorio de error
+
+Cada respuesta no 2xx devuelve un único objeto `error`.
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 3 seconds.",
+    "docs": "https://sharpapi.io/docs/rate-limits",
+    "retryAfter": 3
+  }
+}
+```
+
+| Campo | ¿Siempre presente? | Notas |
+|---|---|---|
+| `code` | Sí | Cadena estable. Comprueba este valor, no el mensaje en prosa. |
+| `message` | Sí | Texto en inglés legible para humanos. Es seguro mostrarlo a los usuarios finales. |
+| `docs` | A veces | Enlace a la página de documentación correspondiente. |
+| `retryAfter` | En 429 / 5xx | Segundos hasta que el cliente debería reintentar. |
+| `tier` | En 403 | El nivel de suscripción que *desbloquearía* el endpoint. |
+
+### Códigos de error habituales
+
+`missing_api_key`, `invalid_api_key`, `validation_error`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
+
+Consulta la lista completa (21 códigos HTTP + 6 códigos de frame WebSocket, con sus estados HTTP) en [Visión general de la API → Códigos de error](/es/api-reference/overview#error-codes). `bad_request` e `invalid_request` están obsoletos: ambos se han fusionado en `validation_error`.
+
+## Marcas de tiempo
+
+Cada marca de tiempo en una respuesta de SharpAPI sigue **RFC 3339 / ISO 8601 en UTC**, en formato cadena del tipo `2026-04-16T19:29:38.920698424Z`. El servidor proporciona precisión de nanosegundos; los clientes pueden analizarla con seguridad usando precisión de segundos o milisegundos.
+
+Dos campos que verás con frecuencia:
+
+- **`updated_at`**: cuándo emitió el servidor la respuesta. Aparece en el nivel superior de cada respuesta correcta.
+- **`fetched_at`**: cuándo se consultó por última vez la casa de apuestas upstream (presente en las cargas útiles de cuotas).
+
+Las marcas de tiempo más antiguas a nivel de stream aparecen como números decimales en segundos Unix (`timestamp`) junto a su equivalente RFC 3339 (`ts`) en los mensajes WebSocket.
+
+## Uso de mayúsculas en los campos
+
+**Snake case en todos los sitios.** Los campos dentro de `data`, `pagination`, `meta`, `error` y cualquier mensaje WebSocket / SSE utilizan `snake_case`: `event_id`, `market_type`, `profit_percent`, `detected_at`, `odds_american`, `stake_percent`.
+
+Los pocos restos de `camelCase` que puedas encontrar (por ejemplo, `eventIds` en una *entrada* de carga útil de `subscribe` por WebSocket) corresponden a estructuras de petición del cliente al servidor. Todo lo que va del servidor al cliente es snake_case.
+
+## IDs canónicos
+
+La mayoría de los identificadores son estables, opacos y se pueden combinar entre endpoints.
+
+| Campo | Formato | Ejemplo |
+|---|---|---|
+| `event_id` | `{league}_{home}_{away}_{date}` | `mlb_guardians_orioles_2026-04-16` |
+| `game_id` | Igual que `event_id` en la salida del runner | `nba_thunder_timberwolves_2026-03-15` |
+| `hash_id` (middles) | Hexadecimal en minúsculas de 16 caracteres | `cc229ed94a2ee679` |
+| `betting_tool_id` | Clave canónica legible para humanos | `middle:prematch:mlb_...:total_runs:...` |
+| API key | Token con prefijo | `sk_live_...` |
+
+Combina `/splits` y `/odds` mediante `event_id`. Sigue una oportunidad a lo largo de varias consultas mediante `hash_id`.
+
+## Cabeceras de límite de tasa
+
+Cada respuesta autenticada incluye:
+
+| Cabecera | Significado |
+|---|---|
+| `X-RateLimit-Limit` | Peticiones permitidas por minuto para tu nivel de suscripción. |
+| `X-RateLimit-Remaining` | Peticiones restantes en la ventana actual. |
+| `X-RateLimit-Reset` | Marca de tiempo Unix del momento en que se reinicia la ventana. |
+| `X-Data-Delay` | Retardo de las cuotas en segundos para tu nivel (`0` = tiempo real). |
+| `X-Request-Id` | Identificador único de la petición: inclúyelo en tus solicitudes de soporte. |
+
+## Peticiones condicionales y ETag
+
+Cada respuesta `200` cacheable incluye una cabecera `ETag` fuerte: un hash del contenido del cuerpo de la respuesta. Envíala de vuelta en tu próxima petición mediante `If-None-Match` para obtener un `304 Not Modified` sin cuerpo cuando el contenido no haya cambiado. Ahorra ancho de banda en cargas útiles grandes (las respuestas de `/odds` pueden ocupar varios MB) y te permite hacer polling de forma más agresiva sin volver a descargar datos que no han cambiado.
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+
+HTTP/1.1 200 OK
+ETag: "9dc023776c4b382"
+Cache-Control: private, max-age=0, must-revalidate
+Content-Type: application/json
+
+{ "data": [...], "updated_at": "..." }
+```
+
+En la siguiente consulta, devuelve el `ETag`:
+
+```http
+GET /api/v1/odds?sport=basketball HTTP/1.1
+Authorization: Bearer sk_...
+If-None-Match: "9dc023776c4b382"
+
+HTTP/1.1 304 Not Modified
+ETag: "9dc023776c4b382"
+```
+
+**Compatible con** todos los GET cacheados: `/odds`, `/odds/delta`, `/odds/best`, `/odds/comparison`, `/events`, `/events/:id`, `/sportsbooks`, `/sports`, `/leagues`, `/markets`, `/teams`, `/opportunities/*`.
+
+**Notas:**
+- El ETag es **fuerte**: una coincidencia byte a byte del cuerpo de la respuesta. Dos respuestas idénticas a nivel de bytes siempre comparten el ETag; cualquier cambio genera uno nuevo.
+- `If-None-Match: *` siempre coincide, por lo que fuerza un `304` siempre que exista *cualquier* respuesta cacheada (útil para sondas del tipo "¿hay algo nuevo?").
+- `Cache-Control: private, max-age=0, must-revalidate` indica que las respuestas son específicas de cada solicitante: no las compartas entre usuarios mediante un proxy compartido.
+- Los ETags están **acotados al nivel de suscripción**. Un ETag de nivel `free` no coincidirá con una petición de nivel `pro` para la misma URL, porque las respuestas se filtran de forma distinta. Solo necesitas tenerlo en cuenta si cambias de nivel a mitad de sesión.
+- La mayoría de los clientes HTTP gestionan `If-None-Match` automáticamente cuando habilitas su caché (por ejemplo, `requests-cache` en Python o `undici` + `CacheStore` en Node.js). Para polling implementado a mano, almacena en memoria el último ETag por URL y envíalo en la siguiente petición.
+
+## Lo que esto *no* es
+
+- **Sin campo `success`** en las respuestas. Los códigos de estado HTTP cumplen esa función.
+- **Sin envoltorios anidados.** El objeto de nivel superior es el envoltorio; no se utiliza el anidamiento `meta.updated_at`.
+- **Sin mezcla de mayúsculas y minúsculas.** Cualquier campo de respuesta es snake_case. Cualquier campo de *entrada* WebSocket puede ser camelCase; todo lo demás es snake_case.
+
+## Fuente de verdad legible por máquina
+
+- Superficie REST: [`openapi.json`](/openapi.json) (OpenAPI 3.1)
+- Superficie WebSocket: [`asyncapi.yaml`](/asyncapi.yaml) (AsyncAPI 3.0)
+
+Ambos archivos se publican como recursos estáticos y se pueden comparar en CI. Si esta página se desvía de la especificación, la especificación gana: la especificación se genera a partir del servidor desplegado.

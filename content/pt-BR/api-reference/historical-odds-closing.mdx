@@ -1,0 +1,314 @@
+---
+description: "GET /api/v1/historical/odds/closing — Recupere odds de fechamento por evento com probabilidades sem vig (devigged) para todas as casas de apostas em uma data específica. Tier Sharp obrigatório."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Odds de Fechamento Históricas
+
+Recupere as odds de fechamento capturadas para todos os eventos em uma data específica — o último preço pré-jogo de cada casa de apostas antes de o jogo ficar ao vivo, com probabilidades justas sem vig calculadas pelo método Power.
+
+```
+GET /api/v1/historical/odds/closing
+```
+
+<Callout type="warning">
+**Tier Sharp ou superior obrigatório.** Os tiers Pro e inferiores recebem um erro `403 tier_restricted`. Este endpoint é controlado pelo recurso `closing_lines`.
+</Callout>
+
+<Callout type="info">
+**Janela de dados Fase 1:** As linhas de fechamento são capturadas em tempo real nas transições `isLive` false→true. O Valkey retém 30 dias de dados. Solicitar uma data anterior a 30 dias retornará um resultado vazio.
+</Callout>
+
+## Autenticação
+
+Requer API key. **Tier Sharp ou superior obrigatório** (recurso `closing_lines`).
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `date` | string | Sim | Data no formato `YYYY-MM-DD` (UTC). |
+| `sport` | string | Sim | Identificador do esporte, por exemplo, `basketball`, `football`, `ice_hockey`. |
+| `league` | string | Sim | Identificador da liga, por exemplo, `nba`, `nfl`, `nhl`. |
+
+Todos os três parâmetros são obrigatórios. A resposta é filtrada para eventos que correspondam exatamente ao esporte e liga na data UTC informada.
+
+### Janela de Datas
+
+O tier Sharp permite até **30 dias** de retrospectiva. Solicitar uma data além da janela do seu tier retorna um erro `403 tier_restricted` com o tamanho da janela permitida.
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Linhas de fechamento da NBA para 10 de abril
+curl -X GET "https://api.sharpapi.io/api/v1/historical/odds/closing?date=2026-04-10&sport=basketball&league=nba" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Linhas de fechamento da NFL
+curl -X GET "https://api.sharpapi.io/api/v1/historical/odds/closing?date=2026-04-06&sport=football&league=nfl" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const params = new URLSearchParams({
+  date: '2026-04-10',
+  sport: 'basketball',
+  league: 'nba',
+});
+const response = await fetch(
+  `https://api.sharpapi.io/api/v1/historical/odds/closing?${params}`,
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+console.log(`Found ${data.total_events} events, ${data.total_lines} closing lines`);
+for (const event of data.events) {
+  for (const book of event.books) {
+    const ml = book.lines.find(l => l.market_type === 'moneyline');
+    if (ml) {
+      console.log(`${event.away_team} @ ${event.home_team} — ${book.book}: ${ml.odds_american}`);
+    }
+  }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/historical/odds/closing',
+    params={
+        'date': '2026-04-10',
+        'sport': 'basketball',
+        'league': 'nba',
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()['data']
+print(f"{data['total_events']} events, {data['total_lines']} lines")
+for event in data['events']:
+    print(f"\n{event['away_team']} @ {event['home_team']}")
+    for book in event['books']:
+        for line in book['lines']:
+            if line['market_type'] == 'moneyline':
+                nv = line.get('no_vig_probability')
+                print(f"  {book['book']}: {line['odds_american']} (no-vig: {nv:.3f})" if nv else f"  {book['book']}: {line['odds_american']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "date": "2026-04-10",
+    "sport": "basketball",
+    "league": "nba",
+    "events": [
+      {
+        "event_id": "evt_nba_bos_mia_20260410",
+        "sport": "basketball",
+        "league": "nba",
+        "home_team": "Boston Celtics",
+        "away_team": "Miami Heat",
+        "event_start_time": "2026-04-10T18:00:00Z",
+        "first_captured_at": "2026-04-10T17:58:12.000000000Z",
+        "books": [
+          {
+            "book": "pinnacle",
+            "captured_at": "2026-04-10T17:58:12.000000000Z",
+            "lines": [
+              {
+                "market_type": "moneyline",
+                "selection": "Boston Celtics",
+                "selection_type": "home",
+                "line": null,
+                "odds_american": -145,
+                "odds_decimal": 1.690,
+                "implied_probability": 0.5920,
+                "no_vig_probability": 0.5813
+              },
+              {
+                "market_type": "moneyline",
+                "selection": "Miami Heat",
+                "selection_type": "away",
+                "line": null,
+                "odds_american": 125,
+                "odds_decimal": 2.250,
+                "implied_probability": 0.4444,
+                "no_vig_probability": 0.4187
+              },
+              {
+                "market_type": "point_spread",
+                "selection": "Boston Celtics",
+                "selection_type": "home",
+                "line": -3.5,
+                "odds_american": -110,
+                "odds_decimal": 1.909,
+                "implied_probability": 0.5238,
+                "no_vig_probability": 0.5000
+              }
+            ]
+          },
+          {
+            "book": "draftkings",
+            "captured_at": "2026-04-10T17:57:44.000000000Z",
+            "lines": [
+              {
+                "market_type": "moneyline",
+                "selection": "Boston Celtics",
+                "selection_type": "home",
+                "line": null,
+                "odds_american": -140,
+                "odds_decimal": 1.714,
+                "implied_probability": 0.5833,
+                "no_vig_probability": 0.5730
+              },
+              {
+                "market_type": "moneyline",
+                "selection": "Miami Heat",
+                "selection_type": "away",
+                "line": null,
+                "odds_american": 118,
+                "odds_decimal": 2.180,
+                "implied_probability": 0.4587,
+                "no_vig_probability": 0.4270
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "total_events": 5,
+    "total_lines": 48
+  },
+  "meta": {
+    "source": "valkey:closing_line",
+    "tier_window_days": 30,
+    "filters": {
+      "sport": "basketball",
+      "league": "nba",
+      "date": "2026-04-10"
+    },
+    "updated_at": "2026-04-17T20:00:00.000000000Z"
+  }
+}
+```
+
+### Respostas de Erro
+
+***400 Erro de Validação***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "date parameter is required in YYYY-MM-DD format"
+  }
+}
+```
+
+***403 Tier Restrito (tier incorreto)***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "The 'closing_lines' feature requires Sharp or higher.",
+    "required_tier": "sharp",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+***403 Tier Restrito (data muito antiga)***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Your sharp plan allows historical data up to 30 days back",
+    "tier": "sharp",
+    "docs": "https://sharpapi.io/pricing"
+  }
+}
+```
+
+## Campos da Resposta
+
+### Objeto `data`
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `date` | string | A data solicitada (`YYYY-MM-DD`) |
+| `sport` | string | Filtro de esporte aplicado |
+| `league` | string | Filtro de liga aplicado |
+| `events` | array | Eventos com linhas de fechamento que correspondem à data, esporte e liga |
+| `total_events` | integer | Número de eventos na resposta |
+| `total_lines` | integer | Número total de linhas de fechamento individuais em todos os eventos e casas |
+
+### Objeto Event
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `event_id` | string | Identificador único do evento |
+| `sport` | string | Esporte |
+| `league` | string | Liga |
+| `home_team` | string | Nome do time da casa |
+| `away_team` | string | Nome do time visitante |
+| `event_start_time` | string | Horário de início agendado em ISO 8601 |
+| `first_captured_at` | string | Timestamp ISO 8601 da primeira captura de linha de fechamento para este evento |
+| `books` | array | Payloads de linhas de fechamento por casa |
+
+### Objeto Book
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `book` | string | Identificador da casa de apostas |
+| `captured_at` | string | Timestamp ISO 8601 de quando a linha de fechamento desta casa foi capturada |
+| `lines` | array | Array de entradas de linha de fechamento para esta casa |
+
+### Entrada de linha de fechamento
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `market_type` | string | Tipo de mercado: `moneyline`, `point_spread`, `total_points`, etc. |
+| `selection` | string | Rótulo da seleção (nome do time, Over/Under, jogador) |
+| `selection_type` | string | `home`, `away`, `over`, `under`, etc. |
+| `line` | number\|null | Valor de spread ou total (`-3.5`, `220.5`). `null` para moneylines. |
+| `player_name` | string | Nome do jogador para player props (omitido caso contrário) |
+| `stat_category` | string | Tipo de estatística para player props (omitido caso contrário) |
+| `odds_american` | integer | Odds americanas no fechamento |
+| `odds_decimal` | number | Odds decimais no fechamento |
+| `implied_probability` | number | Probabilidade implícita bruta (com vig) |
+| `no_vig_probability` | number\|null | Probabilidade justa sem vig pelo método Power (0.0–1.0). Presente para mercados de 2 e 3 vias; `null` para mercados de seleção única. |
+| `timestamp` | string | Timestamp ISO 8601 do registro de odds usado para captura |
+
+### Objeto `meta`
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `source` | string | Sempre `"valkey:closing_line"` (backend Fase 1) |
+| `tier_window_days` | integer | Máximo de dias de retrospectiva para seu tier (Sharp = 30) |
+| `updated_at` | string | Timestamp ISO 8601 da resposta |
+
+---
+
+## Casos de Uso
+
+**Análise de CLV:** Compare valores de `no_vig_probability` entre as casas em relação à Pinnacle. Uma casa soft com `no_vig_probability` maior no favorito fechou mais frouxa — CLV positivo para apostadores que pegaram aquele lado.
+
+**Auditoria de line shopping:** Recupere linhas de fechamento em todas as casas para entender onde havia valor disponível no fechamento.
+
+**Calibração de modelo:** Use `implied_probability` e `no_vig_probability` como verdade histórica para calibrar seus próprios modelos de probabilidade.
+
+## Endpoints Relacionados
+
+- [Closing Line Value (CLV)](/pt-BR/api-reference/historical-clv) — Agregações de CLV% agrupadas por casa de apostas, esporte, liga ou dia
+- [Snapshot de Odds](/pt-BR/api-reference/odds) — Odds atuais em tempo real
+- [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev) — Apostas com valor esperado positivo em tempo real

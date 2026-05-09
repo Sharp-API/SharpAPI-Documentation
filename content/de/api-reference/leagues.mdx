@@ -1,0 +1,297 @@
+---
+description: "GET /api/v1/leagues — Verfügbare Ligen mit Sportfilter abrufen. Gibt Liga-Bezeichner, Anzeigenamen und aktive Event-Anzahl zurück. Verwenden Sie Liga-IDs zum Filtern von Quoten und Events."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Ligen
+
+Eine Liste verfügbarer Ligen mit optionalem Sportfilter abrufen.
+
+```
+GET /api/v1/leagues
+```
+
+<Callout type="info">
+Erfordert einen API-Key. Verfügbar in allen Tarifen (Free inklusive). Nicht authentifizierte Anfragen geben `401` zurück.
+</Callout>
+
+## Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filter nach Sportart (z. B. `basketball`, `football`) |
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Alle Ligen auflisten
+curl -X GET "https://api.sharpapi.io/api/v1/leagues" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Nach Sportart filtern
+curl -X GET "https://api.sharpapi.io/api/v1/leagues?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/leagues?sport=basketball',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } },
+);
+const { data, meta } = await response.json();
+
+data.forEach(league => {
+  console.log(`${league.name} (${league.sport}): ${league.event_count} events`);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/leagues',
+    params={'sport': 'basketball'},
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
+result = response.json()
+
+for league in result['data']:
+    print(f"{league['name']} ({league['sport']}): {league['event_count']} events")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "nba",
+      "name": "NBA",
+      "sport": "basketball",
+      "event_count": 15,
+      "live_count": 2
+    },
+    {
+      "id": "ncaab",
+      "name": "NCAAB",
+      "sport": "basketball",
+      "event_count": 27,
+      "live_count": 1
+    },
+    {
+      "id": "wnba",
+      "name": "WNBA",
+      "sport": "basketball",
+      "event_count": 0,
+      "live_count": 0
+    }
+  ],
+  "meta": {
+    "count": 3,
+    "total": 3,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T12:00:00Z",
+    "filters": {
+      "sport": "basketball"
+    }
+  }
+}
+```
+
+### Alle Ligen (ohne Filter)
+
+```json
+{
+  "data": [
+    {
+      "id": "nba",
+      "name": "NBA",
+      "sport": "basketball",
+      "event_count": 15,
+      "live_count": 2
+    },
+    {
+      "id": "ncaab",
+      "name": "NCAAB",
+      "sport": "basketball",
+      "event_count": 27,
+      "live_count": 1
+    },
+    {
+      "id": "wnba",
+      "name": "WNBA",
+      "sport": "basketball",
+      "event_count": 0,
+      "live_count": 0
+    },
+    {
+      "id": "nfl",
+      "name": "NFL",
+      "sport": "football",
+      "event_count": 16,
+      "live_count": 1
+    },
+    {
+      "id": "ncaaf",
+      "name": "NCAAF",
+      "sport": "football",
+      "event_count": 12,
+      "live_count": 0
+    },
+    {
+      "id": "nhl",
+      "name": "NHL",
+      "sport": "hockey",
+      "event_count": 15,
+      "live_count": 2
+    },
+    {
+      "id": "mlb",
+      "name": "MLB",
+      "sport": "baseball",
+      "event_count": 0,
+      "live_count": 0
+    },
+    {
+      "id": "epl",
+      "name": "English Premier League",
+      "sport": "soccer",
+      "event_count": 10,
+      "live_count": 2
+    },
+    {
+      "id": "la_liga",
+      "name": "La Liga",
+      "sport": "soccer",
+      "event_count": 10,
+      "live_count": 1
+    },
+    {
+      "id": "serie_a",
+      "name": "Serie A",
+      "sport": "soccer",
+      "event_count": 10,
+      "live_count": 1
+    },
+    {
+      "id": "bundesliga",
+      "name": "Bundesliga",
+      "sport": "soccer",
+      "event_count": 5,
+      "live_count": 0
+    },
+    {
+      "id": "mls",
+      "name": "MLS",
+      "sport": "soccer",
+      "event_count": 0,
+      "live_count": 0
+    },
+    {
+      "id": "atp",
+      "name": "ATP",
+      "sport": "tennis",
+      "event_count": 12,
+      "live_count": 4
+    },
+    {
+      "id": "wta",
+      "name": "WTA",
+      "sport": "tennis",
+      "event_count": 6,
+      "live_count": 2
+    },
+    {
+      "id": "ufc",
+      "name": "UFC",
+      "sport": "mma",
+      "event_count": 12,
+      "live_count": 0
+    },
+    {
+      "id": "pga",
+      "name": "PGA Tour",
+      "sport": "golf",
+      "event_count": 4,
+      "live_count": 1
+    }
+  ],
+  "meta": {
+    "count": 16,
+    "total": 16,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T12:00:00Z",
+    "filters": {}
+  }
+}
+```
+
+## Schema des Liga-Objekts
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `id` | string | Liga-Bezeichner (Kleinbuchstaben, in API-Filtern verwenden) |
+| `name` | string | Menschenlesbarer Liga-Name |
+| `sport` | string | ID der übergeordneten Sportart |
+| `event_count` | integer | Gesamtzahl der Events, die derzeit mit Quoten verfügbar sind |
+| `live_count` | integer | Events, die derzeit live/im Spiel sind |
+
+## Häufige Ligen
+
+Der Endpoint ist die maßgebliche Quelle der Wahrheit — rufen Sie `GET /api/v1/leagues` für die vollständige, aktuelle Liste auf. Die Atlas-Registry katalogisiert **über 600 Ligen in mehr als 30 Sportarten**, darunter UEFA-Kontinentalwettbewerbe, mehrere Basketball-Ligen pro Land sowie umfassende Abdeckung von Tennis/Golf/MMA/eSports/Cricket. Die unten dargestellte beispielhafte Auswahl zeigt die Einträge mit dem höchsten Volumen, nach denen Sie typischerweise filtern werden:
+
+| Sportart | Häufige Liga-IDs |
+|-------|-------------------|
+| Basketball | `nba`, `ncaab`, `wnba` |
+| Football | `nfl`, `ncaaf` |
+| Hockey | `nhl` |
+| Baseball | `mlb` |
+| Soccer | `england_-_premier_league`, `spain_-_la_liga`, `italy_-_serie_a`, `germany_-_bundesliga`, `france_-_ligue_1`, `uefa_-_champions_league`, `usa_-_major_league_soccer` |
+| Tennis | `atp`, `wta`, `atp_challenger`, `itf_men`, `itf_women` |
+| MMA | `ufc`, `pfl` |
+| Golf | `pga`, `liv`, `dp_world_tour`, `lpga` |
+
+<Callout type="info">
+- Liga-IDs verwenden die kanonische Slug-Form (`england_-_premier_league`, nicht `epl`). Einige Kurzformen werden zur Wahrung der Abwärtskompatibilität als Filtereingabe akzeptiert, aber der kanonische Slug ist das, was `/leagues` zurückgibt und was andere Endpoints in Antwort-Payloads ausgeben.
+- Die Werte `event_count` und `live_count` sind dynamisch. Ligen außerhalb der Saison (z. B. MLB im Winter, WNBA im Herbst) zeigen 0 Events, bleiben aber im Katalog.
+- Für den programmatischen Zugriff (z. B. zum Erstellen von Dropdown-Filtern) rufen Sie `/api/v1/leagues` auf und verwenden Sie die Antwort — niemals eine Liste hartcodieren.
+</Callout>
+
+## Verwendung von Ligen in Filtern
+
+Verwenden Sie die `id` der Liga als Filterparameter auf anderen Endpoints:
+
+```bash
+# NBA-Quoten abrufen
+curl "https://api.sharpapi.io/api/v1/odds?league=nba" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Beste Quoten für NFL und NBA abrufen
+curl "https://api.sharpapi.io/api/v1/odds/best?league=nfl,nba" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Verwandte Endpoints
+
+- [Sportarten](/de/api-reference/sports) - Verfügbare Sportarten auflisten
+- [Quoten-Snapshot](/de/api-reference/odds) - Quoten nach Liga filtern
+- [Events](/de/api-reference/events) - Events nach Liga filtern

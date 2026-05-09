@@ -1,0 +1,141 @@
+---
+description: "Como a SharpAPI faz a correspondência de eventos idênticos em 32 sportsbooks usando IDs canônicos de eventos. Resolve o problema de nomenclatura e identificadores específicos de cada sportsbook."
+---
+
+# Correspondência de Eventos
+
+## O Problema
+
+Cada sportsbook utiliza seus próprios IDs internos de eventos. O mesmo jogo Lakers vs Celtics pode ser o evento `33483200` na DraftKings, `nba-bos-lal-20260208` na FanDuel e `556677889` na Pinnacle. Sem um identificador unificado, construir ferramentas de comparação entre sportsbooks exige implementar sua própria lógica de correspondência de eventos.
+
+## Como a SharpAPI Resolve Isso
+
+A SharpAPI gera um **ID canônico de evento** para cada evento. Esse ID é determinístico — o mesmo evento do mundo real sempre recebe o mesmo `id`, independentemente de qual sportsbook ele venha.
+
+```
+Formato: {league}_{teamA}_{teamB}_{YYYY-MM-DD}
+```
+
+**Exemplo:** Um jogo Celtics vs Lakers em 8 de fevereiro de 2026 produz o mesmo ID em todos os sportsbooks:
+
+| Sportsbook | ID Nativo do Evento | `id` da SharpAPI |
+|------------|---------------------|------------------|
+| DraftKings | `33483200` | `nba_celtics_lakers_20260208` |
+| FanDuel | `nba-bos-lal-20260208` | `nba_celtics_lakers_20260208` |
+| Pinnacle | `556677889` | `nba_celtics_lakers_20260208` |
+| BetMGM | `ms_44556` | `nba_celtics_lakers_20260208` |
+
+## Dois Tipos de IDs de Eventos
+
+Todo evento na API possui dois campos de ID:
+
+| Campo | Escopo | Finalidade |
+|-------|--------|------------|
+| `id` | Entre sportsbooks (canônico) | Use como chave primária para corresponder eventos entre sportsbooks |
+| `external_ids` | Por sportsbook | Mapa do ID nativo de cada sportsbook, útil para deep links |
+
+```json
+{
+  "id": "nba_celtics_lakers_20260208",
+  "external_ids": {
+    "draftkings": "33483200",
+    "fanduel": "nba-bos-lal-20260208",
+    "pinnacle": "556677889",
+    "betmgm": "ms_44556"
+  }
+}
+```
+
+## Como os IDs Canônicos São Gerados
+
+O ID canônico é construído a partir de quatro componentes:
+
+1. **Código da liga** — esporte mapeado para liga (ex.: `basketball` → `nba`)
+2. **Nomes dos times** — normalizados e ordenados alfabeticamente
+3. **Data** — data de início do evento no formato `YYYY-MM-DD`
+
+### Normalização de Nomes de Times
+
+Os nomes dos times são normalizados para lidar com variações entre sportsbooks:
+
+- `"Los Angeles Lakers"` → `lakers`
+- `"LA Lakers"` → `lakers`
+- `"LAL"` → `lakers`
+
+A normalização remove prefixos ("The", "Los", "Las"), sufixos ("FC", "United", "City"), pontuação e acentos. Os times são então ordenados alfabeticamente para que o ID seja idêntico, independentemente da ordem casa/visitante.
+
+## Usando IDs Canônicos em Sua Aplicação
+
+### Como Chave Primária
+
+Use o campo `id` como chave primária do seu banco de dados ao armazenar eventos:
+
+```javascript
+// Fetch events from the API
+const { data: events } = await fetch(
+  'https://api.sharpapi.io/api/v1/events?league=nba',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// Store using canonical ID as primary key
+for (const event of events) {
+  await db.events.upsert({
+    id: event.id,  // "nba_celtics_lakers_20260208"
+    home_team: event.home_team,
+    away_team: event.away_team,
+    start_time: event.start_time,
+    external_ids: event.external_ids
+  });
+}
+```
+
+### Comparação de Odds Entre Sportsbooks
+
+O ID canônico permite comparar odds para o mesmo evento em todos os sportsbooks:
+
+```javascript
+// Get odds filtered to a specific event
+const { data } = await fetch(
+  'https://api.sharpapi.io/api/v1/events/nba_celtics_lakers_20260208/odds',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// All odds in the response are for the same canonical event
+// Group by sportsbook to compare
+const byBook = {};
+for (const odds of data.odds) {
+  byBook[odds.sportsbook] = byBook[odds.sportsbook] || [];
+  byBook[odds.sportsbook].push(odds);
+}
+```
+
+### Deep Linking para Sportsbooks
+
+Use `external_ids` para direcionar usuários de volta para a página do evento de um sportsbook específico:
+
+```javascript
+const event = await getEvent('nba_celtics_lakers_20260208');
+
+// Build a sportsbook-specific link
+const dkEventId = event.external_ids['draftkings'];
+// → "33483200"
+```
+
+## Como Isso Alimenta a Detecção de EV e Arbitragem
+
+Os mecanismos de detecção de oportunidades da SharpAPI dependem internamente dos IDs canônicos de eventos:
+
+- **Cálculo de EV** encontra as odds de referência sharp (Pinnacle) para o mesmo `eventId` e as compara com as odds dos soft books
+- **Detecção de arbitragem** agrupa todas as odds por `eventId` + tipo de mercado para encontrar discrepâncias de preços entre sportsbooks
+- **Detecção de middles** encontra linhas sobrepostas entre sportsbooks para o mesmo `eventId`
+
+Esse é o mesmo sistema de correspondência exposto a você através da API — quando você vê uma oportunidade de arbitragem com pernas de diferentes sportsbooks, é o ID canônico do evento que ligou essas odds.
+
+## Propriedades Principais
+
+| Propriedade | Detalhe |
+|-------------|---------|
+| **Determinístico** | As mesmas entradas sempre produzem o mesmo ID — sem UUIDs aleatórios |
+| **Estável** | O ID não muda depois de gerado |
+| **Legível por humanos** | `nba_celtics_lakers_20260208` é significativo à primeira vista |
+| **Ordenável** | Os IDs são ordenados naturalmente por liga, time e data |

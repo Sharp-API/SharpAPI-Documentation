@@ -1,0 +1,276 @@
+---
+description: "GET /api/v1/gamestate — Estado agregado de jogos ao vivo (placares, períodos, cronômetros, dados situacionais) mesclados entre sportsbooks em uma única visão autoritativa por evento. Disponível no add-on Game State (US$ 79/mês) ou no tier Enterprise."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Estado de Jogo ao Vivo
+
+Estado agregado de jogos ao vivo — placares, períodos, cronômetros, posse de bola e
+dados situacionais específicos do esporte — mesclados entre sportsbooks em uma
+única visão autoritativa por evento. Uma linha por partida ao vivo,
+selecionada por consenso entre os books que a cobrem.
+
+```
+GET /api/v1/gamestate
+GET /api/v1/gamestate/{sport}
+```
+
+## Autenticação
+
+Requer API key. Disponível no **add-on Game State (US$ 79/mês)** ou no
+tier **Enterprise**. Keys sem nenhum dos dois recebem `403 tier_restricted`
+com `addon: "game_state"` no corpo do erro. Adicione o add-on pela
+[página de billing](https://sharpapi.io/dashboard/billing) em qualquer plano pago
+(Hobby / Pro / Sharp); keys Enterprise já o incluem.
+
+O estado de jogo ao vivo também é transmitido pelo canal `gamestate` via
+[SSE](/api-reference/stream) e [WebSocket](/api-reference/websocket)
+— veja [Streaming](#streaming) abaixo. (O acesso ao streaming requer o
+add-on WebSocket ou Enterprise, além do requisito de Game State
+acima.)
+
+## Parâmetros de Path
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-------------|
+| `sport` | string | (opcional) Esporte único a ser retornado. Corresponde a um esporte conhecido do Atlas (`baseball`, `basketball`, `football`, `hockey`, `soccer`, `tennis`, `table_tennis`, `cricket`, `esports`, `snooker`, `other`). Não diferencia maiúsculas/minúsculas. Esportes desconhecidos retornam um objeto `data` vazio. |
+
+Sem o parâmetro de path, retorna todos os esportes com eventos ao vivo.
+
+## Envelope da Resposta
+
+```json
+{
+  "data": {
+    "<sport>": {
+      "<event_id>": { ...event state... }
+    }
+  },
+  "updated_at": "2026-04-23T23:55:01.234Z"
+}
+```
+
+Cada estado de evento é indexado pelo seu `event_id` canônico dentro do
+bucket do esporte. `updated_at` é o horário do servidor quando esta resposta foi construída
+— use-o para avaliar a atualidade se estiver fazendo polling.
+
+## Campos do Estado do Evento
+
+Todos os campos são opcionais, exceto onde indicado. A presença varia por esporte —
+eventos de tênis carregam `sets_home` / `server`; eventos de hóquei carregam
+`power_play`; eventos de futebol carregam `corners_*` / `yellow_cards_*`; etc.
+
+### Sempre presentes
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `home_team` | string | Nome normalizado do time da casa |
+| `away_team` | string | Nome normalizado do time visitante |
+| `sport` | string | Bucket de esporte (`baseball`, `soccer`, …) |
+| `league` | string | ID da liga no Atlas (ex. `mlb`, `england_-_premier_league`) |
+| `home_score` | integer | Placar atual da casa na unidade natural do esporte (corridas, pontos, gols, sets — tênis usa pontos somados de sets) |
+| `away_score` | integer | Placar atual do visitante |
+| `is_live` | boolean | Sempre `true` neste endpoint (eventos não ao vivo não são incluídos) |
+| `primary_book` | string | O book de onde os placares mesclados foram selecionados. Respeita o consenso — books de maior qualidade vencem empates |
+| `book_count` | integer | Número de sportsbooks que contribuíram com estado ao vivo para este evento no momento da mesclagem |
+
+### Temporais (maioria dos esportes em equipe)
+
+| Campo | Tipo | Exemplo |
+|---|---|---|
+| `game_period` | string | `"T5"` (MLB topo do 5º), `"Q3"` (NBA Q3), `"2H"` (futebol 2º tempo), `"P2"` (NHL), `"S2"` (tênis 2º set), `"FT"` (tempo final) |
+| `game_clock` | string | `"49:06"` para esportes com contagem progressiva (futebol), `"5:42"` para esportes com contagem regressiva (basquete, hóquei) |
+
+### Situacionais
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `possession` | `"home" \| "away"` | Qual time tem a posse (esportes em equipe) ou está sacando (tênis) |
+| `server` | `"home" \| "away"` | Apenas tênis — sacador atual |
+| `last_play` | string | Descrição da última jogada específica do esporte, quando disponível |
+| `is_timeout` | boolean | `true` durante um timeout |
+
+### Específicos do esporte
+
+| Campo | Esporte | Tipo |
+|---|---|---|
+| `fouls_home`, `fouls_away` | basketball, soccer | integer |
+| `corners_home`, `corners_away` | soccer | integer |
+| `yellow_cards_home`, `yellow_cards_away` | soccer | integer |
+| `red_cards_home`, `red_cards_away` | soccer | integer |
+| `power_play` | hockey | `"home" \| "away"` |
+| `sets_home`, `sets_away` | tennis | integer (sets vencidos) |
+| `hits_home`, `hits_away` | baseball | integer |
+| `home_pitcher`, `away_pitcher` | baseball | string — nome de exibição do arremessador titular |
+| `wickets_home`, `wickets_away` | cricket | integer |
+| `overs` | cricket | float |
+| `batting_team` | cricket | `"home" \| "away"` |
+
+### Atualidade
+
+| Campo | Tipo | Significado |
+|---|---|---|
+| `stale` | `true` (omitido caso contrário) | O TTL da chave de livestate do `primary_book` caiu abaixo do limite de atualidade do agregador (~10s) no momento da mesclagem. Os placares são os últimos valores conhecidos; o book ficou em silêncio. Trate os placares e o período do evento como potencialmente atrasados em relação ao estado real do jogo. |
+| `aggregator_stale` | `true` (omitido caso contrário) | O próprio agregador SharpAPI não escreveu um novo shard `gamestate:{sport}` para este esporte em mais de ~30s. Sinal mais amplo do que `stale` — indica um soluço no pipeline, não um problema isolado de um book. Se você ver isso de forma persistente, entre em contato com o suporte. |
+
+<Callout type="info">
+**Ausência = atualizado.** Tanto `stale` quanto `aggregator_stale` só são
+escritos quando verdadeiros, mantendo o payload compacto. Se você não os
+vê em um evento, os dados são considerados atualizados.
+</Callout>
+
+## Exemplos de Requisição
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Todos os eventos ao vivo de todos os esportes
+curl "https://api.sharpapi.io/api/v1/gamestate" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Um esporte
+curl "https://api.sharpapi.io/api/v1/gamestate/soccer" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const res = await fetch('https://api.sharpapi.io/api/v1/gamestate/soccer', {
+  headers: { 'X-API-Key': process.env.SHARPAPI_KEY }
+});
+const { data, updated_at } = await res.json();
+for (const [eventId, state] of Object.entries(data.soccer ?? {})) {
+  if (state.stale || state.aggregator_stale) continue;  // skip lagging rows
+  console.log(
+    `${state.home_team} ${state.home_score}-${state.away_score} ${state.away_team}`,
+    `(${state.game_period ?? '?'} ${state.game_clock ?? ''}, ${state.primary_book})`
+  );
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import httpx, os
+r = httpx.get(
+    "https://api.sharpapi.io/api/v1/gamestate/soccer",
+    headers={"X-API-Key": os.environ["SHARPAPI_KEY"]},
+)
+body = r.json()
+for event_id, state in body["data"].get("soccer", {}).items():
+    if state.get("stale") or state.get("aggregator_stale"):
+        continue  # skip lagging rows
+    print(
+        f"{state['home_team']} {state['home_score']}-{state['away_score']} "
+        f"{state['away_team']} ({state.get('game_period')} "
+        f"{state.get('game_clock','')}, {state['primary_book']})"
+    )
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Exemplo de Resposta
+
+```json
+{
+  "data": {
+    "soccer": {
+      "argentina_-_primera_division_bocajuniors_defensayjusticia_2026-04-23": {
+        "home_team": "Defensa y Justicia",
+        "away_team": "Boca Juniors",
+        "sport": "soccer",
+        "league": "argentina_-_primera_division",
+        "home_score": 0,
+        "away_score": 1,
+        "game_period": "2H",
+        "game_clock": "49:06",
+        "is_live": true,
+        "possession": "away",
+        "corners_home": 1,
+        "corners_away": 0,
+        "fouls_home": 0,
+        "fouls_away": 0,
+        "yellow_cards_home": 0,
+        "yellow_cards_away": 0,
+        "red_cards_home": 0,
+        "red_cards_away": 0,
+        "primary_book": "draftkings",
+        "book_count": 6
+      },
+      "chile_-_primera_division_concepcion_palestino_2026-04-24": {
+        "home_team": "Palestino",
+        "away_team": "Concepción",
+        "sport": "soccer",
+        "league": "chile_-_primera_division",
+        "home_score": 0,
+        "away_score": 0,
+        "is_live": true,
+        "primary_book": "unibet",
+        "book_count": 1,
+        "stale": true
+      }
+    }
+  },
+  "updated_at": "2026-04-23T23:55:01.234Z"
+}
+```
+
+## Modelo de Mesclagem Cross-Book
+
+Os campos de cada evento são mesclados a partir do snapshot de livestate de
+cada sportsbook por meio de um algoritmo de três classes:
+
+- **Classe A — Placares** são escolhidos por consenso: entre os books no rank
+  de período mais avançado, vence o placar de maior total com ≥2 apoiadores. Um
+  único book relatando um placar discrepante (comum nos primeiros segundos
+  de uma mudança de placar, ou de um adapter com mau funcionamento) é rejeitado.
+- **Classe B — Campos temporais** (`game_period`, `game_clock`) são
+  selecionados pela direção do cronômetro de acordo com o esporte — regressivo vs progressivo — e
+  rank de período.
+- **Classe C — Campos situacionais** (`possession`, `corners_*`, etc.)
+  são preenchidos por prioridade a partir de um ranking fixo de books.
+
+`primary_book` informa de qual book vieram os placares vencedores.
+`book_count` é o número total de books que contribuíram com qualquer estado
+para o evento no momento da mesclagem.
+
+## Streaming
+
+Toda atualização que o endpoint REST exibiria no próximo poll
+também dispara um evento `gamestate:update` nos canais de streaming:
+
+- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream#gamestate)
+- **WebSocket**: assine `{channels: ["gamestate"]}` em
+  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket)
+
+Clientes de streaming recebem um `gamestate:snapshot` inicial com o
+estado atual completo (uma lista plana de linhas de eventos), depois eventos `gamestate:update`
+carregando linhas alteradas conforme são mescladas, e eventos `gamestate:removed`
+quando eventos saem do conjunto ao vivo.
+
+## Rate Limits e Quotas
+
+Os rate limits seguem o seu **tier base**, não o add-on — keys Hobby mantêm
+seus 120 req/min, Pro mantêm 300, Sharp mantêm 1.000, Enterprise customizado.
+Veja [Pricing](https://sharpapi.io/pricing). `/gamestate` conta
+da mesma forma que outras chamadas REST para a quota por minuto.
+
+## Solução de Problemas
+
+- **403 `tier_restricted`** com `addon: "game_state"` — sua key
+  não tem o add-on Game State. Adicione-o pela
+  [Billing](https://sharpapi.io/dashboard/billing) por US$ 79/mês, ou
+  faça upgrade para Enterprise.
+- **Objeto `data` vazio** — não há eventos ao vivo no escopo. Isso é comum
+  entre eventos em calendários de esportes menores. Faça polling novamente.
+- **Eventos com `stale: true`** — o book primário ficou em silêncio.
+  Os placares podem estar atrasados; considere filtrá-los ou exibir um
+  indicador de UI.
+- **Eventos com `aggregator_stale: true`** — o agregador SharpAPI
+  não atualizou esse esporte em >30s. Se persistente, entre em contato com o
+  suporte; um pico breve pode acontecer durante redeploys.
+- **Mesma partida aparece duas vezes sob diferentes `event_id`s** — limitação
+  conhecida para algumas ligas regionais onde os sportsbooks usam
+  nomenclatura de liga inconsistente. Use `(home_team, away_team)` como uma
+  chave secundária de deduplicação no cliente até que as lacunas restantes
+  de aliases sejam fechadas.

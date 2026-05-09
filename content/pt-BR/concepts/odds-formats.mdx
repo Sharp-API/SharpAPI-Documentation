@@ -1,0 +1,103 @@
+---
+description: "Entenda os formatos de odds americano, decimal e probabilidade implícita usados em apostas esportivas. A SharpAPI retorna os três formatos simultaneamente para cada entrada de odds."
+---
+
+# Formatos de Odds
+
+## Três Formatos, Um Conceito
+
+A SharpAPI retorna odds em três formatos simultaneamente:
+
+```json
+{
+  "odds": {
+    "american": -110,
+    "decimal": 1.909,
+    "odds_probability": 0.5238
+  }
+}
+```
+
+## Odds Americanas
+
+O padrão nos EUA. Mostra quanto você ganha ou precisa arriscar.
+
+| Odds | Significado | Lucro em Aposta de $100 |
+|------|-------------|-------------------------|
+| **-110** | Arrisque $110 para ganhar $100 | $90,91 |
+| **+150** | Arrisque $100 para ganhar $150 | $150 |
+| **-200** | Arrisque $200 para ganhar $100 | $50 |
+| **+200** | Arrisque $100 para ganhar $200 | $200 |
+
+**Fórmulas de conversão:**
+
+```
+Se negativo: Decimal = 1 + (100 / |Americano|)
+Se positivo: Decimal = 1 + (Americano / 100)
+```
+
+## Odds Decimais
+
+Padrão na Europa/Austrália. Mostra o retorno total por unidade apostada.
+
+| Decimal | Retorno em Aposta de $100 | Lucro |
+|---------|---------------------------|-------|
+| **1.909** | $190,90 | $90,90 |
+| **2.50** | $250,00 | $150,00 |
+| **1.50** | $150,00 | $50,00 |
+
+> **Dica:**
+  As odds decimais incluem o valor apostado. Uma aposta de $100 a 2.50 retorna $250 no total ($150 de lucro + $100 do valor apostado).
+
+
+## Probabilidade Implícita
+
+A estimativa do mercado sobre a probabilidade do resultado.
+
+```
+Probabilidade Implícita = 1 / Odds Decimais
+```
+
+| Decimal | Probabilidade | Interpretação |
+|---------|---------------|---------------|
+| 2.00 | 50% | Cara ou coroa |
+| 1.50 | 66,7% | 2/3 de chance |
+| 3.00 | 33,3% | 1/3 de chance |
+
+> **Atenção:**
+  A probabilidade implícita inclui a margem do bookmaker (vig). A probabilidade real é tipicamente 2-5% menor.
+
+
+## O Vig (Juice)
+
+Os bookmakers embutem uma margem de lucro:
+
+```
+Cara ou coroa justo: Ambos os lados em 2.00 (50% + 50% = 100%)
+Com vig:             Ambos os lados em 1.91 (52,4% + 52,4% = 104,8%)
+```
+
+Os 4,8% extras representam a vantagem do bookmaker.
+
+## Convertendo Entre Formatos
+
+```javascript
+// American to Decimal
+function americanToDecimal(american) {
+  return american > 0
+    ? 1 + (american / 100)
+    : 1 + (100 / Math.abs(american));
+}
+
+// Decimal to American
+function decimalToAmerican(decimal) {
+  return decimal >= 2.0
+    ? (decimal - 1) * 100
+    : -100 / (decimal - 1);
+}
+
+// Decimal to Probability
+function decimalToProb(decimal) {
+  return 1 / decimal;
+}
+```

@@ -1,0 +1,52 @@
+---
+description: "Endpoints exclusivos para Enterprise de SharpAPI — accede a mercados de futuros en todas las casas de apuestas compatibles."
+---
+
+import { Callout } from 'nextra/components'
+
+# Endpoints Enterprise
+
+Endpoints avanzados disponibles exclusivamente para suscriptores del nivel Enterprise.
+
+<Callout type="warning">
+Todos los endpoints de esta página requieren una suscripción **Enterprise**. Los niveles inferiores recibirán un error `403 tier_restricted`.
+</Callout>
+
+## Futuros
+
+### GET /api/v1/futures
+
+Obtén el catálogo de futuros — mercados de futuros disponibles en las casas de apuestas.
+
+```
+GET /api/v1/futures
+```
+
+#### Parámetros de consulta
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|-----------|------|-------------|-------------|
+| `sport` | string | all | Filtrar por deporte(s), separados por comas |
+| `league` | string | all | Filtrar por liga(s), separadas por comas |
+| `sportsbook` | string | all | Filtrar por casa(s) de apuestas, separadas por comas |
+| `limit` | integer | 50 | Resultados por página (máximo 200) |
+| `offset` | integer | 0 | Desplazamiento de paginación |
+
+### GET /api/v1/futures/odds
+
+Obtén las cuotas de los mercados de futuros.
+
+```
+GET /api/v1/futures/odds
+```
+
+#### Parámetros de consulta
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|-----------|------|-------------|-------------|
+| `sport` | string | all | Filtrar por deporte(s), separados por comas |
+| `league` | string | all | Filtrar por liga(s), separadas por comas |
+| `sportsbook` | string | all | Filtrar por casa(s) de apuestas, separadas por comas |
+| `market` | string | all | Filtrar por tipo de mercado |
+| `limit` | integer | 50 | Resultados por página (máximo 200) |
+| `offset` | integer | 0 | Desplazamiento de paginación |

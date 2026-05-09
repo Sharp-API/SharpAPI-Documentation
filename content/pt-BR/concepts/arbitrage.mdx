@@ -1,0 +1,111 @@
+---
+description: "Entenda como funciona a arbitragem em apostas esportivas — a matemática por trás das arbs com lucro garantido, como a SharpAPI as detecta entre sportsbooks e estratégias práticas de aposta."
+---
+
+# O que é Arbitragem?
+
+A arbitragem ("arb") explora diferenças de preço entre sportsbooks para garantir lucro independentemente do resultado.
+
+```
+Book A: Team X +150 (implied 40%)
+Book B: Team Y -130 (implied 56.5%)
+Total implied: 96.5% < 100% = ARBITRAGE
+```
+
+## Como Funciona
+
+### Exemplo: Mercado de Duas Vias
+
+**Jogo: Lakers vs Warriors**
+
+| Sportsbook | Seleção | Odds | Probabilidade Implícita |
+|------------|---------|------|-------------------------|
+| DraftKings | Lakers | +145 | 40,8% |
+| Pinnacle | Warriors | -135 | 57,4% |
+| **Total** | | | **98,2%** |
+
+Como 98,2% < 100%, existe arbitragem!
+
+**Cálculo do lucro:**
+```
+Profit % = (100 / 98.2) - 100 = 1.83%
+```
+
+### Calculando os Valores Apostados
+
+Para garantir retorno igual independentemente do resultado:
+
+```javascript
+const total = 1/2.45 + 1/1.74;  // Sum of implied probs
+const stake1 = (1/2.45) / total;  // 41.5%
+const stake2 = (1/1.74) / total;  // 58.5%
+```
+
+**Com US$ 1.000 no total:**
+
+| Aposta | Valor | Odds | Se Vencer |
+|--------|-------|------|-----------|
+| Lakers @ DK | US$ 415 | +145 | US$ 1.017 |
+| Warriors @ Pinnacle | US$ 585 | -135 | US$ 1.018 |
+
+**Lucro garantido: ~US$ 18 (1,8%)**
+
+## Mercados de Três Vias
+
+Futebol e hóquei têm empates, criando arbs de 3 vias:
+
+```
+Team A: +200 (33.3%)
+Draw:   +250 (28.6%)
+Team B: +180 (35.7%)
+Total: 97.6% → 2.4% arb
+```
+
+## Por que as Arbs Existem
+
+1. **Diferenças de tempo** - Os books atualizam em velocidades diferentes
+2. **Diferenças de opinião** - Os books têm modelos de risco diferentes
+3. **Promoções** - Odds aumentadas criam arbs artificiais
+4. **Erros** - Ocasionalmente, um book comete um equívoco
+
+## Desafios na Caça às Arbs
+
+> **Atenção:**
+**Sportsbooks não gostam de arbers:**
+- Contas são limitadas ou banidas
+- Saques podem ser atrasados
+- Você pode ficar restrito a apostas pequenas
+
+
+### Dicas para Evitar Detecção
+
+1. **Valores de aposta arredondados** - US$ 47,32 parece suspeito, US$ 50 não
+2. **Misture apostas recreativas** - Não aposte apenas em arbs
+3. **Saque gradualmente** - Saques grandes acionam revisões
+4. **Use múltiplas contas** - Distribua a ação (onde for legal)
+
+## Recursos de Arb da SharpAPI
+
+| Recurso | Benefício |
+|---------|-----------|
+| **Detecção em tempo real** | Alertas em menos de um segundo via SSE |
+| **Valores ótimos de aposta** | Percentuais de aposta pré-calculados |
+| **Cobertura multi-book** | Cruza informações de 6+ books |
+| **Filtragem por lucro** | Defina um limite mínimo de lucro |
+
+## Arb vs Apostas +EV
+
+| Aspecto | Arbitragem | Apostas +EV |
+|---------|------------|-------------|
+| Risco | Zero (garantido) | Existe variância |
+| Lucro por aposta | 1-3% típico | 2-10% de margem |
+| Risco para a conta | Alto (limites) | Menor |
+| Capital necessário | Alto (ambos os lados) | Menor |
+| Sustentabilidade | Limitada | Viável a longo prazo |
+
+> **Dica:**
+  Muitos apostadores experientes preferem +EV em vez de arb porque as contas duram mais e as margens costumam ser maiores. Veja [Cálculo de EV](/pt-BR/concepts/ev-calculation) para a matemática por trás do +EV.
+
+## Construa um Scanner de Arbs
+
+Pronto para automatizar a detecção de arbs? Veja o [Exemplo de Scanner de Arbitragem](/pt-BR/examples/arbitrage-scanner) para uma implementação completa em Python com alertas no Discord.

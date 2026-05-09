@@ -1,0 +1,115 @@
+---
+description: "Aprende cómo SharpAPI calcula el valor esperado (+EV) utilizando las líneas sharp de Pinnacle como referencia. Cubre la probabilidad justa, el dimensionamiento mediante el criterio de Kelly y el cálculo del edge."
+---
+
+# Cálculo de EV
+
+## ¿Qué es el valor esperado?
+
+El valor esperado (EV) mide la ganancia o pérdida media por apuesta a lo largo del tiempo.
+
+```
+EV = (Probabilidad de ganar × Beneficio) - (Probabilidad de perder × Stake)
+```
+
+Una apuesta de **EV positivo (+EV)** es rentable a largo plazo.
+
+## Ejemplo sencillo
+
+**Lanzamiento de moneda a cuota +110:**
+
+- Probabilidad de ganar: 50 %
+- Pago si ganas: 110 $
+- Importe que pierdes: 100 $
+
+```
+EV = (0,50 × 110 $) - (0,50 × 100 $)
+EV = 55 $ - 50 $
+EV = +5 $ por cada apuesta de 100 $ (EV del 5 %)
+```
+
+> **Consejo:**
+  Un EV del 5 % significa que esperas obtener un beneficio de 5 $ por cada 100 $ apostados a lo largo del tiempo.
+
+
+## El cálculo de EV de SharpAPI
+
+Utilizamos **Pinnacle** (una casa sharp) como fuente de verdad para la probabilidad "justa".
+
+### Paso 1: Obtener las cuotas de la casa sharp
+
+```
+Cuotas de Pinnacle: Team A -115 / Team B +105
+```
+
+### Paso 2: Eliminar el vig
+
+```javascript
+// Implied probabilities (with vig)
+probA = 1 / 1.87 = 0.535  // -115
+probB = 1 / 2.05 = 0.488  // +105
+total = 1.023  // 2.3% vig
+
+// No-vig (fair) probabilities
+fairProbA = 0.535 / 1.023 = 0.523 (52.3%)
+fairProbB = 0.488 / 1.023 = 0.477 (47.7%)
+```
+
+### Paso 3: Comparar con la casa soft
+
+```
+Cuotas de DraftKings: Team A -105 (decimal 1.952)
+Probabilidad justa: 52,3 %
+
+EV% = (fairProb × decimalOdds - 1) × 100
+EV% = (0.523 × 1.952 - 1) × 100
+EV% = +2.1%
+```
+
+## La fórmula del EV
+
+```
+EV% = (fair_probability × decimal_odds - 1) × 100
+```
+
+Donde:
+- `fair_probability` = Probabilidad sin vig de la casa sharp
+- `decimal_odds` = Cuotas de la casa soft en formato decimal
+
+## Por qué funciona
+
+| Tipo de casa | Características |
+|-----------|----------------|
+| **Sharp (Pinnacle)** | Vig bajo, cuotas eficientes, probabilidades precisas |
+| **Soft (DraftKings)** | Vig más alto, más lentas en ajustarse, explotables |
+
+Cuando las casas soft tardan en ajustarse, sus cuotas implican una probabilidad menor que la real = **oportunidad +EV**.
+
+## Umbrales de EV
+
+| EV % | Calidad | Acción |
+|------|---------|--------|
+| < 0 % | EV negativo | Nunca apostar |
+| 0-2 % | Marginal | Solo con alto volumen |
+| **2-5 %** | Bueno | Umbral estándar |
+| **5 %+** | Excelente | Alta confianza |
+
+> **Nota:**
+  El umbral predeterminado de SharpAPI es del 2 % de EV. Ajústalo con el parámetro `threshold`.
+
+
+## Advertencia sobre la varianza
+
+El +EV no garantiza beneficio en cada apuesta:
+
+```
+100 apuestas con +5 % de EV, 100 $ cada una:
+- Beneficio esperado: 500 $
+- Resultados reales: entre -2000 $ y +3000 $
+
+Con 1000 apuestas:
+- Los resultados convergen hacia +5000 $
+```
+
+> **Advertencia:**
+  El EV es un concepto a largo plazo. La varianza a corto plazo puede ser brutal. Nunca apuestes más de lo que puedas permitirte perder.

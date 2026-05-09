@@ -1,0 +1,115 @@
+---
+description: "Erfahren Sie, wie SharpAPI den Erwartungswert (+EV) anhand der scharfen Linien von Pinnacle als Benchmark berechnet. Behandelt faire Wahrscheinlichkeit, Kelly-Kriterium-Sizing und Edge-Berechnung."
+---
+
+# EV-Berechnung
+
+## Was ist der Erwartungswert?
+
+Der Erwartungswert (Expected Value, EV) misst den durchschnittlichen Gewinn oder Verlust pro Wette über die Zeit.
+
+```
+EV = (Gewinnwahrscheinlichkeit × Gewinn) - (Verlustwahrscheinlichkeit × Einsatz)
+```
+
+Eine Wette mit **positivem EV (+EV)** ist langfristig profitabel.
+
+## Einfaches Beispiel
+
+**Münzwurf bei +110-Quote:**
+
+- Gewinnwahrscheinlichkeit: 50 %
+- Gewinnauszahlung: 110 $
+- Verlustbetrag: 100 $
+
+```
+EV = (0,50 × 110 $) - (0,50 × 100 $)
+EV = 55 $ - 50 $
+EV = +5 $ pro 100 $ Einsatz (5 % EV)
+```
+
+> **Tipp:**
+  Ein EV von 5 % bedeutet, dass Sie über die Zeit erwarten können, 5 $ Gewinn für jede gesetzten 100 $ zu erzielen.
+
+
+## Die EV-Berechnung von SharpAPI
+
+Wir verwenden **Pinnacle** (einen scharfen Buchmacher) als Quelle der Wahrheit für die „faire" Wahrscheinlichkeit.
+
+### Schritt 1: Quoten des scharfen Buchmachers abrufen
+
+```
+Pinnacle-Quoten: Team A -115 / Team B +105
+```
+
+### Schritt 2: Den Vig entfernen
+
+```javascript
+// Implied probabilities (with vig)
+probA = 1 / 1.87 = 0.535  // -115
+probB = 1 / 2.05 = 0.488  // +105
+total = 1.023  // 2.3% vig
+
+// No-vig (fair) probabilities
+fairProbA = 0.535 / 1.023 = 0.523 (52.3%)
+fairProbB = 0.488 / 1.023 = 0.477 (47.7%)
+```
+
+### Schritt 3: Mit weichem Buchmacher vergleichen
+
+```
+DraftKings odds: Team A -105 (decimal 1.952)
+Fair probability: 52.3%
+
+EV% = (fairProb × decimalOdds - 1) × 100
+EV% = (0.523 × 1.952 - 1) × 100
+EV% = +2.1%
+```
+
+## Die EV-Formel
+
+```
+EV% = (fair_probability × decimal_odds - 1) × 100
+```
+
+Dabei gilt:
+- `fair_probability` = No-Vig-Wahrscheinlichkeit vom scharfen Buchmacher
+- `decimal_odds` = Quoten des weichen Buchmachers im Dezimalformat
+
+## Warum das funktioniert
+
+| Buchmachertyp | Eigenschaften |
+|-----------|----------------|
+| **Scharf (Pinnacle)** | Niedriger Vig, effiziente Quoten, genaue Wahrscheinlichkeiten |
+| **Weich (DraftKings)** | Höherer Vig, langsamere Anpassung, ausnutzbar |
+
+Wenn weiche Buchmacher sich langsam anpassen, implizieren ihre Quoten eine niedrigere Wahrscheinlichkeit als die Realität = **+EV-Gelegenheit**.
+
+## EV-Schwellenwerte
+
+| EV % | Qualität | Aktion |
+|------|---------|--------|
+| < 0 % | Negativer EV | Niemals wetten |
+| 0–2 % | Marginal | Nur bei hohem Volumen |
+| **2–5 %** | Gut | Standardschwelle |
+| **5 %+** | Ausgezeichnet | Hohe Zuversicht |
+
+> **Hinweis:**
+  Der Standardschwellenwert von SharpAPI beträgt 2 % EV. Mit dem `threshold`-Parameter anpassbar.
+
+
+## Varianzwarnung
+
++EV garantiert keinen Gewinn bei jeder Wette:
+
+```
+100 bets at +5% EV, $100 each:
+- Expected profit: $500
+- Actual results: Anywhere from -$2000 to +$3000
+
+With 1000 bets:
+- Results converge toward +$5000
+```
+
+> **Warnung:**
+  EV ist ein langfristiges Konzept. Kurzfristige Varianz kann brutal sein. Setzen Sie niemals mehr ein, als Sie sich leisten können zu verlieren.

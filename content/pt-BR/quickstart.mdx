@@ -1,0 +1,239 @@
+---
+description: "Comece a usar a SharpAPI em menos de 2 minutos. Faça sua primeira chamada de API para buscar odds esportivas em tempo real com exemplos em cURL, JavaScript, Python ou TypeScript."
+---
+
+import { Callout, Tabs, Steps } from 'nextra/components'
+
+# Início Rápido
+
+Comece a usar a SharpAPI em 2 minutos.
+
+## URL Base
+
+```
+https://api.sharpapi.io/api/v1
+```
+
+<Callout type="warning">
+Sempre use `api.sharpapi.io` - não `sharpapi.io` - para requisições à API.
+</Callout>
+
+<Steps>
+
+### Obtenha sua API Key
+
+1. **Cadastre-se** - Crie uma conta gratuita em [sharpapi.io/sign-up](https://sharpapi.io/sign-up)
+2. **Obtenha sua chave** - Copie sua API key do dashboard. Ela começa com `sk_live_`
+3. **Faça sua primeira chamada** - Use os exemplos abaixo para buscar odds ao vivo
+
+### Sua Primeira Chamada de API
+
+<Tabs items={['cURL', 'JavaScript', 'Python', 'TypeScript']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/odds" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch('https://api.sharpapi.io/api/v1/odds', {
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY'
+  }
+});
+
+const { data, meta } = await response.json();
+console.log(`Found ${meta.count} odds`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/odds',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+
+data = response.json()
+print(f"Found {data['meta']['count']} odds")
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```typescript
+import { SharpApiClient } from '@sharpapi/client';
+
+const client = new SharpApiClient('YOUR_API_KEY');
+const { data, meta } = await client.getOdds();
+
+console.log(`Found ${meta.count} odds`);
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Exemplo de Resposta
+
+```json
+{
+  "data": [
+    {
+      "id": "draftkings_33483153_moneyline_PHO",
+      "sportsbook": "draftkings",
+      "sport": "basketball",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "market_type": "moneyline",
+      "selection": "PHO Suns",
+      "odds_american": -150,
+      "odds_decimal": 1.667,
+      "odds_probability": 0.60,
+      "is_live": false
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 3095,
+    "books_available": ["draftkings", "fanduel"],
+    "books_returned": ["draftkings"],
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {}
+  }
+}
+```
+
+</Steps>
+
+## Filtre seus Resultados
+
+Adicione parâmetros de query para refinar os resultados:
+
+```bash
+# Obtenha odds da NBA apenas da DraftKings
+curl "https://api.sharpapi.io/api/v1/odds?league=nba&sportsbook=draftkings" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Obtenha apenas eventos ao vivo
+curl "https://api.sharpapi.io/api/v1/odds?live=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Obtenha apenas mercados principais (moneyline, spread, total)
+curl "https://api.sharpapi.io/api/v1/odds?market=moneyline,spread,total" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Encontre Apostas de Valor
+
+Com uma assinatura Pro, você pode encontrar [oportunidades +EV](/pt-BR/concepts/ev-calculation):
+
+```bash
+curl "https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+Resposta:
+```json
+{
+  "data": [
+    {
+      "opportunity_id": "opp_x1y2z3",
+      "event_name": "PHO Suns @ PHI 76ers",
+      "sportsbook": "draftkings",
+      "selection": "PHO Suns -3.5",
+      "odds": {
+        "american": -105,
+        "decimal": 1.952,
+        "odds_probability": 0.512
+      },
+      "sharp_odds": {
+        "american": -115,
+        "decimal": 1.870,
+        "odds_probability": 0.535
+      },
+      "ev_percentage": 4.35,
+      "kelly_percent": 2.18
+    }
+  ],
+  "meta": {
+    "count": 12,
+    "total": 12,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T02:10:37.846Z",
+    "filters": {
+      "min_ev": 3.0
+    }
+  }
+}
+```
+
+## Streaming em Tempo Real
+
+Para as atualizações mais rápidas, use streaming SSE (requer o add-on de WebSocket):
+
+```javascript
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&api_key=YOUR_KEY'
+);
+
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id } = JSON.parse(e.data);
+  console.log('Stream connected:', stream_id);
+});
+
+eventSource.addEventListener('snapshot', (e) => {
+  const { odds } = JSON.parse(e.data);
+  console.log('Initial snapshot:', odds.length, 'odds');
+});
+
+eventSource.addEventListener('odds:update', (e) => {
+  const update = JSON.parse(e.data);
+  console.log('Update from:', update.sportsbook);
+});
+
+eventSource.addEventListener('ev:detected', (e) => {
+  const opp = JSON.parse(e.data);
+  console.log(`+EV found: ${opp.selection} at ${opp.ev_percentage}% EV`);
+});
+```
+
+## Próximos Passos
+
+- [Encontre Apostas +EV](/pt-BR/api-reference/opportunities-ev) - Encontre oportunidades com valor esperado positivo
+- [Encontre Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) - Detecte oportunidades de lucro sem risco ([entenda como funciona arb](/pt-BR/concepts/arbitrage))
+- [Mercados Low Hold](/pt-BR/api-reference/opportunities-low-hold) - Encontre as linhas mais apertadas entre as casas
+- [Streaming ao Vivo](/pt-BR/streaming/overview) - Atualizações em tempo real via SSE
+- [SDK TypeScript](/pt-BR/sdks/typescript) - Segurança total de tipos e streaming integrado
+- [SDK Python](/pt-BR/sdks/python) - Modelos Pydantic e suporte assíncrono
+- [Rate Limits](/pt-BR/authentication#rate-limits) - Entenda os limites de uso
+- [Preços](/pt-BR/pricing) - Compare planos e recursos
+
+## Problemas Comuns
+
+<Callout type="error" emoji="!">
+**Erro: 401 Unauthorized**
+
+Certifique-se de estar usando a API key correta e que ela está formatada adequadamente no header.
+</Callout>
+
+<Callout type="error" emoji="!">
+**Erro: 429 Rate Limited**
+
+Você excedeu seu rate limit. Aguarde o tempo de reset indicado em `X-RateLimit-Reset` ou faça upgrade do seu plano.
+</Callout>
+
+<Callout type="error" emoji="!">
+**Erro: 403 Tier Restricted**
+
+Este endpoint requer um tier superior. Confira a página de [Preços](/pt-BR/pricing) para ver os recursos de cada tier.
+</Callout>

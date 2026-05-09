@@ -1,0 +1,286 @@
+---
+description: "SharpAPI Deep-Links-API — Generieren Sie Sportsbook-Deeplinks aus Opportunity-Hash-IDs für die Wettplatzierung mit einem Klick. Unterstützt Bet365, DraftKings, FanDuel und mehr."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Deeplinks
+
+Generieren Sie Sportsbook-Deeplinks aus Odds-IDs oder Opportunity-Hash-IDs. Deeplinks führen Benutzer direkt zur entsprechenden Event-Seite auf der Website eines Sportsbooks und ermöglichen so die Wettplatzierung mit einem Klick aus Ihrer Anwendung heraus.
+
+## Endpunkte
+
+| Methode | Pfad | Beschreibung |
+|--------|------|-------------|
+| `POST` | `/api/v1/deeplinks/batch` | Deeplinks für bis zu 500 IDs abrufen |
+| `GET` | `/api/v1/deeplink/{id}` | Weiterleitung zu einem Sportsbook (öffentlich, keine Authentifizierung) |
+
+## Authentifizierung
+
+Erfordert einen API key für `POST /deeplinks/batch`. Verfügbar ab **Hobby-Tarif und höher**.
+
+Der Weiterleitungsendpunkt (`GET /deeplink/{id}`) ist **öffentlich** und erfordert keine Authentifizierung — die undurchsichtige ID verhindert eine Aufzählung.
+
+<Callout type="info">
+Der Parameter `id` akzeptiert sowohl **Odds-IDs** (von `/odds`, `/odds/best`) als auch **Opportunity-Hash-IDs** (von [+EV](/de/api-reference/opportunities-ev), [Arbitrage](/de/api-reference/opportunities-arbitrage), [Middles](/de/api-reference/opportunities-middles) und [Low Hold](/de/api-reference/opportunities-low-hold) Endpunkten). Odds-IDs werden zu marktspezifischen Links aufgelöst; Opportunity-Hash-IDs werden zu Links auf Event-Ebene aufgelöst.
+</Callout>
+
+---
+
+## Batch-Deeplinks
+
+```
+POST /api/v1/deeplinks/batch
+```
+
+Gibt Deeplink-Weiterleitungspfade für mehrere IDs in einer einzigen Anfrage zurück. Akzeptiert sowohl **Odds-IDs** als auch **Opportunity-Hash-IDs**. Jede ID in der Anfrage erscheint in der Antwort — aufgelöste IDs liefern einen Weiterleitungspfad, nicht auflösbare IDs liefern `null`.
+
+### Anfrage-Body
+
+```json
+{
+  "ids": ["17336125542407", "77b0749a1faae425", "abc1234567890def"],
+  "state": "nj"
+}
+```
+
+| Feld | Typ | Standard | Beschreibung |
+|-------|------|---------|-------------|
+| `ids` | string[] | **erforderlich** | Array von Odds-IDs oder Opportunity-Hash-IDs (1–500 Elemente) |
+| `state` | string | `pa` | US-Bundesstaatscode für bundesstaatsspezifische Sportsbook-URLs (z. B. `nj`, `ny`, `il`) |
+
+### Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X POST "https://api.sharpapi.io/api/v1/deeplinks/batch" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": ["17336125542407", "77b0749a1faae425"], "state": "nj"}'
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/deeplinks/batch',
+  {
+    method: 'POST',
+    headers: {
+      'X-API-Key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      ids: ['17336125542407', '77b0749a1faae425'],
+      state: 'nj'
+    })
+  }
+);
+const { data } = await response.json();
+
+for (const [id, link] of Object.entries(data)) {
+  if (link) {
+    console.log(`${id}: https://api.sharpapi.io${link}`);
+  } else {
+    console.log(`${id}: not available`);
+  }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.post(
+    'https://api.sharpapi.io/api/v1/deeplinks/batch',
+    headers={
+        'X-API-Key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'ids': ['17336125542407', '77b0749a1faae425'],
+        'state': 'nj'
+    }
+)
+result = response.json()
+
+for id, link in result['data'].items():
+    if link:
+        print(f"{id}: https://api.sharpapi.io{link}")
+    else:
+        print(f"{id}: not available")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Antwort
+
+#### Erfolg (200)
+
+Der Batch-Endpunkt gibt **Weiterleitungspfade** zurück, keine direkten Sportsbook-URLs. Stellen Sie Ihre Basis-URL voran oder verwenden Sie den Pfad mit dem Weiterleitungsendpunkt, um zum Sportsbook zu gelangen.
+
+```json
+{
+  "data": {
+    "17336125542407": "/api/v1/deeplink/17336125542407",
+    "77b0749a1faae425": "/api/v1/deeplink/77b0749a1faae425",
+    "abc1234567890def": null
+  },
+  "updated_at": "2026-02-11T12:00:15.000Z"
+}
+```
+
+| Wert | Bedeutung |
+|-------|---------|
+| `"/api/v1/deeplink/{id}"` | Deeplink verfügbar — folgen Sie dem Weiterleitungspfad, um zum Sportsbook zu gelangen |
+| `null` | Kein Deeplink für diese ID verfügbar (nicht unterstützter Sportsbook, abgelaufene Odds oder ungültige ID) |
+
+<Callout type="info">
+Um die endgültige Sportsbook-URL zu erhalten, folgen Sie entweder der Weiterleitung (`GET https://api.sharpapi.io/api/v1/deeplink/{id}`) oder verwenden Sie den Pfad direkt in `<a href>`-Links — der Browser folgt der 302-Weiterleitung automatisch.
+</Callout>
+
+#### Fehlerantworten
+
+***400 Fehlende IDs***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "ids array required"
+  }
+}
+```
+
+***400 Batch-Größe überschritten***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Maximum 500 IDs per batch"
+  }
+}
+```
+
+---
+
+## Deeplink-Weiterleitung
+
+```
+GET /api/v1/deeplink/{id}
+```
+
+Leitet den Benutzer direkt zur Sportsbook-Seite für eine bestimmte Odds-ID oder Opportunity-Hash-ID weiter. Dies ist ein **öffentlicher Endpunkt** — kein API key erforderlich.
+
+<Callout type="info">
+Verwenden Sie diesen Endpunkt in `<a href>`-Links, um Benutzer direkt zu einem Sportsbook zu senden. Die Antwort ist eine `302 Found`-Weiterleitung, kein JSON.
+</Callout>
+
+### Pfadparameter
+
+| Parameter | Typ | Beschreibung |
+|-----------|------|-------------|
+| `id` | string | **Erforderlich.** Entweder eine numerische Odds-ID (z. B. `135102220304350`) oder eine Opportunity-Hash-ID (16-stelliger Hex-Wert, z. B. `77b0749a1faae425`) |
+
+### Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `state` | string | `pa` | US-Bundesstaatscode für bundesstaatsspezifische URLs |
+| `book` | string | — | Sportsbook-Filter (für Multi-Book-Opportunities wie Middles/Arbitrage) |
+| `fallback` | string | — | URL, zu der weitergeleitet wird, falls die ID nicht gefunden wurde |
+
+### Beispiel
+
+```html
+<!-- In your application HTML -->
+<a href="https://api.sharpapi.io/api/v1/deeplink/77b0749a1faae425?state=nj&book=draftkings">
+  Bet on DraftKings
+</a>
+```
+
+### Antwort
+
+#### Erfolg (302 Found)
+
+```
+HTTP/1.1 302 Found
+Location: https://sportsbook.draftkings.com/event/12345?outcomes=abc123
+Cache-Control: private, max-age=60
+X-Deep-Link-Type: outcome
+```
+
+Der Header `X-Deep-Link-Type` gibt die Spezifität des Links an:
+
+| Wert | Beschreibung |
+|-------|-------------|
+| `outcome` | Direkter Link zu einer bestimmten Wettauswahl (mit Auswahl-ID) |
+| `event` | Link zur Event-Seite (keine bestimmte Auswahl) |
+| `homepage` | Fallback zur Sportsbook-Startseite |
+
+#### Fehlerantworten
+
+***404 Nicht gefunden***
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Deep link ID not found"
+  }
+}
+```
+
+<Callout type="warning">
+Wenn der Query-Parameter `fallback` angegeben ist und die ID nicht gefunden wird, leitet der Endpunkt zur Fallback-URL weiter, anstatt eine 404-JSON-Antwort zurückzugeben.
+</Callout>
+
+---
+
+## Deeplink-Schema
+
+### Batch-Antwort
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `data` | object | Zuordnung von ID zu Weiterleitungspfad (string) oder `null`, falls nicht verfügbar |
+| `updated_at` | string | ISO-8601-Zeitstempel der Odds-Daten |
+
+## Unterstützte Sportsbooks
+
+Deeplinks sind für 21 von 28 Sportsbooks verfügbar. Bundesstaatsspezifische Sportsbooks verwenden den Parameter `state`, um die korrekte regionale URL zu generieren.
+
+| Sportsbook | Deeplink-Unterstützung | Bundesstaatsspezifisch |
+|-----------|-----------|----------------|
+| bet365 | Ja | Nein |
+| bet365 UK | Ja | Nein |
+| DraftKings | Ja | Nein |
+| FanDuel | Ja | Nein |
+| BetMGM | Ja | Nein |
+| Caesars | Ja | Ja |
+| Pinnacle | Ja | Nein |
+| Fanatics | Ja | Nein |
+| BetRivers | Ja | Ja |
+| Betway | Ja | Nein |
+| Bovada | Ja | Nein |
+| BetOnline | Ja | Nein |
+| Ladbrokes | Ja | Nein |
+| Stake | Ja | Nein |
+| Hard Rock | Ja | Nein |
+| Novig | Ja | Nein |
+| Kalshi | Ja | Nein |
+| BallyBet | Ja | Nein |
+| Unibet | Ja | Nein |
+| SkyBet | Ja | Nein |
+| theScore Bet | Ja | Nein |
+| Polymarket | Ja | Nein |
+| ProphetX | Ja | Nein |
+
+Die folgenden Sportsbooks unterstützen derzeit keine Deeplinks. IDs für diese Sportsbooks geben in der Batch-Antwort `null` zurück:
+
+Bet105, Bookmaker, Fliff, Rebet, SABA
+
+## Verwandte Endpunkte
+
+- [+EV-Opportunities](/de/api-reference/opportunities-ev) - Quelle von `hash_id`-Werten für +EV-Wetten
+- [Arbitrage](/de/api-reference/opportunities-arbitrage) - Quelle von `hash_id`-Werten für Arbitrage-Opportunities
+- [Middles](/de/api-reference/opportunities-middles) - Quelle von `hash_id`-Werten für Middle-Opportunities
+- [Low Hold](/de/api-reference/opportunities-low-hold) - Quelle von `hash_id`-Werten für Low-Hold-Opportunities

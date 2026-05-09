@@ -1,0 +1,194 @@
+---
+description: "GET /api/v1/teams — Suche und Abruf von Teams und Spielern über alle Sportarten und Ligen hinweg. Liefert Aliase, Liga-Zugehörigkeiten, aktive Event-Zählungen und Team-IDs."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Teams
+
+Rufen Sie Teams und Spieler über alle Sportarten und Ligen hinweg ab. Liefert Teamnamen, Aliase, Liga-Zugehörigkeiten und aktuelle Event-Zählungen. Nützlich für die Erstellung von Such-/Autovervollständigungsfunktionen, das Mapping von Teamnamen zwischen Sportsbooks und das Verständnis dessen, was derzeit aktiv ist.
+
+```
+GET /api/v1/teams
+```
+
+## Authentifizierung
+
+Erfordert einen API key. Verfügbar in allen Tarifen (einschließlich Free). Nicht authentifizierte Anfragen geben `401` zurück.
+
+## Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sport` | string | alle | Filter nach Sportart (z. B. `basketball`, `football`, `soccer`) |
+| `league` | string | alle | Filter nach Liga (z. B. `NBA`, `NFL`, `EPL`) |
+| `q` | string | - | Suche nach Teams nach Name oder Alias (Groß-/Kleinschreibung wird ignoriert) |
+
+<Callout type="info">
+Der Parameter `q` durchsucht sowohl das Feld `name` als auch das Feld `aliases` des Teams. Beispielsweise findet `q=man city` "Manchester City" über dessen Alias.
+</Callout>
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Alle NBA-Teams abrufen
+curl "https://api.sharpapi.io/api/v1/teams?league=NBA" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Nach einem Team nach Namen suchen
+curl "https://api.sharpapi.io/api/v1/teams?q=lakers" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Alle Basketball-Teams abrufen
+curl "https://api.sharpapi.io/api/v1/teams?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+// Search for a team
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/teams?q=arsenal',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } },
+);
+const { data, meta } = await response.json();
+
+data.forEach(team => {
+  console.log(`${team.name} (${team.sport}) - ${team.event_count} events`);
+  if (team.aliases.length) {
+    console.log(`  Also known as: ${team.aliases.join(', ')}`);
+  }
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/teams',
+    params={'sport': 'basketball', 'league': 'NBA'},
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
+result = response.json()
+
+print(f"Found {result['meta']['count']} NBA teams")
+for team in result['data'][:10]:
+    aliases = ', '.join(team['aliases']) if team['aliases'] else 'none'
+    print(f"  {team['name']} ({team['id']}) - aliases: {aliases}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "arsenal",
+      "name": "Arsenal",
+      "sport": "soccer",
+      "leagues": [
+        "EPL",
+        "England - FA Cup",
+        "England - Premier League",
+        "England - EFL Cup"
+      ],
+      "aliases": [
+        "Arsenal Fc"
+      ],
+      "event_count": 18,
+      "live_count": 0
+    },
+    {
+      "id": "alabama-crimson-tide",
+      "name": "Alabama Crimson Tide",
+      "sport": "basketball",
+      "leagues": [
+        "NCAAB"
+      ],
+      "aliases": [
+        "Alabama",
+        "Bama",
+        "Crimson Tide"
+      ],
+      "event_count": 6,
+      "live_count": 0
+    }
+  ],
+  "meta": {
+    "count": 15038,
+    "sport_filter": null,
+    "league_filter": null,
+    "query": null,
+    "total_events": 17113,
+    "total_live": 13160,
+    "updated": "2026-02-11T21:00:00.000Z"
+  }
+}
+```
+
+## Schema des Team-Objekts
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `id` | string | Eindeutige Team-Kennung (Slug-Format, z. B. `alabama-crimson-tide`) |
+| `name` | string | Anzeigename (z. B. `Alabama Crimson Tide`) |
+| `sport` | string | Hauptsportart (z. B. `basketball`, `soccer`, `football`, `hockey`) |
+| `leagues` | array | Ligen, in denen dieses Team auftritt (z. B. `["NBA", "NCAAB"]`) |
+| `aliases` | array | Alternative Namen, die von verschiedenen Sportsbooks verwendet werden (z. B. `["Alabama", "Bama"]`) |
+| `event_count` | integer | Anzahl der aktuellen Events, an denen dieses Team beteiligt ist |
+| `live_count` | integer | Anzahl der derzeit live laufenden Events, an denen dieses Team beteiligt ist |
+
+## Meta-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `count` | integer | Gesamtzahl der zurückgegebenen Teams |
+| `sport_filter` | string \| null | Echo des angewendeten `sport`-Filters |
+| `league_filter` | string \| null | Echo des angewendeten `league`-Filters |
+| `query` | string \| null | Echo der `q`-Suchanfrage |
+| `total_events` | integer | Gesamtzahl der Events über alle zurückgegebenen Teams hinweg |
+| `total_live` | integer | Gesamtzahl der Live-Events über alle zurückgegebenen Teams hinweg |
+| `updated` | string | ISO 8601-Zeitstempel, wann die Teamdaten zuletzt aktualisiert wurden |
+
+## Anwendungsfälle
+
+### Mapping von Teamnamen
+
+Verschiedene Sportsbooks verwenden unterschiedliche Namen für dasselbe Team. Das Feld `aliases` hilft Ihnen beim Mapping zwischen Sportsbooks:
+
+```bash
+curl "https://api.sharpapi.io/api/v1/teams?q=man%20city"
+```
+
+```json
+{
+  "id": "manchester-city",
+  "name": "Manchester City",
+  "aliases": ["Man City", "Manchester City Fc", "Man. City"]
+}
+```
+
+### Suche / Autovervollständigung
+
+Verwenden Sie den Parameter `q`, um eine Suchen-während-der-Eingabe-Oberfläche zu realisieren:
+
+```bash
+curl "https://api.sharpapi.io/api/v1/teams?q=lak"
+```
+
+### Aktive Teams
+
+Filtern Sie clientseitig nach `event_count` oder `live_count`, um nur Teams mit aktuellen oder Live-Events anzuzeigen.
+
+## Verwandte Endpoints
+
+- [Events](/de/api-reference/events) - Events für bestimmte Teams abrufen
+- [Leagues](/de/api-reference/leagues) - Verfügbare Ligen auflisten
+- [Sports](/de/api-reference/sports) - Verfügbare Sportarten auflisten

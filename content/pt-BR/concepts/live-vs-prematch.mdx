@@ -1,0 +1,160 @@
+---
+description: "Entenda a diferença entre odds ao vivo (in-play) e pré-jogo na SharpAPI — o que cada uma significa, como as casas se comportam durante o jogo ao vivo e o que esperar de DraftKings e FanDuel ao construir ferramentas de apostas ao vivo."
+---
+
+import { Callout } from 'nextra/components'
+
+# Odds Ao Vivo vs. Pré-Jogo
+
+A SharpAPI coleta odds das casas de apostas em dois estados: **pré-jogo** (antes do início do jogo) e **ao vivo** (in-play, após o início do jogo). Esses são mercados fundamentalmente diferentes, com padrões de atualização, profundidade e confiabilidade distintos — especialmente entre tipos diferentes de casas.
+
+## O Que É Pré-Jogo?
+
+As odds pré-jogo são definidas antes do início de um jogo. É onde:
+
+- **A profundidade do mercado é maior** — as casas oferecem seu cardápio completo de linhas, spreads, totais e player props
+- **As atualizações são comedidas** — as linhas se movem horas ou dias antes do início, geralmente em resposta a ação sharp ou notícias
+- **Todas as casas participam plenamente** — toda casa na API tem cobertura pré-jogo para os esportes que suporta
+
+Pré-jogo é a espinha dorsal da maioria dos workflows de +EV e arbitragem. A grande maioria das odds na API a qualquer momento é pré-jogo.
+
+## O Que É Ao Vivo (In-Play)?
+
+As odds ao vivo são ativas durante um jogo. Elas refletem probabilidades em tempo real conforme o estado do jogo muda — um time pontua, um jogador se machuca ou o tempo se esgota. Você pode filtrar apenas odds ao vivo usando o parâmetro de query `live=true`.
+
+```bash
+# Apenas odds ao vivo
+GET /api/v1/odds?live=true&sport=basketball&league=nba
+
+# Apenas odds pré-jogo
+GET /api/v1/odds?live=false&sport=basketball&league=nba
+```
+
+Cada item de odds carrega um campo booleano `is_live` indicando seu estado no momento da coleta:
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "event_id": "nba_cavaliers_celtics_2026-04-18",
+  "sport": "basketball",
+  "league": "nba",
+  "market_type": "moneyline",
+  "odds_american": -140,
+  "is_live": true
+}
+```
+
+## Como as Casas Entregam as Odds
+
+O mecanismo de entrega é a causa raiz das diferenças de defasagem entre tipos de casa — não apenas o intervalo de polling.
+
+### Push vs. Poll
+
+| Casa | Mecanismo de entrega | Latência da fonte |
+|------|---------------------|-------------------|
+| Pinnacle | **Push MQTT** — a SharpAPI assina o feed WebSocket/MQTT da Pinnacle; as odds chegam conforme a casa as transmite | p50 ~0,8 s, p95 ~3,8–4,2 s (latência de cauda em janelas de alta reconexão) |
+| DraftKings | **Poll HTTP** — a SharpAPI consulta o endpoint da DK em uma agenda | p50 ~8 s, p95 ~21 s |
+| FanDuel | **Poll HTTP** — a SharpAPI consulta o endpoint da FD em uma agenda | p50 ~2,7 s, p95 ~5,9 s |
+| Outras casas sharp | Push MQTT / WS (Bookmaker, Circa) ou poll rápido (Bet365) | Similar à Pinnacle |
+| Casas de varejo dos EUA | Poll HTTP | Similar a DK/FD |
+
+O push MQTT da Pinnacle significa que a SharpAPI recebe um preço no momento em que a casa o envia — não há atraso de polling no caminho. Para DraftKings e FanDuel, os números p50/p95 acima refletem o round-trip completo: tempo desde quando a casa atualiza sua linha até quando a SharpAPI tem o novo preço. Esses números vêm de medições do Prometheus de abril de 2026.
+
+<Callout type="info">
+A latência de cauda p95 da Pinnacle (3,8–4,2 s) reflete a sobrecarga de reconexão durante janelas de alta volatilidade. Trabalho de infraestrutura está em andamento para reduzi-la. A mediana (0,8 s) é um guia confiável para jogo normal — use o p95 para dimensionar seu orçamento de tolerância para estratégias sensíveis ao ao vivo.
+</Callout>
+
+## Como as Casas Se Comportam Durante o Jogo Ao Vivo
+
+É aqui que as expectativas divergem significativamente entre casas sharp e casas de varejo dos EUA.
+
+### Casas Sharp (Pinnacle, Circa, Bookmaker)
+
+Casas sharp tratam apostas ao vivo como produto principal:
+
+- **Raramente suspendem** — os mercados permanecem abertos durante jogadas de pontuação, lesões e tempos técnicos. A taxa de suspensão ao vivo da Pinnacle é uma fração das casas dos EUA.
+- **Cardápios de mercado profundos** — a Pinnacle oferece 20–50+ mercados ao vivo por evento nos principais esportes, incluindo spreads ao vivo, totais, linhas alternativas e totais por equipe
+- **Entrega via push** — o feed MQTT da Pinnacle normalmente entrega em menos de 1 s na mediana; os preços refletem o estado do jogo rapidamente
+- **Descoberta contínua de preço** — a linha ao vivo é a leitura mais sharp disponível sobre a probabilidade atual de vitória
+
+As odds ao vivo da Pinnacle são usadas como **preço de referência sharp** nos cálculos de +EV, assim como são para pré-jogo.
+
+<Callout type="warning">
+Pinnacle, Circa, Bookmaker e outras casas sharp exigem **Sharp tier** ou superior. Solicitar dados de casas sharp nos tiers Free, Hobby ou Pro retorna um erro `403 tier_restricted`.
+</Callout>
+
+### Casas de Varejo dos EUA (DraftKings, FanDuel, BetMGM, Caesars)
+
+Casas reguladas dos EUA têm apostas ao vivo, mas com limitações importantes:
+
+| Comportamento | Casas Sharp | Casas dos EUA (DK/FD) |
+|--------------|-------------|----------------------|
+| Mecanismo de entrega | Push MQTT / WS | Poll HTTP |
+| Defasagem (p50) | ~0,8 s (Pinnacle) | 8 s (DK) / 2,7 s (FD) |
+| Defasagem (p95) | ~3,8–4,2 s (Pinnacle) | 21 s (DK) / 5,9 s (FD) |
+| Suspensão de mercado em jogadas de pontuação | Rara | Muito frequente |
+| Suspensão de mercado em revisões/tempos técnicos | Ocasional | Prática padrão |
+| Profundidade do cardápio de mercado ao vivo | 20–50+ mercados | 3–10 mercados |
+| Disponibilidade de props ao vivo | Sim (Pinnacle) | Limitada ou nenhuma |
+
+**A suspensão é a questão central.** Quando um time da NBA pontua, DraftKings e FanDuel normalmente retiram seus moneylines, spreads e totais ao vivo do quadro enquanto reprecificam. Durante ações de pico (4º quarto de um jogo apertado), essas casas podem estar suspensas com mais frequência do que abertas. Esse é um padrão de gestão de risco regulatório, não uma limitação da API.
+
+<Callout type="info">
+Quando um mercado da DK ou FD é suspenso, ele simplesmente desaparece da API — não há um campo `status: suspended`. Se você chamar `GET /api/v1/odds?live=true&sportsbook=draftkings` durante uma jogada de pontuação, pode obter zero resultados para esse evento, mesmo que o jogo esteja em andamento.
+</Callout>
+
+### O Que Isso Significa na Prática
+
+**Se você está construindo um dashboard de odds ao vivo** que precisa de cobertura contínua sem lacunas, você não pode confiar apenas em DraftKings ou FanDuel. Planeje para:
+- Janelas nulas frequentes — projete seu frontend para lidar com "sem preço atual" de forma elegante
+- Defasagem de dados — o último preço ao vivo que você viu da DK pode ter 30–90 segundos antes que os mercados reabram
+
+**Se você está construindo um scanner de +EV ao vivo**, a peça essencial é a Pinnacle como sua referência sharp. Sem um preço ao vivo da Pinnacle, você não pode calcular se DK/FD estão oferecendo valor. Isso requer **Sharp tier**.
+
+**Se você está construindo uma ferramenta pré-jogo**, DraftKings e FanDuel são totalmente viáveis no **Free tier**. A cobertura pré-jogo é abrangente, a suspensão não é um fator, e a frequência de atualização é mais que suficiente.
+
+## Resumo de Cobertura por Casa
+
+| Casa | `has_live_odds` | Qualidade Prática Ao Vivo | Tier Necessário |
+|------|-----------------|--------------------------|----------------|
+| Pinnacle | Sim | Excelente — profunda, rápida, raramente suspende | Sharp |
+| Bookmaker | Sim | Excelente — cardápio amplo de mercados, global | Sharp |
+| Circa Sports | Sim | Boa — casa sharp dos EUA, cardápio focado | Sharp |
+| Bet365 | Sim | Boa — grande cardápio internacional | Pro |
+| BetMGM | Sim | Moderada — suspensões regulares | Hobby |
+| Caesars | Sim | Moderada — suspensões regulares | Hobby |
+| DraftKings | Sim | Limitada — suspensões frequentes, cardápio enxuto | Free |
+| FanDuel | Sim | Limitada — suspensões frequentes, cardápio enxuto | Free |
+| Novig | Não | Apenas pré-jogo | Free |
+| Polymarket | Não | Apenas pré-jogo (mercado de previsão) | Free |
+
+<Callout type="info">
+`has_live_odds: true` significa que a casa de apostas oferece apostas in-play e a SharpAPI coleta esses preços quando estão disponíveis. Não garante cobertura contínua — casas dos EUA suspendem com frequência suficiente para que os dados ao vivo tenham lacunas significativas.
+</Callout>
+
+## Abordagens Recomendadas por Caso de Uso
+
+### +EV Ao Vivo ou Arbitragem Ao Vivo
+- **Necessário**: Sharp tier (para a Pinnacle como referência)
+- **Padrão**: Faça polling em `?live=true&sportsbook=pinnacle` como seu preço de referência; faça polling em casas dos EUA para o preço soft; calcule o EV quando ambos forem não-nulos
+- **Trate**: preços soft nulos de forma elegante — eles ocorrem constantemente durante o jogo ao vivo
+
+### Exibição de Odds Ao Vivo (Dashboard)
+- **Viável**: Pro tier ou superior
+- **Padrão**: Busque `?live=true` em um intervalo de 5–10 segundos; exiba o último preço visto com um timestamp de "última atualização"; mostre um estado de "mercado suspenso" quando nenhum preço é retornado
+- **Evite**: assumir que um preço ausente significa que as odds estão indisponíveis para sempre — os mercados normalmente reabrem em 30–90 segundos
+
+### Apenas Pré-Jogo (Mais Comum)
+- **Viável**: Free tier com DraftKings + FanDuel
+- **Padrão**: Use `?live=false` se quiser excluir explicitamente linhas in-play dos seus resultados
+- **Nota**: Omitir o parâmetro `live` retorna tanto odds pré-jogo quanto ao vivo misturadas
+
+<Callout type="warning">
+O Free tier é limitado a **12 requisições por 60 segundos**. Esse limite por si só descarta polling ao vivo independentemente da casa — em um intervalo de 5 segundos você atingiria o limite em menos de um minuto. Estratégias de apostas ao vivo exigem **Pro tier ou superior**.
+</Callout>
+
+## Relacionados
+
+- [Snapshot de Odds](/pt-BR/api-reference/odds) — referência do parâmetro de query `live`
+- [Sportsbooks](/pt-BR/api-reference/sportsbooks) — Lista completa de casas com `has_live_odds` e tiers necessários
+- [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev) — +EV pré-computado usando a Pinnacle como referência sharp

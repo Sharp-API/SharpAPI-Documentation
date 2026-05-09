@@ -1,0 +1,162 @@
+---
+description: "Conecta SharpAPI a asistentes de IA como Claude mediante MCP (Model Context Protocol). Consulta cuotas en vivo, encuentra oportunidades +EV y compara casas de apuestas usando lenguaje natural."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Servidor MCP (Asistentes de IA)
+
+<Callout type="info">
+SharpAPI incluye un servidor MCP integrado en `https://mcp.sharpapi.io/mcp` — conecta Claude Desktop, Claude Code o cualquier asistente de IA compatible con MCP para consultar cuotas y oportunidades en vivo mediante lenguaje natural.
+</Callout>
+
+## ¿Qué es MCP?
+
+El [Model Context Protocol](https://modelcontextprotocol.io) (MCP) permite a los asistentes de IA invocar herramientas externas directamente. En lugar de copiar datos desde nuestra API a un chat, tu asistente de IA puede consultar SharpAPI en tiempo real:
+
+> *"Encuéntrame las mejores oportunidades +EV en la NBA ahora mismo"*
+>
+> *"Compara las cuotas de moneyline para el partido de los Lakers en todas las casas de apuestas"*
+>
+> *"¿Qué oportunidades de arbitraje hay disponibles en fútbol?"*
+
+## Configuración
+
+Añade SharpAPI a la configuración de tu cliente MCP:
+
+<Tabs items={['Claude Desktop', 'Claude Code', 'Otros clientes MCP']}>
+<Tabs.Tab>
+
+Edita `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "sharpapi": {
+      "type": "streamable-http",
+      "url": "https://mcp.sharpapi.io/mcp",
+      "headers": {
+        "X-API-Key": "sk_live_..."
+      }
+    }
+  }
+}
+```
+
+Reinicia Claude Desktop tras guardar los cambios.
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+Añade lo siguiente a la configuración MCP de Claude Code:
+
+```json
+{
+  "mcpServers": {
+    "sharpapi": {
+      "type": "streamable-http",
+      "url": "https://mcp.sharpapi.io/mcp",
+      "headers": {
+        "X-API-Key": "sk_live_..."
+      }
+    }
+  }
+}
+```
+
+</Tabs.Tab>
+<Tabs.Tab>
+
+Cualquier cliente MCP que admita el transporte Streamable HTTP puede conectarse:
+
+- **Endpoint:** `POST https://mcp.sharpapi.io/mcp`
+- **Autenticación:** cabecera `X-API-Key`, cabecera `Authorization: Bearer` o parámetro de consulta `api_key`
+- **Protocolo:** JSON-RPC 2.0 sobre HTTP (transporte MCP Streamable HTTP)
+- **Versión:** `2025-03-26`
+
+</Tabs.Tab>
+</Tabs>
+
+## Herramientas disponibles
+
+El servidor MCP expone 17 herramientas que se corresponden con la API REST de SharpAPI:
+
+### Datos de referencia
+
+| Herramienta | Descripción |
+|------|-------------|
+| `get_sports` | Lista todos los deportes con recuentos de eventos y eventos en vivo |
+| `get_leagues` | Lista las ligas, filtrables por deporte |
+| `get_sportsbooks` | Lista todas las casas de apuestas con sus metadatos |
+| `get_markets` | Lista todos los tipos de mercado (moneyline, spread, total, player props…) |
+
+### Cuotas y eventos
+
+| Herramienta | Descripción | Tier mínimo |
+|------|-------------|----------|
+| `get_events` | Busca eventos por deporte, liga o nombre del equipo | Todos |
+| `get_odds` | Obtiene las cuotas actuales con filtros | Todos |
+| `get_odds_delta` | Sincronización incremental — solo las cuotas cambiadas desde una marca de tiempo | Todos |
+| `get_best_odds` | Las mejores cuotas en todas las casas para cada selección | Todos |
+| `compare_odds` | Comparativa de cuotas lado a lado para un evento | Todos |
+| `get_closing_lines` | Líneas de cierre capturadas para análisis de CLV | Pro |
+
+### Futuros
+
+| Herramienta | Descripción | Tier mínimo |
+|------|-------------|----------|
+| `get_futures_odds` | Mercados de larga duración (campeonato, MVP, totales de victorias) | Pro |
+| `compare_futures_lines` | Comparativa entre casas para un mercado de futuros | Pro |
+
+### Oportunidades
+
+| Herramienta | Descripción | Tier mínimo |
+|------|-------------|----------|
+| `find_ev_opportunities` | Apuestas +EV usando Pinnacle como referencia | Pro |
+| `find_arbitrage` | Arbitraje entre casas con dimensionamiento de stake | Hobby |
+| `find_middles` | Oportunidades de middle (ganar ambos lados) | Pro |
+| `find_low_hold` | Líneas más ajustadas entre casas | Todos |
+
+### Cuenta
+
+| Herramienta | Descripción |
+|------|-------------|
+| `get_account_info` | Tu tier, límites de tasa y funcionalidades |
+
+## Acceso a casas de apuestas por tier
+
+Las cuotas, las mejores cuotas y los resultados de comparación se filtran automáticamente según las casas de apuestas a las que tu tier tiene acceso:
+
+| Tier | Casas | Ejemplos |
+|------|-------|---------|
+| **Free** | 2 | DraftKings, FanDuel |
+| **Hobby** | 5 | + BetMGM, Caesars, Fanatics |
+| **Pro** | 15 | + Pinnacle, Bet365, BetOnline, ... |
+| **Sharp** | Las 32 | Todas las casas de apuestas |
+| **Enterprise** | Las 32 | + Futuros, Históricos, Gamestate |
+
+## Límites de tasa (rate limits)
+
+Cada llamada a una herramienta MCP cuenta como una solicitud API frente al límite de tasa de tu tier. El handshake inicial (initialize + tools/list) consume entre 2 y 3 solicitudes — esto ocurre una sola vez por sesión.
+
+| Tier | Solicitudes/min |
+|------|-------------|
+| Free | 12 |
+| Hobby | 120 |
+| Pro | 300 |
+| Sharp | 1.000 |
+| Enterprise | 10.000 |
+
+Usa `get_account_info` para consultar tu uso actual y tus límites.
+
+## Ejemplos de conversaciones
+
+Una vez conectado, puedes hacer a tu asistente de IA preguntas como:
+
+- *"¿Qué deportes tienen eventos en vivo ahora mismo?"*
+- *"Muéstrame las cuotas de la NBA para los partidos de esta noche en DraftKings"*
+- *"Encuentra oportunidades de arbitraje en fútbol con al menos un 1 % de beneficio"*
+- *"Compara las cuotas del partido de los Chiefs en todas las casas"*
+- *"¿Cuál es mi tier actual de la API y cuántas solicitudes me quedan?"*
+
+La IA llamará automáticamente a las herramientas adecuadas de SharpAPI y presentará los resultados en un formato legible.

@@ -1,0 +1,103 @@
+---
+description: "Comprende los formatos de cuotas americanas, decimales y de probabilidad implícita utilizados en las apuestas deportivas. SharpAPI devuelve los tres formatos simultáneamente para cada entrada de cuotas."
+---
+
+# Formatos de cuotas
+
+## Tres formatos, un mismo concepto
+
+SharpAPI devuelve las cuotas en tres formatos simultáneamente:
+
+```json
+{
+  "odds": {
+    "american": -110,
+    "decimal": 1.909,
+    "odds_probability": 0.5238
+  }
+}
+```
+
+## Cuotas americanas
+
+El estándar en EE. UU. Indica cuánto ganas o cuánto debes arriesgar.
+
+| Cuotas | Significado | Beneficio de una apuesta de 100 $ |
+|------|---------|-----------------|
+| **-110** | Arriesgar 110 $ para ganar 100 $ | 90,91 $ |
+| **+150** | Arriesgar 100 $ para ganar 150 $ | 150 $ |
+| **-200** | Arriesgar 200 $ para ganar 100 $ | 50 $ |
+| **+200** | Arriesgar 100 $ para ganar 200 $ | 200 $ |
+
+**Fórmulas de conversión:**
+
+```
+If negative: Decimal = 1 + (100 / |American|)
+If positive: Decimal = 1 + (American / 100)
+```
+
+## Cuotas decimales
+
+Estándar en Europa/Australia. Muestra el retorno total por unidad apostada.
+
+| Decimal | Retorno de una apuesta de 100 $ | Beneficio |
+|---------|-----------------|--------|
+| **1.909** | 190,90 $ | 90,90 $ |
+| **2.50** | 250,00 $ | 150,00 $ |
+| **1.50** | 150,00 $ | 50,00 $ |
+
+> **Consejo:**
+  Las cuotas decimales incluyen tu apuesta. Una apuesta de 100 $ a 2,50 devuelve 250 $ en total (150 $ de beneficio + 100 $ de apuesta).
+
+
+## Probabilidad implícita
+
+La estimación del mercado sobre la probabilidad del resultado.
+
+```
+Implied Probability = 1 / Decimal Odds
+```
+
+| Decimal | Probabilidad | Interpretación |
+|---------|-------------|----------------|
+| 2.00 | 50 % | Cara o cruz |
+| 1.50 | 66,7 % | 2/3 de probabilidad |
+| 3.00 | 33,3 % | 1/3 de probabilidad |
+
+> **Advertencia:**
+  La probabilidad implícita incluye el margen del corredor de apuestas (vig). La probabilidad real suele ser entre un 2 % y un 5 % menor.
+
+
+## El vig (juice)
+
+Los corredores de apuestas incorporan un margen de beneficio:
+
+```
+Fair coin flip: Both sides at 2.00 (50% + 50% = 100%)
+With vig:       Both sides at 1.91 (52.4% + 52.4% = 104.8%)
+```
+
+El 4,8 % adicional es la ventaja del corredor de apuestas.
+
+## Conversión entre formatos
+
+```javascript
+// American to Decimal
+function americanToDecimal(american) {
+  return american > 0
+    ? 1 + (american / 100)
+    : 1 + (100 / Math.abs(american));
+}
+
+// Decimal to American
+function decimalToAmerican(decimal) {
+  return decimal >= 2.0
+    ? (decimal - 1) * 100
+    : -100 / (decimal - 1);
+}
+
+// Decimal to Probability
+function decimalToProb(decimal) {
+  return 1 / decimal;
+}
+```

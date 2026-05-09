@@ -1,0 +1,79 @@
+---
+description: "Como o campo odds_changed_at da Pinnacle se comporta — por que ele é o timestamp da mesa de operações, por que pode parecer desatualizado em MLB e NBA, e como interpretá-lo junto com last_seen_at como um sinal de atualização do pipeline."
+---
+
+import { Callout } from 'nextra/components'
+
+# Entendendo o `odds_changed_at` da Pinnacle
+
+Clientes sharp que constroem ferramentas de +EV e arbitragem contra a Pinnacle frequentemente fazem a mesma pergunta: "por que o `odds_changed_at` desta linha da Pinnacle parece ter 20 minutos?" A resposta curta é que está funcionando conforme projetado — ele carrega o timestamp da própria mesa de operações da Pinnacle, não o nosso. Esta página explica o que o campo realmente registra, por que pode permanecer inalterado por longos períodos, e como combiná-lo com `last_seen_at` para uma leitura clara da atualização do pipeline.
+
+## O Que `odds_changed_at` Realmente Significa
+
+Em linhas da Pinnacle, `odds_changed_at` é **o timestamp da própria mesa de operações da Pinnacle** — quando a Pinnacle reprecificou esta linha específica pela última vez.
+
+Ele é mantido inalterado sempre que a Pinnacle sinaliza que o preço, a linha e a flag `is_live` em um mercado não se moveram. Internamente, a SharpAPI faz hash desses três campos para cada linha de odds em cada atualização; quando o hash é idêntico ao snapshot anterior, mantemos o `odds_changed_at` anterior em vez de sobrescrevê-lo com o horário da observação. Isso preserva a semântica de "quando esta linha se moveu pela última vez" através de polls repetidos de um mercado inalterado.
+
+<Callout type="warning">
+`odds_changed_at` **não é** a última vez que nosso pipeline atualizou ou tocou nesta linha. Para verificar a atualização do pipeline, use `last_seen_at`.
+</Callout>
+
+## Por Que Pode Parecer Desatualizado
+
+A Pinnacle é uma formadora de mercado (market-maker). A mesa de operações deles publica um novo preço apenas quando o fluxo real força uma reprecificação — eles não distorcem linhas em torno da ação do varejo para extrair margem da forma como as casas soft fazem. Essa disciplina é a razão pela qual a Pinnacle é usada como referência sharp para cálculos de +EV, mas também significa que as linhas podem permanecer inalteradas por longos períodos.
+
+Observado durante uma janela de 24 horas das próprias respostas de CDN da Pinnacle, a taxa em que a Pinnacle publicou *novos dados* (em vez de um `304 Not Modified` em cache) varia enormemente por esporte:
+
+| Esporte      | Taxa de "novos dados" da CDN da Pinnacle |
+|--------------|------------------------------------------|
+| Futebol      | ~94%                                     |
+| Tênis        | ~66%                                     |
+| NHL          | ~51%                                     |
+| MLB          | ~18%                                     |
+| NBA          | ~9%                                      |
+
+Player props de NBA e MLB comumente mostram longas janelas ociosas — 30+ minutos não é incomum — porque a mesa de operações da Pinnacle não está movendo a linha. Se você está vendo um `odds_changed_at` antigo em um mercado de NBA ou MLB, quase sempre é a própria cadência de publicação da Pinnacle, não uma falha em nosso pipeline.
+
+## Como Ler os Campos Juntos
+
+Cada linha de odds expõe dois timestamps. Eles respondem a perguntas diferentes:
+
+| Campo              | O que ele diz a você                                                 |
+|--------------------|----------------------------------------------------------------------|
+| `odds_changed_at`  | A última vez que a mesa de operações da Pinnacle moveu esta linha    |
+| `last_seen_at`     | A última vez que nosso pipeline observou esta linha                  |
+
+Para verificações de atualização do pipeline, use `last_seen_at` — este é atualizado toda vez que ingerimos a linha, independentemente de o preço ter se movido.
+
+Para "quando a Pinnacle moveu esta linha pela última vez", use `odds_changed_at`.
+
+Uma grande lacuna entre os dois (`last_seen_at` recente, `odds_changed_at` antigo) significa que a Pinnacle está mantendo a linha estável. Isso é normal e é a fonte mais comum de confusão ao ler os dados da Pinnacle.
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "market_type": "player_total_bases",
+  "selection": "Edmundo Sosa Over",
+  "line": 0.5,
+  "odds_american": -129,
+  "last_seen_at":    "2026-04-21T21:35:02Z",
+  "odds_changed_at": "2026-04-21T18:49:00Z"
+}
+```
+
+Neste exemplo, o pipeline viu esta linha 4 segundos antes de o cliente buscá-la (`last_seen_at` está atualizado). O preço em si se moveu pela última vez 2h 46min antes (`odds_changed_at`), porque a mesa de operações da Pinnacle não reprecificou a linha de total de bases do Sosa desde a abertura pré-jogo. Ambos os valores estão corretos.
+
+<Callout type="info">
+Se `last_seen_at` estiver desatualizado (mais de um ou dois minutos para um mercado de uma liga principal), esse é um sinal do pipeline que vale a pena investigar. Se `odds_changed_at` estiver desatualizado, mas `last_seen_at` estiver atualizado, a Pinnacle está mantendo a linha — trate o preço exibido como atual.
+</Callout>
+
+## Por Que a Pinnacle É Diferente
+
+A Pinnacle aceita ação sharp e reprecifica com base no fluxo real, em vez de distorcer linhas em torno de apostadores de varejo. Essa disciplina de formadora de mercado é por que a usamos como referência de devig para +EV — as linhas deles são o mais próximo de um preço justo disponível no mercado. O trade-off é que as linhas pré-jogo podem permanecer inalteradas por longos períodos quando nada no mercado se moveu, o que parece desatualização para qualquer um que espera o microajuste constante que as casas soft fazem.
+
+## Relacionados
+
+- [Snapshot de Odds](/pt-BR/api-reference/odds) — campos `odds_changed_at` e `last_seen_at` na resposta REST de odds
+- [Streaming](/pt-BR/api-reference/stream) — `odds_changed_at` em deltas `odds:update`
+- [Ao Vivo vs. Pré-Jogo](/pt-BR/concepts/live-vs-prematch) — cadência de publicação e mecanismos de entrega das casas
+- [Cálculo de EV](/pt-BR/concepts/ev-calculation) — por que a Pinnacle é a referência sharp

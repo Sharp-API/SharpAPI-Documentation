@@ -1,0 +1,264 @@
+---
+description: "GET /api/v1/historical/clv — Análisis del Valor de la Línea de Cierre (Closing Line Value) entre casas de apuestas. Compara tus precios de cierre con la probabilidad sin margen de Pinnacle para medir tu ventaja. Requiere nivel Sharp."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Valor de la Línea de Cierre (CLV)
+
+Analiza cómo se comparan las cuotas de cierre de una casa de apuestas con la probabilidad sin margen (devigged) de Pinnacle. Un CLV positivo significa que la casa cerró con precios más laxos que Pinnacle — un indicador histórico de ventaja.
+
+```
+GET /api/v1/historical/clv
+```
+
+<Callout type="warning">
+**Se requiere nivel Sharp o superior.** Los niveles Pro e inferiores reciben un error `403 tier_restricted`. Este endpoint está restringido por la funcionalidad `closing_lines`.
+</Callout>
+
+<Callout type="info">
+**Ventana de datos de la Fase 1:** Las líneas de cierre se capturan en tiempo real cuando los partidos pasan a estar en directo. El almacén Valkey conserva los datos durante **30 días**. Los datos históricos anteriores a 30 días aún no están disponibles.
+</Callout>
+
+## Cómo se capturan las líneas de cierre
+
+Cuando un partido pasa de pre-match a en directo, el servidor captura las últimas cuotas pre-match de cada casa como la línea de cierre de ese evento. El precio de cierre se devigea utilizando el **método Power** (el mismo que en el cálculo de EV) para producir una probabilidad sin margen por selección.
+
+El CLV se calcula entonces como:
+
+```
+CLV% = (pin_no_vig_prob - book_no_vig_prob) / book_no_vig_prob × 100
+```
+
+Donde `pin_no_vig_prob` es la probabilidad devigeada de Pinnacle (la referencia sharp) y `book_no_vig_prob` es la probabilidad devigeada de la casa soft. Un CLV% positivo significa que la casa soft cerró a un precio más favorable que la línea justa de Pinnacle.
+
+## Autenticación
+
+Requiere API key. **Se requiere nivel Sharp o superior** (funcionalidad `closing_lines`).
+
+## Parámetros de consulta
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|-----------|------|---------|-------------|
+| `from` | string | hace 7 días | Fecha de inicio (`YYYY-MM-DD` o ISO 8601). Limitada a una ventana de 30 días. |
+| `to` | string | hoy | Fecha de fin (`YYYY-MM-DD` o ISO 8601). |
+| `group_by` | string | `sportsbook` | Dimensión de agregación. Una de: `sportsbook`, `sport`, `league`, `market`, `day`. |
+| `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball,football`). |
+| `league` | string | todas | Filtrar por liga(s), separadas por comas (p. ej. `nba,nfl`). |
+| `sportsbook` | string | todas | Filtrar por casa(s) de apuestas, separadas por comas. |
+
+### Ventana de fechas
+
+El nivel Sharp permite hasta **30 días** de histórico (la ventana de retención actual para los datos de líneas de cierre). Las fechas solicitadas fuera de esta ventana se limitan silenciosamente a la fecha más antigua disponible.
+
+## Ejemplos de solicitudes
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# CLV por casa de apuestas durante los últimos 7 días
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?from=2026-04-10&to=2026-04-17&group_by=sportsbook" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# CLV agrupado por deporte, solo NBA
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?league=nba&group_by=sport" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# CLV agrupado por día para DraftKings
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?sportsbook=draftkings&group_by=day" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const params = new URLSearchParams({
+  from: '2026-04-10',
+  to: '2026-04-17',
+  group_by: 'sportsbook',
+});
+const response = await fetch(
+  `https://api.sharpapi.io/api/v1/historical/clv?${params}`,
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+for (const group of data.groups) {
+  console.log(`${group.group_key}: avg CLV ${group.avg_clv_percent.toFixed(2)}% (${group.samples} samples)`);
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/historical/clv',
+    params={
+        'from': '2026-04-10',
+        'to': '2026-04-17',
+        'group_by': 'sportsbook',
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+for group in data['data']['groups']:
+    print(
+        f"{group['group_key']}: "
+        f"avg CLV {group['avg_clv_percent']:.2f}% "
+        f"({group['samples']} samples)"
+    )
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Respuesta
+
+### Éxito (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "group_by": "sportsbook",
+    "groups": [
+      {
+        "group_key": "draftkings",
+        "samples": 312,
+        "avg_clv_percent": 1.42,
+        "avg_abs_clv_percent": 2.18,
+        "distinct_books": 1,
+        "distinct_sports": 4
+      },
+      {
+        "group_key": "fanduel",
+        "samples": 289,
+        "avg_clv_percent": 0.87,
+        "avg_abs_clv_percent": 1.95,
+        "distinct_books": 1,
+        "distinct_sports": 4
+      },
+      {
+        "group_key": "betmgm",
+        "samples": 201,
+        "avg_clv_percent": -0.21,
+        "avg_abs_clv_percent": 1.74,
+        "distinct_books": 1,
+        "distinct_sports": 3
+      }
+    ],
+    "date_range": {
+      "from": "2026-04-10T00:00:00.000",
+      "to": "2026-04-17T00:00:00.000"
+    },
+    "total_events": 58,
+    "comparable_events": 51,
+    "sharp_reference": "pinnacle"
+  },
+  "meta": {
+    "source": "valkey:closing_line",
+    "tier_window_days": 30,
+    "phase": "1",
+    "filters": {
+      "sport": null,
+      "league": null,
+      "sportsbook": null,
+      "group_by": "sportsbook"
+    },
+    "updated_at": "2026-04-17T20:00:00.000000000Z"
+  }
+}
+```
+
+**Resultado vacío (sin datos de línea de cierre todavía):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "group_by": "sportsbook",
+    "groups": [],
+    "date_range": { "from": "...", "to": "..." },
+    "total_events": 0,
+    "comparable_events": 0,
+    "sharp_reference": "pinnacle"
+  },
+  "meta": { "source": "valkey:closing_line", "phase": "1", ... }
+}
+```
+
+Un array `groups` vacío es una respuesta válida cuando no se han capturado datos de línea de cierre para el rango de fechas solicitado — no es un error.
+
+### Respuestas de error
+
+***403 Tier Restricted***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "The 'closing_lines' feature requires Sharp or higher.",
+    "required_tier": "sharp",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+***400 Validation Error***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid group_by. Must be one of: day, league, market, sport, sportsbook"
+  }
+}
+```
+
+## Campos de la respuesta
+
+### Objeto `data`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `group_by` | string | La dimensión utilizada para la agregación |
+| `groups` | array | Array de filas de grupo, ordenadas por `samples` de forma descendente |
+| `date_range` | object | `from`/`to` reales utilizados tras la limitación por nivel |
+| `total_events` | integer | Total de eventos encontrados en el rango de fechas (antes del filtro de Pinnacle) |
+| `comparable_events` | integer | Eventos con una línea de cierre de Pinnacle disponible para comparación |
+| `sharp_reference` | string | Casa sharp utilizada como referencia de cuotas justas (`"pinnacle"`) |
+
+### Campos de la fila de grupo
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `group_key` | string | El identificador del grupo (nombre de la casa de apuestas, deporte, liga, tipo de mercado o fecha YYYY-MM-DD) |
+| `samples` | integer | Número de comparaciones de líneas de cierre en este grupo |
+| `avg_clv_percent` | number | CLV% medio de todas las muestras. Positivo = la casa cerró más laxa que Pinnacle. |
+| `avg_abs_clv_percent` | number | CLV% absoluto medio (medida de eficiencia de mercado independiente de la dirección) |
+| `distinct_books` | integer | Número de casas de apuestas distintas en este grupo |
+| `distinct_sports` | integer | Número de deportes distintos en este grupo |
+
+### Objeto `meta`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `source` | string | Siempre `"valkey:closing_line"` (backend de la Fase 1) |
+| `tier_window_days` | integer | Días máximos de retroceso para tu nivel (Sharp = 30) |
+| `phase` | string | `"1"` — captura en tiempo real desde las transiciones a en directo. Backfill desde ClickHouse previsto para la Fase 2. |
+| `updated_at` | string | Marca de tiempo de la respuesta en formato ISO 8601 |
+
+---
+
+## Interpretación del CLV
+
+| CLV% | Interpretación |
+|------|----------------|
+| **> +2%** | La casa cerró sistemáticamente con precios significativamente más laxos que las líneas sharp — alto valor capturado |
+| **+0,5% a +2%** | La casa cerró ligeramente laxa — típico de las casas recreativas |
+| **-0,5% a +0,5%** | Cierre próximo al mercado — eficiente o mixto |
+| **< -0,5%** | La casa se ajustó hacia el cierre — puede indicar persecución de steam o acción del lado sharp |
+
+Un CLV medio positivo en tus apuestas es el indicador más sólido de que estás apostando a precios ineficientes. Sobre una muestra grande, un CLV positivo predice fuertemente un ROI positivo.
+
+## Endpoints relacionados
+
+- [Cuotas de cierre por fecha](/es/api-reference/historical-odds-closing) — Precios de cierre brutos por evento para una fecha determinada
+- [Oportunidades +EV](/es/api-reference/opportunities-ev) — Apuestas de valor esperado positivo en tiempo real
+- [Snapshot de cuotas](/es/api-reference/odds) — Cuotas pre-match y en directo actuales

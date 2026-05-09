@@ -1,0 +1,481 @@
+---
+description: "Offizielles SharpAPI TypeScript SDK — installieren Sie @sharp-api/client von npm für typisierten Zugriff auf alle Endpoints mit SSE-Streaming, Zod-Validierung und vollständiger IDE-Autovervollständigung."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# TypeScript SDK
+
+<Callout type="info">
+Installieren Sie das offizielle SDK: `npm install @sharp-api/client` — [npm](https://www.npmjs.com/package/@sharp-api/client) · [GitHub](https://github.com/Sharp-API/sharpapi-ts)
+</Callout>
+
+## SDK-Schnellstart
+
+```typescript
+import { SharpAPI } from '@sharp-api/client'
+
+const api = new SharpAPI('sk_live_...')
+
+// Quoten abrufen
+const { data: odds } = await api.odds.get({ league: 'nba' })
+
+// +EV-Gelegenheiten abrufen (Pro+)
+const { data: ev } = await api.ev.get({ min_ev: 3 })
+
+// Arbitrage-Gelegenheiten abrufen (Hobby+)
+const { data: arbs } = await api.arbitrage.get({ min_profit: 1 })
+
+// Middles abrufen (Pro+)
+const { data: middles } = await api.middles.get({ league: 'nba' })
+
+// SSE-Streaming (WebSocket-Add-on)
+const stream = api.stream.odds({ league: 'nba' })
+stream.on('update', ({ data }) => console.log(data))
+stream.connect()
+
+// WebSocket-Streaming (~100ms Latenz)
+const ws = api.stream.oddsWs({ sportsbook: ['draftkings'] })
+ws.on('odds:update', ({ data, source }) => console.log(source, data))
+ws.connect()
+```
+
+## REST API
+
+Verwenden Sie `fetch`, um beliebige REST-Endpoints aufzurufen:
+
+```typescript
+const API_URL = 'https://api.sharpapi.io/api/v1';
+const API_KEY = 'YOUR_API_KEY';
+
+async function sharpApi<T>(path: string, params?: Record<string, string>): Promise<T> {
+  const url = new URL(`${API_URL}${path}`);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  }
+  const res = await fetch(url, { headers: { 'X-API-Key': API_KEY } });
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// Beispiele
+const odds = await sharpApi('/odds', { sport: 'basketball', league: 'nba' });
+const ev = await sharpApi('/opportunities/ev', { min_ev: '3.0' });
+const arbs = await sharpApi('/opportunities/arbitrage', { min_profit: '1.0' });
+```
+
+## SSE-Streaming
+
+SSE-Streaming liefert Echtzeit-Quotenupdates und Benachrichtigungen über Gelegenheiten. Dieser Abschnitt beschreibt, wie Sie einen korrekten Client erstellen.
+
+<Callout type="warning">
+**Wichtig:** `odds:update`-Ereignisse sind **Deltas** — sie enthalten nur Quoten, die sich geändert haben. Ihr Client muss einen lokalen Zustand pflegen und Updates darin zusammenführen. Jedes Ereignis als vollständigen Snapshot zu behandeln, ist die häufigste Ursache für falsche Daten.
+</Callout>
+
+### Vollständiger TypeScript-Client
+
+```typescript
+const API_URL = 'https://api.sharpapi.io/api/v1';
+const API_KEY = 'YOUR_API_KEY';
+
+// ─── Typen ────────────────────────────────────────────────────────────────
+interface OddsLine {
+  id: string;
+  sportsbook: string;
+  event_id: string;
+  sport: string;
+  league: string;
+  home_team: string;
+  away_team: string;
+  market_type: string;
+  selection: string;
+  selection_type: string;
+  odds_american: number;
+  odds_decimal: number;
+  probability: number;
+  line?: number;
+  event_start_time: string;
+  is_live: boolean;
+  timestamp: string;
+  player_name?: string;     // Nur bei Spieler-Prop-Märkten
+  stat_category?: string;   // Nur bei Spieler-Prop-Märkten
+}
+
+interface EVOpportunity {
+  id: string;
+  ev_percentage: number;
+  odds_american: number;
+  odds_decimal: number;
+  selection: string;
+  market: string;
+  sportsbook: string;
+  game: string;
+  sport: string;
+  league: string;
+  is_live: boolean;
+  confidence_score: number;
+  kelly_percent: number | null;
+  possibly_stale: boolean;
+  oldest_odds_age_seconds: number | null;
+  warnings: string[];
+  detected_at: string;
+}
+
+interface ArbOpportunity {
+  id: string;
+  event_name: string;
+  sport: string;
+  market_type: string;
+  profit_percent: number;
+  possibly_stale: boolean;
+  oldest_odds_age_seconds: number | null;
+  warnings: string[];
+  legs: Array<{
+    sportsbook: string;
+    selection: string;
+    odds_american: number;
+    odds_decimal: number;
+    stake_percent: number;
+  }>;
+  detected_at: string;
+}
+
+interface LowHoldOpportunity {
+  id: string;
+  event_id: string;
+  event_name: string;
+  sport: string;
+  league: string;
+  market_type: string;
+  line: number | null;
+  hold_percentage: number;
+  side1: LowHoldSide;
+  side2: LowHoldSide;
+  side3: LowHoldSide | null;       // 3-Wege-Märkte (Fußball, Eishockey)
+  is_live: boolean;
+  is_alternate_line: boolean;
+  all_books: string[];
+  confidence: number;
+  odds_age_seconds: number;
+  possibly_stale: boolean;
+  detected_at: string;
+}
+
+interface LowHoldSide {
+  selection: string;
+  books: string[];
+  line: number | null;
+  odds: {
+    american: number;
+    decimal: number;
+    implied_probability: number;
+    fair_probability: number;
+  };
+  deep_links: Record<string, string>;
+}
+
+// ─── Zustandsverwaltung ───────────────────────────────────────────────────
+// Indiziert nach Quoten-Linien-ID (z. B. "draftkings_33483153_moneyline_PHO")
+const oddsMap = new Map<string, OddsLine>();
+const evMap = new Map<string, EVOpportunity>();
+const arbMap = new Map<string, ArbOpportunity>();
+const lowHoldMap = new Map<string, LowHoldOpportunity>();
+let isReady = false;
+
+// ─── Verbindung herstellen ────────────────────────────────────────────────
+const url = new URL(`${API_URL}/stream`);
+url.searchParams.set('channel', 'all');
+url.searchParams.set('league', 'nba');
+url.searchParams.set('api_key', API_KEY);
+
+const eventSource = new EventSource(url.toString());
+
+// ─── Verbindungslebenszyklus ──────────────────────────────────────────────
+eventSource.addEventListener('connected', (e) => {
+  const data = JSON.parse(e.data);
+  console.log(`Verbunden: Stream ${data.stream_id}`);
+
+  // Bei erneuter Verbindung lokalen Zustand löschen — Server sendet einen frischen Snapshot
+  if (data.reconnected) {
+    oddsMap.clear();
+    evMap.clear();
+    arbMap.clear();
+    lowHoldMap.clear();
+    isReady = false;
+  }
+});
+
+// ─── Initialer Snapshot (in Chunks) ───────────────────────────────────────
+eventSource.addEventListener('snapshot', (e) => {
+  const data = JSON.parse(e.data);
+
+  // Quoten-Snapshots: indiziert nach Sportsbook-Name
+  // z. B. { "draftkings": [OddsLine, ...], "fanduel": [OddsLine, ...] }
+  for (const [key, value] of Object.entries(data)) {
+    if (Array.isArray(value) && !['ev', 'arbitrage', 'middles', 'low_hold'].includes(key)) {
+      // Quotendaten — Schlüssel ist Sportsbook-Name
+      for (const odds of value as OddsLine[]) {
+        oddsMap.set(odds.id, odds);
+      }
+    }
+  }
+
+  // Snapshots der Gelegenheiten
+  if (data.ev) {
+    for (const opp of data.ev as EVOpportunity[]) {
+      evMap.set(opp.id, opp);
+    }
+  }
+  if (data.arbitrage) {
+    for (const arb of data.arbitrage as ArbOpportunity[]) {
+      arbMap.set(arb.id, arb);
+    }
+  }
+  if (data.low_hold) {
+    for (const lh of data.low_hold as LowHoldOpportunity[]) {
+      lowHoldMap.set(lh.id, lh);
+    }
+  }
+});
+
+eventSource.addEventListener('snapshot:complete', (e) => {
+  const { books, total_odds } = JSON.parse(e.data);
+  isReady = true;
+  console.log(`Bereit: ${total_odds} Quoten von ${books.join(', ')}`);
+  console.log(`${evMap.size} EV-, ${arbMap.size} Arb-, ${lowHoldMap.size} Low-Hold-Gelegenheiten`);
+});
+
+// ─── Echtzeit-Quotenupdates (DELTAS — in lokalen Zustand einfügen) ────────
+eventSource.addEventListener('odds:update', (e) => {
+  const data = JSON.parse(e.data);
+  for (const [book, odds] of Object.entries(data)) {
+    if (!Array.isArray(odds)) continue;
+    for (const line of odds as OddsLine[]) {
+      oddsMap.set(line.id, line); // upsert
+    }
+  }
+});
+
+// ─── Quoten entfernt (aus lokalem Zustand LÖSCHEN) ────────────────────────
+eventSource.addEventListener('odds:removed', (e) => {
+  const { ids } = JSON.parse(e.data) as { source: string; ids: string[]; count: number };
+  for (const id of ids) {
+    oddsMap.delete(id);
+  }
+});
+
+// ─── Ereignisse zu Gelegenheiten ──────────────────────────────────────────
+eventSource.addEventListener('ev:detected', (e) => {
+  const opps = JSON.parse(e.data) as EVOpportunity[];
+  for (const opp of opps) {
+    // Veraltete Gelegenheiten überspringen
+    if (opp.possibly_stale) continue;
+    evMap.set(opp.id, opp);
+    console.log(`+EV: ${opp.selection} ${opp.ev_percentage}% bei ${opp.sportsbook}`);
+  }
+});
+
+eventSource.addEventListener('ev:expired', (e) => {
+  const { expired } = JSON.parse(e.data) as { expired: string[] };
+  for (const id of expired) {
+    evMap.delete(id);
+  }
+});
+
+eventSource.addEventListener('arb:detected', (e) => {
+  const arbs = JSON.parse(e.data) as ArbOpportunity[];
+  for (const arb of arbs) {
+    if (arb.possibly_stale) continue;
+    arbMap.set(arb.id, arb);
+    console.log(`Arb: ${arb.profit_percent}% — ${arb.event_name}`);
+  }
+});
+
+eventSource.addEventListener('arb:expired', (e) => {
+  const { expired } = JSON.parse(e.data) as { expired: string[] };
+  for (const id of expired) {
+    arbMap.delete(id);
+  }
+});
+
+eventSource.addEventListener('low_hold:detected', (e) => {
+  const opps = JSON.parse(e.data) as LowHoldOpportunity[];
+  for (const opp of opps) {
+    if (opp.possibly_stale) continue;
+    lowHoldMap.set(opp.id, opp);
+    console.log(`Low Hold: ${opp.hold_percentage}% — ${opp.event_name} (${opp.market_type})`);
+  }
+});
+
+eventSource.addEventListener('low_hold:expired', (e) => {
+  const { expired } = JSON.parse(e.data) as { expired: string[] };
+  for (const id of expired) {
+    lowHoldMap.delete(id);
+  }
+});
+
+// ─── Zustandsüberwachung ──────────────────────────────────────────────────
+let lastHeartbeat = Date.now();
+
+eventSource.addEventListener('heartbeat', () => {
+  lastHeartbeat = Date.now();
+});
+
+// Alle 60 Sekunden auf veraltete Verbindungen prüfen
+setInterval(() => {
+  if (Date.now() - lastHeartbeat > 60_000) {
+    console.warn('Kein Heartbeat seit 60s — Wiederverbindung');
+    eventSource.close();
+    // EventSource neu erstellen (Browser verbindet automatisch erneut,
+    // aber explizites close + reconnect setzt den Zustand sauber zurück)
+  }
+}, 60_000);
+
+// ─── Fehlerbehandlung ─────────────────────────────────────────────────────
+eventSource.addEventListener('error', (e) => {
+  const data = JSON.parse((e as MessageEvent).data);
+  console.warn(`Streamfehler: ${data.code} — ${data.message}`);
+});
+
+eventSource.onerror = () => {
+  console.log('Verbindung verloren, automatische Wiederverbindung...');
+};
+```
+
+### Node.js mit dem `eventsource`-Paket
+
+Für die serverseitige Nutzung installieren Sie das [`eventsource`](https://www.npmjs.com/package/eventsource)-Paket:
+
+```bash
+npm install eventsource
+```
+
+```typescript
+import EventSource from 'eventsource';
+
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba',
+  { headers: { 'X-API-Key': 'YOUR_KEY' } }
+);
+
+// Gleiche Event-Handler wie im Browser — siehe oben
+es.addEventListener('snapshot', (e) => { /* ... */ });
+es.addEventListener('odds:update', (e) => { /* ... */ });
+// usw.
+```
+
+## Quotenformat
+
+Alle Quotenwerte werden im **amerikanischen Format** als primäre Darstellung zurückgegeben, wobei Dezimalformat und implizite Wahrscheinlichkeit enthalten sind:
+
+```typescript
+// Jede OddsLine enthält alle drei Formate:
+{
+  odds_american: -110,   // Amerikanische Quoten
+  odds_decimal: 1.909,   // Dezimalquoten
+  probability: 0.524     // Implizite Wahrscheinlichkeit (0-1)
+}
+```
+
+Falls Sie selbst zwischen Formaten konvertieren möchten:
+
+```typescript
+function americanToDecimal(american: number): number {
+  return american > 0
+    ? american / 100 + 1
+    : 100 / Math.abs(american) + 1;
+}
+
+function americanToProbability(american: number): number {
+  return american > 0
+    ? 100 / (american + 100)
+    : Math.abs(american) / (Math.abs(american) + 100);
+}
+```
+
+## Veraltungsmetadaten
+
+EV-, Arbitrage- und Low-Hold-Gelegenheitsantworten enthalten Informationen zur Veraltung, die Ihnen helfen, Gelegenheiten basierend auf veralteten Quoten herauszufiltern:
+
+```typescript
+interface EVOpportunity {
+  // ... weitere Felder ...
+  possibly_stale: boolean;           // true, wenn zugrundeliegende Quoten möglicherweise veraltet sind
+  oldest_odds_age_seconds: number | null;  // Alter der ältesten Quoten-Leg
+  warnings: string[];                // z. B. ["POTENTIALLY_STALE_ODDS", "LIVE_STALE_ODDS"]
+}
+
+// Veraltete Gelegenheiten herausfiltern
+eventSource.addEventListener('ev:detected', (e) => {
+  const opps = JSON.parse(e.data) as EVOpportunity[];
+  for (const opp of opps) {
+    if (opp.possibly_stale) {
+      console.log(`Veraltete EV überspringen: ${opp.id}`);
+      continue;
+    }
+    // Gültige Gelegenheit verarbeiten
+  }
+});
+```
+
+## Wiederverbindung
+
+Wenn die Verbindung abbricht, verbindet sich `EventSource` automatisch erneut und sendet den `Last-Event-ID`-Header. Bei der Wiederverbindung liefert der Server einen **frischen vollständigen Snapshot** (keine Wiederholung verpasster Ereignisse). Ihr Client sollte:
+
+1. Wiederverbindung über `data.reconnected === true` im `connected`-Ereignis erkennen
+2. Lokalen Zustand löschen (`oddsMap.clear()`, `evMap.clear()` usw.)
+3. Auf das neue `snapshot:complete` warten, bevor Sie auf Daten reagieren
+
+```typescript
+eventSource.addEventListener('connected', (e) => {
+  const data = JSON.parse(e.data);
+  if (data.reconnected) {
+    console.log('Wiederverbunden — veralteten Zustand löschen');
+    oddsMap.clear();
+    evMap.clear();
+    arbMap.clear();
+    lowHoldMap.clear();
+    isReady = false;
+  }
+});
+```
+
+## Häufige Fallstricke
+
+<Callout type="error">
+Dies sind die häufigsten Fehler beim Erstellen eines SSE-Clients. Wenn Sie einen davon falsch machen, kann dies zu Phantom-Arbitrage oder falschen EV-Berechnungen führen.
+</Callout>
+
+### 1. `odds:update` als vollständigen Snapshot behandeln
+
+`odds:update`-Ereignisse enthalten nur Quoten, die sich seit dem letzten Ereignis **geändert** haben. Wenn Sie Ihren gesamten lokalen Zustand mit jedem Update ersetzen, sehen Sie nur 1-2 Sportsbooks gleichzeitig — wodurch jeder Markt wie eine Arbitrage-Gelegenheit aussieht.
+
+**Lösung:** Updates immer in Ihre `Map` einfügen, niemals ersetzen.
+
+### 2. `odds:removed`-Ereignisse ignorieren
+
+Wenn ein Sportsbook eine Linie zurückzieht (Markt ausgesetzt, Ereignis abgewickelt), senden wir `odds:removed` mit den zu löschenden IDs. Wenn Sie dies nicht behandeln, sammeln sich veraltete Quoten an und erzeugen Phantom-Arbs zwischen entfernten und frischen Linien.
+
+**Lösung:** Quoten aus Ihrer `Map` löschen, wenn Sie `odds:removed` empfangen.
+
+### 3. Berechnungen vor `snapshot:complete`
+
+Der initiale Snapshot wird in mehreren `snapshot`-Ereignissen aufgeteilt. Wenn Sie während des Snapshot-Ladens mit der Berechnung von Arbs oder EV beginnen, haben Sie ein unvollständiges Bild der verfügbaren Märkte.
+
+**Lösung:** Setzen Sie ein Flag bei `snapshot:complete` und beginnen Sie erst danach mit Berechnungen.
+
+### 4. Zustand bei Wiederverbindung nicht löschen
+
+Bei der Wiederverbindung sendet der Server einen frischen vollständigen Snapshot. Wenn Sie Ihren lokalen Zustand nicht zuerst löschen, haben Sie Duplikate und veraltete Daten vermischt.
+
+**Lösung:** Alle Maps löschen, wenn Sie `connected` mit `reconnected: true` empfangen.
+
+### 5. Quotenformat falsch interpretieren
+
+Wenn Sie amerikanische Quoten (`-110`) als Dezimalquoten behandeln, liefern Ihre Berechnungen völlig falsche Ergebnisse. Unsere API stellt immer beide Formate bereit — verwenden Sie `odds_decimal` für Berechnungen.
+
+### 6. Veraltungswarnungen ignorieren
+
+EV- und Arbitrage-Gelegenheiten enthalten die Felder `possibly_stale` und `oldest_odds_age_seconds`. Als veraltet markierte Gelegenheiten können auf Quoten basieren, die mehrere Minuten alt und nicht mehr handelbar sind.
+
+**Lösung:** Prüfen Sie `possibly_stale`, bevor Sie auf eine Gelegenheit reagieren.

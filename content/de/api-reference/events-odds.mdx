@@ -1,0 +1,346 @@
+---
+description: "GET /api/v1/events/{eventId}/odds — Ruft alle Quoten für ein bestimmtes Event ab, mit optionaler Filterung nach Sportsbook und Markttyp. Liefert American-, Dezimal- und implizite Wahrscheinlichkeitsformate."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Event-Quoten
+
+Ruft alle Quoten für ein bestimmtes Event ab, mit optionaler Filterung nach Sportsbook und Markttyp. Gibt eine paginierte Liste von Quoteneinträgen zurück.
+
+```
+GET /api/v1/events/{eventId}/odds
+```
+
+<Callout type="info">
+Dies ist ein Convenience-Endpoint, der `GET /api/v1/odds?event={eventId}` entspricht. Beide liefern dieselben Daten; verwenden Sie denjenigen, der zu Ihrer URL-Struktur passt.
+</Callout>
+
+## Authentifizierung
+
+Erfordert einen API key über den `X-API-Key`-Header, den `Authorization: Bearer`-Header oder den `api_key`-Query-Parameter. Verfügbar für alle Tarife.
+
+## Pfadparameter
+
+| Parameter | Typ | Erforderlich | Beschreibung |
+|-----------|------|----------|-------------|
+| `eventId` | string | Ja | Eindeutige Event-Kennung (z. B. `evt_nba_bos_lal_20260208`) |
+
+## Query-Parameter
+
+| Parameter | Typ | Standard | Beschreibung |
+|-----------|------|---------|-------------|
+| `sportsbook` | string | all | Filtern nach Sportsbook. Kommagetrennt für mehrere (z. B. `draftkings,pinnacle`) |
+| `market` | string | all | Filtern nach Markttyp. Kommagetrennt für mehrere (z. B. `moneyline,spread`) |
+| `limit` | integer | 50 | Ergebnisse pro Seite (max. 200) |
+| `offset` | integer | 0 | Paginierungs-Offset |
+
+## Response-Header
+
+Alle Antworten enthalten Standard-Header für Rate Limit und Metadaten:
+
+| Header | Beschreibung |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximale Anzahl an Anfragen pro Minute für Ihren Tarif |
+| `X-RateLimit-Remaining` | Verbleibende Anfragen im aktuellen Zeitfenster |
+| `X-RateLimit-Reset` | Unix-Zeitstempel, wann das Rate-Limit-Fenster zurückgesetzt wird |
+| `X-Data-Delay` | Datenverzögerung für Ihren Tarif (z. B. `0s`, `60s`) |
+| `X-Request-Id` | Eindeutige Anfrage-Kennung zur Fehlersuche |
+
+## Quoten-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `id` | string | Eindeutige Quoten-Kennung |
+| `sportsbook` | string | Sportsbook-Kennung (z. B. `draftkings`, `pinnacle`) |
+| `event_id` | string | Übergeordnete Event-Kennung |
+| `market_type` | string | Markttyp: `moneyline`, `spread`, `total`, `player_prop` usw. |
+| `selection` | string | Die Auswahl (Teamname, Spielername, Over/Under) |
+| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `line` | number \| null | Linienwert für Spread-/Total-Märkte, `null` bei Moneyline |
+| `odds.american` | number | American Odds (z. B. -110, +150) |
+| `odds.decimal` | number | Dezimalquoten (z. B. 1.909) |
+| `odds.probability` | number | Implizite Wahrscheinlichkeit (z. B. 0.5238) |
+| `last_seen_at` | string | ISO-8601-Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie diesen als Aktualitätssignal der Pipeline. |
+| `odds_changed_at` | string | ISO-8601-Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert hat. Vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Refreshes hinweg fortgeschrieben — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at). |
+
+## Beispielanfragen
+
+### Alle Quoten für ein Event abrufen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208/odds" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const eventId = 'evt_nba_bos_lal_20260208';
+const response = await fetch(
+  `https://api.sharpapi.io/api/v1/events/${eventId}/odds`,
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+console.log(`${meta.total} total odds for this event`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+event_id = 'evt_nba_bos_lal_20260208'
+response = requests.get(
+    f'https://api.sharpapi.io/api/v1/events/{event_id}/odds',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+result = response.json()
+print(f"{result['meta']['total']} total odds for this event")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Filtern nach Sportsbook und Markt
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208/odds?sportsbook=draftkings,pinnacle&market=moneyline,spread" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const eventId = 'evt_nba_bos_lal_20260208';
+const response = await fetch(
+  `https://api.sharpapi.io/api/v1/events/${eventId}/odds?sportsbook=draftkings,pinnacle&market=moneyline,spread`,
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+event_id = 'evt_nba_bos_lal_20260208'
+response = requests.get(
+    f'https://api.sharpapi.io/api/v1/events/{event_id}/odds',
+    params={
+        'sportsbook': 'draftkings,pinnacle',
+        'market': 'moneyline,spread'
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+odds = response.json()['data']
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Durch alle Quoten paginieren
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# First page
+curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208/odds?limit=50&offset=0" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Next page
+curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208/odds?limit=50&offset=50" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const eventId = 'evt_nba_bos_lal_20260208';
+let offset = 0;
+const limit = 50;
+let allOdds = [];
+
+while (true) {
+  const response = await fetch(
+    `https://api.sharpapi.io/api/v1/events/${eventId}/odds?limit=${limit}&offset=${offset}`,
+    { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+  );
+  const { data, meta } = await response.json();
+  allOdds = allOdds.concat(data);
+
+  if (!meta.pagination.has_more) break;
+  offset = meta.pagination.next_offset;
+}
+
+console.log(`Fetched all ${allOdds.length} odds`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+event_id = 'evt_nba_bos_lal_20260208'
+all_odds = []
+offset = 0
+limit = 50
+
+while True:
+    response = requests.get(
+        f'https://api.sharpapi.io/api/v1/events/{event_id}/odds',
+        params={'limit': limit, 'offset': offset},
+        headers={'X-API-Key': 'YOUR_API_KEY'}
+    )
+    result = response.json()
+    all_odds.extend(result['data'])
+
+    if not result['meta']['pagination']['has_more']:
+        break
+    offset = result['meta']['pagination']['next_offset']
+
+print(f"Fetched all {len(all_odds)} odds")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "dk_evt_nba_bos_lal_20260208_ml_home",
+      "sportsbook": "draftkings",
+      "event_id": "evt_nba_bos_lal_20260208",
+      "market_type": "moneyline",
+      "selection": "Boston Celtics",
+      "selection_type": "home",
+      "line": null,
+      "odds": {
+        "american": -180,
+        "decimal": 1.556,
+        "odds_probability": 0.643
+      },
+      "last_seen_at": "2026-02-08T12:05:00Z"
+    },
+    {
+      "id": "dk_evt_nba_bos_lal_20260208_ml_away",
+      "sportsbook": "draftkings",
+      "event_id": "evt_nba_bos_lal_20260208",
+      "market_type": "moneyline",
+      "selection": "Los Angeles Lakers",
+      "selection_type": "away",
+      "line": null,
+      "odds": {
+        "american": 155,
+        "decimal": 2.55,
+        "odds_probability": 0.392
+      },
+      "last_seen_at": "2026-02-08T12:05:00Z"
+    },
+    {
+      "id": "pin_evt_nba_bos_lal_20260208_ml_home",
+      "sportsbook": "pinnacle",
+      "event_id": "evt_nba_bos_lal_20260208",
+      "market_type": "moneyline",
+      "selection": "Boston Celtics",
+      "selection_type": "home",
+      "line": null,
+      "odds": {
+        "american": -175,
+        "decimal": 1.571,
+        "odds_probability": 0.636
+      },
+      "last_seen_at": "2026-02-08T12:03:00Z"
+    },
+    {
+      "id": "dk_evt_nba_bos_lal_20260208_spread_home",
+      "sportsbook": "draftkings",
+      "event_id": "evt_nba_bos_lal_20260208",
+      "market_type": "spread",
+      "selection": "Boston Celtics",
+      "selection_type": "home",
+      "line": -6.5,
+      "odds": {
+        "american": -110,
+        "decimal": 1.909,
+        "odds_probability": 0.524
+      },
+      "last_seen_at": "2026-02-08T12:05:00Z"
+    },
+    {
+      "id": "dk_evt_nba_bos_lal_20260208_total_over",
+      "sportsbook": "draftkings",
+      "event_id": "evt_nba_bos_lal_20260208",
+      "market_type": "total",
+      "selection": "Over",
+      "selection_type": "over",
+      "line": 224.5,
+      "odds": {
+        "american": -110,
+        "decimal": 1.909,
+        "odds_probability": 0.524
+      },
+      "last_seen_at": "2026-02-08T12:05:00Z"
+    }
+  ],
+  "meta": {
+    "count": 5,
+    "total": 48,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-02-08T12:05:00Z",
+    "filters": {
+      "sportsbook": "all",
+      "market": "all"
+    }
+  }
+}
+```
+
+### Fehlerantworten
+
+***404 Not Found***
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Event not found",
+    "docs": "https://docs.sharpapi.io/en/api-reference/events-odds"
+  }
+}
+```
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Missing or invalid API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Upgrade your tier for higher limits.",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+## Verwandte Endpoints
+
+- [Events](/de/api-reference/events) – Events auflisten und durchsuchen
+- [Event-Details](/de/api-reference/events-by-id) – Event-Details mit eingebetteten Marktdaten abrufen
+- [Event-Märkte](/de/api-reference/events-markets) – Verfügbare Markttypen für ein Event auflisten
+- [Quoten-Snapshot](/de/api-reference/odds) – Quoten über alle Events hinweg abrufen
+- [Beste Quoten](/de/api-reference/odds-best) – Die besten Quoten über alle Sportsbooks hinweg abrufen

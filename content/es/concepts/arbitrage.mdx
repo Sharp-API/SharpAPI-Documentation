@@ -1,0 +1,111 @@
+---
+description: "Comprende cómo funciona el arbitraje en las apuestas deportivas: las matemáticas detrás de los arbs de beneficio garantizado, cómo SharpAPI los detecta entre casas de apuestas y estrategias prácticas de stake."
+---
+
+# ¿Qué es el arbitraje?
+
+El arbitraje ("arb") aprovecha las diferencias de precio entre casas de apuestas para garantizar beneficios independientemente del resultado.
+
+```
+Book A: Team X +150 (implied 40%)
+Book B: Team Y -130 (implied 56.5%)
+Total implied: 96.5% < 100% = ARBITRAGE
+```
+
+## Cómo funciona
+
+### Ejemplo: mercado de dos vías
+
+**Partido: Lakers vs Warriors**
+
+| Sportsbook | Selección | Cuota | Probabilidad implícita |
+|------------|-----------|-------|------------------------|
+| DraftKings | Lakers | +145 | 40,8% |
+| Pinnacle | Warriors | -135 | 57,4% |
+| **Total** | | | **98,2%** |
+
+Como 98,2% < 100%, ¡existe arbitraje!
+
+**Cálculo del beneficio:**
+```
+Profit % = (100 / 98.2) - 100 = 1.83%
+```
+
+### Cálculo de los stakes
+
+Para garantizar el mismo retorno independientemente del resultado:
+
+```javascript
+const total = 1/2.45 + 1/1.74;  // Sum of implied probs
+const stake1 = (1/2.45) / total;  // 41.5%
+const stake2 = (1/1.74) / total;  // 58.5%
+```
+
+**Con 1.000 $ en total:**
+
+| Apuesta | Stake | Cuota | Si gana |
+|---------|-------|-------|---------|
+| Lakers @ DK | 415 $ | +145 | 1.017 $ |
+| Warriors @ Pinnacle | 585 $ | -135 | 1.018 $ |
+
+**Beneficio garantizado: ~18 $ (1,8%)**
+
+## Mercados de tres vías
+
+El fútbol y el hockey contemplan empates, lo que da lugar a arbs de 3 vías:
+
+```
+Team A: +200 (33.3%)
+Draw:   +250 (28.6%)
+Team B: +180 (35.7%)
+Total: 97.6% → 2.4% arb
+```
+
+## Por qué existen los arbs
+
+1. **Diferencias de tiempo**: las casas actualizan a velocidades distintas
+2. **Diferencias de opinión**: las casas tienen modelos de riesgo distintos
+3. **Promociones**: las cuotas potenciadas crean arbs artificiales
+4. **Errores**: ocasionalmente, una casa comete un error
+
+## Retos de la caza de arbs
+
+> **Advertencia:**
+**A las casas de apuestas no les gustan los arbers:**
+- Las cuentas pueden ser limitadas o baneadas
+- Los retiros pueden retrasarse
+- Es posible que te restrinjan a apuestas pequeñas
+
+
+### Consejos para evitar la detección
+
+1. **Cantidades redondeadas**: 47,32 $ resulta sospechoso, 50 $ no
+2. **Mezcla apuestas recreativas**: no apuestes solo arbs
+3. **Retira gradualmente**: los retiros grandes activan revisiones
+4. **Usa varias cuentas**: distribuye la acción (donde sea legal)
+
+## Funciones de arbs en SharpAPI
+
+| Función | Beneficio |
+|---------|-----------|
+| **Detección en tiempo real** | Alertas en menos de un segundo vía SSE |
+| **Stakes óptimos** | Porcentajes de stake precalculados |
+| **Cobertura multicasa** | Cruce de referencias entre 6+ casas |
+| **Filtrado por beneficio** | Establece un umbral mínimo de beneficio |
+
+## Arbitraje vs apuestas +EV
+
+| Aspecto | Arbitraje | Apuestas +EV |
+|---------|-----------|--------------|
+| Riesgo | Cero (garantizado) | Existe varianza |
+| Beneficio por apuesta | 1-3% habitual | 2-10% de ventaja |
+| Riesgo de cuenta | Alto (limitaciones) | Menor |
+| Capital necesario | Alto (ambos lados) | Menor |
+| Sostenibilidad | Limitada | Viable a largo plazo |
+
+> **Consejo:**
+  Muchos apostadores sharp prefieren +EV antes que arb porque las cuentas duran más y las ventajas suelen ser mayores. Consulta [Cálculo de EV](/es/concepts/ev-calculation) para ver las matemáticas detrás de +EV.
+
+## Construye un escáner de arbs
+
+¿Listo para automatizar la detección de arbs? Consulta el [Ejemplo de escáner de arbitraje](/es/examples/arbitrage-scanner) para ver una implementación completa en Python con alertas de Discord.

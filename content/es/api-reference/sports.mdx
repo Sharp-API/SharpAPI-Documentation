@@ -1,0 +1,195 @@
+---
+description: "GET /api/v1/sports — Obtén todos los deportes disponibles con sus ligas y recuentos de eventos. Úsalo para crear filtros de navegación. Devuelve los identificadores de deporte utilizados en todos los endpoints."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Deportes
+
+Obtén una lista de todos los deportes disponibles con sus ligas y recuentos de eventos.
+
+## Endpoints
+
+```
+GET /api/v1/sports
+```
+
+<Callout type="info">
+Requiere una API key. Disponible en todos los planes (Free incluido). Las solicitudes no autenticadas devuelven `401`.
+</Callout>
+
+## Listar todos los deportes
+
+### Ejemplos de solicitudes
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/sports" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch('https://api.sharpapi.io/api/v1/sports', {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+});
+const { data, meta } = await response.json();
+
+data.forEach(sport => {
+  console.log(`${sport.name}: ${sport.event_count} events (${sport.live_count} live)`);
+  console.log(`  Leagues: ${sport.leagues.join(', ')}`);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/sports',
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
+result = response.json()
+
+for sport in result['data']:
+    print(f"{sport['name']}: {sport['event_count']} events ({sport['live_count']} live)")
+    print(f"  Leagues: {', '.join(sport['leagues'])}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Respuesta
+
+```json
+{
+  "data": [
+    {
+      "id": "basketball",
+      "name": "Basketball",
+      "leagues": ["nba", "ncaab", "wnba"],
+      "event_count": 42,
+      "live_count": 3
+    },
+    {
+      "id": "football",
+      "name": "Football",
+      "leagues": ["nfl", "ncaaf"],
+      "event_count": 28,
+      "live_count": 1
+    },
+    {
+      "id": "hockey",
+      "name": "Hockey",
+      "leagues": ["nhl"],
+      "event_count": 15,
+      "live_count": 2
+    },
+    {
+      "id": "baseball",
+      "name": "Baseball",
+      "leagues": ["mlb"],
+      "event_count": 0,
+      "live_count": 0
+    },
+    {
+      "id": "soccer",
+      "name": "Soccer",
+      "leagues": ["epl", "la_liga", "serie_a", "bundesliga", "mls"],
+      "event_count": 35,
+      "live_count": 4
+    },
+    {
+      "id": "tennis",
+      "name": "Tennis",
+      "leagues": ["atp", "wta"],
+      "event_count": 18,
+      "live_count": 6
+    },
+    {
+      "id": "mma",
+      "name": "MMA",
+      "leagues": ["ufc"],
+      "event_count": 12,
+      "live_count": 0
+    },
+    {
+      "id": "golf",
+      "name": "Golf",
+      "leagues": ["pga"],
+      "event_count": 4,
+      "live_count": 1
+    }
+  ],
+  "meta": {
+    "count": 19,
+    "total": 19,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T12:00:00Z",
+    "filters": {}
+  }
+}
+```
+
+## Esquema del objeto Sport
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | string | Identificador del deporte (en minúsculas, usar en filtros de la API) |
+| `name` | string | Nombre del deporte legible para humanos |
+| `leagues` | string[] | IDs de las ligas dentro de este deporte |
+| `event_count` | integer | Total de eventos actualmente disponibles con cuotas |
+| `live_count` | integer | Eventos actualmente en directo/en juego |
+
+## Deportes disponibles
+
+| ID | Nombre visible | Ligas populares |
+|----|-------------|-----------------|
+| `basketball` | Baloncesto | NBA, NCAAB, WNBA |
+| `football` | Fútbol americano | NFL, NCAAF |
+| `hockey` | Hockey | NHL |
+| `baseball` | Béisbol | MLB |
+| `soccer` | Fútbol | EPL, La Liga, Serie A, Bundesliga, MLS |
+| `tennis` | Tenis | ATP, WTA |
+| `mma` | MMA | UFC |
+| `golf` | Golf | PGA |
+| `boxing` | Boxeo | — |
+| `cricket` | Críquet | — |
+| `rugby` | Rugby Union | — |
+| `rugby_league` | Rugby League | — |
+| `lacrosse` | Lacrosse | PLL |
+| `motorsports` | Automovilismo | F1, NASCAR |
+| `curling` | Curling | — |
+| `darts` | Dardos | PDC |
+| `snooker` | Snooker | — |
+| `table_tennis` | Tenis de mesa | — |
+| `esports` | Esports | LoL, CS2, Dota 2 |
+
+<Callout type="info">
+Los valores `event_count` y `live_count` son dinámicos y cambian según los calendarios actuales. Los deportes fuera de temporada mostrarán 0 eventos.
+</Callout>
+
+## Uso de los deportes en filtros
+
+Utiliza el `id` del deporte como parámetro de filtro en otros endpoints:
+
+```bash
+# Get odds for basketball only
+curl "https://api.sharpapi.io/api/v1/odds?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get events for multiple sports
+curl "https://api.sharpapi.io/api/v1/events?sport=basketball,football" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Endpoints relacionados
+
+- [Ligas](/es/api-reference/leagues) - Lista de ligas con filtro opcional por deporte
+- [Snapshot de cuotas](/es/api-reference/odds) - Filtra cuotas por deporte
+- [Eventos](/es/api-reference/events) - Filtra eventos por deporte

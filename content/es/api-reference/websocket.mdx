@@ -1,0 +1,909 @@
+---
+description: "API WebSocket en wss://ws.sharpapi.io — streaming bidireccional en tiempo real para actualizaciones de cuotas, alertas +EV y notificaciones de arbitraje. Admite suscripciones basadas en topics."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Stream WebSocket
+
+`wss://ws.sharpapi.io` -- Actualizaciones de cuotas y oportunidades en tiempo real mediante WebSocket.
+
+<Callout type="warning">
+**Requiere el complemento WebSocket** (99 $/mes) en cualquier plan de pago, o Enterprise (incluido). El plan Free no admite streaming.
+</Callout>
+
+<Callout type="info">
+Una descripción AsyncAPI 3.0 legible por máquina de este endpoint — canales, mensajes, esquemas y bindings — está publicada en [`/asyncapi.yaml`](https://docs.sharpapi.io/asyncapi.yaml). Úsala para la generación de código de SDK o para impulsar herramientas AsyncAPI como [Studio](https://studio.asyncapi.com/).
+</Callout>
+
+## ¿Por qué WebSocket?
+
+WebSocket proporciona una conexión persistente y full-duplex. En comparación con SSE:
+
+| Característica | SSE (`/api/v1/stream`) | WebSocket (`ws.sharpapi.io`) |
+|---------|------------------------|------------------------------|
+| Dirección | Solo Servidor → Cliente | Bidireccional |
+| Reconexión | Automática (`Last-Event-ID`) | Gestionada por el cliente |
+| Filtros | Establecidos una vez vía parámetros de consulta | Actualizables en cualquier momento mediante el mensaje `subscribe` |
+| Protocolo | Streaming HTTP/1.1 | WebSocket (RFC 6455) |
+| Soporte del navegador | `EventSource` nativo | `WebSocket` nativo |
+
+Ambos protocolos entregan los mismos datos con la misma latencia. Elige WebSocket cuando necesites cambiar filtros sin reconectar.
+
+## Autenticación
+
+Pasa tu API key como parámetro de consulta en la URL de conexión:
+
+```
+wss://ws.sharpapi.io?api_key=sk_live_your_key
+```
+
+También puedes pasar filtros iniciales y suscripciones a canales como parámetros de consulta:
+
+```
+wss://ws.sharpapi.io?api_key=sk_live_your_key&channels=ev,odds&sport=basketball&sportsbook=draftkings,fanduel&league=nba
+```
+
+### Parámetros de consulta
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|-----------|------|---------|-------------|
+| `api_key` | string | — | **Obligatorio.** Tu API key |
+| `channels` | string | all | Suscripción a canales de datos específicos, separados por comas. Valores válidos: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omite para recibir todos los datos permitidos por tu plan. |
+| `sport` | string | all | Filtrar por deporte(s), separados por comas (p. ej. `basketball`, `football`, `ice_hockey`) |
+| `sportsbook` | string | tier-allowed | Filtrar por sportsbook(s), separados por comas |
+| `league` | string | all | Filtrar por liga(s), separadas por comas |
+| `market` | string | all | Filtrar por tipo(s) de mercado, separados por comas (p. ej. `moneyline`, `point_spread`, `total_points`, `player_points`) |
+| `event_id` | string | all | Filtrar por ID(s) de evento específicos, separados por comas |
+| `min_ev` | number | 2.0 | Porcentaje mínimo de EV para oportunidades +EV |
+| `min_profit` | number | 0.5 | Porcentaje mínimo de beneficio para oportunidades de arbitraje y low-hold |
+| `min_odds` | number | — | Filtrar cuotas por valor mínimo de cuota americana (p. ej., `-200`) |
+| `max_odds` | number | — | Filtrar cuotas por valor máximo de cuota americana (p. ej., `500`) |
+| `state` | string | — | Código de estado de EE. UU. para los deep links de sportsbooks en eventos de cuotas y oportunidades (p. ej., `nj`, `ny`, `il`). Garantiza que las URL `deep_link` redirijan al dominio del sportsbook específico del estado. |
+| `resume` | boolean | false | Omite el snapshot inicial de cuotas en la reconexión (asume que el cliente conserva el estado anterior) |
+| `from_seq` | integer | — | Reproduce los eventos perdidos desde este número de secuencia global. Úsalo con `resume` para una reconexión sin huecos. Consulta [Reconexión con Replay](#reconexión-con-replay). |
+
+<Callout type="info">
+**Usa canales para reducir el tamaño del payload.** Sin `channels`, el servidor envía todos los tipos de oportunidades más el volcado completo de cuotas. Si solo necesitas datos low-hold, conéctate con `channels=low_hold` para omitir EV, arbitraje, middles y cuotas brutas por completo.
+</Callout>
+
+## Ciclo de vida de la conexión
+
+```
+Cliente                                        Servidor
+  |                                               |
+  |--- WS Upgrade ?api_key=xxx&channels=ev,odds →|
+  |                                               |  Auth + adquirir slot de stream
+  |← connected ----------------------------------|  Bienvenida (tier, features, channels)
+  |← subscribed ---------------------------------|  Confirmación de filtros
+  |← opportunities_snapshot (ev) ----------------|  Oportunidades EV
+  |← initial (draftkings) -----------------------|  Cuotas por sportsbook
+  |← initial (fanduel) --------------------------|  (fragmentadas por book)
+  |← snapshot:complete --------------------------|  Todos los datos iniciales enviados
+  |                                               |
+  |← odds:update --------------------------------|  Actualización incremental de cuotas
+  |← ev:detected --------------------------------|  Oportunidad +EV encontrada
+  |← heartbeat ----------------------------------|  Keep-alive (cada 30s)
+  |                                               |
+  |--- { type: "ping" } →                       |
+  |← pong ---------------------------------------|
+  |                                               |
+  |--- { type: "subscribe", channels, filters } →|  Actualizar canales/filtros
+  |← subscribed ---------------------------------|  Nueva suscripción confirmada
+  |                                               |
+  |--- close ----------------------------------→|  Cierre normal (1000)
+```
+
+## Protocolo de mensajes
+
+### Cliente → Servidor
+
+**`subscribe`** -- Establece o actualiza canales y filtros. Se envía automáticamente en la conexión si se pasa como parámetros de consulta.
+
+```json
+{
+  "type": "subscribe",
+  "channels": ["ev", "odds"],
+  "filters": {
+    "sports": ["basketball"],
+    "sportsbooks": ["draftkings", "fanduel"],
+    "leagues": ["nba"],
+    "markets": ["moneyline", "player_points"],
+    "eventIds": ["32825-35775-2026-02-08"],
+    "min_ev": 3.0,
+    "min_profit": 1.5
+  }
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `channels` | string[] | Opcional. Canales de datos a los que suscribirse: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omite para mantener los canales actuales. |
+| `filters.sports` | string[] | Opcional. Filtrar por deporte(s): `basketball`, `football`, `ice_hockey`, `baseball`, `soccer`, etc. |
+| `filters.sportsbooks` | string[] | Opcional. Filtrar por sportsbook(s). |
+| `filters.leagues` | string[] | Opcional. Filtrar por liga(s). |
+| `filters.markets` | string[] | Opcional. Filtrar por tipo(s) de mercado. |
+| `filters.eventIds` | string[] | Opcional. Filtrar por ID(s) de evento específicos. |
+| `filters.min_ev` | number | Opcional. Umbral mínimo de porcentaje de EV (por defecto 2.0). |
+| `filters.min_profit` | number | Opcional. Porcentaje mínimo de beneficio para arbitraje/low-hold (por defecto 0.5). |
+
+**`ping`** -- Keepalive. Envía cada 25 segundos para evitar timeouts.
+
+```json
+{ "type": "ping" }
+```
+
+### Servidor → Cliente
+
+#### `connected`
+
+Se envía inmediatamente tras una autenticación exitosa.
+
+```json
+{
+  "type": "connected",
+  "seq": 1,
+  "message": "Welcome to SharpAPI real-time odds stream",
+  "stream_id": "ws_mle3husw_ezoyvp",
+  "tier": "pro",
+  "features": { "ev": true, "arbitrage": true, "middles": true, "low_hold": true },
+  "channels": ["ev", "odds"],
+  "global_seq": 12847,
+  "books": { "max": -1, "allowed": null },
+  "timestamp": "2026-02-08T18:47:17.559Z"
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `seq` | integer | Número de secuencia de mensajes por conexión (se incrementa con cada mensaje) |
+| `stream_id` | string | Identificador único de conexión |
+| `tier` | string | Tu plan de suscripción |
+| `features` | object | Qué tipos de oportunidades admite tu plan |
+| `channels` | string[] \| null | Suscripciones a canales activas, o `null` si recibe todos los datos permitidos por el plan |
+| `global_seq` | integer | Número actual de secuencia de evento global. Almacénalo para la reconexión con replay. |
+| `books.max` | integer | Sportsbooks máximos permitidos para tu plan (`-1` = ilimitado) |
+| `books.allowed` | string[] \| null | Sportsbooks específicos permitidos, o `null` para todos |
+
+#### `subscribed`
+
+Confirma tus canales y filtros activos.
+
+```json
+{
+  "type": "subscribed",
+  "seq": 2,
+  "channels": ["ev", "odds"],
+  "sports": ["basketball"],
+  "sportsbooks": ["draftkings", "fanduel"],
+  "leagues": ["nba"],
+  "markets": null,
+  "eventIds": null,
+  "min_ev": 3.0,
+  "min_profit": 1.5,
+  "timestamp": "2026-02-08T18:47:17.561Z"
+}
+```
+
+#### `opportunities_snapshot`
+
+Snapshot de oportunidades para un único tipo de canal. Se envía una vez por canal de oportunidades suscrito durante la carga inicial de datos. Solo incluye el tipo de oportunidad al que te has suscrito.
+
+```json
+{
+  "type": "opportunities_snapshot",
+  "seq": 3,
+  "ev": [
+    {
+      "id": "a1b2c3d4e5f6",
+      "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "ev_percentage": 4.35,
+      "odds_american": -110,
+      "odds_decimal": 1.909,
+      "no_vig_odds": -101,
+      "selection": "Tyrese Haliburton Over 22.5",
+      "market": "player_points",
+      "line": 22.5,
+      "sportsbook": "draftkings",
+      "game": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "is_live": false,
+      "confidence_score": 72,
+      "kelly_percent": 3.8,
+      "book_count": 4,
+      "detected_at": "2026-02-08T18:47:20.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:17.700Z"
+}
+```
+
+La clave de nivel superior coincide con el tipo de canal: `ev`, `arbitrage`, `middles` o `low_hold`. Cada mensaje de snapshot contiene solo un tipo. Los snapshots grandes se fragmentan automáticamente — cuando esto ocurre, los mensajes incluyen los campos `chunk` y `totalChunks`.
+
+<Callout type="info">
+Todos los campos de oportunidad usan nomenclatura **snake_case** (p. ej. `event_id`, `market_type`, `profit_percent`, `detected_at`). Esto se aplica de forma consistente en todos los canales, tipos de mensaje y protocolos (REST, SSE y WebSocket).
+</Callout>
+
+#### `initial`
+
+Snapshot de cuotas por sportsbook. Se envía una vez por sportsbook cuando el canal `odds` está suscrito. Requiere el canal `odds`.
+
+```json
+{
+  "type": "initial",
+  "seq": 4,
+  "source": "draftkings",
+  "data": [ /* NormalizedOdds[] */ ],
+  "count": 1500,
+  "timestamp": "2026-02-08T18:47:17.800Z"
+}
+```
+
+<Callout type="info">
+Las cuotas se fragmentan por sportsbook — recibirás un mensaje `initial` por book. Los books grandes pueden dividirse en varios mensajes (hasta 1000 cuotas cada uno). Si no necesitas las cuotas brutas, omite el canal `odds` para saltarlas por completo.
+</Callout>
+
+#### `snapshot:complete`
+
+Indica que se han enviado todos los snapshots iniciales (oportunidades + cuotas). Es seguro ocultar los estados de carga tras recibir este mensaje.
+
+```json
+{
+  "type": "snapshot:complete",
+  "seq": 10,
+  "books": ["draftkings", "fanduel", "pinnacle"],
+  "resumed": false,
+  "progressive": true,
+  "timestamp": "2026-02-08T18:47:18.000Z"
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `books` | string[] | Lista de sportsbooks incluidos en el snapshot inicial |
+| `resumed` | boolean | `true` si se trataba de una conexión de reanudación (no se reenvían las cuotas) |
+| `progressive` | boolean | `true` si las cuotas se entregaron de forma progresiva (fragmentadas por book) |
+
+#### `odds:update`
+
+Actualización incremental de cuotas desde un único sportsbook.
+
+```json
+{
+  "type": "odds:update",
+  "seq": 46,
+  "source": "draftkings",
+  "data": [ /* NormalizedOdds[] */ ],
+  "count": 23,
+  "timestamp": "2026-02-08T18:47:19.123Z"
+}
+```
+
+#### `odds:removed`
+
+Cuotas eliminadas por un sportsbook (p. ej. mercado retirado, evento finalizado).
+
+```json
+{
+  "type": "odds:removed",
+  "seq": 47,
+  "source": "draftkings",
+  "ids": ["odd_id_1", "odd_id_2"],
+  "count": 2,
+  "timestamp": "2026-02-08T18:47:19.200Z"
+}
+```
+
+#### `ev:detected`
+
+Nueva oportunidad +EV encontrada. Solo plan Pro o superior.
+
+```json
+{
+  "type": "ev:detected",
+  "seq": 48,
+  "data": [
+    {
+      "id": "a1b2c3d4e5f6",
+      "game_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "ev_percentage": 4.35,
+      "odds_american": -110,
+      "odds_decimal": 1.909,
+      "no_vig_odds": -101,
+      "selection": "Tyrese Haliburton Over 22.5",
+      "market": "player_points",
+      "line": 22.5,
+      "sportsbook": "draftkings",
+      "game": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "is_live": false,
+      "confidence_score": 72,
+      "kelly_percent": 3.8,
+      "book_count": 4,
+      "detected_at": "2026-02-08T18:47:20.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:20.000Z"
+}
+```
+
+#### `ev:expired`
+
+Una oportunidad +EV detectada anteriormente ya no está disponible.
+
+```json
+{
+  "type": "ev:expired",
+  "seq": 49,
+  "data": {
+    "expired": [
+      "32825-35775-2026-02-08:draftkings:Tyrese Haliburton Over 22.5"
+    ]
+  },
+  "timestamp": "2026-02-08T18:47:25.000Z"
+}
+```
+
+#### `arb:detected`
+
+Nueva oportunidad de arbitraje encontrada. Solo plan Hobby o superior.
+
+```json
+{
+  "type": "arb:detected",
+  "seq": 50,
+  "data": [
+    {
+      "id": "61c501b83ce932d1",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "moneyline",
+      "line": null,
+      "profit_percent": 2.8,
+      "implied_total": 97.2,
+      "is_live": false,
+      "legs": [
+        {
+          "sportsbook": "draftkings",
+          "selection": "Indiana Pacers",
+          "odds_american": 125,
+          "odds_decimal": 2.25,
+          "implied_probability": 0.4444,
+          "stake_percent": 52.8
+        },
+        {
+          "sportsbook": "fanduel",
+          "selection": "Toronto Raptors",
+          "odds_american": -110,
+          "odds_decimal": 1.909,
+          "implied_probability": 0.5238,
+          "stake_percent": 47.2
+        }
+      ],
+      "detected_at": "2026-02-08T18:47:21.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:21.000Z"
+}
+```
+
+#### `arb:expired`
+
+Una oportunidad de arbitraje detectada anteriormente ya no está disponible.
+
+```json
+{
+  "type": "arb:expired",
+  "seq": 51,
+  "data": {
+    "expired": [
+      "32825-35775-2026-02-08:moneyline"
+    ]
+  },
+  "timestamp": "2026-02-08T18:47:26.000Z"
+}
+```
+
+#### `middles:detected`
+
+Nueva oportunidad de middle encontrada. Requiere el canal `middles`.
+
+```json
+{
+  "type": "middles:detected",
+  "seq": 52,
+  "data": [
+    {
+      "id": "abc123",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "player_points",
+      "side1": {
+        "book": "draftkings",
+        "selection": "Over 22.5",
+        "line": 22.5,
+        "odds": { "american": -110, "decimal": 1.909, "probability": 0.5238, "fair_probability": 0.51 },
+        "stake_percent": 50,
+        "odds_age_seconds": 3.2,
+        "deep_link": null
+      },
+      "side2": {
+        "book": "fanduel",
+        "selection": "Under 23.5",
+        "line": 23.5,
+        "odds": { "american": -105, "decimal": 1.952, "probability": 0.5122, "fair_probability": 0.49 },
+        "stake_percent": 50,
+        "odds_age_seconds": 1.8,
+        "deep_link": null
+      },
+      "middle_size": 1,
+      "middle_numbers": [23],
+      "middle_probability": 0.12,
+      "expected_value": 3.5,
+      "roi_percentage": 4.2,
+      "quality_score": 85,
+      "detected_at": "2026-02-08T18:47:22.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:22.000Z"
+}
+```
+
+#### `middles:expired`
+
+Una oportunidad de middle detectada anteriormente ya no está disponible.
+
+```json
+{
+  "type": "middles:expired",
+  "seq": 53,
+  "data": {
+    "expired": ["abc123"]
+  },
+  "timestamp": "2026-02-08T18:47:27.000Z"
+}
+```
+
+#### `low_hold:detected`
+
+Nueva oportunidad de low-hold encontrada. Requiere el canal `low_hold`.
+
+```json
+{
+  "type": "low_hold:detected",
+  "seq": 54,
+  "data": [
+    {
+      "id": "def456",
+      "event_id": "nba_indianapacers_torontoraptors_2026-02-08",
+      "event_name": "Indiana Pacers @ Toronto Raptors",
+      "sport": "basketball",
+      "league": "nba",
+      "market_type": "moneyline",
+      "line": null,
+      "home_team": "Toronto Raptors",
+      "away_team": "Indiana Pacers",
+      "start_time": "2026-02-08T19:00:00.000Z",
+      "hold_percentage": 1.2,
+      "is_live": false,
+      "all_books": ["draftkings", "fanduel"],
+      "side1": {
+        "selection": "Indiana Pacers",
+        "books": ["draftkings"],
+        "line": null,
+        "odds": { "american": -108, "decimal": 1.926, "implied_probability": 0.5192, "fair_probability": 0.5096 },
+        "deep_links": { "draftkings": "https://sportsbook.draftkings.com/event/..." }
+      },
+      "side2": {
+        "selection": "Toronto Raptors",
+        "books": ["fanduel"],
+        "line": null,
+        "odds": { "american": 110, "decimal": 2.1, "implied_probability": 0.4762, "fair_probability": 0.4904 },
+        "deep_links": { "fanduel": "https://sportsbook.fanduel.com/event/..." }
+      },
+      "detected_at": "2026-02-08T18:47:22.000Z"
+    }
+  ],
+  "timestamp": "2026-02-08T18:47:22.000Z"
+}
+```
+
+#### `low_hold:expired`
+
+Una oportunidad de low-hold detectada anteriormente ya no está disponible.
+
+```json
+{
+  "type": "low_hold:expired",
+  "seq": 55,
+  "data": {
+    "expired": ["def456"]
+  },
+  "timestamp": "2026-02-08T18:47:28.000Z"
+}
+```
+
+#### `heartbeat`
+
+Keep-alive enviado cada 30 segundos.
+
+```json
+{
+  "type": "heartbeat",
+  "seq": 150,
+  "timestamp": "2026-02-08T18:48:17.559Z"
+}
+```
+
+#### `pong`
+
+Respuesta a un `ping` del cliente.
+
+```json
+{
+  "type": "pong",
+  "seq": 151,
+  "timestamp": "2026-02-08T18:47:42.000Z"
+}
+```
+
+#### `error`
+
+Notificación de error. La conexión puede permanecer abierta (para errores no fatales) o cerrarse (para errores de autenticación/límite).
+
+```json
+{
+  "type": "error",
+  "seq": 152,
+  "code": "unknown_message_type",
+  "message": "Unknown message type: foobar"
+}
+```
+
+La capa WebSocket emite un conjunto pequeño y fijo de códigos de error a nivel de frame para errores de protocolo del cliente. Son distintos de los códigos de error HTTP devueltos por los endpoints REST.
+
+| Código | Significado |
+|------|---------|
+| `invalid_message` | El frame no se pudo parsear como JSON o no coincidía con el formato esperado |
+| `unknown_message_type` | El campo `type` no es uno de `auth`, `subscribe`, `filter`, `refresh_token`, `ping` |
+| `missing_token` | El frame `auth` o `refresh_token` no incluía un campo `token` |
+| `missing_channels` | El frame `subscribe` no incluía un array `channels` no vacío |
+| `not_authenticated` | Se envió `subscribe`, `filter` o `refresh_token` antes de que `auth` tuviera éxito |
+| `already_authenticated` | El cliente envió un segundo frame `auth` después de que el primero tuviera éxito |
+
+Los frames WebSocket también pueden transportar los códigos al estilo HTTP `invalid_api_key`, `tier_restricted` y `too_many_streams` — estos hacen que el servidor cierre la conexión después de enviar el frame. Consulta [Visión general de la API → Códigos de error](/es/api-reference/overview#error-codes) para la lista completa.
+
+## Códigos de cierre
+
+| Código | Significado | Resolución |
+|------|---------|------------|
+| `1000` | Cierre normal | Cierre limpio iniciado por el cliente o el servidor |
+| `1006` | Cierre anormal (lado cliente) | Caída de red o terminación del proceso — reconectar siempre |
+| `4001` | Fallo de autenticación | Comprueba tu API key |
+| `4003` | Sin acceso al streaming | Añade el complemento WebSocket (99 $/mes) o actualiza a Enterprise |
+| `4029` | Límite de streams superado | Cierra las conexiones no utilizadas (por defecto: 1 por clave; gana la conexión más reciente) |
+
+<Callout type="warning">
+**El código 1006 está reservado por RFC 6455 y nunca se transmite por la red.** Tu librería WebSocket lo genera localmente cuando se pierde la conexión TCP sin un handshake de cierre adecuado (fallo de red, terminación del proceso, timeout a nivel de SO). El servidor no lo envió. Reconecta siempre ante un 1006.
+</Callout>
+
+## Números de secuencia
+
+Cada mensaje del servidor incluye un campo `seq` — un entero por conexión que se incrementa con cada mensaje. El mensaje `connected` también incluye `global_seq`, un contador de eventos a nivel de servidor.
+
+Úsalos para:
+- **Ordenación** -- Verifica que los mensajes llegan en orden comprobando que `seq` aumenta de forma monótona
+- **Detección de huecos** -- Un hueco en `seq` indica que se perdió un mensaje (p. ej. por backpressure)
+- **Replay de reconexión** -- Pasa `global_seq` como `from_seq` al reconectar para reproducir los eventos perdidos
+
+<Callout type="info">
+Almacena `global_seq` del mensaje `connected` y haz seguimiento de `seq` desde cada mensaje posterior. Al reconectar, pasa la última secuencia vista como `from_seq` para recibir los eventos perdidos.
+</Callout>
+
+## Reconexión con Replay
+
+El servidor mantiene un buffer de replay de 2 minutos (hasta 2000 eventos). Para desconexiones breves, puedes reconectar sin perder datos:
+
+```
+wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&resume=true&from_seq=12900
+```
+
+| Parámetro | Efecto |
+|-----------|--------|
+| `resume=true` | Omite el snapshot completo de cuotas (asume que el cliente conserva el estado anterior) |
+| `from_seq=N` | Reproduce todos los eventos desde la secuencia global `N` |
+
+Los mensajes reproducidos incluyen `"replay": true` y `"global_seq": N` para que puedas distinguirlos de los eventos en directo.
+
+```javascript
+let lastGlobalSeq = 0;
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  if (msg.type === 'connected') {
+    lastGlobalSeq = msg.global_seq;
+  }
+
+  if (msg.global_seq) {
+    lastGlobalSeq = msg.global_seq;
+  }
+
+  if (msg.replay) {
+    console.log('Replayed event:', msg.type);
+  }
+};
+
+// On reconnect:
+function reconnect() {
+  const params = new URLSearchParams({
+    api_key: 'YOUR_KEY',
+    channels: 'ev,odds',
+    resume: 'true',
+    from_seq: lastGlobalSeq.toString()
+  });
+  ws = new WebSocket(`wss://ws.sharpapi.io?${params}`);
+}
+```
+
+<Callout type="warning">
+El buffer de replay conserva los eventos durante **2 minutos** (máx. 2000 eventos). Si has estado desconectado más tiempo, omite `resume` y `from_seq` para recibir un snapshot completo en su lugar.
+</Callout>
+
+## Ejemplos de código
+
+<Tabs items={['Browser', 'Node.js', 'Python', 'TypeScript SDK']}>
+  <Tabs.Tab>
+```javascript
+// Subscribe to EV opportunities + odds only (skip middles, low_hold, arbitrage)
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&sport=basketball&league=nba'
+);
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'connected':
+      console.log(msg.message, '| tier:', msg.tier, '| channels:', msg.channels);
+      break;
+    case 'subscribed':
+      console.log('Channels:', msg.channels, '| Filters:', msg.sportsbooks, msg.leagues);
+      break;
+    case 'opportunities_snapshot':
+      if (msg.ev) console.log(`EV snapshot: ${msg.ev.length} opportunities`);
+      break;
+    case 'initial':
+      const books = Object.keys(msg.data);
+      console.log(`Odds snapshot: ${books.length} books`);
+      break;
+    case 'snapshot:complete':
+      console.log('All initial data received');
+      break;
+    case 'odds:update':
+      console.log(`${msg.source}: ${msg.data.length} odds updated`);
+      break;
+    case 'ev:detected':
+      msg.data.forEach(ev =>
+        console.log(`+EV: ${ev.selection} at ${ev.ev_percentage}%`)
+      );
+      break;
+    case 'heartbeat':
+      break; // silent keepalive
+  }
+};
+
+ws.onclose = (event) => {
+  console.log(`Closed: ${event.code} ${event.reason}`);
+};
+
+// Send ping every 25s to keep alive
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+
+// Update channels and filters without reconnecting
+function updateSubscription(channels, { sports, sportsbooks, leagues } = {}) {
+  ws.send(JSON.stringify({
+    type: 'subscribe',
+    channels,
+    filters: { sports, sportsbooks, leagues }
+  }));
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+import WebSocket from 'ws';
+
+// Subscribe to low-hold only — no odds dump, no EV/arb/middles
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=low_hold'
+);
+
+ws.on('message', (raw) => {
+  const msg = JSON.parse(raw.toString());
+
+  if (msg.type === 'connected') {
+    console.log(msg.message);
+    console.log('Tier:', msg.tier, '| Channels:', msg.channels);
+  }
+  else if (msg.type === 'opportunities_snapshot' && msg.low_hold) {
+    console.log(`Low-hold snapshot: ${msg.low_hold.length} opportunities`);
+  }
+  else if (msg.type === 'snapshot:complete') {
+    console.log('Initial data complete');
+  }
+  else if (msg.type === 'low_hold:detected') {
+    console.log(`+${msg.data.length} low-hold opportunities`);
+  }
+  else if (msg.type === 'low_hold:expired') {
+    console.log(`-${msg.data.expired.length} low-hold expired`);
+  }
+});
+
+ws.on('close', (code, reason) => {
+  console.log(`Closed: ${code} ${reason}`);
+  if (code !== 1000) {
+    // Reconnect logic here
+  }
+});
+
+// Keepalive
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import json
+import websocket
+import threading
+import time
+
+API_KEY = "YOUR_KEY"
+# Subscribe to middles channel only
+URL = f"wss://ws.sharpapi.io?api_key={API_KEY}&channels=middles&league=nba"
+
+def on_message(ws, raw):
+    msg = json.loads(raw)
+    msg_type = msg["type"]
+
+    if msg_type == "connected":
+        print(f'{msg["message"]} | tier: {msg["tier"]} | channels: {msg["channels"]}')
+    elif msg_type == "opportunities_snapshot" and "middles" in msg:
+        print(f'Middles snapshot: {len(msg["middles"])} opportunities')
+    elif msg_type == "snapshot:complete":
+        print("Initial data complete")
+    elif msg_type == "middles:detected":
+        for m in msg["data"]:
+            print(f'Middle: {m["event_name"]} — EV {m.get("expected_value", "?")}%')
+    elif msg_type == "middles:expired":
+        print(f'Expired: {len(msg["data"]["expired"])} middles')
+    elif msg_type == "heartbeat":
+        pass  # silent keepalive
+
+def on_close(ws, code, reason):
+    print(f"Closed: {code} {reason}")
+
+def on_open(ws):
+    # Start ping thread
+    def ping():
+        while ws.sock and ws.sock.connected:
+            ws.send(json.dumps({"type": "ping"}))
+            time.sleep(25)
+    threading.Thread(target=ping, daemon=True).start()
+
+ws = websocket.WebSocketApp(URL,
+    on_message=on_message,
+    on_close=on_close,
+    on_open=on_open)
+
+ws.run_forever()
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```typescript
+import { SharpAPI } from '@sharpapi/client';
+
+const api = new SharpAPI('YOUR_KEY');
+
+const stream = api.stream.oddsWs({
+  channels: ['ev', 'odds'],
+  sport: ['basketball'],
+  sportsbook: ['draftkings', 'fanduel'],
+  league: ['nba'],
+});
+
+stream.on('connected', ({ message, tier, channels }) => {
+  console.log(message, '| tier:', tier, '| channels:', channels);
+});
+
+stream.on('opportunities_snapshot', ({ ev, arbitrage, middles, low_hold }) => {
+  if (ev) console.log(`EV snapshot: ${ev.length}`);
+  if (low_hold) console.log(`Low-hold snapshot: ${low_hold.length}`);
+});
+
+stream.on('snapshot:complete', () => {
+  console.log('All initial data received');
+});
+
+stream.on('odds:update', ({ data, source }) => {
+  console.log(`${source}: ${data.length} odds updated`);
+});
+
+stream.on('ev:detected', ({ data }) => {
+  data.forEach(ev =>
+    console.log(`+EV: ${ev.selection} at ${ev.ev_percentage}%`)
+  );
+});
+
+stream.on('error', ({ message }) => {
+  console.error('Error:', message);
+});
+
+stream.connect();
+
+// Update channels and filters later without reconnecting
+stream.updateSubscription({
+  channels: ['low_hold'],
+  sports: ['football'],
+  sportsbooks: ['pinnacle'],
+  leagues: ['nfl'],
+});
+
+// Disconnect when done
+// stream.disconnect();
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Límites de streams concurrentes
+
+Cada conexión WebSocket abierta cuenta como un stream contra tu límite.
+
+| Plan | Máx. streams concurrentes |
+|------|------------------------|
+| Complemento WebSocket (99 $/mes) | 10 |
+| Enterprise | Personalizado |
+
+<Callout type="warning">
+Superar tu límite de streams cierra la conexión con el código `4029`. Cierra las conexiones no utilizadas antes de abrir nuevas.
+</Callout>
+
+## Buenas prácticas
+
+1. **Usa canales** -- Suscríbete solo a los datos que necesitas. `channels=low_hold` omite todo el volcado de cuotas y otros tipos de oportunidades, reduciendo el payload inicial de megabytes a kilobytes
+2. **Envía pings cada 25 segundos** -- El servidor envía heartbeats cada 30s, pero los pings explícitos previenen los timeouts de proxy/firewall
+3. **Usa filtros** -- Pasa los parámetros `sport`, `sportsbook`, `league`, `market` y `event_id` para acotar los datos dentro de tus canales suscritos
+4. **Define umbrales** -- Usa `min_ev` y `min_profit` para filtrar las oportunidades de bajo valor en el servidor, reduciendo el ruido
+5. **Actualiza vía `subscribe`** -- Cambia canales, filtros y umbrales sin reconectar
+6. **Maneja los códigos de cierre** -- `4001` significa clave incorrecta, `4003` significa sin acceso al streaming, `4029` significa demasiadas conexiones
+7. **Realiza seguimiento de los números de secuencia** -- Almacena `global_seq` para el replay en la reconexión. Usa `resume=true&from_seq=N` para una recuperación sin huecos
+8. **Implementa la reconexión** -- A diferencia de SSE, WebSocket no se reconecta automáticamente. Usa retroceso exponencial (1s, 2s, 4s, ...) con replay de `from_seq` para cortes breves
+9. **Espera a `snapshot:complete`** -- Esto indica que se han enviado todos los datos iniciales. Oculta los estados de carga después de recibirlo
+10. **Maneja `odds:removed`** -- Elimina las cuotas de tu estado local cuando recibas este mensaje para evitar mostrar datos obsoletos
+11. **Cierra las conexiones no utilizadas** -- Cada clave permite 1 stream concurrente por defecto; una segunda conexión con la misma clave desplaza a la más antigua (cierre `4001`)
+
+## Relacionado
+
+- [Referencia de la API SSE Stream](/es/api-reference/stream) -- Alternativa con Server-Sent Events
+- [Visión general del streaming](/es/streaming/overview) -- Conceptos y comparativa
+- [Guía de streaming WebSocket](/es/streaming/websocket) -- Guía de inicio

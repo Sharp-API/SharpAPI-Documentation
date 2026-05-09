@@ -1,0 +1,190 @@
+---
+description: "Vergleichen Sie die Preisstufen von SharpAPI von Free bis Enterprise. Sehen Sie sich Rate Limits, Streaming-Zugang, Sportsbook-Verfügbarkeit und detaillierte Funktionsübersichten für jeden Plan an."
+---
+
+import { Cards, Callout } from 'nextra/components'
+
+# Preise
+
+Wählen Sie den Plan, der zu Ihrer Wettstrategie passt. Alle Pläne beinhalten Zugriff auf unsere umfassende Quoten-Datenbank.
+
+## Abonnement-Stufen
+
+| Stufe | Preis | Anf./Min | Streams | Datenverzögerung | Books | Funktionen |
+|------|-------|---------|---------|------------|-------|----------|
+| **Free** | $0/Monat | 12 | 0 | 60s | 2 | Quoten, Spielplan |
+| **Hobby** | $79/Monat | 120 | Add-on* | Echtzeit | 5 | Quoten, Spielplan, Arbitrage |
+| **Pro** | $229/Monat | 300 | Add-on* | Echtzeit | 15 | + EV, Middles, Low Hold, Splits |
+| **Sharp** | $399/Monat | 1.000 | Add-on* | Echtzeit | Alle 32 | + Priority Support |
+| **Enterprise** | Individuell | Individuell | Individuell | Echtzeit | Alle | + Historie, Futures, SLA |
+
+<Callout type="info">
+*Streaming erfordert das **WebSocket Add-on** ($99/Monat). Alle bezahlten Stufen haben standardmäßig **1 gleichzeitigen Stream pro Schlüssel** mit Newer-Wins-Verdrängung (eine zweite Verbindung verdrängt die erste). Benötigen Sie mehrere gleichzeitige Streams für Flotten-Bereitstellungen? [Kontaktieren Sie den Vertrieb](mailto:sales@sharpapi.io). SSE und WebSocket teilen sich dasselbe Add-on und dasselbe Limit.
+</Callout>
+
+## Plan-Details
+
+<Cards>
+  <Cards.Card title="Free" href="https://sharpapi.io/sign-up">
+    **$0/Monat**
+
+    Zum Testen und Erkunden
+    - 12 Anfragen/Minute
+    - Kein Streaming
+    - 60s Datenverzögerung
+    - 2 Sportsbooks
+    - Nur Quoten und Spielplan
+
+    Kostenlos starten
+  </Cards.Card>
+
+  <Cards.Card title="Hobby" href="https://sharpapi.io/sign-up">
+    **$79/Monat**
+
+    Für Gelegenheitswetter
+    - 120 Anfragen/Minute
+    - Kein Streaming*
+    - Echtzeit-Daten
+    - 5 Sportsbooks
+    - Quoten, Spielplan, Arbitrage
+
+    Jetzt starten
+  </Cards.Card>
+
+  <Cards.Card title="Pro" href="https://sharpapi.io/sign-up">
+    **$229/Monat**
+
+    Für ernsthafte Wetter
+    - 300 Anfragen/Minute
+    - Kein Streaming*
+    - Echtzeit-Daten
+    - 15 Sportsbooks
+    - +EV-Erkennung
+    - Arbitrage-Benachrichtigungen
+    - Middles-Erkennung
+    - Low-Hold-Erkennung
+    - Wett-Splits
+
+    Jetzt starten
+  </Cards.Card>
+
+  <Cards.Card title="Sharp" href="https://sharpapi.io/sign-up">
+    **$399/Monat**
+
+    Für Profis
+    - 1.000 Anfragen/Minute
+    - Kein Streaming*
+    - Echtzeit-Daten
+    - Alle Sportsbooks
+    - Alle Pro-Funktionen
+    - Closing Line Value (CLV)
+    - Closing-Odds-Historie (30 Tage)
+    - Priority Support
+
+    Jetzt starten
+  </Cards.Card>
+</Cards>
+
+## WebSocket Add-on
+
+**$99/Monat** – Fügen Sie jeder bezahlten Stufe Echtzeit-Streaming hinzu.
+
+- 1 gleichzeitiger SSE/WebSocket-Stream pro Schlüssel (Newer-Wins-Verdrängung)
+- Latenz unter einer Sekunde
+- Funktioniert mit den Stufen Hobby, Pro, Sharp und Enterprise
+- Flotten-Limits (>1 Stream) auf Anfrage verfügbar
+
+<Callout type="warning">
+Das WebSocket-Add-on erfordert ein bezahltes Abonnement. Die Free-Stufe unterstützt kein Streaming.
+</Callout>
+
+## Enterprise
+
+Benötigen Sie höhere Limits, individuelle Funktionen oder ein SLA? Kontaktieren Sie uns für Enterprise-Preise.
+
+- Individuelle Rate Limits
+- Individuelle gleichzeitige Streams
+- [Futures](/de/api-reference/enterprise) – Futures-Märkte und buchübergreifende Quoten
+- Dedizierter Support
+- Service Level Agreement (SLA)
+- Individuelle Integrationen
+
+[Vertrieb kontaktieren](mailto:sales@sharpapi.io)
+
+## Funktionsvergleich
+
+| Funktion | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| `GET /odds` | Ja | Ja | Ja | Ja | Ja |
+| `GET /odds/best` | Ja | Ja | Ja | Ja | Ja |
+| `GET /events` | Ja | Ja | Ja | Ja | Ja |
+| `GET /sportsbooks` | Ja | Ja | Ja | Ja | Ja |
+| `GET /sports` | Ja | Ja | Ja | Ja | Ja |
+| `GET /leagues` | Ja | Ja | Ja | Ja | Ja |
+| `GET /markets` | Ja | Ja | Ja | Ja | Ja |
+| `GET /opportunities/ev` | Nein | Nein | Ja | Ja | Ja |
+| `GET /opportunities/arbitrage` | Nein | Ja | Ja | Ja | Ja |
+| `GET /opportunities/middles` | Nein | Nein | Ja | Ja | Ja |
+| `GET /opportunities/low_hold` | Nein | Nein | Ja | Ja | Ja |
+| `GET /splits` | Nein | Nein | Ja | Ja | Ja |
+| `GET /splits/history` | Nein | Nein | Ja | Ja | Ja |
+| `GET /odds/closing` | Nein | Nein | Ja | Ja | Ja |
+| `GET /historical/clv` | Nein | Nein | Nein | Ja | Ja |
+| `GET /historical/odds/closing` | Nein | Nein | Nein | Ja | Ja |
+| `GET /futures` | Nein | Nein | Nein | Nein | Ja |
+| CSV-Export | Nein | Nein | Ja | Ja | Ja |
+| Streaming (SSE + WS) | Nein | +$99/Monat | +$99/Monat | +$99/Monat | Inklusive |
+| Priority Support | Nein | Nein | Nein | Ja | Ja |
+| SLA | Nein | Nein | Nein | Nein | Ja |
+
+## Rate Limiting
+
+Alle API-Anfragen werden pro API-Schlüssel rate-limitiert. Rate-Limit-Header werden in jeder Antwort mitgeliefert:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1703123460
+```
+
+### Rate-Limit-Antwort
+
+Wenn Sie Ihr Rate Limit überschreiten, erhalten Sie eine `429`-Antwort:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
+}
+```
+
+<Callout type="info">
+Verwenden Sie den `retry_after`-Wert (in Sekunden), um exponentielles Backoff zu implementieren.
+</Callout>
+
+## Datenverzögerung
+
+- **Free-Stufe**: 60 Sekunden Verzögerung bei allen Quotendaten
+- **Bezahlte Stufen**: Echtzeit-Daten mit Latenz unter einer Sekunde
+
+## Sportsbook-Zugang
+
+Die Anzahl der Sportsbooks, auf die Sie zugreifen können, hängt von Ihrer Stufe ab:
+
+| Stufe | Books | Beispielzugang |
+|------|-------|----------------|
+| Free | 2 | DraftKings, FanDuel |
+| Hobby | 5 | + BetMGM, Caesars, theScore Bet |
+| Pro | 15 | + Bet365, BetRivers und weitere |
+| Sharp/Enterprise | Alle | Alle 32 unterstützten Books |
+
+## Stufen-Upgrades
+
+Upgraden Sie Ihr Abonnement jederzeit. Änderungen werden sofort und ohne Ausfallzeit wirksam.
+
+- Anteilige Abrechnung bei Upgrades innerhalb des Abrechnungszeitraums
+- Sofortiger Zugriff auf neue Funktionen
+- Behalten Sie Ihren bestehenden API-Schlüssel

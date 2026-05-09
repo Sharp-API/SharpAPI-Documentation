@@ -1,0 +1,111 @@
+---
+description: "Verstehen Sie, wie Sportwetten-Arbitrage funktioniert — die Mathematik hinter garantierten Profit-Arbs, wie SharpAPI sie über Sportsbooks hinweg erkennt und praktische Einsatzstrategien."
+---
+
+# Was ist Arbitrage?
+
+Arbitrage ("Arb") nutzt Preisunterschiede zwischen Sportsbooks aus, um unabhängig vom Ausgang einen Gewinn zu garantieren.
+
+```
+Book A: Team X +150 (implied 40%)
+Book B: Team Y -130 (implied 56.5%)
+Total implied: 96.5% < 100% = ARBITRAGE
+```
+
+## Wie es funktioniert
+
+### Beispiel: Zwei-Wege-Markt
+
+**Spiel: Lakers vs Warriors**
+
+| Sportsbook | Auswahl | Quote | Implizite Wahrscheinlichkeit |
+|------------|---------|-------|------------------------------|
+| DraftKings | Lakers | +145 | 40,8 % |
+| Pinnacle | Warriors | -135 | 57,4 % |
+| **Gesamt** | | | **98,2 %** |
+
+Da 98,2 % < 100 %, besteht Arbitrage!
+
+**Gewinnberechnung:**
+```
+Profit % = (100 / 98.2) - 100 = 1.83%
+```
+
+### Einsätze berechnen
+
+Um unabhängig vom Ausgang einen gleichen Ertrag zu garantieren:
+
+```javascript
+const total = 1/2.45 + 1/1.74;  // Sum of implied probs
+const stake1 = (1/2.45) / total;  // 41.5%
+const stake2 = (1/1.74) / total;  // 58.5%
+```
+
+**Bei 1000 $ Gesamteinsatz:**
+
+| Wette | Einsatz | Quote | Bei Gewinn |
+|-------|---------|-------|------------|
+| Lakers @ DK | 415 $ | +145 | 1.017 $ |
+| Warriors @ Pinnacle | 585 $ | -135 | 1.018 $ |
+
+**Garantierter Gewinn: ~18 $ (1,8 %)**
+
+## Drei-Wege-Märkte
+
+Fußball und Eishockey haben Unentschieden, was 3-Wege-Arbs ermöglicht:
+
+```
+Team A: +200 (33.3%)
+Draw:   +250 (28.6%)
+Team B: +180 (35.7%)
+Total: 97.6% → 2.4% arb
+```
+
+## Warum es Arbs gibt
+
+1. **Zeitliche Unterschiede** – Sportsbooks aktualisieren in unterschiedlichen Geschwindigkeiten
+2. **Meinungsunterschiede** – Sportsbooks verwenden unterschiedliche Risikomodelle
+3. **Promotions** – Erhöhte Quoten erzeugen künstliche Arbs
+4. **Fehler** – Gelegentlich macht ein Sportsbook einen Fehler
+
+## Herausforderungen bei der Arb-Jagd
+
+> **Warnung:**
+**Sportsbooks mögen keine Arber:**
+- Konten werden limitiert oder gesperrt
+- Auszahlungen können verzögert werden
+- Sie können auf kleine Einsätze beschränkt werden
+
+
+### Tipps, um Entdeckung zu vermeiden
+
+1. **Runde Einsatzbeträge** – 47,32 $ wirkt verdächtig, 50 $ nicht
+2. **Freizeitwetten einstreuen** – Wetten Sie nicht ausschließlich Arbs
+3. **Schrittweise auszahlen** – Große Auszahlungen lösen Überprüfungen aus
+4. **Mehrere Konten verwenden** – Aktivität verteilen (wo legal)
+
+## SharpAPI Arb-Funktionen
+
+| Funktion | Vorteil |
+|----------|---------|
+| **Echtzeit-Erkennung** | Benachrichtigungen im Sekundenbruchteil über SSE |
+| **Optimale Einsätze** | Vorberechnete Einsatzanteile |
+| **Multi-Book-Abdeckung** | Querverweis über 6+ Sportsbooks |
+| **Gewinnfilter** | Mindestgewinnschwelle festlegen |
+
+## Arb vs. +EV-Wetten
+
+| Aspekt | Arbitrage | +EV-Wetten |
+|--------|-----------|------------|
+| Risiko | Null (garantiert) | Varianz vorhanden |
+| Gewinn pro Wette | typisch 1–3 % | 2–10 % Edge |
+| Kontorisiko | Hoch (Limits) | Niedriger |
+| Kapitalbedarf | Hoch (beide Seiten) | Niedriger |
+| Nachhaltigkeit | Begrenzt | Langfristig tragfähig |
+
+> **Tipp:**
+  Viele Sharp-Bettors bevorzugen +EV gegenüber Arb, weil Konten länger bestehen und Edges oft größer sind. Siehe [EV-Berechnung](/de/concepts/ev-calculation) für die Mathematik hinter +EV.
+
+## Einen Arb-Scanner bauen
+
+Bereit, die Arb-Erkennung zu automatisieren? Siehe das [Arbitrage-Scanner-Beispiel](/de/examples/arbitrage-scanner) für eine vollständige Python-Implementierung mit Discord-Benachrichtigungen.

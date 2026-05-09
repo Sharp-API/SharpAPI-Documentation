@@ -1,0 +1,393 @@
+---
+description: "Gestión de API keys de SharpAPI: crea, lista, rota y elimina API keys mediante programación. Gestiona varias claves por cuenta con permisos granulares y seguimiento de uso."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Gestión de API keys
+
+Crea, lista, rota y elimina API keys para tu cuenta.
+
+## Autenticación
+
+Todos los endpoints de gestión de claves requieren autenticación mediante una API key existente. **Disponible para todos los planes.**
+
+<Callout type="warning">
+**Seguridad:** las operaciones de gestión de API keys son sensibles. Realízalas únicamente desde código del lado del servidor, nunca desde una aplicación del lado del cliente.
+</Callout>
+
+---
+
+## Listar API keys
+
+Recupera todas las API keys asociadas con tu cuenta.
+
+```
+GET /api/v1/account/keys
+```
+
+### Ejemplo de petición
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/account/keys" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account/keys',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+for (const key of data) {
+  console.log(`${key.name}: ${key.id_masked} (${key.is_active})`);
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/account/keys',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+keys = response.json()['data']
+
+for key in keys:
+    print(f"{key['name']}: {key['id_masked']} ({key['is_active']})")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Respuesta (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "key_abc123def456",
+      "id_masked": "sharpapi_...f456",
+      "name": "Production",
+      "tier": "pro",
+      "is_active": true,
+      "created_at": "2025-10-15T08:30:00Z",
+      "updated_at": "2026-02-08T14:22:10Z"
+    },
+    {
+      "id": "key_xyz789ghi012",
+      "id_masked": "sharpapi_...i012",
+      "name": "Staging",
+      "tier": "pro",
+      "is_active": true,
+      "created_at": "2026-01-05T12:00:00Z",
+      "updated_at": "2026-02-07T09:15:30Z"
+    }
+  ],
+  "meta": {
+    "count": 2,
+    "total": 2,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-02-08T14:55:00Z"
+  }
+}
+```
+
+### Campos del objeto Key
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | string | Identificador único de la clave |
+| `id_masked` | string | Vista previa enmascarada de la clave (primeros y últimos caracteres visibles) |
+| `name` | string \| null | Nombre legible de la clave |
+| `tier` | string | Plan de suscripción asociado a la clave |
+| `is_active` | boolean | Indica si la clave está activa actualmente |
+| `created_at` | string | Marca temporal ISO 8601 de creación de la clave |
+| `updated_at` | string | Marca temporal ISO 8601 de la última actualización de la clave |
+
+---
+
+## Crear API key
+
+Genera una nueva API key para tu cuenta.
+
+```
+POST /api/v1/account/keys
+```
+
+### Cuerpo de la petición
+
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| `name` | string | Sí | Nombre descriptivo para la clave (p. ej., "Production", "Mobile App") |
+
+### Ejemplo de petición
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X POST "https://api.sharpapi.io/api/v1/account/keys" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Mobile App"}'
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account/keys',
+  {
+    method: 'POST',
+    headers: {
+      'X-API-Key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name: 'Mobile App' })
+  }
+);
+const { data } = await response.json();
+console.log(`New key: ${data.key}`);
+// IMPORTANT: Store this key securely. It will not be shown again.
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.post(
+    'https://api.sharpapi.io/api/v1/account/keys',
+    json={'name': 'Mobile App'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+new_key = response.json()['data']
+print(f"New key: {new_key['key']}")
+# IMPORTANT: Store this key securely. It will not be shown again.
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Respuesta (201)
+
+```json
+{
+  "data": {
+    "id": "key_new345mno678",
+    "key": "sharpapi_new345mno678pqr901stu234vwx567",
+    "name": "Mobile App",
+    "tier": "pro"
+  }
+}
+```
+
+<Callout type="warning">
+**Importante:** el valor completo de `key` **solo se devuelve una vez** en el momento de la creación. Almacénalo de forma segura inmediatamente. Las peticiones posteriores solo mostrarán la vista previa `id_masked`.
+</Callout>
+
+---
+
+## Eliminar API key
+
+Revoca y elimina permanentemente una API key.
+
+```
+DELETE /api/v1/account/keys/{keyId}
+```
+
+### Parámetros de ruta
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `keyId` | string | El `key_id` de la clave que se va a eliminar |
+
+### Ejemplo de petición
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X DELETE "https://api.sharpapi.io/api/v1/account/keys/key_xyz789ghi012" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account/keys/key_xyz789ghi012',
+  {
+    method: 'DELETE',
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  }
+);
+const result = await response.json();
+console.log(`Deleted key: ${result.key_id}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.delete(
+    'https://api.sharpapi.io/api/v1/account/keys/key_xyz789ghi012',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+result = response.json()
+print(f"Deleted key: {result['key_id']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Respuesta (200)
+
+```json
+{
+  "deleted": true,
+  "key_id": "key_xyz789ghi012",
+  "message": "API key revoked successfully"
+}
+```
+
+<Callout type="warning">
+**Esta acción es irreversible.** Cualquier aplicación que utilice la clave eliminada perderá inmediatamente el acceso a la API. No puedes eliminar la clave con la que te estás autenticando actualmente.
+</Callout>
+
+### Respuestas de error
+
+***404 Key Not Found***
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "API key not found",
+    "docs": "https://docs.sharpapi.io/en/api-reference/account-keys"
+  }
+}
+```
+
+***400 Cannot Delete Current Key***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Cannot delete the API key used to authenticate this request",
+    "docs": "https://docs.sharpapi.io/en/api-reference/account-keys"
+  }
+}
+```
+
+---
+
+## Rotar API key
+
+Genera un nuevo valor de clave para una API key existente. La clave anterior se revoca inmediatamente y se reemplaza por una nueva.
+
+```
+POST /api/v1/account/keys/{keyId}/rotate
+```
+
+### Parámetros de ruta
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `keyId` | string | El `key_id` de la clave que se va a rotar |
+
+### Ejemplo de petición
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X POST "https://api.sharpapi.io/api/v1/account/keys/key_abc123def456/rotate" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account/keys/key_abc123def456/rotate',
+  {
+    method: 'POST',
+    headers: { 'X-API-Key': 'YOUR_API_KEY' }
+  }
+);
+const { data } = await response.json();
+console.log(`New key value: ${data.key}`);
+// IMPORTANT: Update your application configuration with the new key immediately.
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.post(
+    'https://api.sharpapi.io/api/v1/account/keys/key_abc123def456/rotate',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+rotated = response.json()['data']
+print(f"New key: {rotated['key']}")
+# IMPORTANT: Update your application configuration with the new key immediately.
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Respuesta (200)
+
+```json
+{
+  "data": {
+    "key_id": "key_abc123def456",
+    "name": "Production",
+    "key": "sharpapi_rotated789abc012def345ghi678jkl",
+    "key_preview": "sharpapi_...jkl",
+    "status": "active",
+    "rotated_at": "2026-02-08T15:10:00Z",
+    "previous_key_revoked": true
+  },
+  "meta": {
+    "updated_at": "2026-02-08T15:10:00Z"
+  }
+}
+```
+
+<Callout type="warning">
+**Efecto inmediato:** el valor de la clave anterior se revoca en el instante en que finaliza la rotación. Actualiza la configuración de tu aplicación antes de la siguiente petición a la API. El nuevo valor de `key` solo se muestra una vez.
+</Callout>
+
+<Callout type="info">
+**Consejo:** si estás rotando la clave con la que te estás autenticando actualmente, la rotación se completará correctamente, pero deberás usar la nueva clave para todas las peticiones posteriores.
+</Callout>
+
+---
+
+## Cabeceras de respuesta
+
+Todos los endpoints de gestión de claves devuelven cabeceras estándar de rate limit:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 294
+X-RateLimit-Reset: 1707401400
+X-Data-Delay: 0
+X-Request-Id: req_keys123xyz
+```
+
+## Buenas prácticas
+
+1. **Usa nombres descriptivos**: nombra las claves según su propósito (p. ej., "Production Server", "Staging", "Mobile App") para identificarlas fácilmente más adelante
+2. **Rota con regularidad**: rota las claves periódicamente (p. ej., cada 90 días) como buena práctica de seguridad
+3. **Usa claves separadas por entorno**: crea claves distintas para producción, staging y desarrollo
+4. **Revisa las claves inactivas**: identifica y elimina las claves no utilizadas
+5. **Almacena las claves en un gestor de secretos**: usa variables de entorno o un gestor de secretos; nunca incrustes las claves en el código
+6. **Revoca las claves comprometidas de inmediato**: si una clave queda expuesta, elimínala o rótala enseguida
+
+## Endpoints relacionados
+
+- [Información de la cuenta](/es/api-reference/account): detalles de la cuenta y acceso a funcionalidades
+- [Estadísticas de uso](/es/api-reference/account-usage): estadísticas de peticiones y de uso
+- [Autenticación](/es/authentication): cómo usar las API keys para autenticarse

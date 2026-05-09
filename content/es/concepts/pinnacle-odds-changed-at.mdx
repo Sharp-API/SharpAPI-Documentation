@@ -1,0 +1,79 @@
+---
+description: "Cómo se comporta el campo odds_changed_at de Pinnacle — por qué es la marca temporal de la mesa de trading, por qué puede parecer obsoleto en MLB y NBA, y cómo leerlo junto a last_seen_at como señal de frescura del pipeline."
+---
+
+import { Callout } from 'nextra/components'
+
+# Entendiendo el `odds_changed_at` de Pinnacle
+
+Los clientes sharp que desarrollan herramientas de +EV y arbitraje sobre Pinnacle suelen hacer la misma pregunta: «¿por qué el `odds_changed_at` de esta fila de Pinnacle parece tener 20 minutos de antigüedad?». La respuesta corta es que funciona según lo previsto: contiene la marca temporal de la propia mesa de trading de Pinnacle, no la nuestra. Esta página explica qué registra realmente este campo, por qué puede permanecer sin cambios durante largos periodos y cómo combinarlo con `last_seen_at` para obtener una lectura clara de la frescura del pipeline.
+
+## Qué significa realmente `odds_changed_at`
+
+En las filas de Pinnacle, `odds_changed_at` es **la marca temporal de la propia mesa de trading de Pinnacle**: cuándo Pinnacle revaloró por última vez esta línea concreta.
+
+Se mantiene sin cambios cada vez que Pinnacle indica que el precio, la línea y el flag `is_live` de un mercado no se han movido. Internamente, SharpAPI calcula un hash de esos tres campos para cada fila de cuotas en cada refresco; cuando el hash es idéntico al de la instantánea anterior, conservamos el `odds_changed_at` previo en lugar de sobrescribirlo con el momento de la observación. Esto preserva la semántica de «cuándo se movió por última vez esta línea» a través de consultas repetidas a un mercado sin cambios.
+
+<Callout type="warning">
+`odds_changed_at` **no** es la última vez que nuestro pipeline refrescó o tocó esta fila. Para la frescura del pipeline, utiliza `last_seen_at`.
+</Callout>
+
+## Por qué puede parecer obsoleto
+
+Pinnacle es un creador de mercado. Su mesa de trading publica un precio nuevo solo cuando el flujo real obliga a una revaloración; no sesgan las líneas en función de la acción minorista para incrementar el margen como hacen los soft books. Esa disciplina es la razón por la que Pinnacle se utiliza como referencia sharp para los cálculos de +EV, pero también significa que las líneas pueden permanecer sin cambios durante largos periodos.
+
+Observado durante una ventana de 24 horas de las propias respuestas del CDN de Pinnacle, la tasa a la que Pinnacle publicó *datos nuevos* (en lugar de un `304 Not Modified` cacheado) varía enormemente según el deporte:
+
+| Deporte      | Tasa de "datos nuevos" del CDN de Pinnacle |
+|--------------|--------------------------------------------|
+| Fútbol       | ~94%                                       |
+| Tenis        | ~66%                                       |
+| NHL          | ~51%                                       |
+| MLB          | ~18%                                       |
+| NBA          | ~9%                                        |
+
+Las player props de NBA y MLB suelen mostrar largos periodos de inactividad —no es inusual ver más de 30 minutos— porque la mesa de trading de Pinnacle no está moviendo la línea. Si ves un `odds_changed_at` antiguo en un mercado de NBA o MLB, casi siempre se debe al ritmo de publicación del propio Pinnacle, no a un fallo en nuestro pipeline.
+
+## Cómo leer los campos en conjunto
+
+Cada fila de cuotas expone dos marcas temporales. Responden a preguntas diferentes:
+
+| Campo              | Qué te indica                                                          |
+|--------------------|------------------------------------------------------------------------|
+| `odds_changed_at`  | La última vez que la mesa de trading de Pinnacle movió esta línea      |
+| `last_seen_at`     | La última vez que nuestro pipeline observó esta fila                   |
+
+Para verificar la frescura del pipeline, utiliza `last_seen_at`: este se actualiza cada vez que ingestamos la fila, independientemente de si el precio se movió.
+
+Para «cuándo movió Pinnacle por última vez esta línea», utiliza `odds_changed_at`.
+
+Una gran diferencia entre ambos (`last_seen_at` reciente, `odds_changed_at` antiguo) significa que Pinnacle está manteniendo la línea estable. Esto es normal y constituye la fuente de confusión más habitual al leer los datos de Pinnacle.
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "market_type": "player_total_bases",
+  "selection": "Edmundo Sosa Over",
+  "line": 0.5,
+  "odds_american": -129,
+  "last_seen_at":    "2026-04-21T21:35:02Z",
+  "odds_changed_at": "2026-04-21T18:49:00Z"
+}
+```
+
+En este ejemplo, el pipeline vio esta fila 4 segundos antes de que el cliente la consultara (`last_seen_at` está actualizado). El precio en sí se movió por última vez 2h 46m antes (`odds_changed_at`), porque la mesa de trading de Pinnacle no ha revalorado la línea de total de bases de Sosa desde la apertura previa al partido. Ambos valores son correctos.
+
+<Callout type="info">
+Si `last_seen_at` está obsoleto (más de uno o dos minutos de antigüedad para un mercado de una liga importante), eso es una señal del pipeline que merece investigarse. Si `odds_changed_at` está obsoleto pero `last_seen_at` está actualizado, Pinnacle está manteniendo la línea: trata el precio mostrado como vigente.
+</Callout>
+
+## Por qué Pinnacle es diferente
+
+Pinnacle acepta acción sharp y revalora en función del flujo real, en lugar de sesgar las líneas en torno a los apostadores minoristas. Esa disciplina de creador de mercado es la razón por la que los utilizamos como referencia de devig para +EV: sus líneas son lo más cercano a un precio justo disponible en el mercado. El compromiso es que las líneas previas al partido pueden permanecer sin cambios durante largos periodos cuando nada en el mercado se ha movido, lo que parece obsolescencia para quien espera el constante microajuste que hacen los soft books.
+
+## Relacionado
+
+- [Instantánea de cuotas](/es/api-reference/odds) — campos `odds_changed_at` y `last_seen_at` en la respuesta REST de cuotas
+- [Streaming](/es/api-reference/stream) — `odds_changed_at` en los deltas `odds:update`
+- [En vivo vs. Previo al partido](/es/concepts/live-vs-prematch) — ritmo de publicación y mecanismos de entrega de los books
+- [Cálculo de EV](/es/concepts/ev-calculation) — por qué Pinnacle es la referencia sharp

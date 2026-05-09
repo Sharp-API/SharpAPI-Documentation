@@ -1,0 +1,232 @@
+---
+description: "GET /api/v1/events/{eventId} — Detaillierte Informationen zu einem einzelnen Event abrufen, einschließlich verfügbarer Märkte, Teams, Event-Metadaten, Startzeit und Liga-Details."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Event-Details
+
+Detaillierte Informationen zu einem einzelnen Event abrufen, einschließlich verfügbarer Märkte und Metadaten.
+
+```
+GET /api/v1/events/{eventId}
+```
+
+## Authentifizierung
+
+Erfordert einen API key über den `X-API-Key`-Header, den `Authorization: Bearer`-Header oder den `api_key`-Query-Parameter. Verfügbar für alle Tarife.
+
+## Pfad-Parameter
+
+| Parameter | Typ | Erforderlich | Beschreibung |
+|-----------|------|----------|-------------|
+| `eventId` | string | Ja | Eindeutige Event-Kennung (z. B. `evt_nba_bos_lal_20260208`) |
+
+## Response-Header
+
+Alle Antworten enthalten standardmäßige Rate-Limit- und Metadaten-Header:
+
+| Header | Beschreibung |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximale Anzahl von Anfragen pro Minute für Ihren Tarif |
+| `X-RateLimit-Remaining` | Verbleibende Anfragen im aktuellen Zeitfenster |
+| `X-RateLimit-Reset` | Unix-Zeitstempel, wann das Rate-Limit-Fenster zurückgesetzt wird |
+| `X-Data-Delay` | Datenverzögerung für Ihren Tarif (z. B. `0s`, `60s`) |
+| `X-Request-Id` | Eindeutige Anfragen-Kennung zur Fehlersuche |
+
+## Event-Detail-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `id` | string | Kanonische Event-Kennung — identisch für jeden Sportsbook, der dieses Event abdeckt. Verwenden Sie diese als Primärschlüssel für den Abgleich zwischen Sportsbooks. Siehe [Event-Matching](/de/concepts/event-matching). |
+| `external_ids` | object | Zuordnung der Sportsbook-ID zur nativen Event-ID des jeweiligen Sportsbooks (z. B. `{ "draftkings": "12345", "fanduel": "67890" }`). Verwenden Sie diese für Deep-Links zurück zu den Sportsbook-Seiten. |
+| `sport` | string | Sportarten-Kennung (z. B. `basketball`, `football`) |
+| `league` | string | Liga-Name (z. B. `NBA`, `NFL`) |
+| `home_team` | string | Name des Heimteams |
+| `away_team` | string | Name des Auswärtsteams |
+| `start_time` | string | ISO 8601-Startzeit des Events |
+| `status` | string | Event-Status: `upcoming`, `live`, `final`, `postponed`, `cancelled` |
+| `is_live` | boolean | Ob das Event derzeit live ist |
+| `books` | array | Sportsbooks, die dieses Event abdecken, sortiert nach Markt-Anzahl absteigend |
+| `markets` | array | Markttypen, die für dieses Event verfügbar sind, sortiert nach Auswahl-Anzahl absteigend |
+
+### Books-Array
+
+Jeder Eintrag im `books`-Array beschreibt einen Sportsbook, der Quoten für dieses Event hat.
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `id` | string | Sportsbook-Kennung (z. B. `draftkings`, `pinnacle`) |
+| `name` | string | Anzeigename des Sportsbooks |
+| `market_count` | integer | Anzahl der unterschiedlichen Markttypen, die dieser Sportsbook für das Event anbietet |
+| `last_update` | string | ISO 8601-Zeitstempel der letzten Quotenaktualisierung dieses Sportsbooks |
+
+### Markets-Array
+
+Jeder Eintrag im `markets`-Array fasst einen verfügbaren Markttyp für dieses Event zusammen.
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `type` | string | Markttyp-Kennung (z. B. `moneyline`, `spread`, `total`, `player_prop`) |
+| `selection_count` | integer | Anzahl der unterschiedlichen Auswahlmöglichkeiten in diesem Markt |
+| `book_count` | integer | Anzahl der Sportsbooks, die diesen Markt anbieten |
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const eventId = 'evt_nba_bos_lal_20260208';
+const response = await fetch(
+  `https://api.sharpapi.io/api/v1/events/${eventId}`,
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+console.log(`${data.home_team} vs ${data.away_team}`);
+console.log(`Markets: ${data.markets.map(m => m.type).join(', ')}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+event_id = 'evt_nba_bos_lal_20260208'
+response = requests.get(
+    f'https://api.sharpapi.io/api/v1/events/{event_id}',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+event = response.json()['data']
+print(f"{event['home_team']} vs {event['away_team']}")
+print(f"Markets: {[m['type'] for m in event['markets']]}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+<Callout type="info">
+Antworten für Einzelressourcen umschließen das Objekt in `data` als einzelnes Objekt (nicht als Array).
+</Callout>
+
+```json
+{
+  "data": {
+    "id": "evt_nba_bos_lal_20260208",
+    "external_ids": {
+      "draftkings": "12345678",
+      "fanduel": "87654321",
+      "pinnacle": "556677889",
+      "betmgm": "ms_44556"
+    },
+    "sport": "basketball",
+    "league": "NBA",
+    "home_team": "Boston Celtics",
+    "away_team": "Los Angeles Lakers",
+    "start_time": "2026-02-08T19:30:00Z",
+    "status": "upcoming",
+    "is_live": false,
+    "books": [
+      {
+        "id": "draftkings",
+        "name": "DraftKings",
+        "market_count": 5,
+        "last_update": "2026-02-08T12:05:00Z"
+      },
+      {
+        "id": "fanduel",
+        "name": "FanDuel",
+        "market_count": 4,
+        "last_update": "2026-02-08T12:04:30Z"
+      },
+      {
+        "id": "pinnacle",
+        "name": "Pinnacle",
+        "market_count": 3,
+        "last_update": "2026-02-08T12:03:00Z"
+      },
+      {
+        "id": "betmgm",
+        "name": "BetMGM",
+        "market_count": 3,
+        "last_update": "2026-02-08T12:02:15Z"
+      }
+    ],
+    "markets": [
+      {
+        "type": "moneyline",
+        "selection_count": 2,
+        "book_count": 4
+      },
+      {
+        "type": "spread",
+        "selection_count": 2,
+        "book_count": 4
+      },
+      {
+        "type": "total",
+        "selection_count": 2,
+        "book_count": 3
+      },
+      {
+        "type": "player_prop",
+        "selection_count": 18,
+        "book_count": 2
+      },
+      {
+        "type": "team_total",
+        "selection_count": 4,
+        "book_count": 1
+      }
+    ]
+  },
+  "meta": {
+    "event_id": "evt_nba_bos_lal_20260208"
+  }
+}
+```
+
+### Fehlerantworten
+
+***404 Not Found***
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Event not found",
+    "docs": "https://docs.sharpapi.io/en/api-reference/events-by-id"
+  }
+}
+```
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Missing or invalid API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+## Anwendungsfälle
+
+- **Vergleich zwischen Sportsbooks** -- Die kanonische `id` ist über alle Sportsbooks hinweg identisch, sodass alle zurückgegebenen Quoten bereits demselben realen Event zugeordnet sind. Siehe [Event-Matching](/de/concepts/event-matching).
+- **Marktanalyse** -- Sehen Sie jeden verfügbaren Markttyp und wie viele Sportsbooks ihn jeweils anbieten
+- **Sharp-Referenz** -- Vergleichen Sie Quoten von Soft Books mit Pinnacle (dem Sharp-Benchmark)
+- **Deep-Linking** -- Verwenden Sie `external_ids`, um Nutzer zur Event-Seite eines bestimmten Sportsbooks zu leiten
+
+## Verwandte Endpoints
+
+- [Events](/de/api-reference/events) - Events auflisten und durchsuchen
+- [Event-Quoten](/de/api-reference/events-odds) - Paginierte Quoten für dieses Event abrufen
+- [Event-Märkte](/de/api-reference/events-markets) - Verfügbare Markttypen für dieses Event abrufen
+- [Quoten-Snapshot](/de/api-reference/odds) - Aktuelle Quoten für alle Events abrufen

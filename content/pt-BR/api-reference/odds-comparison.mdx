@@ -1,0 +1,307 @@
+---
+description: "GET /api/v1/odds/comparison — Compare odds para um evento específico em todos os sportsbooks lado a lado, organizadas por mercado e seleção com cálculos de hold e margem."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Comparação de Odds
+
+Compare odds para um evento específico em múltiplos sportsbooks. Os resultados são organizados por mercado e seleção, com cálculos de hold e identificação dos melhores/piores books para cada seleção.
+
+```
+GET /api/v1/odds/comparison
+```
+
+## Autenticação
+
+Requer API key. Disponível para **todos os tiers**.
+
+<Callout type="info">
+Os sportsbooks incluídos na comparação dependem do acesso a books do seu tier. O tier Free compara DraftKings e FanDuel; tiers superiores incluem mais books. Veja [Acesso a Books por Tier](/pt-BR/api-reference/odds#book-access-by-tier).
+</Callout>
+
+## Parâmetros de Query
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `event` | string | **obrigatório** | ID do evento para comparar odds |
+| `market` | string | all | Filtrar por tipo de mercado (ex.: `moneyline`, `spread`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds#market-category-aliases). |
+| `sportsbook` | string | all | IDs de sportsbooks separados por vírgula a serem incluídos |
+
+<Callout type="warning">
+O parâmetro `event` é **obrigatório**. Este endpoint retorna uma comparação detalhada para um único evento.
+</Callout>
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Comparar todas as odds para um evento específico da NBA
+curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Comparar apenas odds de moneyline
+curl -X GET "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=moneyline',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+data.markets.forEach(market => {
+  console.log(`\n${market.market_type} (Hold: ${market.hold.best_available.toFixed(1)}%)`);
+  market.selections.forEach(sel => {
+    console.log(`  ${sel.selection}: Best ${sel.best_odds} at ${sel.best_book}, Worst ${sel.worst_odds} at ${sel.worst_book}`);
+    for (const [book, odds] of Object.entries(sel.books)) {
+      console.log(`    ${book}: ${odds.odds_american}`);
+    }
+  });
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/odds/comparison',
+    params={'event': '33483153', 'market': 'moneyline'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+result = response.json()
+
+event = result['data']
+print(f"{event['event_name']}")
+
+for market in event['markets']:
+    hold = market['hold']['best_available']
+    print(f"\n  {market['market_type']} (Hold: {hold:.1f}%)")
+
+    for sel in market['selections']:
+        print(f"    {sel['selection']}: Best {sel['best_odds']} at {sel['best_book']}")
+        for book, odds in sel['books'].items():
+            print(f"      {book}: {odds['odds_american']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "event_id": "nba_suns_76ers_2026-01-26",
+    "event_name": "PHO Suns @ PHI 76ers",
+    "sport": "basketball",
+    "league": "nba",
+    "start_time": "2026-01-26T19:00:00Z",
+    "is_live": false,
+    "books_available": ["betmgm", "draftkings", "fanduel", "pinnacle"],
+    "markets": [
+      {
+        "market_type": "moneyline",
+        "hold": {
+          "best_available": 2.7,
+          "by_book": {
+            "draftkings": 3.5,
+            "fanduel": 3.6,
+            "betmgm": 4.7,
+            "pinnacle": 3.9
+          }
+        },
+        "selections": [
+          {
+            "selection": "PHO Suns",
+            "selection_type": "away",
+            "line": null,
+            "books": {
+              "fanduel": {
+                "odds_american": -145,
+                "odds_decimal": 1.690,
+                "last_seen_at": "2026-01-26T02:10:20.000Z"
+              },
+              "draftkings": {
+                "odds_american": -150,
+                "odds_decimal": 1.667,
+                "last_seen_at": "2026-01-26T02:10:24.000Z"
+              },
+              "betmgm": {
+                "odds_american": -155,
+                "odds_decimal": 1.645,
+                "last_seen_at": "2026-01-26T02:10:18.000Z"
+              },
+              "pinnacle": {
+                "odds_american": -148,
+                "odds_decimal": 1.676,
+                "last_seen_at": "2026-01-26T02:10:15.000Z"
+              }
+            },
+            "best_book": "fanduel",
+            "best_odds": -145,
+            "worst_book": "betmgm",
+            "worst_odds": -155,
+            "spread": 1.6
+          },
+          {
+            "selection": "PHI 76ers",
+            "selection_type": "home",
+            "line": null,
+            "books": {
+              "draftkings": {
+                "odds_american": 130,
+                "odds_decimal": 2.300,
+                "last_seen_at": "2026-01-26T02:10:24.000Z"
+              },
+              "fanduel": {
+                "odds_american": 125,
+                "odds_decimal": 2.250,
+                "last_seen_at": "2026-01-26T02:10:20.000Z"
+              },
+              "betmgm": {
+                "odds_american": 128,
+                "odds_decimal": 2.280,
+                "last_seen_at": "2026-01-26T02:10:18.000Z"
+              },
+              "pinnacle": {
+                "odds_american": 126,
+                "odds_decimal": 2.260,
+                "last_seen_at": "2026-01-26T02:10:15.000Z"
+              }
+            },
+            "best_book": "draftkings",
+            "best_odds": 130,
+            "worst_book": "fanduel",
+            "worst_odds": 125,
+            "spread": 0.9
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "market_filter": null,
+    "updated_at": "2026-01-26T02:10:30.000Z"
+  }
+}
+```
+
+### Headers de Resposta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 297
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_comp_456abc
+```
+
+## Schema da Resposta
+
+O `data` da resposta é um único objeto de evento (não um array) contendo mercados e seleções aninhados.
+
+### Objeto Event
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `event_id` | string | Identificador do evento |
+| `event_name` | string | Nome de exibição do evento (ex.: `"Away Team @ Home Team"`) |
+| `sport` | string | Slug do esporte |
+| `league` | string | Slug da liga |
+| `start_time` | string | Horário de início do evento em ISO 8601 |
+| `is_live` | boolean | Se o evento está atualmente ao vivo |
+| `books_available` | string[] | IDs dos sportsbooks com odds para este evento |
+| `markets` | array | Array de comparações de mercado |
+
+### Objeto Market
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `market_type` | string | Tipo de mercado (ex.: `moneyline`, `spread`, `total`) |
+| `hold` | object | Cálculos de hold (overround) do mercado |
+| `hold.best_available` | number | Percentual de hold usando as melhores odds em todos os books por seleção |
+| `hold.by_book` | object | Percentual de hold para cada sportsbook individual (chaveado por ID do book) |
+| `selections` | array | Array de seleções dentro deste mercado |
+
+### Objeto Selection
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `selection` | string | Nome da seleção (ex.: nome do time, Over/Under) |
+| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `line` | number \| null | Valor da linha (para spreads/totals) |
+| `books` | object | Odds de cada sportsbook (chaveado por ID do book) |
+| `best_book` | string | ID do sportsbook com as melhores odds |
+| `best_odds` | number | Melhor valor de odds americanas |
+| `worst_book` | string | ID do sportsbook com as piores odds |
+| `worst_odds` | number | Pior valor de odds americanas |
+| `spread` | number | Diferença na probabilidade implícita (%) entre o melhor e o pior book |
+
+### Objeto Book Odds
+
+Cada entrada no objeto `books`:
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `odds_american` | number | Odds americanas |
+| `odds_decimal` | number | Odds decimais |
+| `last_seen_at` | string | Quando nosso pipeline observou pela última vez a linha deste book — sinal de atualidade do pipeline |
+| `odds_changed_at` | string | Quando o preço, linha ou flag `is_live` deste book mudou efetivamente pela última vez. Na Pinnacle, é mantido em refreshes sem alteração — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+
+## Entendendo o Hold
+
+O campo `hold` em cada mercado mostra a margem embutida do bookmaker:
+
+- **`best_available`**: O hold (%) se você buscar as melhores odds em cada seleção. Esta é a eficiência "real" do mercado da perspectiva do apostador.
+- **`by_book`**: O hold (%) em cada sportsbook individual. Hold maior = mais margem retida pelo book.
+
+| Hold (%) | Interpretação |
+|----------|---------------|
+| < 2 | Mercado muito eficiente (sharp books) |
+| 2-5 | Mercado normal |
+| 5-8 | Margem alta (típico para props) |
+| > 8 | Margem muito alta |
+
+## Entendendo o Campo `spread`
+
+O `spread` em cada seleção representa a diferença na probabilidade implícita entre o melhor e o pior sportsbook para aquela seleção. Um spread maior indica mais variância entre os books.
+
+| Spread | Interpretação |
+|--------|---------------|
+| < 1% | Books estão fortemente alinhados |
+| 1-3% | Variância normal, valor moderado de line shopping |
+| > 3% | Discrepância significativa, forte valor de line shopping |
+
+## Casos de Uso
+
+### Line Shopping
+
+Encontre o melhor preço antes de fazer uma aposta comparando todos os books:
+
+```bash
+curl "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=spread" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Identificando Linhas Defasadas
+
+Procure books que não foram atualizados recentemente verificando o `last_seen_at` de cada book. Um book com odds defasadas pode estar lento para se ajustar, criando valor temporário.
+
+### Eficiência do Mercado
+
+Compare `hold.best_available` versus os holds individuais dos books. Uma diferença grande significa que o line shopping é particularmente valioso para este mercado.
+
+## Endpoints Relacionados
+
+- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obter odds brutas de sportsbooks individuais
+- [Melhores Odds](/pt-BR/api-reference/odds-best) - Obter apenas as melhores odds com consenso e hold
+- [Delta de Odds](/pt-BR/api-reference/odds-delta) - Obter apenas odds que mudaram desde um determinado timestamp
+- [Odds em Lote](/pt-BR/api-reference/odds-batch) - Buscar dados de comparação para múltiplos eventos de uma só vez

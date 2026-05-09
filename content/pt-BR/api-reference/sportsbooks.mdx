@@ -1,0 +1,454 @@
+---
+description: "GET /api/v1/sportsbooks — Lista as casas de apostas disponíveis com status atual, nível de assinatura necessário e capacidades específicas de cada casa. Cobre 32 casas, incluindo Pinnacle e DraftKings."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Casas de Apostas
+
+Obtenha uma lista das casas de apostas disponíveis e seu status atual, incluindo qual nível é necessário para acessar os dados de cada casa.
+
+## Endpoints
+
+```
+GET /api/v1/sportsbooks
+```
+
+<Callout type="info">
+Requer uma API key. Disponível em todos os níveis (incluindo o Free). Requisições não autenticadas retornam `401`.
+</Callout>
+
+## Listar Todas as Casas de Apostas
+
+### Exemplos de Requisição
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/sportsbooks" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch('https://api.sharpapi.io/api/v1/sportsbooks', {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+});
+const { data, meta } = await response.json();
+
+// Filter for sharp books
+const sharpBooks = data.filter(b => b.is_sharp);
+console.log('Sharp books:', sharpBooks.map(b => b.display_name));
+
+// Check which books require a higher tier
+const proBooks = data.filter(b => b.requires_tier === 'pro');
+console.log('Pro-tier books:', proBooks.map(b => b.display_name));
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/sportsbooks',
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
+result = response.json()
+
+for book in result['data']:
+    tier_note = f" (requires {book['requires_tier']})" if book['requires_tier'] else ""
+    sharp_note = " [SHARP]" if book['is_sharp'] else ""
+    print(f"{book['display_name']}{sharp_note}{tier_note}: {book['event_count']} events")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Resposta
+
+```json
+{
+  "data": [
+    {
+      "id": "draftkings",
+      "name": "draftkings",
+      "display_name": "DraftKings",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 1250,
+      "last_update": "2026-01-26T02:24:58.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "fanduel",
+      "name": "fanduel",
+      "display_name": "FanDuel",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 1180,
+      "last_update": "2026-01-26T02:24:50.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "betmgm",
+      "name": "betmgm",
+      "display_name": "BetMGM",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 950,
+      "last_update": "2026-01-26T02:24:45.000Z",
+      "requires_tier": "hobby"
+    },
+    {
+      "id": "caesars",
+      "name": "caesars",
+      "display_name": "Caesars",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 920,
+      "last_update": "2026-01-26T02:24:40.000Z",
+      "requires_tier": "hobby"
+    },
+    {
+      "id": "espnbet",
+      "name": "espnbet",
+      "display_name": "theScore Bet",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 880,
+      "last_update": "2026-01-26T02:24:38.000Z",
+      "requires_tier": "hobby"
+    },
+    {
+      "id": "betrivers",
+      "name": "betrivers",
+      "display_name": "BetRivers",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 760,
+      "last_update": "2026-01-26T02:24:30.000Z",
+      "requires_tier": "pro"
+    },
+    {
+      "id": "rebet",
+      "name": "rebet",
+      "display_name": "Rebet",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 640,
+      "last_update": "2026-01-26T02:24:22.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "pinnacle",
+      "name": "pinnacle",
+      "display_name": "Pinnacle",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["GLOBAL"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 980,
+      "last_update": "2026-01-26T02:24:55.000Z",
+      "requires_tier": "sharp"
+    },
+    {
+      "id": "circa",
+      "name": "circa",
+      "display_name": "Circa Sports",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["US"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 620,
+      "last_update": "2026-01-26T02:24:52.000Z",
+      "requires_tier": "sharp"
+    },
+    {
+      "id": "bookmaker",
+      "name": "bookmaker",
+      "display_name": "Bookmaker",
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": ["GLOBAL"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 850,
+      "last_update": "2026-01-26T02:24:48.000Z",
+      "requires_tier": "sharp"
+    },
+    {
+      "id": "bet365",
+      "name": "bet365",
+      "display_name": "Bet365",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["UK", "EU", "AU"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 1100,
+      "last_update": "2026-01-26T02:24:35.000Z",
+      "requires_tier": "pro"
+    },
+    {
+      "id": "betway",
+      "name": "betway",
+      "display_name": "Betway",
+      "has_live_odds": true,
+      "has_player_props": true,
+      "regions": ["UK", "EU"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 720,
+      "last_update": "2026-01-26T02:24:18.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "skybet",
+      "name": "skybet",
+      "display_name": "Sky Bet",
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": ["UK"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 580,
+      "last_update": "2026-01-26T02:24:15.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "prophetx",
+      "name": "prophetx",
+      "display_name": "ProphetX",
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": ["GLOBAL"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 310,
+      "last_update": "2026-01-26T02:24:12.000Z",
+      "requires_tier": "sharp"
+    },
+    {
+      "id": "betfair",
+      "name": "betfair",
+      "display_name": "Betfair",
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": ["UK", "EU", "AU"],
+      "is_sharp": true,
+      "status": "active",
+      "event_count": 900,
+      "last_update": "2026-01-26T02:24:10.000Z",
+      "requires_tier": "sharp"
+    },
+    {
+      "id": "polymarket",
+      "name": "polymarket",
+      "display_name": "Polymarket",
+      "has_live_odds": false,
+      "has_player_props": false,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 420,
+      "last_update": "2026-01-26T02:24:08.000Z",
+      "requires_tier": null
+    },
+    {
+      "id": "kalshi",
+      "name": "kalshi",
+      "display_name": "Kalshi",
+      "has_live_odds": true,
+      "has_player_props": false,
+      "regions": ["US"],
+      "is_sharp": false,
+      "status": "active",
+      "event_count": 280,
+      "last_update": "2026-01-26T02:24:05.000Z",
+      "requires_tier": null
+    }
+  ],
+  "meta": {
+    "count": 17,
+    "total": 17,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "updated_at": "2026-01-26T02:25:00.000Z",
+    "filters": {}
+  }
+}
+```
+
+## Schema do Objeto Sportsbook
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | string | Identificador único (use em filtros da API) |
+| `name` | string | Nome interno (mesmo que `id`) |
+| `display_name` | string | Nome legível para humanos |
+| `has_live_odds` | boolean | Suporta odds ao vivo/in-play |
+| `has_player_props` | boolean | Suporta mercados de player props |
+| `regions` | string[] | Regiões disponíveis: `US`, `UK`, `EU`, `AU`, `GLOBAL` |
+| `is_sharp` | boolean | Se a casa é considerada um mercado sharp/eficiente |
+| `status` | string | `active` ou `inactive` |
+| `event_count` | integer | Número de eventos disponíveis no momento |
+| `last_update` | string | Timestamp ISO 8601 da última atualização de dados |
+| `requires_tier` | string \| null | Nível mínimo necessário: `null` (gratuito), `hobby`, `pro`, `sharp` |
+
+<Callout type="warning">
+O `event_count` pode ser 0 e `last_update` pode ser `null` se uma casa de apostas estiver temporariamente indisponível ou enfrentando atrasos de dados.
+</Callout>
+
+## Acesso a Casas por Nível
+
+O campo `requires_tier` indica o nível mínimo de assinatura necessário para acessar os dados de odds de uma casa de apostas através da API.
+
+{/* AUTO:START:tier-summary */}
+| Nível | Casas Disponíveis | Casas de Apostas Incluídas |
+|-------|-------------------|----------------------------|
+| **Free** | 23 | Kalshi, BetMGM, DraftKings, Bet365, e mais 19 |
+| **Hobby** | 23 | Igual ao Free |
+| **Pro** | 23 | Igual ao Hobby |
+| **Sharp** | 26 | Todas as casas de apostas disponíveis |
+| **Enterprise** | 26 | Todas as casas de apostas disponíveis |
+{/* AUTO:END:tier-summary */}
+
+<Callout type="warning">
+**Pinnacle**, **Circa Sports**, **Bookmaker**, **ProphetX** e **Betfair** requerem **nível Sharp ou superior**. Pinnacle é uma sharp book cujas linhas eficientes são usadas como referência para cálculos de +EV. Circa Sports é outra sharp book conhecida, com linhas deliberadamente apertadas e um menu de props focado. Solicitar odds de sharp books nos níveis Free, Hobby ou Pro retornará um erro `403 tier_restricted`.
+</Callout>
+
+### Entendendo `requires_tier`
+
+| Valor | Significado |
+|-------|-------------|
+| `null` | Disponível em todos os níveis, incluindo o Free |
+| `"hobby"` | Requer nível Hobby ou superior |
+| `"pro"` | Requer nível Pro ou superior |
+| `"sharp"` | Requer nível Sharp ou Enterprise |
+
+## Casas de Apostas Suportadas
+
+### Principais Casas dos EUA
+
+{/* AUTO:START:us-books */}
+| ID | Nome | Ao Vivo | Props | Nível |
+|----|------|---------|-------|-------|
+| `ballybet` | Bally Bet | Sim | Não | Free |
+| `betmgm` | BetMGM | Sim | Sim | Free |
+| `betonline` | BetOnline | Sim | Sim | Free |
+| `betrivers` | BetRivers | Sim | Sim | Free |
+| `bovada` | Bovada | Sim | Sim | Free |
+| `caesars` | Caesars | Sim | Sim | Free |
+| `draftkings` | DraftKings | Sim | Sim | Free |
+| `fanatics` | Fanatics | Sim | Sim | Free |
+| `fanduel` | FanDuel | Sim | Sim | Free |
+| `fliff` | Fliff | Sim | Sim | Free |
+| `novig` | Novig | Não | Não | Free |
+| `rebet` | Rebet | Sim | Sim | Free |
+| `thescorebet` | theScore Bet | Sim | Sim | Free |
+{/* AUTO:END:us-books */}
+
+### Sharp Books
+
+{/* AUTO:START:sharp-books */}
+| ID | Nome | Ao Vivo | Props | Nível |
+|----|------|---------|-------|-------|
+| `circa` | Circa Sports | Sim | Limitado | **Sharp** |
+| `pinnacle` | Pinnacle | Sim | Sim | **Sharp** |
+{/* AUTO:END:sharp-books */}
+
+<Callout type="info">
+**Lendo timestamps da Pinnacle.** O `odds_changed_at` em uma linha da Pinnacle é o timestamp da mesa de operações deles, não do nosso pipeline. A Pinnacle mantém as linhas estáveis quando o mercado não se moveu — um valor ocioso de 30+ minutos é comum em player props da MLB e mercados da NBA. Use `last_seen_at` para frescor do pipeline. Veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at) para o que "stale" realmente significa no feed deles.
+</Callout>
+
+### Internacional
+
+{/* AUTO:START:intl-books */}
+| ID | Nome | Ao Vivo | Props | Nível |
+|----|------|---------|-------|-------|
+| `bet105` | Bet105 | Sim | Sim | Free |
+| `bet365` | Bet365 | Sim | Sim | Free |
+| `betway` | Betway | Sim | Sim | Free |
+| `ladbrokes` | Ladbrokes | Sim | Sim | Free |
+| `saba` | SABA | Sim | Não | Free |
+| `skybet` | Sky Bet | Sim | Não | Free |
+| `stake` | Stake | Sim | Sim | Free |
+| `unibet` | Unibet | Sim | Sim | Free |
+{/* AUTO:END:intl-books */}
+
+### Exchanges
+
+{/* AUTO:START:exchange-books */}
+| ID | Nome | Ao Vivo | Props | Nível |
+|----|------|---------|-------|-------|
+| `prophetx` | ProphetX | Sim | Não | **Sharp** |
+{/* AUTO:END:exchange-books */}
+
+### Mercados de Previsão
+
+{/* AUTO:START:prediction-books */}
+| ID | Nome | Ao Vivo | Props | Nível |
+|----|------|---------|-------|-------|
+| `kalshi` | Kalshi | Sim | Não | Free |
+| `polymarket` | Polymarket | Não | Não | Free |
+{/* AUTO:END:prediction-books */}
+
+<Callout type="info">
+**Polymarket** e **Kalshi** são plataformas de mercados de previsão. Diferente das casas de apostas tradicionais, elas usam contratos de resultado binário com preços entre $0 e $1. A SharpAPI normaliza os preços dos contratos em formatos de odds padrão (americano, decimal, probabilidade implícita) para que você possa compará-los diretamente com odds de casas de apostas. Kalshi é regulada pela CFTC.
+</Callout>
+
+## Sharp vs Soft Books
+
+### Sharp Books
+- **Vig (juice) menor** -- margens mais apertadas significam maior precisão das odds
+- **Linhas eficientes** -- usadas como referência para cálculos de +EV e valor justo
+- **Não disponíveis em todas as regiões** -- a Pinnacle não é licenciada nos EUA
+- Exemplos: Pinnacle, Circa Sports, Bookmaker
+
+### Soft Books
+- **Vig maior** -- margens mais amplas criam mais espaço para oportunidades de +EV
+- **Mais promoções** -- bônus, boosts e apostas grátis
+- **Movimento de linha mais lento** -- podem ficar atrás dos movimentos do mercado sharp
+- **Onde o valor é encontrado** -- a diferença entre as odds das soft books e a referência sharp cria +EV
+- Exemplos: DraftKings, FanDuel, BetMGM, Caesars
+
+<Callout type="info">
+Sharp books como a Pinnacle definem linhas eficientes rapidamente. As soft books frequentemente ficam atrás, criando janelas em que suas odds oferecem valor esperado positivo em comparação com a referência sharp. Esta é a base da estratégia de apostas de +EV.
+</Callout>
+
+<Callout type="info">
+**Construindo uma ferramenta de apostas ao vivo?** DraftKings e FanDuel têm `has_live_odds: true`, mas frequentemente suspendem mercados durante jogadas de pontuação e momentos-chave. Se você precisa de cobertura ao vivo contínua, a Pinnacle (nível Sharp) é a referência confiável. Veja [Ao Vivo vs. Pré-Jogo](/pt-BR/concepts/live-vs-prematch) para uma análise completa do comportamento das casas durante o jogo ao vivo.
+</Callout>
+
+## Endpoints Relacionados
+
+- [Snapshot de Odds](/pt-BR/api-reference/odds) - Filtre odds por casa de apostas
+- [Melhores Odds](/pt-BR/api-reference/odds-best) - Melhores odds entre todas as casas com referência sharp
+- [Comparação de Odds](/pt-BR/api-reference/odds-comparison) - Compare odds entre casas lado a lado
+- [Esportes](/pt-BR/api-reference/sports) - Lista de esportes disponíveis

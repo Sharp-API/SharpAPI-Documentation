@@ -1,0 +1,369 @@
+---
+description: "GET /api/v1/events — Liste e pesquise eventos esportivos com filtragem por esporte, liga, data e status ao vivo. Inclui paginação, busca e ordenação em todos os sportsbooks suportados."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Eventos
+
+Endpoint unificado para listar e pesquisar eventos com filtragem, paginação e busca.
+
+```
+GET /api/v1/events
+```
+
+<Callout type="info">
+Este endpoint substitui os endpoints anteriores `/schedule`, `/events/live` e `/events/search`. Toda a funcionalidade desses endpoints agora está disponível aqui através de parâmetros de consulta. Veja as [Notas de Migração](#migracao-de-endpoints-anteriores) abaixo.
+</Callout>
+
+## Autenticação
+
+Requer API key via header `X-API-Key`, header `Authorization: Bearer` ou parâmetro de consulta `api_key`. Disponível para todos os tiers.
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `sport` | string | todos | Filtrar por esporte. Separados por vírgula para múltiplos (ex: `basketball,football`) |
+| `league` | string | todas | Filtrar por liga. Separados por vírgula para múltiplos (ex: `nba,nfl`) |
+| `sportsbook` | string | todos | Filtrar por sportsbook (ex: `draftkings,pinnacle`) |
+| `live` | boolean | — | `true` = apenas ao vivo, `false` = apenas pré-jogo, omitir = ambos |
+| `has_score` | boolean | — | `true` = apenas eventos com estado de jogo/placar ao vivo |
+| `date` | string | — | Filtrar por data no formato `YYYY-MM-DD` |
+| `team` | string | — | Filtrar por nome de equipe (correspondência parcial, sem distinção entre maiúsculas/minúsculas, suporta apelidos como `lakers`) |
+| `q` | string | — | Consulta de busca correspondendo a nomes de equipes ou nomes de eventos |
+| `limit` | integer | 50 | Resultados por página (máx 200) |
+| `offset` | integer | 0 | Offset de paginação (máx 5000) |
+
+<Callout type="warning">
+Os parâmetros de consulta usam a **forma singular** e valores separados por vírgula para múltiplos: `sport=basketball,football`, e não `sports=basketball&sports=football`.
+</Callout>
+
+## Headers de Resposta
+
+Todas as respostas incluem headers padrão de rate limit e metadados:
+
+| Header | Descrição |
+|--------|-----------|
+| `X-RateLimit-Limit` | Máximo de requisições por minuto para o seu tier |
+| `X-RateLimit-Remaining` | Requisições restantes na janela atual |
+| `X-RateLimit-Reset` | Timestamp Unix de quando a janela de rate limit é reiniciada |
+| `X-Data-Delay` | Atraso de dados para o seu tier (ex: `0s`, `60s`) |
+| `X-Request-Id` | Identificador único da requisição para depuração |
+
+## Objeto Event
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | string | Identificador canônico do evento — o mesmo para todos os sportsbooks que cobrem este evento. Use como sua chave primária para correspondência entre sportsbooks. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching). |
+| `external_ids` | object | Mapa de ID do sportsbook para o ID nativo do evento naquele sportsbook (ex: `{"draftkings": "33483153"}`). Use estes para deep linking de volta às páginas dos sportsbooks. |
+| `sport` | string | Identificador do esporte (ex: `basketball`, `football`) |
+| `league` | string | Slug da liga (ex: `nba`, `nfl`) |
+| `home_team` | string | Nome da equipe da casa |
+| `away_team` | string | Nome da equipe visitante |
+| `start_time` | string | Horário de início do evento em ISO 8601 |
+| `status` | string | Status do evento: `upcoming` ou `live` |
+| `is_live` | boolean | Se o evento está atualmente ao vivo |
+| `book_count` | integer | Número de sportsbooks com odds para este evento |
+| `markets` | string[] | Array ordenado dos tipos de mercado disponíveis (ex: `["moneyline", "point_spread", "total_points"]`) |
+| `books` | string[] | Array ordenado de IDs de sportsbooks com odds para este evento |
+| `game_state` | object \| undefined | Estado do jogo ao vivo (presente apenas para eventos ao vivo com placar) |
+
+#### Objeto Game State
+
+Incluído quando o evento está ao vivo e tem dados de placar:
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `home_score` | number | Placar da equipe da casa |
+| `away_score` | number \| null | Placar da equipe visitante |
+| `period` | string \| null | Período atual (ex: `Q3`, `2nd`, `3rd Period`) |
+| `clock` | string \| null | Tempo restante (ex: `5:42`) |
+| `score_type` | string | Tipo de placar (ex: `game_points`, `match`) |
+| `possession` | string \| null | Equipe com posse de bola (`home` ou `away`) |
+| `is_timeout` | boolean \| null | Se um timeout está em andamento |
+| `power_play` | string \| null | Informação de power play (`home` ou `away`, hóquei) |
+| `last_play` | string \| null | Descrição da última jogada |
+
+## Exemplos de Requisições
+
+### Listar próximos eventos da NBA e NFL
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events?sport=basketball,football&league=nba,nfl&limit=20" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/events?sport=basketball,football&league=nba,nfl&limit=20',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+console.log(`Found ${meta.total} events, showing ${meta.count}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/events',
+    params={
+        'sport': 'basketball,football',
+        'league': 'nba,nfl',
+        'limit': 20
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+print(f"Found {data['meta']['total']} events")
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Obter apenas eventos ao vivo
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events?live=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/events?live=true',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+console.log(`${data.length} live events`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/events',
+    params={'live': 'true'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+live_events = response.json()['data']
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Pesquisar por uma equipe
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events?q=celtics" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/events?q=celtics',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/events',
+    params={'q': 'celtics'},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+results = response.json()['data']
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Filtrar por data e sportsbook
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/events?date=2026-02-08&sportsbook=draftkings,fanduel" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/events?date=2026-02-08&sportsbook=draftkings,fanduel',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/events',
+    params={
+        'date': '2026-02-08',
+        'sportsbook': 'draftkings,fanduel'
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "evt_nba_bos_lal_20260208",
+      "external_ids": {
+        "draftkings": "33483200",
+        "fanduel": "nba-bos-lal-20260208"
+      },
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Boston Celtics",
+      "away_team": "Los Angeles Lakers",
+      "start_time": "2026-02-08T19:30:00Z",
+      "status": "upcoming",
+      "is_live": false,
+      "book_count": 6,
+      "markets": ["moneyline", "point_spread", "total_points"],
+      "books": ["betmgm", "caesars", "draftkings", "fanduel"]
+    },
+    {
+      "id": "evt_nba_gsw_mia_20260208",
+      "external_ids": {
+        "draftkings": "33483205"
+      },
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "Golden State Warriors",
+      "away_team": "Miami Heat",
+      "start_time": "2026-02-08T22:00:00Z",
+      "status": "upcoming",
+      "is_live": false,
+      "book_count": 5,
+      "markets": ["moneyline", "point_spread", "total_points"],
+      "books": ["betmgm", "draftkings", "fanduel"]
+    }
+  ],
+  "meta": {
+    "count": 2,
+    "total": 43,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": true,
+      "next_offset": 50
+    },
+    "updated_at": "2026-02-08T12:00:00Z",
+    "filters": {
+      "sport": ["basketball"],
+      "league": ["nba"]
+    }
+  }
+}
+```
+
+### Respostas de Erro
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Missing or invalid API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***400 Bad Request***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid date format. Use YYYY-MM-DD.",
+    "docs": "https://docs.sharpapi.io/en/api-reference/events"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Upgrade your tier for higher limits.",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+## Migração de Endpoints Anteriores
+
+Vários sub-caminhos legados de eventos de versões anteriores da API são mantidos como sinalizadores de descontinuação — acessá-los retorna **`410 Gone`** com uma dica legível por máquina apontando para o endpoint correto.
+
+| Caminho Descontinuado | Use no Lugar |
+|-------------|----------------|
+| `GET /events/search?q=celtics` | `GET /events?q=celtics` |
+| `GET /events/list` | `GET /events` |
+| `GET /events/all` | `GET /events` |
+| `GET /events/find` | `GET /events` |
+
+### Formato da Resposta 410
+
+```json
+{
+  "error": {
+    "code": "unknown_endpoint",
+    "message": "There is no /api/v1/events/search endpoint. Use GET /api/v1/events — results can be filtered with ?sport=, ?league=, and ?book= query parameters.",
+    "correct_endpoint": "/api/v1/events",
+    "docs": "https://docs.sharpapi.io/api-reference"
+  }
+}
+```
+
+<Callout type="warning">
+Respostas pré-v1 usavam nomes de campos em **camelCase** (`homeTeam`, `awayTeam`, `isLive`, `bookCount`). A API v1 usa **snake_case** exclusivamente (`home_team`, `away_team`, `is_live`, `book_count`). Atualize o código do seu cliente conforme necessário.
+</Callout>
+
+### Principais mudanças em relação às versões anteriores
+
+- Os nomes dos campos agora são **snake_case** (ex: `home_team` em vez de `homeTeam`)
+- A resposta usa o envelope padrão `data`/`meta` em vez de um array `events` no nível superior
+- Os parâmetros de consulta usam a **forma singular** (`sport` em vez de `sports`)
+- A URL base é `https://api.sharpapi.io` (não `https://sharpapi.io`)
+- A paginação agora inclui os campos `has_more` e `next_offset`
+
+## Correspondência de Eventos Entre Sportsbooks
+
+O campo `id` é um **identificador canônico de evento** — o mesmo evento do mundo real recebe o mesmo `id` independentemente de qual sportsbook ele venha. Use-o como sua chave primária ao construir ferramentas de comparação entre sportsbooks. O campo `external_ids` mapeia cada sportsbook para seu ID nativo de evento para deep linking.
+
+Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching) para detalhes completos sobre como funcionam os IDs canônicos.
+
+## Endpoints Relacionados
+
+- [Detalhes do Evento](/pt-BR/api-reference/events-by-id) - Obter detalhes completos de um único evento
+- [Odds do Evento](/pt-BR/api-reference/events-odds) - Obter todas as odds para um evento específico
+- [Mercados do Evento](/pt-BR/api-reference/events-markets) - Obter mercados disponíveis para um evento
+- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obter odds atuais em todos os eventos

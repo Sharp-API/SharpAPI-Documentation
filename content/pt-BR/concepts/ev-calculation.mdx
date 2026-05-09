@@ -1,0 +1,115 @@
+---
+description: "Aprenda como a SharpAPI calcula o valor esperado (+EV) usando as linhas sharp da Pinnacle como referência. Cobre probabilidade justa, dimensionamento pelo critério de Kelly e cálculo de margem."
+---
+
+# Cálculo de EV
+
+## O que é Valor Esperado?
+
+O Valor Esperado (EV) mede o lucro ou prejuízo médio por aposta ao longo do tempo.
+
+```
+EV = (Probabilidade de Vitória × Lucro) - (Probabilidade de Derrota × Aposta)
+```
+
+Uma aposta de **EV positivo (+EV)** é lucrativa no longo prazo.
+
+## Exemplo Simples
+
+**Cara ou coroa com odds de +110:**
+
+- Probabilidade de vitória: 50%
+- Pagamento da vitória: $110
+- Valor da derrota: $100
+
+```
+EV = (0.50 × $110) - (0.50 × $100)
+EV = $55 - $50
+EV = +$5 por aposta de $100 (5% de EV)
+```
+
+> **Dica:**
+  Um EV de 5% significa que você espera lucrar $5 para cada $100 apostados ao longo do tempo.
+
+
+## Cálculo de EV da SharpAPI
+
+Usamos a **Pinnacle** (uma sharp book) como fonte da verdade para a probabilidade "justa".
+
+### Passo 1: Obter as Odds da Sharp Book
+
+```
+Odds da Pinnacle: Time A -115 / Time B +105
+```
+
+### Passo 2: Remover o Vig
+
+```javascript
+// Probabilidades implícitas (com vig)
+probA = 1 / 1.87 = 0.535  // -115
+probB = 1 / 2.05 = 0.488  // +105
+total = 1.023  // 2.3% de vig
+
+// Probabilidades sem vig (justas)
+fairProbA = 0.535 / 1.023 = 0.523 (52.3%)
+fairProbB = 0.488 / 1.023 = 0.477 (47.7%)
+```
+
+### Passo 3: Comparar com a Soft Book
+
+```
+Odds da DraftKings: Time A -105 (decimal 1.952)
+Probabilidade justa: 52.3%
+
+EV% = (fairProb × decimalOdds - 1) × 100
+EV% = (0.523 × 1.952 - 1) × 100
+EV% = +2.1%
+```
+
+## A Fórmula do EV
+
+```
+EV% = (fair_probability × decimal_odds - 1) × 100
+```
+
+Onde:
+- `fair_probability` = Probabilidade sem vig da sharp book
+- `decimal_odds` = Odds da soft book em formato decimal
+
+## Por Que Isso Funciona
+
+| Tipo de Book | Características |
+|-----------|----------------|
+| **Sharp (Pinnacle)** | Vig baixo, odds eficientes, probabilidades precisas |
+| **Soft (DraftKings)** | Vig mais alto, ajuste mais lento, exploráveis |
+
+Quando as soft books são lentas para ajustar, suas odds implicam uma probabilidade menor do que a realidade = **oportunidade de +EV**.
+
+## Limites de EV
+
+| EV % | Qualidade | Ação |
+|------|---------|--------|
+| < 0% | EV negativo | Nunca apostar |
+| 0-2% | Marginal | Apenas em alto volume |
+| **2-5%** | Bom | Limite padrão |
+| **5%+** | Excelente | Alta confiança |
+
+> **Nota:**
+  O limite padrão da SharpAPI é 2% de EV. Ajuste com o parâmetro `threshold`.
+
+
+## Aviso sobre Variância
+
++EV não garante lucro em cada aposta:
+
+```
+100 apostas com +5% de EV, $100 cada:
+- Lucro esperado: $500
+- Resultados reais: De -$2000 a +$3000
+
+Com 1000 apostas:
+- Os resultados convergem para +$5000
+```
+
+> **Aviso:**
+  EV é um conceito de longo prazo. A variância de curto prazo pode ser brutal. Nunca aposte mais do que você pode se dar ao luxo de perder.

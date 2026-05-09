@@ -1,0 +1,160 @@
+---
+description: "Comprende la diferencia entre las cuotas en vivo (in-play) y previas al partido en SharpAPI: qué significa cada una, cómo se comportan las casas durante el juego en vivo y qué esperar de DraftKings y FanDuel al desarrollar herramientas de apuestas en vivo."
+---
+
+import { Callout } from 'nextra/components'
+
+# Cuotas en Vivo vs. Previas al Partido
+
+SharpAPI recopila cuotas de las casas de apuestas en dos estados: **previas al partido** (antes de que comience un encuentro) y **en vivo** (in-play, después de que el encuentro comience). Son mercados fundamentalmente diferentes con distintos patrones de actualización, profundidad y fiabilidad, especialmente entre los distintos tipos de casas.
+
+## ¿Qué Son las Cuotas Previas al Partido?
+
+Las cuotas previas al partido se establecen antes de que comience un encuentro. Es donde:
+
+- **La profundidad del mercado es mayor**: las casas ofrecen su menú completo de líneas, hándicaps, totales y props de jugadores
+- **Las actualizaciones son moderadas**: las líneas se mueven horas o días antes del saque inicial, normalmente en respuesta a la acción de los apostadores profesionales o a las noticias
+- **Todas las casas participan plenamente**: cada casa de la API tiene cobertura previa al partido para los deportes que admite
+
+Las cuotas previas al partido son la columna vertebral de la mayoría de los flujos de trabajo de +EV y arbitraje. La inmensa mayoría de las cuotas en la API en cualquier momento dado son previas al partido.
+
+## ¿Qué Son las Cuotas en Vivo (In-Play)?
+
+Las cuotas en vivo están activas durante un encuentro. Reflejan probabilidades en tiempo real a medida que cambia el estado del juego: un equipo anota, un jugador se lesiona o se acaba el tiempo. Puedes filtrar solo las cuotas en vivo utilizando el parámetro de consulta `live=true`.
+
+```bash
+# Solo cuotas en vivo
+GET /api/v1/odds?live=true&sport=basketball&league=nba
+
+# Solo cuotas previas al partido
+GET /api/v1/odds?live=false&sport=basketball&league=nba
+```
+
+Cada elemento de cuotas incluye un campo booleano `is_live` que indica su estado en el momento de la recopilación:
+
+```json
+{
+  "sportsbook": "pinnacle",
+  "event_id": "nba_cavaliers_celtics_2026-04-18",
+  "sport": "basketball",
+  "league": "nba",
+  "market_type": "moneyline",
+  "odds_american": -140,
+  "is_live": true
+}
+```
+
+## Cómo Entregan las Cuotas las Casas
+
+El mecanismo de entrega es la causa raíz de las diferencias de obsolescencia entre los tipos de casas, no solo el intervalo de sondeo (polling).
+
+### Push vs. Poll
+
+| Casa | Mecanismo de entrega | Latencia de origen |
+|------|---------------------|--------------------|
+| Pinnacle | **Push MQTT**: SharpAPI se suscribe al feed WebSocket/MQTT de Pinnacle; las cuotas llegan a medida que la casa las transmite | p50 ~0,8 s, p95 ~3,8–4,2 s (latencia de cola durante ventanas de alta reconexión) |
+| DraftKings | **Sondeo HTTP**: SharpAPI consulta el endpoint de DK según una programación | p50 ~8 s, p95 ~21 s |
+| FanDuel | **Sondeo HTTP**: SharpAPI consulta el endpoint de FD según una programación | p50 ~2,7 s, p95 ~5,9 s |
+| Otras casas profesionales | Push MQTT / WS (Bookmaker, Circa) o sondeo rápido (Bet365) | Similar a Pinnacle |
+| Casas minoristas estadounidenses | Sondeo HTTP | Similar a DK/FD |
+
+El push MQTT de Pinnacle significa que SharpAPI recibe un precio en el momento en que la casa lo envía, sin retraso de sondeo en el camino. Para DraftKings y FanDuel, los números p50/p95 anteriores reflejan el viaje completo de ida y vuelta: el tiempo desde que la casa actualiza su línea hasta que SharpAPI tiene el nuevo precio. Estas cifras provienen de mediciones de Prometheus de abril de 2026.
+
+<Callout type="info">
+La latencia de cola p95 de Pinnacle (3,8–4,2 s) refleja la sobrecarga de reconexión durante ventanas de alta volatilidad. Se está trabajando en infraestructura para reducirla. La mediana (0,8 s) es una guía fiable para el juego normal: utiliza el p95 para dimensionar tu presupuesto de tolerancia para estrategias sensibles al tiempo en vivo.
+</Callout>
+
+## Cómo se Comportan las Casas Durante el Juego en Vivo
+
+Aquí es donde las expectativas divergen significativamente entre las casas profesionales y las casas minoristas estadounidenses.
+
+### Casas Profesionales (Pinnacle, Circa, Bookmaker)
+
+Las casas profesionales tratan las apuestas en vivo como un producto principal:
+
+- **Rara vez suspenden**: los mercados permanecen abiertos durante jugadas de anotación, lesiones y tiempos muertos. La tasa de suspensión en vivo de Pinnacle es una fracción de la de las casas estadounidenses.
+- **Menús de mercado profundos**: Pinnacle ofrece más de 20–50 mercados en vivo por evento en los principales deportes, incluyendo hándicaps en vivo, totales, líneas alternativas y totales por equipo
+- **Entrega push**: el feed MQTT de Pinnacle normalmente entrega con una mediana inferior a 1 s; los precios reflejan rápidamente el estado del juego
+- **Descubrimiento continuo de precios**: la línea en vivo es la lectura más precisa disponible sobre la probabilidad actual de victoria
+
+Las cuotas en vivo de Pinnacle se utilizan como **precio de referencia profesional** en los cálculos de +EV, al igual que ocurre con las previas al partido.
+
+<Callout type="warning">
+Pinnacle, Circa, Bookmaker y otras casas profesionales requieren el plan **Sharp** o superior. Solicitar datos de casas profesionales en los planes Free, Hobby o Pro devuelve un error `403 tier_restricted`.
+</Callout>
+
+### Casas Minoristas Estadounidenses (DraftKings, FanDuel, BetMGM, Caesars)
+
+Las casas reguladas estadounidenses tienen apuestas en vivo, pero con limitaciones importantes:
+
+| Comportamiento | Casas Profesionales | Casas EE. UU. (DK/FD) |
+|----------------|--------------------|-----------------------|
+| Mecanismo de entrega | Push MQTT / WS | Sondeo HTTP |
+| Obsolescencia (p50) | ~0,8 s (Pinnacle) | 8 s (DK) / 2,7 s (FD) |
+| Obsolescencia (p95) | ~3,8–4,2 s (Pinnacle) | 21 s (DK) / 5,9 s (FD) |
+| Suspensión del mercado durante jugadas de anotación | Raro | Muy frecuente |
+| Suspensión del mercado durante revisiones/tiempos muertos | Ocasional | Práctica habitual |
+| Profundidad del menú de mercados en vivo | Más de 20–50 mercados | 3–10 mercados |
+| Disponibilidad de props en vivo | Sí (Pinnacle) | Limitada o ninguna |
+
+**La suspensión es el problema clave.** Cuando un equipo de la NBA anota, DraftKings y FanDuel típicamente retiran sus moneylines, hándicaps y totales en vivo del tablero mientras revalorizan. Durante la acción más intensa (cuarto cuarto de un partido reñido), estas casas pueden estar suspendidas con más frecuencia de la que están abiertas. Este es un patrón regulatorio de gestión de riesgos, no una limitación de la API.
+
+<Callout type="info">
+Cuando un mercado de DK o FD está suspendido, simplemente desaparece de la API: no existe un campo `status: suspended`. Si llamas a `GET /api/v1/odds?live=true&sportsbook=draftkings` durante una jugada de anotación, puedes obtener cero resultados para ese evento aunque el partido esté en curso.
+</Callout>
+
+### Qué Significa Esto en la Práctica
+
+**Si estás construyendo un panel de cuotas en vivo** que necesita cobertura continua sin lagunas, no puedes confiar únicamente en DraftKings o FanDuel. Planifica para:
+- Ventanas frecuentes con valores nulos: diseña tu frontend para manejar "sin precio actual" con elegancia
+- Obsolescencia de datos: el último precio en vivo que viste de DK puede tener entre 30 y 90 segundos de antigüedad antes de que los mercados reabran
+
+**Si estás construyendo un escáner de +EV en vivo**, la pieza esencial es Pinnacle como tu referencia profesional. Sin un precio en vivo de Pinnacle, no puedes calcular si DK/FD están ofreciendo valor. Esto requiere el plan **Sharp**.
+
+**Si estás construyendo una herramienta previa al partido**, DraftKings y FanDuel son totalmente viables en el plan **Free**. La cobertura previa al partido es completa, la suspensión no es un factor y la frecuencia de actualización es más que suficiente.
+
+## Resumen de Cobertura por Casa
+
+| Casa | `has_live_odds` | Calidad Práctica en Vivo | Plan Requerido |
+|------|-----------------|--------------------------|----------------|
+| Pinnacle | Sí | Excelente: profundo, rápido, rara vez suspende | Sharp |
+| Bookmaker | Sí | Excelente: amplio menú de mercados, global | Sharp |
+| Circa Sports | Sí | Bueno: casa profesional estadounidense, menú enfocado | Sharp |
+| Bet365 | Sí | Bueno: amplio menú internacional | Pro |
+| BetMGM | Sí | Moderado: suspensiones regulares | Hobby |
+| Caesars | Sí | Moderado: suspensiones regulares | Hobby |
+| DraftKings | Sí | Limitado: suspensiones frecuentes, menú reducido | Free |
+| FanDuel | Sí | Limitado: suspensiones frecuentes, menú reducido | Free |
+| Novig | No | Solo previas al partido | Free |
+| Polymarket | No | Solo previas al partido (mercado de predicción) | Free |
+
+<Callout type="info">
+`has_live_odds: true` significa que la casa de apuestas ofrece apuestas in-play y SharpAPI recopila esos precios cuando están disponibles. No garantiza una cobertura continua: las casas estadounidenses suspenden con la frecuencia suficiente como para que los datos en vivo tengan lagunas significativas.
+</Callout>
+
+## Enfoques Recomendados por Caso de Uso
+
+### +EV en Vivo o Arbitraje en Vivo
+- **Requerido**: plan Sharp (para Pinnacle como referencia)
+- **Patrón**: consulta `?live=true&sportsbook=pinnacle` como tu precio de referencia; consulta las casas estadounidenses para el precio blando; calcula el EV cuando ambos sean no nulos
+- **Maneja**: precios blandos nulos con elegancia: ocurren constantemente durante el juego en vivo
+
+### Visualización de Cuotas en Vivo (Panel)
+- **Viable**: plan Pro o superior
+- **Patrón**: obtén `?live=true` en un intervalo de 5–10 segundos; muestra el último precio visto con una marca de tiempo de "última actualización"; muestra un estado de "mercado suspendido" cuando no se devuelve ningún precio
+- **Evita**: asumir que un precio faltante significa que las cuotas no están disponibles para siempre: los mercados suelen reabrir en 30–90 segundos
+
+### Solo Previas al Partido (Más Común)
+- **Viable**: plan Free con DraftKings + FanDuel
+- **Patrón**: usa `?live=false` si quieres excluir explícitamente las líneas in-play de tus resultados
+- **Nota**: omitir el parámetro `live` devuelve mezcladas tanto las cuotas previas al partido como las en vivo
+
+<Callout type="warning">
+El plan Free está limitado a **12 solicitudes por 60 segundos**. Este límite por sí solo descarta el sondeo en vivo independientemente de la casa: con un intervalo de 5 segundos alcanzarías el límite en menos de un minuto. Las estrategias de apuestas en vivo requieren el plan **Pro o superior**.
+</Callout>
+
+## Relacionado
+
+- [Snapshot de Cuotas](/es/api-reference/odds) — referencia del parámetro de consulta `live`
+- [Casas de Apuestas](/es/api-reference/sportsbooks) — lista completa de casas con `has_live_odds` y requisitos de plan
+- [Oportunidades +EV](/es/api-reference/opportunities-ev) — +EV precalculado utilizando Pinnacle como referencia profesional

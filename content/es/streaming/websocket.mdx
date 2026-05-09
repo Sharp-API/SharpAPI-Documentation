@@ -1,0 +1,169 @@
+---
+description: "Guía de streaming WebSocket para SharpAPI — conéctate a wss://ws.sharpapi.io para recibir actualizaciones de cuotas en tiempo real con comunicación bidireccional. Cubre la configuración, las suscripciones y la gestión de errores."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Streaming WebSocket
+
+Actualizaciones de cuotas y oportunidades en tiempo real mediante WebSocket en `wss://ws.sharpapi.io`.
+
+<Callout type="info">
+Para consultar la documentación completa de la API, incluidos todos los tipos de mensajes, esquemas y códigos de cierre, consulta la [Referencia de la API WebSocket](/es/api-reference/websocket).
+</Callout>
+
+## SSE frente a WebSocket
+
+SharpAPI ofrece dos protocolos de streaming. Ambos entregan los mismos datos a la misma velocidad.
+
+| | SSE | WebSocket |
+|-|-----|-----------|
+| **URL** | `https://api.sharpapi.io/api/v1/stream` | `wss://ws.sharpapi.io` |
+| **Dirección** | Servidor → Cliente | Bidireccional |
+| **Filtros de actualización** | Requiere reconexión | Enviar mensaje `subscribe` |
+| **Reconexión** | Automática (`Last-Event-ID`) | Manual (implementar backoff) |
+| **Idóneo para** | Consumidores sencillos, navegadores | Aplicaciones interactivas, paneles |
+
+**Elige SSE** si configuras los filtros una vez y solo quieres que los datos fluyan.
+**Elige WebSocket** si necesitas cambiar los filtros sobre la marcha o prefieres un protocolo bidireccional.
+
+## Inicio rápido
+
+### 1. Conectar
+
+Usa el parámetro `channels` para suscribirte únicamente a los datos que necesites:
+
+```javascript
+// Only EV opportunities + odds — no middles, low_hold, or arbitrage
+const ws = new WebSocket(
+  'wss://ws.sharpapi.io?api_key=YOUR_KEY&channels=ev,odds&sport=basketball&sportsbook=draftkings&league=nba'
+);
+```
+
+Canales disponibles: `ev`, `arbitrage`, `middles`, `low_hold`, `odds`. Omite `channels` para recibir todo lo que admita tu nivel de suscripción.
+
+Filtros disponibles: `sport`, `sportsbook`, `league`, `market`, `event_id` — todos separados por comas.
+
+Filtros de umbral: `min_ev` (predeterminado 2.0), `min_profit` (predeterminado 0.5, se aplica solo a arbitrage, no a low-hold) — descartan oportunidades de bajo valor en el lado del servidor.
+
+### 2. Gestionar mensajes
+
+```javascript
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'connected':
+      console.log(msg.message);                     // "Welcome to SharpAPI real-time odds stream"
+      break;
+    case 'opportunities_snapshot':
+      if (msg.ev) console.log('EV:', msg.ev);       // EV opportunity snapshot
+      break;
+    case 'initial':
+      console.log('Odds:', msg.data);                // Per-sportsbook odds snapshot
+      break;
+    case 'snapshot:complete':
+      console.log('All initial data loaded');        // Safe to hide loading state
+      break;
+    case 'odds:update':
+      console.log(msg.source, msg.data);             // Incremental odds update
+      break;
+    case 'ev:detected':
+      console.log('+EV:', msg.data);                 // New +EV opportunities (Pro+)
+      break;
+  }
+};
+```
+
+### 3. Mantener viva la conexión
+
+```javascript
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }
+}, 25000);
+```
+
+### 4. Actualizar canales y filtros (sin reconectar)
+
+```javascript
+ws.send(JSON.stringify({
+  type: 'subscribe',
+  channels: ['low_hold'],
+  filters: { sports: ['football'], sportsbooks: ['fanduel', 'betmgm'], leagues: ['nfl'] }
+}));
+```
+
+## Flujo de mensajes
+
+Al conectarte recibes los mensajes en este orden:
+
+1. **`connected`** -- Mensaje de bienvenida con tu nivel de suscripción, características y canales activos
+2. **`subscribed`** -- Confirmación de los canales y filtros activos
+3. **`opportunities_snapshot`** -- Uno por cada canal de oportunidades suscrito (ev, arbitrage, middles, low_hold)
+4. **`initial`** -- Snapshot de cuotas por sportsbook (solo si está suscrito el canal `odds`)
+5. **`snapshot:complete`** -- Indica que se han enviado todos los datos iniciales
+
+<Callout type="info">
+**Fragmentación de snapshots:** Los snapshots de gran tamaño se dividen en varios frames para evitar la contrapresión. Los snapshots de cuotas se fragmentan a 1.000 elementos por frame, y los de oportunidades a 300 elementos por frame. Espera al `snapshot:complete` antes de considerar que los datos iniciales se han cargado por completo.
+</Callout>
+
+A partir de ahí, recibes actualizaciones incrementales de los canales suscritos:
+
+- **`odds:update`** -- Han cambiado las cuotas de un sportsbook (requiere el canal `odds`)
+- **`odds:removed`** -- Un sportsbook ha retirado cuotas (requiere el canal `odds`)
+- **`ev:detected` / `ev:expired`** -- Oportunidades de +EV (requiere el canal `ev`)
+- **`arb:detected` / `arb:expired`** -- Oportunidades de arbitraje (requiere el canal `arbitrage`)
+- **`middles:detected` / `middles:expired`** -- Oportunidades de middle (requiere el canal `middles`)
+- **`low_hold:detected` / `low_hold:expired`** -- Oportunidades de low-hold (requiere el canal `low_hold`)
+- **`heartbeat`** -- Keepalive del servidor cada 30 segundos
+
+## Reconexión
+
+A diferencia de SSE, WebSocket no se reconecta automáticamente. Implementa un backoff exponencial:
+
+```javascript
+let reconnectDelay = 1000;
+let lastGlobalSeq = 0;
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === 'connected') lastGlobalSeq = msg.global_seq;
+  if (msg.global_seq) lastGlobalSeq = msg.global_seq;
+};
+
+ws.onclose = (event) => {
+  if (event.code === 1000) return; // intentional close
+
+  setTimeout(() => {
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    // Use resume + from_seq for gap-free reconnection (2-min replay buffer)
+    connect({ resume: true, from_seq: lastGlobalSeq });
+  }, reconnectDelay);
+};
+```
+
+Restablece `reconnectDelay` a `1000` cuando la conexión sea correcta.
+
+<Callout type="info">
+El servidor mantiene un búfer de reproducción de 2 minutos. Pasa `resume=true&from_seq=N` al reconectar para omitir el snapshot completo y reproducir solo los eventos perdidos. Para interrupciones más largas, omite estos parámetros y obtendrás un snapshot completo. Consulta [Reconexión con reproducción](/es/api-reference/websocket#reconnection-with-replay) para más detalles.
+</Callout>
+
+## Códigos de cierre
+
+| Código | Significado | Acción |
+|------|---------|--------|
+| `1000` | Cierre normal | No se requiere acción |
+| `1006` | Cierre anómalo (lado cliente) | Caída de red — reconectar siempre |
+| `4001` | API key incorrecta o ausente | Corrige tu API key |
+| `4003` | Sin acceso a streaming | Adquiere el complemento WebSocket |
+| `4029` | Demasiadas conexiones | Cierra primero las conexiones que no uses |
+
+<Callout type="warning">
+**El código 1006 está reservado por la RFC 6455 y el servidor nunca lo envía.** Tu librería WebSocket lo genera localmente cuando la conexión TCP se cae sin un handshake de cierre (fallo de red, terminación del proceso). Reconecta siempre que lo veas — el ejemplo siguiente ya lo hace correctamente al omitir la reconexión solo en `1000`.
+</Callout>
+
+## Referencia completa de la API
+
+Para acceder a la documentación completa, incluidos todos los esquemas de mensajes, la gestión de errores y los ejemplos en varios lenguajes, consulta la [Referencia de la API WebSocket](/es/api-reference/websocket).

@@ -1,0 +1,618 @@
+---
+description: "GET /api/v1/stream — Atualizações em tempo real de odds e oportunidades via Server-Sent Events (SSE). Requer assinatura do add-on WebSocket para acesso ao streaming ao vivo."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Stream Unificado
+
+`GET /api/v1/stream` -- Atualizações em tempo real de odds e oportunidades via Server-Sent Events (SSE).
+
+<Callout type="warning">
+**Requer Add-on WebSocket** ($99/mês) em qualquer plano pago, ou Enterprise (incluído). O plano gratuito não oferece suporte a streaming.
+</Callout>
+
+## Autenticação
+
+Passe sua API key via cabeçalho ou parâmetro de consulta:
+
+```bash
+# Cabeçalho (recomendado para uso server-side)
+curl -H "X-API-Key: sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/stream
+
+# Parâmetro de consulta (obrigatório para EventSource no navegador)
+https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
+```
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `channel` | string | `opportunities` | O que transmitir: `odds`, `opportunities`, `gamestate` (apenas Enterprise) ou `all` |
+| `sport` | string | todos | Filtrar por esporte(s), separados por vírgula (ex.: `basketball`, `football`, `ice_hockey`) |
+| `sportsbook` | string | permitidos pelo plano | Filtrar por sportsbook(s), separados por vírgula |
+| `league` | string | todas | Filtrar por liga(s), separadas por vírgula |
+| `event` | string | todos | Filtrar por ID(s) de evento, separados por vírgula |
+| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por vírgula (ex.: `moneyline`, `point_spread`, `total_points`, `player_points`) |
+| `min_ev` | number | 2.0 | Porcentagem mínima de EV para eventos de oportunidade +EV |
+| `min_profit` | number | 0.5 | Porcentagem mínima de lucro apenas para eventos de arbitragem (não se aplica à filtragem de low-hold) |
+| `state` | string | — | Código de estado dos EUA para deep links de sportsbooks em eventos de odds e oportunidades (ex.: `nj`, `ny`, `il`). Garante que as URLs `deep_link` redirecionem para o domínio do sportsbook específico do estado. |
+| `api_key` | string | — | API key (alternativa à autenticação por cabeçalho para `EventSource` no navegador) |
+
+### Opções de Channel
+
+| Channel | Eventos Entregues | Caso de Uso |
+|---------|-----------------|----------|
+| `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Acompanhar movimentações de odds |
+| `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alertar sobre oportunidades |
+| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Placares ao vivo, períodos, cronômetros e dados situacionais por evento. **Apenas plano Enterprise.** Veja [Live Game State](/api-reference/gamestate) para o catálogo completo de campos. |
+| `all` | Todos os tipos de evento | Visão completa em tempo real |
+
+### Rotas de Conveniência
+
+| Rota | Equivalente A |
+|-------|---------------|
+| `GET /api/v1/stream/odds` | `/api/v1/stream?channel=odds` |
+| `GET /api/v1/stream/opportunities` | `/api/v1/stream?channel=opportunities` |
+| `GET /api/v1/stream/gamestate` | `/api/v1/stream?channel=gamestate` |
+| `GET /api/v1/stream/all` | `/api/v1/stream?channel=all` |
+| `GET /api/v1/stream/events/:eventId` | `/api/v1/stream?channel=odds&event=:eventId` |
+
+## Tipos de Evento SSE
+
+### `connected`
+
+Enviado imediatamente quando o stream é estabelecido.
+
+```
+event: connected
+data: {"stream_id":"stream_1704960637000","channel":"all","filters":{"sportsbook":null,"sport":["basketball"],"league":["nba"],"event":null,"market":null},"reconnected":false}
+```
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `stream_id` | string | Identificador único do stream |
+| `channel` | string | Eco do channel solicitado (`odds`, `opportunities` ou `all`) |
+| `filters` | object | Eco dos filtros ativos |
+| `reconnected` | boolean | `true` se esta for uma reconexão via `Last-Event-ID` |
+| `trial` | object \| undefined | Presente se o usuário estiver em um trial de streaming. Contém `active`, `expires_at`, `remaining_hours`, `max_streams` |
+
+### `snapshot`
+
+Despejo completo de dados enviado após `connected`. Contém todas as odds ou oportunidades atuais que correspondem aos seus filtros. Conjuntos grandes são divididos em múltiplos eventos `snapshot` (até 1000 itens cada).
+
+Cada objeto de odds no snapshot contém **todos os campos** — esta é a forma completa de `Odds` que seu cliente deve armazenar localmente. Eventos `odds:update` subsequentes enviam apenas os campos alterados (veja abaixo).
+
+```
+event: snapshot
+id: evt_00001
+data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"last_seen_at":"2026-02-08T18:47:20Z","odds_changed_at":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
+```
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `odds` | array | Array de objetos `Odds` completos (veja [endpoint Odds](/pt-BR/api-reference/odds) para todos os campos) |
+| `count` | number | Número de odds neste fragmento |
+| `total` | number | Número total de odds que correspondem aos filtros |
+| `offset` | number | Offset deste fragmento no resultado completo |
+| `has_more` | boolean | `true` se mais fragmentos `snapshot` virão a seguir |
+
+### `snapshot:complete`
+
+Sinaliza que todos os snapshots iniciais foram enviados. Seguro para ocultar estados de carregamento após recebê-lo.
+
+```
+event: snapshot:complete
+id: evt_00005
+data: {"status":"ready","books":["draftkings","fanduel"],"total_odds":3200}
+```
+
+### `odds:update`
+
+Disparado quando as odds mudam para um sportsbook. Enviado apenas nos channels `odds` ou `all`.
+
+<Callout type="warning">
+**Payload delta compacto.** Eventos delta contêm apenas campos que podem mudar entre atualizações — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live` e `odds_changed_at`. Campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` e `event_start_time` **não são incluídos** nos deltas. Mescle cada delta no seu mapa local de odds por `id` usando os objetos completos recebidos no `snapshot` inicial. Veja [Migração: Deltas SSE Compactos](#migration-compact-sse-deltas) abaixo.
+</Callout>
+
+```
+event: odds:update
+id: evt_00042
+data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
+```
+
+**Campos do objeto delta (`OddsDelta`):**
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | string | ID único da odd — corresponde ao `id` do snapshot inicial |
+| `odds_american` | number | Odds americanas atualizadas (ex.: `-150`) |
+| `odds_decimal` | number | Odds decimais atualizadas (ex.: `1.667`) |
+| `odds_probability` | number | Probabilidade implícita atualizada (ex.: `0.6`) |
+| `line` | number \| null | Linha/spread atualizada (ex.: `-3.5`), ou `null` para moneyline |
+| `is_live` | boolean | Se o evento está atualmente ao vivo |
+| `odds_changed_at` | string | Timestamp ISO 8601 da atualização da própria fonte do sportsbook para esta linha, quando disponível. Na Pinnacle, é mantido enquanto o preço/linha/flag `is_live` subjacentes permanecerem inalterados — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+
+**Campos do envelope:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `odds` | array | Array de objetos `OddsDelta` (compactos — apenas campos dinâmicos) |
+| `count` | number | Número de odds neste fragmento |
+| `book` | string | Sportsbook que sofreu alteração (ex.: `"draftkings"`) |
+| `partial` | boolean | `true` se mais fragmentos virão para este lote de atualização |
+
+### `ev:detected`
+
+Uma nova oportunidade de valor esperado positivo foi encontrada. Enviado apenas nos channels `opportunities` ou `all`.
+
+```
+event: ev:detected
+id: evt_00043
+data: [{"id":"a1b2c3d4e5f6","game_id":"nba_phosuns_phi76ers_2026-02-08","ev_percentage":4.35,"odds_american":-105,"odds_decimal":1.952,"no_vig_odds":-101,"selection":"PHO Suns -3.5","market":"point_spread","line":-3.5,"sportsbook":"draftkings","game":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","start_time":"2026-02-08T19:00:00.000Z","is_live":false,"confidence_score":72,"kelly_percent":3.8,"book_count":4,"detected_at":"2026-02-08T18:47:20.000Z"}]
+```
+
+### `ev:expired`
+
+Uma oportunidade +EV detectada anteriormente não está mais disponível.
+
+```
+event: ev:expired
+id: evt_00044
+data: {"expired":["a1b2c3d4e5f6"],"timestamp":"2026-02-08T18:47:25.000Z"}
+```
+
+### `arb:detected`
+
+Uma nova oportunidade de arbitragem foi encontrada. Enviado apenas nos channels `opportunities` ou `all`.
+
+```
+event: arb:detected
+id: evt_00045
+data: [{"id":"61c501b83ce932d1","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"moneyline","line":null,"profit_percent":2.8,"implied_total":97.2,"is_live":false,"legs":[{"sportsbook":"draftkings","selection":"PHO Suns","odds_american":150,"odds_decimal":2.5,"implied_probability":0.4,"stake_percent":41.4},{"sportsbook":"fanduel","selection":"PHI 76ers","odds_american":-130,"odds_decimal":1.769,"implied_probability":0.5652,"stake_percent":58.6}],"detected_at":"2026-02-08T18:47:21.000Z"}]
+```
+
+### `arb:expired`
+
+Uma oportunidade de arbitragem detectada anteriormente não está mais disponível.
+
+```
+event: arb:expired
+id: evt_00046
+data: {"expired":["evt_abc123:moneyline:opp_a1b2c3"],"timestamp":"2026-01-26T02:10:39.500Z"}
+```
+
+### `middles:detected`
+
+Uma nova oportunidade de middle foi encontrada. Enviado apenas nos channels `opportunities` ou `all`.
+
+```
+event: middles:detected
+id: evt_00047
+data: [{"id":"middle_abc123","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"player_points","side1":{"book":"draftkings","selection":"Over 22.5","line":22.5,"odds":{"american":-110,"decimal":1.909,"probability":0.5238,"fair_probability":0.51},"stake_percent":50,"odds_age_seconds":2.1,"deep_link":null},"side2":{"book":"fanduel","selection":"Under 23.5","line":23.5,"odds":{"american":-105,"decimal":1.952,"probability":0.5122,"fair_probability":0.49},"stake_percent":50,"odds_age_seconds":1.5,"deep_link":null},"middle_size":1,"middle_numbers":[23],"middle_probability":0.12,"expected_value":3.5,"quality_score":85,"detected_at":"2026-02-08T18:47:22.000Z"}]
+```
+
+### `middles:expired`
+
+Uma oportunidade de middle detectada anteriormente não está mais disponível.
+
+```
+event: middles:expired
+id: evt_00048
+data: {"expired":["middle_abc123"]}
+```
+
+### `low_hold:detected`
+
+Uma nova oportunidade de low-hold foi encontrada. Enviado apenas nos channels `opportunities` ou `all`.
+
+```
+event: low_hold:detected
+id: evt_00049
+data: [{"id":"lowhold_abc123","event_id":"nba_phosuns_phi76ers_2026-02-08","event_name":"PHO Suns @ PHI 76ers","sport":"basketball","league":"nba","market_type":"moneyline","line":null,"home_team":"PHI 76ers","away_team":"PHO Suns","start_time":"2026-02-08T19:00:00.000Z","hold_percentage":1.2,"is_live":false,"all_books":["draftkings","fanduel"],"side1":{"selection":"PHO Suns","books":["draftkings"],"line":null,"odds":{"american":-108,"decimal":1.926,"implied_probability":0.5192,"fair_probability":0.5096},"deep_links":{"draftkings":"https://sportsbook.draftkings.com/event/..."}},"side2":{"selection":"PHI 76ers","books":["fanduel"],"line":null,"odds":{"american":110,"decimal":2.1,"implied_probability":0.4762,"fair_probability":0.4904},"deep_links":{"fanduel":"https://sportsbook.fanduel.com/event/..."}},"detected_at":"2026-02-08T18:47:22.000Z"}]
+```
+
+### `low_hold:expired`
+
+Uma oportunidade de low-hold detectada anteriormente não está mais disponível.
+
+```
+event: low_hold:expired
+id: evt_00050
+data: {"expired":["lowhold_abc123"]}
+```
+
+### `odds:removed`
+
+Odds removidas por um sportsbook (ex.: mercado retirado, evento liquidado). Enviado apenas nos channels `odds` ou `all`.
+
+```
+event: odds:removed
+id: evt_00051
+data: {"ids":["123456","789012"],"count":2,"book":"draftkings"}
+```
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `ids` | string[] | IDs de odds a serem removidos do estado local |
+| `count` | number | Número de odds removidas |
+| `book` | string | Sportsbook que removeu as odds |
+
+### `heartbeat`
+
+Keep-alive enviado a cada 30 segundos. Se você não receber um heartbeat dentro de 60 segundos, a conexão pode estar obsoleta.
+
+```
+event: heartbeat
+data: {"timestamp":"2026-01-26T02:11:07.846Z"}
+```
+
+### `error`
+
+Erro recuperável no stream. A conexão permanece aberta.
+
+```
+event: error
+data: {"code":"upstream_error","message":"Temporary issue fetching DraftKings data. Will retry."}
+```
+
+## Reconexão
+
+SSE oferece suporte a reconexão automática via cabeçalho `Last-Event-ID`. Cada evento inclui um campo `id`. Quando o cliente se reconecta, o servidor entrega um **novo snapshot completo** — não uma repetição de eventos individuais perdidos. Isso significa que seu cliente recebe uma visão completa e atualizada a cada reconexão.
+
+```javascript
+// Navegadores lidam com isso automaticamente com EventSource.
+// Para clientes personalizados, defina o cabeçalho na reconexão:
+const headers = {
+  'X-API-Key': 'YOUR_KEY',
+  'Last-Event-ID': 'evt_00042'
+};
+```
+
+<Callout type="warning">
+Na reconexão, **limpe seu estado local** antes de processar o novo snapshot. O evento `connected` inclui `"reconnected": true` para que você possa detectar isso. Se você não limpar o estado, odds obsoletas da sessão anterior se misturarão com dados novos.
+</Callout>
+
+<Callout type="info">
+O `EventSource` do navegador lida com `Last-Event-ID` e a reconexão automaticamente. Nenhum código extra é necessário para a reconexão em si, mas você deve cuidar da limpeza de estado no lado do cliente.
+</Callout>
+
+## Exemplos de Código
+
+<Tabs items={['Browser', 'Node.js', 'Python']}>
+  <Tabs.Tab>
+```javascript
+// Mapa local de odds — indexado pelo ID da odd, armazena objetos Odds completos do snapshot.
+// Eventos delta são mesclados neste mapa pelo ID.
+const oddsMap = new Map();
+
+const eventSource = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&league=nba&api_key=YOUR_KEY'
+);
+
+eventSource.addEventListener('connected', (e) => {
+  const { stream_id, channel, reconnected } = JSON.parse(e.data);
+  if (reconnected) oddsMap.clear(); // Snapshot novo a caminho
+  console.log(`Stream ${stream_id} connected (${channel})`);
+});
+
+eventSource.addEventListener('snapshot', (e) => {
+  const { odds, count, total, has_more } = JSON.parse(e.data);
+  // Armazena objetos Odds completos indexados por ID
+  for (const odd of odds) {
+    oddsMap.set(odd.id, odd);
+  }
+  console.log(`Snapshot chunk: ${count} odds (${oddsMap.size}/${total} total)`);
+});
+
+eventSource.addEventListener('snapshot:complete', (e) => {
+  console.log(`Snapshot complete: ${oddsMap.size} odds loaded`);
+});
+
+eventSource.addEventListener('odds:update', (e) => {
+  const { odds, book } = JSON.parse(e.data);
+  // Mescla deltas compactos no estado local — apenas campos dinâmicos são enviados
+  for (const delta of odds) {
+    const existing = oddsMap.get(delta.id);
+    if (existing) {
+      Object.assign(existing, delta); // Mescla campos alterados
+    }
+    // Se não houver entrada existente, a odd apareceu após nosso snapshot — aguarde o próximo snapshot
+  }
+  console.log(`${book}: ${odds.length} odds updated`);
+});
+
+eventSource.addEventListener('odds:removed', (e) => {
+  const { ids, book } = JSON.parse(e.data);
+  for (const id of ids) {
+    oddsMap.delete(id);
+  }
+  console.log(`${book}: ${ids.length} odds removed`);
+});
+
+eventSource.addEventListener('ev:detected', (e) => {
+  const opps = JSON.parse(e.data);
+  opps.forEach(opp => console.log(`+EV: ${opp.selection} at ${opp.ev_percentage}%`));
+});
+
+eventSource.addEventListener('arb:detected', (e) => {
+  const arbs = JSON.parse(e.data);
+  arbs.forEach(arb => console.log(`Arb: ${arb.profit_percent}% profit`));
+});
+
+eventSource.addEventListener('middles:detected', (e) => {
+  const middles = JSON.parse(e.data);
+  middles.forEach(m => console.log(`Middle: ${m.event_name} — EV ${m.expected_value}%`));
+});
+
+eventSource.addEventListener('low_hold:detected', (e) => {
+  const holds = JSON.parse(e.data);
+  holds.forEach(h => console.log(`Low hold: ${h.hold_percentage}%`));
+});
+
+eventSource.addEventListener('heartbeat', () => {
+  console.log('Connection alive');
+});
+
+eventSource.onerror = () => {
+  console.log('Connection lost, auto-reconnecting...');
+};
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+import EventSource from 'eventsource';
+
+// Mapa local de odds — indexado pelo ID da odd
+const oddsMap = new Map();
+
+const es = new EventSource(
+  'https://api.sharpapi.io/api/v1/stream?channel=all&sport=basketball&league=nba',
+  { headers: { 'X-API-Key': 'YOUR_KEY' } }
+);
+
+es.addEventListener('connected', (e) => {
+  const { stream_id, reconnected } = JSON.parse(e.data);
+  if (reconnected) oddsMap.clear();
+  console.log(`Stream ${stream_id} connected (reconnected: ${reconnected})`);
+});
+
+es.addEventListener('snapshot', (e) => {
+  const { odds } = JSON.parse(e.data);
+  for (const odd of odds) {
+    oddsMap.set(odd.id, odd);
+  }
+});
+
+es.addEventListener('snapshot:complete', () => {
+  console.log(`Ready: ${oddsMap.size} odds loaded`);
+});
+
+es.addEventListener('odds:update', (e) => {
+  const { odds, book } = JSON.parse(e.data);
+  // Mescla deltas compactos nos objetos locais completos
+  for (const delta of odds) {
+    const existing = oddsMap.get(delta.id);
+    if (existing) Object.assign(existing, delta);
+  }
+  console.log(`${book}: ${odds.length} odds updated`);
+});
+
+es.addEventListener('odds:removed', (e) => {
+  const { ids, book } = JSON.parse(e.data);
+  for (const id of ids) oddsMap.delete(id);
+  console.log(`${book}: ${ids.length} odds removed`);
+});
+
+es.addEventListener('ev:detected', (e) => {
+  const opps = JSON.parse(e.data);
+  opps.forEach(opp =>
+    console.log(`+EV: ${opp.selection} — ${opp.ev_percentage}% EV`)
+  );
+});
+
+es.addEventListener('ev:expired', (e) => {
+  const { expired } = JSON.parse(e.data);
+  console.log(`EV expired: ${expired.length} opportunities`);
+});
+
+es.addEventListener('arb:detected', (e) => {
+  const arbs = JSON.parse(e.data);
+  arbs.forEach(arb =>
+    console.log(`Arb: ${arb.profit_percent}% across ${arb.legs.length} legs`)
+  );
+});
+
+es.addEventListener('arb:expired', (e) => {
+  const { expired } = JSON.parse(e.data);
+  console.log(`Arb expired: ${expired.length} opportunities`);
+});
+
+es.onerror = (err) => {
+  console.error('Stream error:', err.message);
+};
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import sseclient
+import requests
+import json
+
+url = 'https://api.sharpapi.io/api/v1/stream'
+params = {
+    'channel': 'all',
+    'sport': 'basketball',
+    'league': 'nba',
+}
+headers = {'X-API-Key': 'YOUR_KEY'}
+
+# Dicionário local de odds — indexado pelo ID da odd, armazena objetos completos do snapshot
+odds_map: dict[str, dict] = {}
+
+response = requests.get(url, params=params, headers=headers, stream=True)
+client = sseclient.SSEClient(response)
+
+for event in client.events():
+    data = json.loads(event.data) if event.data else {}
+
+    if event.event == 'connected':
+        if data.get('reconnected'):
+            odds_map.clear()  # Snapshot novo a caminho
+        print(f"Stream {data['stream_id']} connected ({data['channel']})")
+
+    elif event.event == 'snapshot':
+        # Armazena objetos completos de odds indexados por ID
+        for odd in data.get('odds', []):
+            odds_map[odd['id']] = odd
+        print(f"Snapshot chunk: {data['count']} odds ({len(odds_map)}/{data['total']} total)")
+
+    elif event.event == 'snapshot:complete':
+        print(f"Ready: {len(odds_map)} odds loaded")
+
+    elif event.event == 'odds:update':
+        # Mescla deltas compactos no estado local
+        for delta in data.get('odds', []):
+            existing = odds_map.get(delta['id'])
+            if existing:
+                existing.update(delta)
+        print(f"{data['book']}: {data['count']} odds updated")
+
+    elif event.event == 'odds:removed':
+        for odd_id in data.get('ids', []):
+            odds_map.pop(odd_id, None)
+        print(f"{data['book']}: {data['count']} odds removed")
+
+    elif event.event == 'ev:detected':
+        for opp in data:
+            print(f"+EV: {opp['selection']} at {opp['ev_percentage']}%")
+
+    elif event.event == 'ev:expired':
+        print(f"EV expired: {len(data['expired'])} opportunities")
+
+    elif event.event == 'arb:detected':
+        for arb in data:
+            print(f"Arb: {arb['profit_percent']}% profit")
+
+    elif event.event == 'arb:expired':
+        print(f"Arb expired: {len(data['expired'])} opportunities")
+
+    elif event.event == 'middles:detected':
+        for m in data:
+            print(f"Middle: {m.get('event_name', '?')} — EV {m.get('expected_value', '?')}%")
+
+    elif event.event == 'low_hold:detected':
+        for h in data:
+            print(f"Low hold: {h['hold_percentage']}%")
+
+    elif event.event == 'heartbeat':
+        pass  # keepalive silencioso
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Limites de Streams Concorrentes
+
+Cada conexão SSE aberta conta como um stream contra o seu limite.
+
+| Plano | Streams Concorrentes Máximos |
+|------|------------------------|
+| Add-on WebSocket ($99/mês) | 10 |
+| Enterprise | Personalizado |
+
+<Callout type="warning">
+Exceder o limite de streams retorna um erro `429` com o código `too_many_streams`. Feche streams não utilizados antes de abrir novos.
+</Callout>
+
+### Gerenciando Streams
+
+- Cada conexão única `GET /api/v1/stream` conta como um stream
+- Fechar a conexão HTTP (ou chamar `eventSource.close()`) libera o slot imediatamente
+- Use filtros mais amplos em menos streams ao invés de muitos streams restritos
+- O payload do evento `connected` inclui seu `stream_id` para rastreamento
+
+## Tratamento de Erros
+
+### Erros de Nível de Stream
+
+Erros enviados como eventos SSE são recuperáveis -- a conexão permanece aberta:
+
+```
+event: error
+data: {"code":"upstream_error","message":"Temporary issue fetching data. Will retry."}
+```
+
+### Erros de Nível de Conexão
+
+Estes encerram a conexão. Trate-os no `onerror`:
+
+| Código de Erro | Status HTTP | Descrição | Resolução |
+|------------|-------------|-------------|------------|
+| `too_many_streams` | 429 | Muitos streams concorrentes | Feche streams não utilizados |
+| `tier_restricted` | 403 | Streaming não disponível no seu plano | Adicione o add-on WebSocket |
+| `invalid_api_key` | 401 | API key ausente ou inválida | Verifique sua API key |
+| `validation_error` | 400 | Parâmetros de filtro inválidos | Verifique os parâmetros de consulta |
+
+## Boas Práticas
+
+1. **Use o channel correto** -- `channel=odds` apenas para odds, `channel=opportunities` apenas para oportunidades, `channel=all` para tudo
+2. **Use filtros para reduzir o consumo de banda** -- Passe os parâmetros `sport`, `league`, `sportsbook`, `market` e `event` para restringir os dados
+3. **Defina limiares** -- Use `min_ev` e `min_profit` para filtrar oportunidades de baixo valor no servidor
+4. **Aguarde por `snapshot:complete`** -- Isso sinaliza que todos os dados iniciais foram enviados. Oculte os estados de carregamento após recebê-lo
+5. **Trate `odds:removed`** -- Remova odds do estado local quando recebidas para evitar exibir dados obsoletos
+6. **Trate a reconexão de forma elegante** -- O `EventSource` se reconecta automaticamente, mas redefina o estado local quando receber um novo evento `snapshot`
+7. **Processe atualizações de forma assíncrona** -- Não bloqueie o handler de eventos; enfileire as atualizações para processamento em segundo plano
+8. **Monitore os heartbeats** -- Se nenhum heartbeat chegar em 60 segundos, considere a conexão obsoleta e reconecte
+9. **Feche streams não utilizados** -- Cada stream aberto conta contra seu limite concorrente
+10. **Use `Last-Event-ID`** -- Permite que o servidor reproduza eventos perdidos após uma reconexão
+
+## Migração: Deltas SSE Compactos
+
+<Callout type="warning">
+**Mudança incompatível para consumidores de `odds:update` SSE.** O evento `odds:update` agora envia objetos `OddsDelta` compactos contendo apenas campos dinâmicos (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `odds_changed_at`). Campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` e `event_start_time` são enviados apenas no evento `snapshot` inicial.
+</Callout>
+
+**Por quê:** O payload anterior enviava o objeto `Odds` completo a cada alteração, gerando ~170 KB/s por conexão. O delta compacto reduz o consumo de banda em ~5x, enviando apenas os 6-7 campos que realmente mudaram.
+
+**O que alterar no seu cliente:**
+
+1. **Armazene as odds do snapshot em um mapa local indexado por `id`.** O evento `snapshot` ainda envia objetos `Odds` completos com todos os campos.
+
+2. **Mescle os deltas de `odds:update` por `id`** ao invés de tratá-los como objetos independentes. Cada delta contém apenas os campos que podem mudar — procure o objeto completo no seu mapa local e aplique a atualização.
+
+3. **Não acesse campos estáticos em objetos delta.** Campos como `event_id`, `market_type`, `selection`, `home_team` e `sportsbook` não estão presentes nos deltas. Leia-os do seu mapa local em vez disso.
+
+**Antes (incorreto — acessando campos não presentes no delta):**
+```javascript
+eventSource.addEventListener('odds:update', (e) => {
+  const { odds } = JSON.parse(e.data);
+  for (const o of odds) {
+    // ❌ o.event_id, o.market_type, o.selection são undefined nos deltas
+    console.log(`${o.event_id} ${o.market_type}: ${o.selection} → ${o.odds_american}`);
+  }
+});
+```
+
+**Depois (correto — mescla no estado local):**
+```javascript
+eventSource.addEventListener('odds:update', (e) => {
+  const { odds } = JSON.parse(e.data);
+  for (const delta of odds) {
+    const full = oddsMap.get(delta.id);
+    if (full) {
+      Object.assign(full, delta); // Mescla campos alterados
+      // ✅ full.event_id, full.market_type, full.selection ainda estão disponíveis
+      console.log(`${full.event_id} ${full.market_type}: ${full.selection} → ${full.odds_american}`);
+    }
+  }
+});
+```
+
+## Endpoints Relacionados
+
+- [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev) - Endpoint REST para dados de EV (transmitido via `ev:detected`)
+- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) - Endpoint REST para arbs (transmitido via `arb:detected`)
+- [Oportunidades de Low Hold](/pt-BR/api-reference/opportunities-low-hold) - Endpoint REST para low hold (transmitido via `low_hold:detected`)
+- [Resumo de Middles](/pt-BR/api-reference/opportunities-middles-summary) - Estatísticas agregadas de middles para polling de dashboard
+- [WebSocket API](/pt-BR/api-reference/websocket) - Alternativa bidirecional ao SSE

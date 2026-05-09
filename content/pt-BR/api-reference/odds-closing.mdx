@@ -1,0 +1,184 @@
+---
+description: "GET /api/v1/odds/closing — Snapshot da linha de fechamento para um evento, capturado no momento em que cada sportsbook altera o evento para ao vivo. Odds por book, adequado para análise de CLV."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Linha de Fechamento
+
+Retorna o snapshot da linha de fechamento para um evento — as odds por book capturadas no momento em que cada sportsbook alterou o evento de pré-jogo para ao vivo. O endpoint é a fonte canônica para análise de closing-line value (CLV) em apostas feitas antes do início da partida.
+
+```
+GET /api/v1/odds/closing
+```
+
+Cada sportsbook é capturado de forma independente na primeira vez em que faz a transição de um determinado evento para `is_live=true`. Os snapshots capturados ficam no Valkey por **48 horas** após o início do evento. Após esse período, utilize [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise) (Enterprise, com suporte do ClickHouse).
+
+## Autenticação
+
+Requer API key. Disponível para os tiers **Pro, Sharp e Enterprise** (recurso `closing_line`).
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `event_id` | string | **obrigatório** | Identificador do evento. Mesmos IDs de `/api/v1/events`. |
+| `sportsbook` | string | todos | Filtro de books separado por vírgula (ex.: `draftkings,fanduel`). `books=` é aceito como alias legado. |
+
+<Callout type="warning">
+`event_id` é obrigatório. Omiti-lo retorna `400 validation_error`. Caracteres inválidos no valor também retornam `400 validation_error`.
+</Callout>
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/odds/closing?event_id=mlb_athletics_mariners_2026-04-22" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/odds/closing?event_id=mlb_athletics_mariners_2026-04-22',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+// Per-book closing prices for CLV
+for (const [book, odds] of Object.entries(data.books)) {
+  console.log(`${book}: ${odds.length} closing prices captured at ${data.captured_at}`);
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+r = requests.get(
+    "https://api.sharpapi.io/api/v1/odds/closing",
+    params={"event_id": "mlb_athletics_mariners_2026-04-22"},
+    headers={"X-API-Key": "YOUR_API_KEY"},
+)
+snap = r.json()["data"]
+
+for book, odds in snap["books"].items():
+    print(f"{book}: {len(odds)} closing prices")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+```json
+{
+  "success": true,
+  "data": {
+    "event_id": "mlb_athletics_mariners_2026-04-22",
+    "sport": "baseball",
+    "league": "mlb",
+    "home_team": "Seattle Mariners",
+    "away_team": "Athletics",
+    "event_start_time": "2026-04-22T22:10:00Z",
+    "captured_at": "2026-04-22T22:09:58.412Z",
+    "books": {
+      "draftkings": [
+        {
+          "sportsbook": "draftkings",
+          "market_type": "moneyline",
+          "selection": "Seattle Mariners",
+          "selection_type": "home",
+          "odds_american": -165,
+          "odds_decimal": 1.606
+        },
+        {
+          "sportsbook": "draftkings",
+          "market_type": "spread",
+          "selection": "Seattle Mariners",
+          "selection_type": "home",
+          "line": -1.5,
+          "odds_american": 130,
+          "odds_decimal": 2.30
+        }
+      ],
+      "pinnacle": [
+        {
+          "sportsbook": "pinnacle",
+          "market_type": "moneyline",
+          "selection": "Seattle Mariners",
+          "selection_type": "home",
+          "odds_american": -158,
+          "odds_decimal": 1.633
+        }
+      ]
+    }
+  },
+  "meta": {
+    "source": "valkey",
+    "updated_at": "2026-04-22T17:34:54.692Z"
+  }
+}
+```
+
+### Resposta Vazia
+
+Se nenhum snapshot de fechamento tiver sido capturado (o evento ainda não começou, ou o ID do evento não tem capturas dentro da janela de 48h), a resposta retorna um objeto `books` vazio:
+
+```json
+{
+  "success": true,
+  "data": {
+    "event_id": "mlb_athletics_mariners_2026-04-22",
+    "books": {}
+  },
+  "meta": {
+    "source": "valkey",
+    "updated_at": "2026-04-22T17:34:54.692Z"
+  }
+}
+```
+
+## Campos da Resposta
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `data.event_id` | string | Identificador do evento ecoado da requisição. |
+| `data.sport` | string | Esporte (ex.: `baseball`). Vazio quando não houver capturas. |
+| `data.league` | string | Liga (ex.: `mlb`). Vazio quando não houver capturas. |
+| `data.home_team`, `data.away_team` | string | Nomes dos times. Vazios quando não houver capturas. |
+| `data.event_start_time` | string | Horário de início agendado em ISO 8601. |
+| `data.captured_at` | string | Timestamp ISO 8601 da primeira captura (o primeiro book a alterar o evento para ao vivo). |
+| `data.books` | object | Mapa `book_id → ClosingOdd[]`. `{}` vazio se nada foi capturado. |
+
+### Estrutura de `ClosingOdd`
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `sportsbook` | string | Identificador do book (minúsculas). |
+| `market_type` | string | ex.: `moneyline`, `spread`, `total`, `player_prop`. |
+| `selection` | string | Rótulo da seleção (ex.: nome do time, nome do jogador, `over`, `under`). |
+| `selection_type` | string | `home`, `away`, `over`, `under`, etc. |
+| `line` | number? | Linha do spread ou total, quando aplicável. Omitido em moneylines. |
+| `odds_american` | integer | Odds em formato americano no momento da captura. |
+| `odds_decimal` | number | Odds em formato decimal (3 casas decimais). |
+| `player_name` | string? | Presente em player props. |
+| `stat_category` | string? | Categoria de estatística (`points`, `rebounds`, etc.) para player props. |
+
+## Cache
+
+As respostas são armazenadas em cache na edge por 30s (`s-maxage=30`) e no cliente por 10s (`max-age=10`). Snapshots de fechamento não mudam após a captura, então isso é seguro.
+
+## Códigos de Erro
+
+| Status | Código | Significado |
+|--------|------|---------|
+| 400 | `validation_error` | `event_id` ausente ou malformado. |
+| 401 | `missing_api_key` / `invalid_api_key` | Veja [Autenticação](/pt-BR/authentication). |
+| 403 | `tier_restricted` | Tier abaixo de Pro. |
+| 503 | `not_ready` | A captura da linha de fechamento não está disponível no momento (ex.: armazenamento de apoio inacessível). Tente novamente. |
+
+## Relacionados
+
+- [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise) — Enterprise; histórico de longo prazo no ClickHouse além da janela de 48h.
+- [`/api/v1/historical/clv`](/pt-BR/api-reference/enterprise) — Análises de CLV agregadas entre oportunidades.

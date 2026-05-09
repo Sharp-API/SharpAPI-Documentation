@@ -1,0 +1,347 @@
+---
+description: "POST /api/v1/odds/batch — Quoten für mehrere Events in einer einzigen API-Anfrage abrufen. Reduziert Latenz und Rate-Limit-Verbrauch im Vergleich zu einzelnen Anfragen pro Event."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Batch-Quoten
+
+Rufen Sie Quoten für mehrere Events in einer einzigen Anfrage ab. Dies vermeidet separate API-Aufrufe für jedes Event und reduziert Latenz sowie Rate-Limit-Verbrauch.
+
+```
+POST /api/v1/odds/batch
+```
+
+## Authentifizierung
+
+Erfordert einen API-Schlüssel. Verfügbar für **alle Tarife**.
+
+## Request Body
+
+Senden Sie einen JSON-Body mit den folgenden Feldern:
+
+| Feld | Typ | Erforderlich | Beschreibung |
+|-------|------|----------|-------------|
+| `event_ids` | string[] | **Ja** | Array von Event-IDs, für die Quoten abgerufen werden sollen |
+| `sportsbook` | string | Nein | Filter für einen einzelnen Sportsbook (Standard: alle für Ihren Tarif verfügbaren) |
+| `market` | string | Nein | Filter für einen einzelnen Markttyp (Standard: alle) |
+
+### Batch-Limits nach Tarif
+
+Die maximale Anzahl von Events pro Batch-Anfrage hängt von Ihrem Tarif ab:
+
+| Tarif | Max. Events pro Batch |
+|------|---------------------|
+| **Free** | 10 |
+| **Hobby** | 10 |
+| **Pro** | 50 |
+| **Sharp** | 50 |
+| **Enterprise** | 100 |
+
+<Callout type="warning">
+Wird das Batch-Limit Ihres Tarifs überschritten, wird ein `400 validation_error`-Fehler zurückgegeben. Teilen Sie große Anfragen bei Bedarf in mehrere Batches auf.
+</Callout>
+
+## Beispielanfragen
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X POST "https://api.sharpapi.io/api/v1/odds/batch" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event_ids": ["evt_nba_lal_bos_20260126", "evt_nba_gsw_mia_20260126"],
+    "sportsbook": "draftkings",
+    "market": "moneyline"
+  }'
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch('https://api.sharpapi.io/api/v1/odds/batch', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    event_ids: ['evt_nba_lal_bos_20260126', 'evt_nba_gsw_mia_20260126'],
+    sportsbook: 'draftkings',
+    market: 'moneyline'
+  })
+});
+
+const { data, meta } = await response.json();
+console.log(`Fetched odds for ${meta.found} of ${meta.requested} events`);
+
+// Events are nested under data.events
+for (const event of data.events) {
+  console.log(`${event.event_name}: ${event.odds.length} odds`);
+}
+
+if (data.missing_events.length > 0) {
+  console.warn('Missing events:', data.missing_events);
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.post(
+    'https://api.sharpapi.io/api/v1/odds/batch',
+    headers={
+        'X-API-Key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'event_ids': ['evt_nba_lal_bos_20260126', 'evt_nba_gsw_mia_20260126'],
+        'sportsbook': 'draftkings',
+        'market': 'moneyline'
+    }
+)
+result = response.json()
+meta = result['meta']
+print(f"Fetched odds for {meta['found']}/{meta['requested']} events")
+
+# Events are nested under data.events
+for event in result['data']['events']:
+    print(f"\n{event['event_name']}: {len(event['odds'])} odds")
+
+if result['data']['missing_events']:
+    print(f"Missing: {result['data']['missing_events']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Antwort
+
+### Erfolg (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "events": [
+      {
+        "event_id": "evt_nba_lal_bos_20260126",
+        "event_name": "Los Angeles Lakers @ Boston Celtics",
+        "sport": "basketball",
+        "league": "nba",
+        "start_time": "2026-01-26T19:30:00Z",
+        "is_live": false,
+        "odds": [
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Boston Celtics",
+            "selection_type": "home",
+            "odds_american": -210,
+            "odds_decimal": 1.476,
+            "line": null,
+            "last_seen_at": "2026-01-26T10:15:00.000Z"
+          },
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Los Angeles Lakers",
+            "selection_type": "away",
+            "odds_american": 175,
+            "odds_decimal": 2.75,
+            "line": null,
+            "last_seen_at": "2026-01-26T10:15:00.000Z"
+          }
+        ]
+      },
+      {
+        "event_id": "evt_nba_gsw_mia_20260126",
+        "event_name": "Golden State Warriors @ Miami Heat",
+        "sport": "basketball",
+        "league": "nba",
+        "start_time": "2026-01-26T20:00:00Z",
+        "is_live": false,
+        "odds": [
+          {
+            "sportsbook": "draftkings",
+            "market_type": "moneyline",
+            "selection": "Miami Heat",
+            "selection_type": "home",
+            "odds_american": -130,
+            "odds_decimal": 1.769,
+            "line": null,
+            "last_seen_at": "2026-01-26T10:15:05.000Z"
+          }
+        ]
+      }
+    ],
+    "missing_events": []
+  },
+  "meta": {
+    "requested": 2,
+    "found": 2,
+    "missing": 0,
+    "max_batch": 50,
+    "filters": {
+      "sportsbook": "draftkings",
+      "market": "moneyline"
+    },
+    "updated_at": "2026-01-26T10:15:05.000Z"
+  }
+}
+```
+
+### Antwort-Header
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 296
+X-RateLimit-Reset: 1737853200
+X-Data-Delay: 0
+X-Request-Id: req_batch_abc123
+```
+
+### Fehlerantworten
+
+***400 Batch-Limit überschritten***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Batch limit exceeded. Your tier (hobby) allows 10 events per batch, but 25 were requested.",
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
+  }
+}
+```
+
+***400 Fehlendes Events-Feld***
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "The 'event_ids' field is required and must be a non-empty array of event IDs.",
+    "docs": "https://docs.sharpapi.io/en/api-reference/odds-batch"
+  }
+}
+```
+
+***401 Nicht autorisiert***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+## Antwortstruktur
+
+Die Batch-Antwort verschachtelt Events und fehlende IDs unter `data`, mit Zählungen in `meta`:
+
+### Data-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `data.events` | EventOdds[] | Array von Event-Objekten mit verschachtelten Quoten |
+| `data.missing_events` | string[] | Event-IDs, die nicht gefunden wurden oder keine Quoten hatten |
+
+### Meta-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `meta.requested` | integer | Anzahl der Event-IDs in Ihrer Anfrage |
+| `meta.found` | integer | Anzahl der Events, für die Quotendaten vorlagen |
+| `meta.missing` | integer | Anzahl der nicht gefundenen Events |
+| `meta.max_batch` | integer | Maximale Batch-Größe für Ihren Tarif |
+| `meta.filters` | object | Angewendete Filter (`sportsbook`, `market`) |
+
+<Callout type="info">
+Wenn eine Event-ID in Ihrer Anfrage keine Quoten hat (z. B. das Event ist beendet oder existiert nicht), erscheint sie in `data.missing_events`, anstatt einen Fehler auszulösen. Die Antwort enthält dennoch Quoten für alle gültigen Events.
+</Callout>
+
+## Antwort-Schema
+
+Jedes Element im `data.events`-Array ist ein Event-Objekt mit verschachtelten Quoten:
+
+### Event-Objekt
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `event_id` | string | Event-Identifier |
+| `event_name` | string | Menschenlesbarer Event-Name |
+| `sport` | string | Sport-Slug |
+| `league` | string | Liga-Slug |
+| `start_time` | string | ISO 8601 Event-Startzeit |
+| `is_live` | boolean | Ob das Event live ist |
+| `game_state` | object \| undefined | Live-Spielstand (nur für Live-Events mit Punkteständen) |
+| `odds` | array | Array von Quoten für dieses Event |
+
+### Quoten-Objekt (verschachtelt im Event)
+
+| Feld | Typ | Beschreibung |
+|-------|------|-------------|
+| `sportsbook` | string | Sportsbook-ID |
+| `market_type` | string | Markttyp |
+| `selection` | string | Name der Auswahl |
+| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `odds_american` | number | Amerikanische Quoten |
+| `odds_decimal` | number | Dezimalquoten |
+| `line` | number \| null | Linienwert |
+| `last_seen_at` | string | ISO 8601 Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie dies als Frische-Signal für die Pipeline. |
+| `odds_changed_at` | string | ISO 8601 Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert haben. Wird vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Aktualisierungen hinweg übertragen — siehe [Understanding Pinnacle's `odds_changed_at`](/de/concepts/pinnacle-odds-changed-at). |
+
+## Anwendungsfälle
+
+### Vorab-Laden von Quoten
+
+Laden Sie Quoten für ein gesamtes Tagesprogramm in einem einzigen Aufruf, anstatt Dutzende einzelner Anfragen zu stellen:
+
+```python
+# Get all NBA event IDs from the events endpoint
+events_response = requests.get(
+    'https://api.sharpapi.io/api/v1/events',
+    params={'league': 'nba', 'limit': 50},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+event_ids = [e['id'] for e in events_response.json()['data']]
+
+# Batch fetch all odds at once
+odds_response = requests.post(
+    'https://api.sharpapi.io/api/v1/odds/batch',
+    headers={'X-API-Key': 'YOUR_API_KEY', 'Content-Type': 'application/json'},
+    json={'event_ids': event_ids}
+)
+```
+
+### Dashboard-Aktualisierung
+
+Aktualisieren Sie regelmäßig die Quoten für Events, die ein Benutzer beobachtet:
+
+```javascript
+async function refreshWatchlist(eventIds) {
+  const response = await fetch('https://api.sharpapi.io/api/v1/odds/batch', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ event_ids: eventIds })
+  });
+
+  const { data, meta } = await response.json();
+
+  if (data.missing_events.length > 0) {
+    console.warn('Missing events:', data.missing_events);
+  }
+
+  return data.events;
+}
+```
+
+## Verwandte Endpoints
+
+- [Odds Snapshot](/de/api-reference/odds) - Quoten mit flexiblen Abfragefiltern abrufen
+- [Best Odds](/de/api-reference/odds-best) - Beste Quoten über Sportsbooks pro Auswahl abrufen
+- [Events](/de/api-reference/events) - Events auflisten, um Event-IDs für Batch-Anfragen zu erhalten

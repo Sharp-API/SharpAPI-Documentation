@@ -1,0 +1,141 @@
+---
+description: "Wie SharpAPI identische Events über 32 Sportsbooks hinweg mithilfe kanonischer Event-IDs zuordnet. Löst das Problem unterschiedlicher sportsbook-spezifischer Event-Bezeichnungen und Identifikatoren."
+---
+
+# Event-Matching
+
+## Das Problem
+
+Jeder Sportsbook verwendet seine eigenen internen Event-IDs. Dasselbe Spiel Lakers gegen Celtics kann auf DraftKings das Event `33483200`, auf FanDuel `nba-bos-lal-20260208` und auf Pinnacle `556677889` sein. Ohne einen einheitlichen Identifikator erfordert der Aufbau von buchübergreifenden Vergleichswerkzeugen die Implementierung einer eigenen Event-Matching-Logik.
+
+## Wie SharpAPI dies löst
+
+SharpAPI generiert eine **kanonische Event-ID** für jedes Event. Diese ID ist deterministisch — dasselbe reale Event erhält immer die gleiche `id`, unabhängig davon, von welchem Sportsbook es stammt.
+
+```
+Format: {league}_{teamA}_{teamB}_{YYYY-MM-DD}
+```
+
+**Beispiel:** Ein Spiel Celtics gegen Lakers am 8. Februar 2026 erzeugt dieselbe ID über alle Sportsbooks hinweg:
+
+| Sportsbook | Native Event-ID | SharpAPI `id` |
+|------------|----------------|---------------|
+| DraftKings | `33483200` | `nba_celtics_lakers_20260208` |
+| FanDuel | `nba-bos-lal-20260208` | `nba_celtics_lakers_20260208` |
+| Pinnacle | `556677889` | `nba_celtics_lakers_20260208` |
+| BetMGM | `ms_44556` | `nba_celtics_lakers_20260208` |
+
+## Zwei Arten von Event-IDs
+
+Jedes Event in der API verfügt über zwei ID-Felder:
+
+| Feld | Geltungsbereich | Zweck |
+|-------|-------|---------|
+| `id` | Buchübergreifend (kanonisch) | Als primären Schlüssel verwenden, um Events über Sportsbooks hinweg zuzuordnen |
+| `external_ids` | Pro Sportsbook | Zuordnung der nativen Event-ID jedes Buchs, nützlich für Deep-Links |
+
+```json
+{
+  "id": "nba_celtics_lakers_20260208",
+  "external_ids": {
+    "draftkings": "33483200",
+    "fanduel": "nba-bos-lal-20260208",
+    "pinnacle": "556677889",
+    "betmgm": "ms_44556"
+  }
+}
+```
+
+## Wie kanonische IDs erzeugt werden
+
+Die kanonische ID wird aus vier Komponenten aufgebaut:
+
+1. **Liga-Code** — Sportart einer Liga zugeordnet (z. B. `basketball` → `nba`)
+2. **Teamnamen** — normalisiert und alphabetisch sortiert
+3. **Datum** — Event-Startdatum im Format `YYYY-MM-DD`
+
+### Normalisierung von Teamnamen
+
+Teamnamen werden normalisiert, um Variationen über Sportsbooks hinweg auszugleichen:
+
+- `"Los Angeles Lakers"` → `lakers`
+- `"LA Lakers"` → `lakers`
+- `"LAL"` → `lakers`
+
+Die Normalisierung entfernt Präfixe ("The", "Los", "Las"), Suffixe ("FC", "United", "City"), Interpunktion und Akzente. Anschließend werden die Teams alphabetisch sortiert, sodass die ID unabhängig von der Heim-/Auswärts-Reihenfolge identisch ist.
+
+## Verwendung kanonischer IDs in Ihrer Anwendung
+
+### Als Primärschlüssel
+
+Verwenden Sie das Feld `id` als Primärschlüssel Ihrer Datenbank beim Speichern von Events:
+
+```javascript
+// Fetch events from the API
+const { data: events } = await fetch(
+  'https://api.sharpapi.io/api/v1/events?league=nba',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// Store using canonical ID as primary key
+for (const event of events) {
+  await db.events.upsert({
+    id: event.id,  // "nba_celtics_lakers_20260208"
+    home_team: event.home_team,
+    away_team: event.away_team,
+    start_time: event.start_time,
+    external_ids: event.external_ids
+  });
+}
+```
+
+### Buchübergreifender Quotenvergleich
+
+Die kanonische ID ermöglicht es Ihnen, Quoten für dasselbe Event über alle Bücher hinweg zu vergleichen:
+
+```javascript
+// Get odds filtered to a specific event
+const { data } = await fetch(
+  'https://api.sharpapi.io/api/v1/events/nba_celtics_lakers_20260208/odds',
+  { headers: { 'X-API-Key': API_KEY } }
+).then(r => r.json());
+
+// All odds in the response are for the same canonical event
+// Group by sportsbook to compare
+const byBook = {};
+for (const odds of data.odds) {
+  byBook[odds.sportsbook] = byBook[odds.sportsbook] || [];
+  byBook[odds.sportsbook].push(odds);
+}
+```
+
+### Deep-Linking zu Sportsbooks
+
+Verwenden Sie `external_ids`, um Nutzer auf die Event-Seite eines bestimmten Sportsbooks zu verlinken:
+
+```javascript
+const event = await getEvent('nba_celtics_lakers_20260208');
+
+// Build a sportsbook-specific link
+const dkEventId = event.external_ids['draftkings'];
+// → "33483200"
+```
+
+## Wie dies EV- und Arbitrage-Erkennung ermöglicht
+
+Die Engines zur Erkennung von Opportunitäten von SharpAPI greifen intern auf kanonische Event-IDs zurück:
+
+- **EV-Berechnung** ermittelt die Referenzquoten des scharfen Buchs (Pinnacle) für dieselbe `eventId` und vergleicht sie mit den Quoten weicher Bücher
+- **Arbitrage-Erkennung** gruppiert alle Quoten nach `eventId` und Markttyp, um buchübergreifende Preisabweichungen zu finden
+- **Middles-Erkennung** findet überlappende Linien über Bücher hinweg für dieselbe `eventId`
+
+Dies ist dasselbe Matching-System, das Ihnen über die API zur Verfügung gestellt wird — wenn Sie eine Arbitrage-Möglichkeit mit Legs von verschiedenen Sportsbooks sehen, ist die kanonische Event-ID das, was diese Quoten miteinander verbunden hat.
+
+## Wesentliche Eigenschaften
+
+| Eigenschaft | Detail |
+|----------|--------|
+| **Deterministisch** | Gleiche Eingaben erzeugen stets dieselbe ID — keine zufälligen UUIDs |
+| **Stabil** | Die ID ändert sich nach ihrer Erzeugung nicht mehr |
+| **Menschenlesbar** | `nba_celtics_lakers_20260208` ist auf den ersten Blick verständlich |
+| **Sortierbar** | IDs sortieren sich natürlich nach Liga, Team und Datum |

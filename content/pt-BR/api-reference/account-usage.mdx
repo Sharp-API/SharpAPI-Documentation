@@ -1,0 +1,190 @@
+---
+description: "GET /api/v1/account/usage — Visualize estatísticas de uso da API, incluindo contagem de requisições, status do rate limit e conexões de streaming ativas. Acompanhe o consumo diário e mensal."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Estatísticas de Uso
+
+Visualize estatísticas de uso da API para sua conta, incluindo contagem de requisições, status do rate limit e streams ativos.
+
+```
+GET /api/v1/account/usage
+```
+
+<Callout type="info">
+Este endpoint substitui o antigo endpoint `/me/usage`. O formato de resposta foi atualizado para utilizar o envelope padrão v1.
+</Callout>
+
+## Autenticação
+
+Requer API key. **Disponível para todos os planos.**
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/account/usage" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/account/usage',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data } = await response.json();
+
+console.log(`Today: ${data.requests.today} requests`);
+console.log(`This week: ${data.requests.this_week} requests`);
+console.log(`This month: ${data.requests.this_month} requests`);
+console.log(`Rate limit remaining: ${data.requests.limit.remaining}/${data.requests.limit.per_minute} per minute`);
+console.log(`Active streams: ${data.streams.active}/${data.streams.max}`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/account/usage',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+usage = response.json()['data']
+
+print(f"Today: {usage['requests']['today']} requests")
+print(f"This month: {usage['requests']['this_month']} requests")
+print(f"Rate limit: {usage['requests']['limit']['remaining']}/{usage['requests']['limit']['per_minute']} per minute")
+print(f"Active streams: {usage['streams']['active']}/{usage['streams']['max']}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "data": {
+    "requests": {
+      "today": 342,
+      "this_week": 2105,
+      "this_month": 14523,
+      "limit": {
+        "per_minute": 300,
+        "remaining": 287,
+        "resets_at": "2026-02-08T14:45:00.000Z"
+      }
+    },
+    "streams": {
+      "active": 2,
+      "max": 10
+    },
+    "period": {
+      "start": "2026-02-01T00:00:00.000Z",
+      "end": "2026-02-28T23:59:59.000Z"
+    }
+  },
+  "meta": {
+    "updated_at": "2026-02-08T14:50:00.123Z"
+  }
+}
+```
+
+### Cabeçalhos de Resposta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 287
+X-RateLimit-Reset: 1707401400
+X-Data-Delay: 0
+X-Request-Id: req_usage789abc
+```
+
+### Respostas de Erro
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+## Campos de Resposta
+
+### Objeto Requests
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `today` | number | Total de requisições à API hoje (UTC) |
+| `this_week` | number | Total de requisições à API nesta semana |
+| `this_month` | number | Total de requisições à API neste mês de cobrança |
+
+### Objeto Requests Limit
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `per_minute` | number | Máximo de requisições à API permitidas por minuto |
+| `remaining` | number | Requisições restantes na janela atual do rate limit |
+| `resets_at` | string | Timestamp ISO 8601 de quando a janela do rate limit é reiniciada |
+
+### Objeto Streams
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `active` | number | Número de streams SSE/WebSocket atualmente ativos |
+| `max` | number | Máximo de streams simultâneos permitidos (0 se streaming não estiver habilitado) |
+
+### Objeto Period
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `start` | string | Início ISO 8601 do mês de cobrança atual |
+| `end` | string | Fim ISO 8601 do mês de cobrança atual |
+
+## Casos de Uso
+
+### Monitorar Uso do Rate Limit
+
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/account/usage',
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+usage = response.json()['data']
+
+limit = usage['requests']['limit']
+usage_pct = (1 - limit['remaining'] / limit['per_minute']) * 100
+print(f"Rate limit usage: {usage_pct:.1f}%")
+print(f"Resets at: {limit['resets_at']}")
+```
+
+### Verificar Disponibilidade de Streams
+
+```javascript
+const { data } = await fetch(
+  'https://api.sharpapi.io/api/v1/account/usage',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+).then(r => r.json());
+
+if (data.streams.active >= data.streams.max) {
+  console.log('All stream slots in use — close a stream before opening a new one');
+} else {
+  console.log(`${data.streams.max - data.streams.active} stream slots available`);
+}
+```
+
+## Endpoints Relacionados
+
+- [Informações da Conta](/pt-BR/api-reference/account) - Detalhes da conta, plano e recursos
+- [Gerenciamento de API Keys](/pt-BR/api-reference/account-keys) - Gerencie suas API keys
+- [Preços](/pt-BR/pricing) - Compare os limites dos planos

@@ -1,0 +1,174 @@
+---
+description: "Erfahren Sie, wie Sie SharpAPI-API-Anfragen mit API-Schlüsseln über X-Api-Key-Header, Bearer-Token oder Query-Parameter authentifizieren. Inklusive Rate-Limits und Fehlerbehandlung."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Authentifizierung
+
+Alle API-Anfragen erfordern eine Authentifizierung über einen API-Schlüssel. Ihr Schlüssel beginnt mit `sk_` gefolgt von `live_` oder `test_`.
+
+## Authentifizierungsmethoden
+
+SharpAPI unterstützt drei Authentifizierungsmethoden, aufgelistet in der Reihenfolge ihrer Priorität:
+
+### 1. X-API-Key-Header (Empfohlen)
+
+Die sicherste Methode für serverseitige Anwendungen.
+
+```bash
+curl -H "X-API-Key: sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/odds
+```
+
+### 2. Authorization Bearer-Header
+
+Standardmäßiges OAuth-artiges Bearer-Token-Format.
+
+```bash
+curl -H "Authorization: Bearer sk_live_your_key" \
+  https://api.sharpapi.io/api/v1/odds
+```
+
+### 3. Query-Parameter
+
+Nützlich für SSE-Streaming in Browsern, in denen Sie keine benutzerdefinierten Header setzen können.
+
+```bash
+curl "https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key"
+```
+
+<Callout type="warning">
+**Sicherheitswarnung:** Geben Sie Ihren API-Schlüssel niemals in clientseitigem Code oder öffentlichen Repositorys preis. Verwenden Sie für Browser-Anwendungen einen Backend-Proxy.
+</Callout>
+
+## So erhalten Sie Ihren API-Schlüssel
+
+1. **Registrieren** - Erstellen Sie ein Konto unter [sharpapi.io/sign-up](https://sharpapi.io/sign-up)
+2. **Auf das Dashboard zugreifen** - Melden Sie sich in Ihrem Dashboard an
+3. **Schlüssel kopieren** - Ihr API-Schlüssel wird auf dem Haupt-Dashboard angezeigt
+
+Bereit für Ihren ersten Aufruf? Folgen Sie der Anleitung [Schnellstart](/de/quickstart).
+
+## Abonnement-Stufen
+
+| Stufe | Preis | Anfragen/Min | Datenverzögerung | Hauptmerkmale |
+|------|-------|--------------|------------|--------------|
+| **Free** | $0/Mon. | 12 | 60s | Odds, Events |
+| **Hobby** | $79/Mon. | 120 | Echtzeit | Odds, Events, Arbitrage |
+| **Pro** | $229/Mon. | 300 | Echtzeit | + EV, Middles |
+| **Sharp** | $399/Mon. | 1.000 | Echtzeit | + Priority Support |
+| **Enterprise** | Individuell | Individuell | Echtzeit | + SLA |
+
+Vollständige Details finden Sie unter [Preise](/de/pricing).
+
+## Rate-Limits
+
+Rate-Limits werden pro API-Schlüssel durchgesetzt. Aktuelle Limits werden in den Antwort-Headern zurückgegeben:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1705804800
+```
+
+| Header | Beschreibung |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximale Anfragen pro Minute für Ihre Stufe |
+| `X-RateLimit-Remaining` | Verbleibende Anfragen im aktuellen Fenster |
+| `X-RateLimit-Reset` | Unix-Zeitstempel, wann das Limit zurückgesetzt wird |
+
+### Rate-Limit-Antwort
+
+Bei Überschreitung erhalten Sie eine `429`-Antwort:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Upgrade your plan or wait before retrying.",
+    "docs": "https://docs.sharpapi.io/en/authentication#rate-limits"
+  }
+}
+```
+
+<Callout type="info">
+Implementieren Sie exponentielles Backoff, wenn Sie eine `429`-Antwort erhalten. Prüfen Sie `X-RateLimit-Reset`, um zu erfahren, wann das Fenster zurückgesetzt wird.
+</Callout>
+
+## Funktionszugriff nach Stufe
+
+| Funktion | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| `GET /odds` | Ja | Ja | Ja | Ja | Ja |
+| `GET /odds/best` | Ja | Ja | Ja | Ja | Ja |
+| `GET /odds/comparison` | Ja | Ja | Ja | Ja | Ja |
+| `POST /odds/batch` | Ja | Ja | Ja | Ja | Ja |
+| `GET /events` | Ja | Ja | Ja | Ja | Ja |
+| `GET /events/:eventId` | Ja | Ja | Ja | Ja | Ja |
+| `GET /events/:eventId/odds` | Ja | Ja | Ja | Ja | Ja |
+| `GET /events/:eventId/markets` | Ja | Ja | Ja | Ja | Ja |
+| `GET /opportunities/ev` | Nein | Nein | Ja | Ja | Ja |
+| `GET /opportunities/arbitrage` | Nein | Ja | Ja | Ja | Ja |
+| `GET /opportunities/middles` | Nein | Nein | Ja | Ja | Ja |
+| `GET /stream` | Nein | Add-on | Add-on | Add-on | Ja |
+| `GET /account` | Ja | Ja | Ja | Ja | Ja |
+| `GET /account/usage` | Ja | Ja | Ja | Ja | Ja |
+| `GET /account/keys` | Ja | Ja | Ja | Ja | Ja |
+
+<Callout>
+Streaming erfordert das WebSocket-Add-on ($99/Mon.) auf jeder kostenpflichtigen Stufe. Enterprise beinhaltet Streaming ohne zusätzliche Kosten.
+</Callout>
+
+## Öffentliche Referenz-Endpoints
+
+Die folgenden Referenzdaten-Endpoints sind ohne Authentifizierung mit 10 Anfragen/Minute zugänglich:
+
+- `GET /api/v1/sports` - Alle Sportarten auflisten
+- `GET /api/v1/leagues` - Alle Ligen auflisten
+- `GET /api/v1/sportsbooks` - Alle Sportsbooks auflisten
+- `GET /api/v1/markets` - Alle Markttypen auflisten
+- `GET /api/v1/health` - Health Check
+
+Authentifizierte Anfragen erhalten höhere Rate-Limits basierend auf Ihrer Abonnement-Stufe.
+
+## Fehlercodes
+
+Authentifizierungsbezogene Codes, die Sie am häufigsten sehen werden. Die vollständige Liste aller 19 HTTP-Codes plus der 6 WebSocket-Frame-Codes finden Sie unter [API-Übersicht → Fehlercodes](/de/api-reference/overview#error-codes).
+
+| Code | HTTP-Status | Beschreibung |
+|------|-------------|-------------|
+| `missing_api_key` | 401 | Es wurde kein API-Schlüssel angegeben |
+| `invalid_api_key` | 401 | API-Schlüssel wurde angegeben, ist aber nicht erkennbar |
+| `expired_api_key` | 401 | API-Schlüssel ist abgelaufen |
+| `disabled_api_key` | 401 | API-Schlüssel ist deaktiviert, in der Regel weil das Abonnement abgelaufen ist |
+| `unauthorized` | 401 | Bearer-Token-Authentifizierung auf Admin- oder Monitoring-Endpoints fehlgeschlagen (unterscheidet sich von `invalid_api_key`) |
+| `invalid_token` | 401 | Clerk-Dashboard-Sitzungstoken konnte nicht verifiziert werden |
+| `tier_restricted` | 403 | Endpoint oder Funktion nicht verfügbar in Ihrer Stufe |
+| `rate_limited` | 429 | Zu viele Anfragen — siehe `retry_after` |
+| `too_many_streams` | 429 | Maximale Anzahl gleichzeitiger SSE-/WebSocket-Verbindungen erreicht |
+| `validation_error` | 400 | Fehlerhafte Anfrageparameter (ersetzt die veralteten `bad_request` / `invalid_request`) |
+| `upstream_error` | 502 | Vorübergehendes Problem beim Erreichen des Upstreams |
+| `internal_error` | 500 | Unerwarteter Serverfehler |
+
+### Format der Fehlerantwort
+
+Alle Fehler folgen einem einheitlichen Format:
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid API key. Check that your key is correct and active.",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+## Best Practices
+
+1. **Schlüssel sicher aufbewahren** - Verwenden Sie Umgebungsvariablen und committen Sie sie niemals in die Versionskontrolle
+2. **Serverseitige Anfragen verwenden** - Geben Sie Schlüssel niemals in clientseitigem JavaScript preis
+3. **Retry-Logik implementieren** - Behandeln Sie `429`-Fehler mit exponentiellem Backoff
+4. **Nutzung überwachen** - Prüfen Sie den Endpoint `/account/usage`, um den Verbrauch zu verfolgen
+5. **Schlüssel regelmäßig rotieren** - Verwenden Sie den Endpoint `/account/keys/:keyId/rotate` regelmäßig für die Sicherheit

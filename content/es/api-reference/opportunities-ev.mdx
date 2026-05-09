@@ -1,0 +1,447 @@
+---
+description: "GET /api/v1/opportunities/ev — Encuentra oportunidades de apuesta con valor esperado positivo (+EV) en distintas casas de apuestas utilizando las líneas sharp de Pinnacle como fuente de referencia de cuotas justas."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Oportunidades +EV
+
+Encuentra oportunidades de apuesta con valor esperado positivo en todas las casas de apuestas.
+
+```
+GET /api/v1/opportunities/ev
+```
+
+<Callout type="info">
+Este endpoint sustituye a los antiguos endpoints `/positive-ev` y `/value-bets`. Todos los campos de puntuación (`confidence_score`, `kelly_percent`, `fair_probability`) se incluyen ahora en cada respuesta.
+</Callout>
+
+<Callout type="info">
+**Resultados multi-casa:** Cuando varias casas de apuestas son +EV en la misma selección, la API devuelve una oportunidad independiente por **cada** casa. Por ejemplo, si DraftKings tiene +105, FanDuel +103 y BetMGM +101 en la misma línea de moneyline, verás tres entradas, cada una con su propio `sportsbook`, `odds_american`, `ev_percentage`, `kelly_percent` y `confidence_score`. Los resultados se ordenan por EV% descendente de forma predeterminada, por lo que la casa con las mejores cuotas aparece primero. Utiliza el filtro `sportsbook` para acotar a casas concretas.
+</Callout>
+
+<Callout type="warning">
+**Estado del partido en directo:** Las filas de EV no incluyen marcador, periodo ni reloj. El estado del partido en directo se sirve exclusivamente desde el endpoint [Game State](/es/api-reference/gamestate) y el canal de stream `gamestate`. Une las filas con el estado del partido mediante `event_id`.
+</Callout>
+
+## Autenticación
+
+Requiere API key. **Se requiere nivel Pro o superior.** Tu cuenta debe tener la funcionalidad `ev` habilitada.
+
+## Parámetros de consulta
+
+| Parámetro | Tipo | Predeterminado | Descripción |
+|-----------|------|---------|-------------|
+| `sport` | string | todos | Filtra por deporte(s), separados por comas (p. ej. `basketball`, `football`, `ice_hockey`) |
+| `league` | string | todas | Filtra por liga(s), separadas por comas (p. ej. `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | permitidas según nivel | Filtra por casa(s) de apuestas, separadas por comas. Se aplican los límites del nivel. |
+| `market` | string | todos | Filtra por tipo(s) de mercado, separados por comas. Admite [alias de categoría](/es/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) o tipos exactos (`point_spread`, `player_points`). |
+| `event` | string | todos | Filtra por ID(s) de partido/evento, separados por comas |
+| `min_ev` | number | 0 | Umbral mínimo de porcentaje de EV |
+| `max_ev` | number | — | Umbral máximo de porcentaje de EV |
+| `live` | boolean | — | `true` = solo en directo, `false` = solo prepartido, omitir = ambos |
+| `min_odds` | number | — | Cuotas americanas mínimas (p. ej. `-200`) |
+| `max_odds` | number | — | Cuotas americanas máximas (p. ej. `+500`) |
+| `min_market_width` | number | — | Anchura mínima de mercado (indicador de vig). Menor anchura = mercado más sharp. |
+| `max_market_width` | number | — | Anchura máxima de mercado |
+| `max_hold` | number | 5.0 | Porcentaje máximo de hold (vig) de la casa. Descarta oportunidades en las que el hold del mercado supere este umbral. |
+| `min_kelly` | number | — | Porcentaje mínimo de Kelly (p. ej. `2` = 2% de asignación de bankroll) |
+| `max_kelly` | number | — | Porcentaje máximo de Kelly |
+| `min_confidence` | number | — | Puntuación mínima de confianza (0–100) |
+| `max_confidence` | number | — | Puntuación máxima de confianza (0–100) |
+| `max_odds_age` | number | — | Antigüedad máxima de las cuotas en segundos. Filtra oportunidades obsoletas en las que las cuotas subyacentes superen este umbral. |
+| `is_player_prop` | boolean | — | `true` = solo player props, `false` = solo mercados a nivel de partido |
+| `is_alternate_line` | boolean | — | `true` = solo líneas alternativas, `false` = solo línea principal |
+| `arb_available` | boolean | — | `true` = solo oportunidades que también tienen una referencia cruzada de arbitraje |
+| `player_name` | string | — | Filtra por un jugador concreto (alias: `player`). Coincidencia exacta no sensible a mayúsculas sobre el nombre canónico (p. ej. `Aaron Judge`). |
+| `stat_category` | string | — | Filtra por una categoría estadística de player prop (p. ej. `points`, `rebounds`, `passing_yards`) |
+| `selection` | string | — | Filtra por un nombre de selección concreto (coincidencia exacta no sensible a mayúsculas) |
+| `devig_book` | string | — | Sustituye la casa sharp ancla utilizada para el devigging. Por defecto es Pinnacle. |
+| `date_range` | string | — | Filtra por fecha del evento: `today`, `tomorrow` o `week`. Las fechas se evalúan en **hora del este de EE. UU. (ET)**. |
+| `sort` | string | `-ev` | Campo de ordenación. Opciones: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_percent`, `time`/`start_time`, `book_count`/`books`. Antepón `-` para orden descendente. |
+| `limit` | integer | 50 | Resultados por página (máx. 200) |
+| `offset` | integer | 0 | Desplazamiento de paginación (máx. 5000) |
+
+### Filtrado de múltiples valores
+
+Utiliza valores separados por comas para los filtros multi-selección:
+
+```
+?sportsbook=draftkings,fanduel&league=nba,nfl
+```
+
+## Ejemplos de solicitud
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Oportunidades EV básicas para la NBA
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&min_ev=2" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/ev?league=nba&min_ev=2',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+console.log(`Found ${meta.count} +EV opportunities`);
+console.log(`Average EV: ${meta.summary.avg_ev}%`);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/ev',
+    params={
+        'league': 'nba',
+        'min_ev': 2,
+    },
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+for opp in data['data']:
+    print(f"{opp['selection']} @ {opp['sportsbook']}: {opp['ev_percentage']}% EV")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Respuesta
+
+### Éxito (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "ev_dk_nba_33483153_ml_PHO",
+      "game_id": "evt_nba_phi_pho_20260208",
+      "ev_percentage": 4.2,
+      "odds_american": -105,
+      "odds_decimal": 1.952,
+      "no_vig_odds": -118,
+      "fair_probability": 0.541,
+      "market_width": 3.2,
+      "devig_method": "power",
+      "sharp_book": "pinnacle",
+      "selection": "PHO Suns",
+      "market": "moneyline",
+      "line": null,
+      "sportsbook": "draftkings",
+      "game": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_live": false,
+      "confidence_score": 87,
+      "kelly_percent": 2.1,
+      "book_count": 5,
+      "arb_available": false,
+      "arb_profit": null,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
+      "possibly_stale": false,
+      "oldest_odds_age_seconds": null,
+      "warnings": [],
+      "detected_at": "2026-02-08T14:22:10.456Z"
+    },
+    {
+      "id": "ev_fd_nba_33483153_ml_PHO",
+      "game_id": "evt_nba_phi_pho_20260208",
+      "ev_percentage": 2.8,
+      "odds_american": -108,
+      "odds_decimal": 1.926,
+      "no_vig_odds": -118,
+      "fair_probability": 0.541,
+      "market_width": 3.2,
+      "devig_method": "power",
+      "sharp_book": "pinnacle",
+      "selection": "PHO Suns",
+      "market": "moneyline",
+      "line": null,
+      "sportsbook": "fanduel",
+      "game": "PHI 76ers vs PHO Suns",
+      "sport": "basketball",
+      "league": "nba",
+      "home_team": "PHI 76ers",
+      "away_team": "PHO Suns",
+      "start_time": "2026-02-08T19:00:00Z",
+      "is_live": false,
+      "confidence_score": 82,
+      "kelly_percent": 1.5,
+      "book_count": 5,
+      "arb_available": false,
+      "arb_profit": null,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
+      "possibly_stale": false,
+      "oldest_odds_age_seconds": null,
+      "warnings": [],
+      "detected_at": "2026-02-08T14:22:10.456Z"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "has_more": false,
+    "next_offset": null
+  },
+  "meta": {
+    "source": "redis",
+    "last_update": "2026-02-08T14:22:10.456Z",
+    "summary": {
+      "count": 24,
+      "avg_ev": 3.8,
+      "max_ev": 7.1,
+      "by_sportsbook": {
+        "draftkings": 9,
+        "fanduel": 8,
+        "betmgm": 7
+      },
+      "by_sport": {
+        "basketball": 12
+      },
+      "by_market": {
+        "moneyline": 5,
+        "point_spread": 4,
+        "player_points": 3
+      }
+    },
+    "filters": {
+      "sport": null,
+      "league": ["nba"],
+      "sportsbook": null,
+      "market": null,
+      "min_ev": 2.0,
+      "max_ev": null,
+      "live": null,
+      "sort": "-ev",
+      "include": null
+    }
+  }
+}
+```
+
+### Cabeceras de respuesta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 298
+X-RateLimit-Reset: 1707401000
+X-Data-Delay: 0
+X-Request-Id: req_abc123def456
+```
+
+### Respuestas de error
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***403 Feature Required***
+```json
+{
+  "error": {
+    "code": "feature_required",
+    "message": "The 'ev' feature is required. Upgrade to Pro or higher.",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+***429 Rate Limited***
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "docs": "https://docs.sharpapi.io/en/api-reference/overview"
+  }
+}
+```
+
+## Campos de respuesta
+
+### Campos principales
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | string | Identificador único de la oportunidad (hash) |
+| `game_id` | string\|null | Identificador del partido/evento asociado |
+| `external_event_id` | string\|null | ID nativo del evento en la casa de apuestas |
+| `selection_id` | string\|null | ID nativo del resultado/selección en la casa de apuestas (para deep linking al boleto) |
+| `ev_percentage` | number | Valor esperado expresado como porcentaje (p. ej. `4.2` = 4,2 % de EV). Alias obsoleto: `ev_percent`. |
+| `odds_american` | number | Cuotas americanas actuales en la casa de apuestas |
+| `odds_decimal` | number | Cuotas decimales (p. ej. `1.952`) |
+| `no_vig_odds` | number\|null | Cuotas americanas justas (sin vig) derivadas de la línea sharp |
+| `fair_probability` | number\|null | Probabilidad justa sin vig (devigged) (de 0,0 a 1,0) |
+| `market_width` | number\|null | Anchura del mercado (indicador de vig) |
+| `devig_method` | string | Método de devig empleado (p. ej. `power`) |
+| `sharp_book` | string | Casa sharp utilizada como referencia (p. ej. `pinnacle`). Alias obsoleto: `devig_book`. |
+| `selection` | string | La selección (nombre del equipo, Over/Under, jugador, etc.) |
+| `market` | string | Tipo de mercado (`moneyline`, `point_spread`, `total_points`, etc.) |
+| `line` | number\|null | Línea de spread/total (p. ej. `-3.5`, `220.5`) |
+| `sportsbook` | string | Casa de apuestas que ofrece estas cuotas. Pueden existir varias entradas para la misma selección si varias casas son +EV. |
+| `game` | string | Nombre del partido legible para humanos |
+| `sport` | string | Identificador del deporte (en minúsculas) |
+| `league` | string | Identificador de la liga |
+| `home_team` | string\|null | Nombre del equipo local |
+| `away_team` | string\|null | Nombre del equipo visitante |
+| `start_time` | string\|null | Hora de inicio del evento en ISO 8601 |
+| `is_live` | boolean | Indica si el evento está actualmente en directo |
+| `confidence_score` | number | Puntuación de confianza multifactor (0-100) |
+| `kelly_percent` | number\|null | **Porcentaje** óptimo del bankroll según Kelly completo (0–100, p. ej. `2.1` = 2,1 % del bankroll). La mayoría de profesionales aplican un multiplicador de Kelly fraccional (¼ o ½) antes de dimensionar — véase [Criterio de Kelly](#criterio-de-kelly) más abajo. |
+| `book_count` | number | Número de casas de apuestas que ofrecen este mercado |
+| `arb_available` | boolean | Indica si existe un arbitraje en este mercado |
+| `arb_profit` | number\|null | Porcentaje de beneficio del arbitraje, si está disponible |
+| `is_player_prop` | boolean | Indica si se trata de un mercado de player prop |
+| `player_name` | string\|null | Nombre del jugador (si es un player prop) |
+| `stat_category` | string\|null | Tipo de estadística (si es un player prop, p. ej. `points`, `rebounds`) |
+| `possibly_stale` | boolean | `true` si las cuotas subyacentes pueden haberse movido desde la detección |
+| `oldest_odds_age_seconds` | number\|null | Antigüedad de las cuotas más obsoletas utilizadas en el cálculo de EV (segundos) |
+| `warnings` | string[] | Avisos de calidad de datos (p. ej. `POTENTIALLY_STALE_ODDS`, `LIVE_STALE_ODDS`) |
+| `detected_at` | string | Marca temporal ISO 8601 del momento en que se detectó por primera vez la oportunidad +EV |
+
+### Campos del resumen de Meta
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `summary.count` | number | Total de oportunidades que coinciden con los filtros |
+| `summary.avg_ev` | number | EV promedio de todos los resultados |
+| `summary.max_ev` | number | EV más alto encontrado |
+| `summary.by_sportsbook` | object | Recuento de oportunidades por casa de apuestas |
+| `summary.by_sport` | object | Recuento de oportunidades por deporte |
+| `summary.by_market` | object | Recuento de oportunidades por tipo de mercado |
+
+---
+
+## Cómo entender el valor esperado
+
+El valor esperado (EV) mide el beneficio o pérdida promedio por apuesta a lo largo del tiempo. Una apuesta de **EV positivo (+EV)** significa que tienes una ventaja matemática sobre la casa de apuestas.
+
+```
+EV% = (fair_probability x decimal_odds - 1) x 100
+```
+
+Donde:
+- `fair_probability` = Probabilidad sin vig derivada de la casa sharp (Pinnacle)
+- `decimal_odds` = Las cuotas decimales ofrecidas por la casa soft
+
+### Cómo calcula SharpAPI el EV
+
+SharpAPI utiliza **Pinnacle** (una casa sharp con cuotas eficientes) como fuente de verdad para la probabilidad justa.
+
+**Paso 1: Obtener las cuotas de la casa sharp**
+
+```
+Pinnacle: Team A -115 / Team B +105
+```
+
+**Paso 2: Eliminar el vig para hallar la probabilidad justa (método Power)**
+
+```javascript
+// Implied probabilities (with vig)
+probA = 1 / 1.87 = 0.535  // -115 in decimal = 1.87
+probB = 1 / 2.05 = 0.488  // +105 in decimal = 2.05
+total = 1.023              // 2.3% vig
+
+// Power devig: solve for k where probA^k + probB^k = 1
+// k ≈ 1.036 for this market
+fairProbA = 0.535^1.036 = 0.522 (52.2%)
+fairProbB = 0.488^1.036 = 0.478 (47.8%)
+```
+
+**Paso 3: Comparar con una casa soft**
+
+```
+DraftKings: Team A -105 (decimal 1.952)
+Fair probability: 52.3%
+
+EV% = (0.523 x 1.952 - 1) x 100
+EV% = +2.1%
+```
+
+Un EV de +2,1 % significa que esperas obtener un beneficio de 2,10 $ por cada 100 $ apostados en esta apuesta a lo largo del tiempo.
+
+### Por qué funciona
+
+| Tipo de casa | Características |
+|-----------|----------------|
+| **Sharp (Pinnacle)** | Vig bajo, cuotas eficientes, probabilidades precisas |
+| **Soft (DraftKings, FanDuel, BetMGM)** | Vig más alto, más lentas en ajustarse, explotables |
+
+Cuando las casas soft tardan en actualizar sus cuotas tras un movimiento del mercado, su probabilidad implícita se desvía de la realidad, creando una oportunidad +EV.
+
+## Umbrales de EV
+
+| EV % | Calidad | Acción sugerida |
+|------|---------|------------------|
+| < 0% | EV negativo | Evitar |
+| 0 - 2% | Marginal | Solo viable con alto volumen |
+| **2 - 5%** | **Bueno** | Umbral rentable estándar |
+| **5%+** | **Excelente** | Oportunidades de alta confianza |
+
+<Callout type="info">
+Recomendamos establecer `min_ev=2` para la mayoría de casos de uso. El EV marginal (por debajo del 2 %) puede verse erosionado por el movimiento de la línea antes de que coloques la apuesta.
+</Callout>
+
+## Criterio de Kelly
+
+El campo `kelly_percent` es el **porcentaje** óptimo de tu bankroll (0–100) que debes apostar según el criterio de Kelly completo. Un valor de `2.1` significa que Kelly completo recomienda el 2,1 % del bankroll; un valor de `34.4` significa el 34,4 %.
+
+```
+Kelly% = (fair_prob × decimal_odds - 1) / (decimal_odds - 1) × 100
+```
+
+<Callout type="warning">
+**Esto es Kelly completo, calculado a partir de la probabilidad justa del modelo sin ningún ajuste por calidad de la señal.** Kelly completo es matemáticamente óptimo solo cuando la probabilidad real se conoce con exactitud. En la práctica, las anclas sharp conllevan incertidumbre (referencia sharp única, cuotas en directo que llegan tarde, baja validación cruzada) y Kelly completo puede generar sugerencias de stake peligrosamente grandes. Consulta `confidence_score`, `cross_ref_count` y `warnings` (p. ej. `SINGLE_SHARP_REF`, `LIVE_STALE_ODDS`) antes de dimensionar.
+
+**Utiliza un multiplicador de Kelly fraccional**: la mayoría de profesionales aplican ¼ o ½ de Kelly (`kelly_percent × 0.25` o `× 0.5`). Limita cualquier apuesta individual al 1–2 % del bankroll independientemente de lo que indique `kelly_percent`, especialmente cuando `warnings` no esté vacío o `confidence_score < 80`.
+</Callout>
+
+### Guía de dimensionamiento Kelly
+
+| `kelly_percent` | Nivel de riesgo | Recomendación |
+|---------|------------|----------------|
+| < 1 | Bajo | Ventaja pequeña, considera saltarla |
+| 1 – 3 | Moderado | Tamaño de apuesta estándar — cuarto de Kelly = 0,25–0,75 % del bankroll |
+| 3 – 5 | Agresivo | Ventaja fuerte — cuarto de Kelly = 0,75–1,25 % del bankroll |
+| 5+ | Muy agresivo | Ventaja excelente o artefacto de señal sharp; limita al 1–2 % del bankroll en cualquier caso |
+
+<Callout type="warning">
+**Aviso sobre la varianza:** El +EV no garantiza beneficios en cada apuesta. A lo largo de 100 apuestas con un 5 % de EV, los resultados reales pueden variar ampliamente. La ventaja solo se materializa a lo largo de cientos o miles de apuestas. Nunca apuestes más de lo que puedas permitirte perder.
+</Callout>
+
+## Buenas prácticas
+
+1. **Establece un umbral mínimo de EV** - Utiliza `min_ev=2` o superior para centrarte en ventajas significativas
+2. **Usa el dimensionamiento de Kelly** - `kelly_percent` es un porcentaje (p. ej. `2.1` = 2,1 % del bankroll). Aplica un multiplicador de Kelly fraccional (¼ o ½) antes de dimensionar
+3. **Filtra por confianza** - Utiliza `confidence_score` para priorizar las oportunidades de alta confianza
+4. **Monitoriza `market_width`** - Los mercados estrechos (anchura baja) indican una fijación de precios más eficiente y cálculos de EV más fiables
+5. **Actúa rápido** - Las oportunidades +EV son fugaces; las líneas se mueven rápido
+6. **Registra tus resultados** - Anota cada apuesta y compara el ROI real con el EV esperado a lo largo del tiempo
+7. **Usa Kelly fraccional** - La mayoría de profesionales utilizan un cuarto o medio Kelly para reducir la varianza
+
+## Endpoints relacionados
+
+- [Oportunidades de arbitraje](/es/api-reference/opportunities-arbitrage) - Beneficio garantizado entre casas
+- [Oportunidades de Low Hold](/es/api-reference/opportunities-low-hold) - Las líneas más ajustadas entre casas
+- [Middles](/es/api-reference/opportunities-middles) - Oportunidades por discrepancia de líneas
+- [Mejores cuotas](/es/api-reference/odds-best) - Encuentra el mejor precio en todas las casas
+- [Conceptos de cálculo de EV](/es/concepts/ev-calculation) - Inmersión profunda en las matemáticas

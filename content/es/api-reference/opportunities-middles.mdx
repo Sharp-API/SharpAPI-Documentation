@@ -1,0 +1,365 @@
+---
+description: "GET /api/v1/opportunities/middles — Encuentra oportunidades de middles donde las líneas de diferentes sportsbooks crean una brecha en la que ambos lados pueden ganar. Incluye estimaciones de probabilidad y dimensionamiento de stake."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Middles
+
+Encuentra oportunidades de middles donde dos sportsbooks tienen líneas diferentes, creando una brecha en la que ambas apuestas pueden ganar.
+
+```
+GET /api/v1/opportunities/middles
+```
+
+## Autenticación
+
+Requiere API key. **Se requiere nivel Pro o superior.**
+
+## Parámetros de consulta
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|-----------|------|-------------|-------------|
+| `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball`, `football`) |
+| `league` | string | todas | Filtrar por liga(s), separadas por comas (p. ej. `nba`, `nfl`, `nhl`) |
+| `sportsbook` | string | permitidos por nivel | Filtrar por sportsbook(s), separados por comas. Se aplican los límites de nivel. |
+| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por comas (p. ej. `point_spread`, `total_points`). Admite alias de categorías — consulta [Odds: Alias de Categorías de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `min_size` | number | 0.5 | Tamaño mínimo del middle en puntos |
+| `live` | boolean | — | `true` = solo en vivo, `false` = solo prepartido, omitir = ambos |
+| `max_odds_age` | number | — | Antigüedad máxima de las cuotas en segundos. Filtra oportunidades obsoletas. |
+| `sort` | string | `quality` | Campo de ordenación: `quality` (por defecto), `ev`, `probability`, `middle_size` |
+| `limit` | integer | 50 | Resultados por página (máx. 200) |
+| `offset` | integer | 0 | Desplazamiento de paginación (máx. 5000) |
+
+## Ejemplos de solicitud
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/middles?league=nfl&min_size=1" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch(
+  'https://api.sharpapi.io/api/v1/opportunities/middles?league=nfl&min_size=1',
+  { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
+);
+const { data, meta } = await response.json();
+
+for (const middle of data) {
+  console.log(`${middle.event_name} [${middle.market_type}]`);
+  console.log(`  Middle: ${middle.middle_size} pts, numbers: ${middle.middle_numbers}`);
+  console.log(`  EV: $${middle.expected_value}, probability: ${(middle.middle_probability * 100).toFixed(1)}%`);
+  if (middle.is_guaranteed_profit) {
+    console.log(`  *** GUARANTEED PROFIT: ${middle.guaranteed_roi}% ROI ***`);
+  }
+  if (middle.key_numbers.length > 0) {
+    console.log(`  Key numbers: ${middle.key_numbers} (${(middle.key_number_probability * 100).toFixed(1)}%)`);
+  }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/opportunities/middles',
+    params={'league': 'nfl', 'min_size': 1},
+    headers={'X-API-Key': 'YOUR_API_KEY'}
+)
+data = response.json()
+
+for middle in data['data']:
+    print(f"{middle['event_name']} [{middle['market_type']}]")
+    print(f"  Middle: {middle['middle_size']} pts at {middle['middle_numbers']}")
+    print(f"  EV: ${middle['expected_value']}, prob: {middle['middle_probability']:.1%}")
+    if middle['is_guaranteed_profit']:
+        print(f"  *** GUARANTEED PROFIT: {middle['guaranteed_roi']}% ***")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Respuesta
+
+### Éxito (200)
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "a1b2c3d4e5f67890",
+      "event_id": "evt_nfl_buf_kc_20260217",
+      "event_name": "Buffalo Bills @ Kansas City Chiefs",
+      "sport": "football",
+      "league": "nfl",
+      "market_type": "point_spread",
+      "home_team": "Kansas City Chiefs",
+      "away_team": "Buffalo Bills",
+      "start_time": "2026-02-17T20:00:00Z",
+      "side1": {
+        "book": "draftkings",
+        "selection": "Kansas City Chiefs",
+        "line": -2.5,
+        "odds": { "american": -110, "decimal": 1.909, "probability": 0.524, "fair_probability": 0.524 },
+        "stake_percent": 50.12,
+        "odds_age_seconds": 5.0
+      },
+      "side2": {
+        "book": "fanduel",
+        "selection": "Buffalo Bills",
+        "line": 7.5,
+        "odds": { "american": -108, "decimal": 1.926, "probability": 0.519, "fair_probability": 0.519 },
+        "stake_percent": 49.88,
+        "odds_age_seconds": 12.3
+      },
+      "middle_size": 5.0,
+      "middle_numbers": [3, 4, 5, 6, 7],
+      "middle_probability": 0.377,
+      "expected_value": 31.52,
+      "roi_percentage": 31.52,
+      "worst_case_loss": -4.13,
+      "best_case_profit": 83.54,
+      "break_even_percent": 4.71,
+      "odds_age_seconds": 12.3,
+      "is_guaranteed_profit": false,
+      "guaranteed_roi": null,
+      "key_numbers": [3, 7],
+      "key_number_probability": 0.242,
+      "is_live": false,
+      "is_player_prop": false,
+      "player_name": null,
+      "stat_category": null,
+      "warnings": ["HIGH_PROBABILITY", "LARGE_GAP"],
+      "detected_at": "2026-02-17T19:45:30Z"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "total": 47,
+    "source": "cache",
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "has_more": false,
+      "next_offset": null
+    },
+    "summary": { "count": 47 },
+    "filters": {
+      "sport": null,
+      "league": ["nfl"],
+      "sportsbook": null,
+      "market": null,
+      "min_size": 1
+    },
+    "updated_at": "2026-02-17T19:45:30Z"
+  }
+}
+```
+
+### Cabeceras de respuesta
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 296
+X-RateLimit-Reset: 1707401000
+X-Data-Delay: 0
+X-Request-Id: req_mid456abc789
+```
+
+### Respuestas de error
+
+***401 Unauthorized***
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key",
+    "docs": "https://docs.sharpapi.io/en/authentication"
+  }
+}
+```
+
+***403 Tier Required***
+```json
+{
+  "error": {
+    "code": "tier_restricted",
+    "message": "Middles detection requires Pro tier or higher",
+    "docs": "https://docs.sharpapi.io/en/pricing"
+  }
+}
+```
+
+## Campos de respuesta
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | string | Identificador único del middle (hash) |
+| `event_id` | string | Identificador del evento |
+| `event_name` | string | Nombre legible del evento |
+| `sport` | string | Identificador del deporte |
+| `league` | string | Identificador de la liga |
+| `market_type` | string | Tipo de mercado (`point_spread`, `total_points`, tipos de player props) |
+| `home_team` | string | Nombre del equipo local |
+| `away_team` | string | Nombre del equipo visitante |
+| `start_time` | string\|null | Hora de inicio del partido (ISO 8601) |
+| `side1` | object | Primer lado de la apuesta middle |
+| `side2` | object | Segundo lado de la apuesta middle |
+| `middle_size` | number | Tamaño de la brecha del middle en puntos |
+| `middle_numbers` | number[] | Valores enteros que harían acertar el middle |
+| `middle_probability` | number | Probabilidad estimada de que el middle acierte (específica del deporte) |
+| `expected_value` | number | EV en dólares por cada $100 apostados en total |
+| `roi_percentage` | number | EV como porcentaje del stake total |
+| `worst_case_loss` | number | Pérdida cuando el middle falla (negativo = pérdida) |
+| `best_case_profit` | number | Beneficio cuando el middle acierta (ambas apuestas ganan) |
+| `break_even_percent` | number | Tasa mínima de aciertos necesaria para no perder |
+| `odds_age_seconds` | number\|null | Antigüedad de las cuotas subyacentes más obsoletas en el momento de la detección |
+| `is_guaranteed_profit` | boolean | True cuando `worst_case_loss >= 0` (arb + middle) |
+| `guaranteed_roi` | number\|null | ROI% en el peor caso cuando está garantizado (null en caso contrario) |
+| `key_numbers` | number[] | Números clave dentro del rango del middle (p. ej., NFL 3, 7) |
+| `key_number_probability` | number | Probabilidad combinada solo de los números clave |
+| `quality_score` | number | Métrica de calidad multifactor (0-100) |
+| `market_overround` | number | Probabilidad implícita combinada en ambos lados |
+| `is_live` | boolean | Indica si el partido está actualmente en juego |
+| `is_player_prop` | boolean | Indica si se trata de un middle de player prop |
+| `player_name` | string\|null | Nombre del jugador (si es player prop) |
+| `stat_category` | string\|null | Tipo de estadística (si es player prop, p. ej., `points`, `rebounds`) |
+| `warnings` | string[] | Indicadores de advertencia (ver más abajo) |
+| `detected_at` | string | Cuándo se detectó el middle (ISO 8601) |
+
+### Objeto Side
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `book` | string | Sportsbook para este lado |
+| `selection` | string | Nombre de la selección |
+| `line` | number | Valor de la línea en este sportsbook |
+| `odds.american` | number | Cuotas americanas |
+| `odds.decimal` | number | Cuotas decimales |
+| `odds.probability` | number | Probabilidad implícita (0-1) |
+| `odds.fair_probability` | number | Probabilidad justa ajustada por el overround |
+| `stake_percent` | number | Asignación recomendada de stake (% del total) |
+| `odds_age_seconds` | number\|null | Antigüedad de las cuotas de este lado en el momento de la detección |
+| `deep_link` | string\|null | Enlace directo para realizar esta apuesta en el sportsbook |
+
+### Indicadores de advertencia
+
+| Advertencia | Significado |
+|-------------|-------------|
+| `HIGH_PROBABILITY` | La probabilidad del middle supera el 15% — inusualmente probable que acierte |
+| `LARGE_GAP` | El tamaño del middle supera los 3 puntos — verifica que las líneas sean correctas |
+| `STALE_ODDS` | Una o ambas cuotas tienen más de 30 segundos |
+| `LIVE_GAME` | El partido está actualmente en curso |
+| `GUARANTEED_PROFIT` | La pérdida en el peor caso es positiva — esto también es un arbitraje |
+
+---
+
+## Endpoint de detalle
+
+Obtén una única oportunidad de middle por su ID.
+
+```
+GET /api/v1/opportunities/middles/:id
+```
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `id` | path | **Obligatorio.** Hash hexadecimal de 16 caracteres (p. ej., `a1b2c3d4e5f67890`) |
+
+Devuelve un único objeto middle (mismo esquema que los elementos de la lista). Devuelve `404` si no se encuentra y `400` si el formato del ID no es válido.
+
+```bash
+curl -X GET "https://api.sharpapi.io/api/v1/opportunities/middles/a1b2c3d4e5f67890" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## ¿Qué son los middles?
+
+Un **middle** se produce cuando dos sportsbooks ofrecen líneas diferentes en el mismo mercado, creando una brecha numérica en la que **ambas apuestas pueden ganar simultáneamente**.
+
+A diferencia del arbitraje (que garantiza beneficio), los middles te dan la oportunidad de ganar ambos lados de una apuesta si el resultado final cae en el "medio" de las dos líneas.
+
+### Ejemplo de middle de spread
+
+```
+DraftKings:  Chiefs -2.5  @ -110
+FanDuel:     Bills  +7.5  @ -108
+```
+
+Apuestas:
+- **Chiefs -2.5** en DraftKings
+- **Bills +7.5** en FanDuel
+
+**Posibles resultados:**
+
+| Chiefs ganan por | Chiefs -2.5 | Bills +7.5 | Resultado |
+|------------------|-------------|------------|-----------|
+| 1-2 puntos | Pierde | **Gana** | División (pequeña pérdida) |
+| **3, 4, 5, 6 o 7** | **Gana** | **Gana** | **MIDDLE ACERTADO** |
+| 8+ puntos | **Gana** | Pierde | División (pequeña pérdida) |
+
+Si los Chiefs ganan por 3-7, **ambas apuestas ganan**. Los números 3 y 7 son **números clave** de la NFL (gol de campo y touchdown), lo que hace que este middle sea especialmente valioso.
+
+### Números clave
+
+Algunos deportes tienen incrementos de puntuación que aumentan la distribución de probabilidad:
+
+| Deporte | Números clave | Por qué |
+|---------|---------------|---------|
+| NFL | 3, 7, 10, 14 | Gol de campo (3), touchdown (7), combinaciones |
+| NHL | 1 | La mayoría de los partidos se deciden por 1 gol (~47%) |
+| MLB | 1 | La mayoría de los partidos se deciden por 1 carrera (~30%) |
+| Soccer | 1 | La mayoría de los partidos se deciden por 1 gol (~38%) |
+
+Cuando un middle contiene números clave, los campos `key_numbers` y `key_number_probability` lo destacan. Un middle de NFL que abarca el 3 y el 7 tiene una probabilidad combinada de números clave de ~24,2%.
+
+### Beneficio garantizado (Arb + Middle)
+
+Cuando `is_guaranteed_profit` es true, el middle también es un arbitraje — el peor caso aún produce beneficio. Este es el tipo de middle más raro y valioso. El campo `guaranteed_roi` muestra el retorno mínimo incluso si el middle falla.
+
+## Guía de tamaño del middle
+
+| Tamaño del middle | Calidad | Mercados típicos |
+|-------------------|---------|------------------|
+| 0,5 puntos | Estrecho | Oportunidades raras, baja tasa de acierto |
+| 1,0 puntos | Estándar | Común en spreads y totales |
+| 1,5 - 2,0 puntos | Bueno | Búscalos activamente |
+| 2,5+ puntos | Excelente | Poco frecuentes pero muy rentables |
+
+<Callout type="info">
+Usa `min_size=1` para filtrar middles estrechos. Los middles más grandes tienen mayor probabilidad de caer dentro de la brecha, lo que los hace más rentables de forma consistente a lo largo del tiempo.
+</Callout>
+
+## Consideraciones de riesgo
+
+<Callout type="warning">
+Los middles **no están libres de riesgo** como el arbitraje (a menos que `is_guaranteed_profit` sea true). Cuando el resultado cae fuera del middle, pierdes el vig del lado perdedor (normalmente entre el 4-5% de una pata). Sin embargo, cuando un middle acierta, ganas ambas apuestas, lo que compensa con creces a lo largo del tiempo.
+</Callout>
+
+### Frescura de las cuotas
+
+El campo `odds_age_seconds` muestra la antigüedad de las cuotas subyacentes cuando se detectó el middle. Cada lado también tiene su propio `odds_age_seconds`. Si cualquiera de los lados supera los 30 segundos, se añade la advertencia `STALE_ODDS`. Las cuotas obsoletas pueden haberse movido ya — actúa con rapidez sobre las oportunidades frescas.
+
+## Buenas prácticas
+
+1. **Céntrate en middles más grandes** — Establece `min_size` en al menos 1.0 para mejores tasas de acierto
+2. **Vigila los números clave** — Los middles que contienen NFL 3/7 o NHL/MLB/soccer 1 tienen tasas de acierto elevadas
+3. **Prioriza el beneficio garantizado** — Filtra por `is_guaranteed_profit` para encontrar oportunidades sin riesgo
+4. **Comprueba la frescura de las cuotas** — Un `odds_age_seconds` bajo significa que las líneas son actuales y accionables
+5. **Combínalo con el endpoint de resumen** — Usa [`/middles/summary`](/es/api-reference/opportunities-middles-summary) para vistas generales de dashboard
+6. **Actúa con rapidez** — Las líneas convergen a medida que los books se ajustan, cerrando la ventana del middle
+7. **Usa streaming** — Suscríbete a los eventos `middles:detected` mediante [SSE](/es/api-reference/stream) o [WebSocket](/es/api-reference/websocket) para alertas en tiempo real
+
+## Endpoints relacionados
+
+- [Resumen de Middles](/es/api-reference/opportunities-middles-summary) — Estadísticas agregadas sin la lista completa
+- [Oportunidades +EV](/es/api-reference/opportunities-ev) — Apuestas de valor esperado positivo
+- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage) — Oportunidades de beneficio garantizado
+- [Stream SSE](/es/api-reference/stream) — Eventos `middles:detected` y `middles:expired` en tiempo real
+- [Mejores Cuotas](/es/api-reference/odds-best) — Compara cuotas entre todos los books

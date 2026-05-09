@@ -1,0 +1,303 @@
+---
+description: "GET /api/v1/markets — Obtenha os tipos de mercados de apostas disponíveis, incluindo moneylines, spreads, totais e props com configurações e disponibilidade por esporte em todas as casas de apostas."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Mercados
+
+Obtenha os tipos de mercados disponíveis, suas configurações e disponibilidade por esporte.
+
+```
+GET /api/v1/markets
+```
+
+<Callout type="info">
+Requer uma API key. Disponível em todos os planos (Free incluído). Requisições não autenticadas retornam `401`.
+</Callout>
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|---------|-------------|
+| `sport` | string | all | Filtra mercados por esporte (ex.: `basketball`) |
+
+## Exemplos de Requisições
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+  <Tabs.Tab>
+```bash
+# Listar todos os mercados
+curl -X GET "https://api.sharpapi.io/api/v1/markets" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Filtrar por esporte
+curl -X GET "https://api.sharpapi.io/api/v1/markets?sport=basketball" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```javascript
+const response = await fetch('https://api.sharpapi.io/api/v1/markets', {
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+});
+const { data, meta } = await response.json();
+
+// List markets with event counts
+data.forEach(m => {
+  const lineInfo = m.hasLine ? 'has line' : 'no line';
+  console.log(`${m.name} (${m.id}): ${lineInfo}, ${m.event_count ?? 0} events`);
+  if (m.examples.length) console.log(`  Examples: ${m.examples.join(', ')}`);
+});
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import requests
+
+response = requests.get(
+    'https://api.sharpapi.io/api/v1/markets',
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+)
+result = response.json()
+
+for market in result['data']:
+    line_info = "has line" if market['hasLine'] else "no line"
+    events = market['event_count'] or 0
+    print(f"{market['name']} ({market['id']}): {line_info}, {events} events")
+    if market['examples']:
+        print(f"  Examples: {', '.join(market['examples'])}")
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Resposta
+
+### Sucesso (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "moneyline",
+      "name": "Moneyline",
+      "description": "Bet on which team will win the game outright",
+      "hasLine": false,
+      "examples": ["Lakers -150", "Celtics +130"],
+      "event_count": 142,
+      "selection_count": 312,
+      "sports": ["baseball", "basketball", "football", "hockey", "mma", "soccer", "tennis"]
+    },
+    {
+      "id": "point_spread",
+      "name": "Point Spread",
+      "description": "Bet on the point margin between teams",
+      "hasLine": true,
+      "examples": ["Lakers -4.5 (-110)", "Celtics +4.5 (-110)"],
+      "event_count": 98,
+      "selection_count": 210,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "total_points",
+      "name": "Total Points",
+      "description": "Bet on the combined score of both teams (over/under)",
+      "hasLine": true,
+      "examples": ["Over 220.5 (-110)", "Under 220.5 (-110)"],
+      "event_count": 95,
+      "selection_count": 198,
+      "sports": ["baseball", "basketball", "football", "hockey", "soccer", "tennis"]
+    },
+    {
+      "id": "team_total",
+      "name": "Team Total",
+      "description": "Bet on the score of one specific team",
+      "hasLine": true,
+      "examples": ["Lakers Over 112.5", "Lakers Under 112.5"],
+      "event_count": 64,
+      "selection_count": 140,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "player_prop",
+      "name": "Player Prop",
+      "description": "Bet on individual player performance statistics",
+      "hasLine": true,
+      "examples": ["LeBron James Over 25.5 Points", "Stephen Curry Over 4.5 3-Pointers"],
+      "event_count": 52,
+      "selection_count": 1840,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "game_prop",
+      "name": "Game Prop",
+      "description": "Bet on specific game events or occurrences",
+      "hasLine": false,
+      "examples": ["First Team to Score", "Will there be Overtime?"],
+      "event_count": 30,
+      "selection_count": 86,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "future",
+      "name": "Future",
+      "description": "Long-term bets on season outcomes or championships",
+      "hasLine": false,
+      "examples": ["NBA Championship Winner", "MVP Award Winner"],
+      "event_count": 12,
+      "selection_count": 48,
+      "sports": ["baseball", "basketball", "football", "hockey"]
+    },
+    {
+      "id": "1st_half",
+      "name": "1st Half",
+      "description": "1st Half",
+      "hasLine": true,
+      "examples": [],
+      "event_count": 40,
+      "selection_count": 96,
+      "sports": ["basketball", "football"]
+    },
+    {
+      "id": "1st_quarter",
+      "name": "1st Quarter",
+      "description": "1st Quarter",
+      "hasLine": true,
+      "examples": [],
+      "event_count": 28,
+      "selection_count": 64,
+      "sports": ["basketball", "football"]
+    }
+  ],
+  "meta": {
+    "count": 9,
+    "total_events": 561,
+    "total_selections": 2994,
+    "rate_limit": {
+      "limit": 10,
+      "remaining": 9,
+      "reset": 1706270460
+    }
+  }
+}
+```
+
+## Esquema do Objeto Market
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `id` | string | Identificador único do mercado (usado em filtros da API) |
+| `name` | string | Nome do mercado em formato legível |
+| `description` | string | Descrição breve do mercado |
+| `hasLine` | boolean | Indica se este mercado inclui um valor de linha |
+| `examples` | string[] | Exemplos de seleções para este mercado |
+| `event_count` | number \| null | Número de eventos que oferecem este mercado atualmente |
+| `selection_count` | number \| null | Número de seleções únicas em todos os eventos |
+| `sports` | string[] | IDs de esportes que possuem este mercado atualmente |
+
+## Tipos de Mercados
+
+### Mercados Principais
+
+Os mercados de apostas mais populares e amplamente disponíveis.
+
+| Mercado | Descrição | hasLine | Exemplos |
+|--------|-------------|---------|----------|
+| `moneyline` | Escolha o vencedor diretamente | Não | Lakers -150, Celtics +130 |
+| `point_spread` | Apostas com handicap de pontos | Sim | Lakers -4.5 (-110), Celtics +4.5 (-110) |
+| `total_points` | Over/Under da pontuação combinada | Sim | Over 220.5 (-110), Under 220.5 (-110) |
+| `team_total` | Aposta na pontuação de um time | Sim | Lakers Over 112.5, Lakers Under 112.5 |
+
+### Mercados de Props
+
+Apostas proposicionais sobre jogadores e jogos para resultados mais específicos.
+
+| Mercado | Descrição | hasLine | Exemplos |
+|--------|-------------|---------|----------|
+| `player_prop` | Estatísticas individuais de jogadores (pontos, rebotes, assistências, etc.) | Sim | LeBron James Over 25.5 Points |
+| `game_prop` | Resultados específicos do jogo (haverá prorrogação, etc.) | Não | First Team to Score |
+
+### Mercados de Períodos
+
+Mercados para períodos específicos dentro de um jogo (tempos, quartos).
+
+| Mercado | Descrição | hasLine |
+|--------|-------------|---------|
+| `1st_half` | Moneyline, spread ou total do 1º tempo | Sim |
+| `1st_quarter` | Moneyline, spread ou total do 1º quarto | Sim |
+
+### Outros Mercados
+
+| Mercado | Descrição | hasLine | Exemplos |
+|--------|-------------|---------|----------|
+| `future` | Apostas de longo prazo em resultados de temporada ou campeonatos | Não | NBA Championship Winner, MVP Award Winner |
+
+## Tipos de Seleção
+
+| Tipo | Usado Em | Descrição |
+|------|---------|-------------|
+| `home` | Moneyline, Spread, Período | Time da casa vence ou cobre |
+| `away` | Moneyline, Spread, Período | Time visitante vence ou cobre |
+| `over` | Total, Props, Período | Acima do valor da linha |
+| `under` | Total, Props, Período | Abaixo do valor da linha |
+| `yes` | Game Props, Team Props | O resultado ocorre |
+| `no` | Game Props, Team Props | O resultado não ocorre |
+
+## Disponibilidade de Mercados por Esporte
+
+| Esporte | Moneyline | Spread | Total | Player Props | Team Props | Período |
+|-------|-----------|--------|-------|-------------|------------|--------|
+| Basketball (NBA) | Sim | Sim | Sim | Sim | Sim | Sim |
+| Football (NFL) | Sim | Sim | Sim | Sim | Sim | Sim |
+| Baseball (MLB) | Sim | Sim | Sim | Sim | Sim | Sim |
+| Hockey (NHL) | Sim | Sim | Sim | Sim | Sim | Sim |
+| Basketball (NCAAB) | Sim | Sim | Sim | Limitado | Limitado | Sim |
+| Football (NCAAF) | Sim | Sim | Sim | Limitado | Limitado | Sim |
+| Soccer | Sim | Sim | Sim | Limitado | Limitado | Limitado |
+| Tennis | Sim | Não | Sim | Limitado | Não | Não |
+| MMA (UFC) | Sim | Não | Não | Limitado | Não | Não |
+| Golf (PGA) | Sim | Não | Não | Limitado | Não | Não |
+
+<Callout type="info">
+"Limitado" significa que o mercado está disponível para alguns eventos, mas não todos, dependendo da casa de apostas e do evento. Use os endpoints de odds para ver quais mercados estão disponíveis para um evento específico.
+</Callout>
+
+## Usando Mercados em Filtros
+
+Use o `id` do mercado como parâmetro de filtro em outros endpoints:
+
+```bash
+# Get only moneyline odds
+curl "https://api.sharpapi.io/api/v1/odds?market=moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get spread and total odds
+curl "https://api.sharpapi.io/api/v1/odds?market=point_spread,total_points" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Get player props only
+curl "https://api.sharpapi.io/api/v1/odds?market=player_prop" \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Best odds for moneyline markets
+curl "https://api.sharpapi.io/api/v1/odds/best?market=moneyline" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+## Entendendo as Linhas
+
+Mercados com `hasLine: true` incluem um valor numérico de linha na resposta de odds:
+
+- **Spread**: O handicap de pontos (ex.: `-6.5` significa que o time precisa vencer por 7+)
+- **Total**: O limite da pontuação combinada (ex.: `215.5` para over/under)
+- **Player Props**: O limite estatístico (ex.: `24.5` pontos para um jogador)
+- **Team Props**: O limite estatístico do time (ex.: `105.5` total de pontos do time)
+
+Mercados com `hasLine: false` (como moneyline) terão `line: null` na resposta de odds.
+
+## Endpoints Relacionados
+
+- [Snapshot de Odds](/pt-BR/api-reference/odds) - Filtra odds por tipo de mercado
+- [Melhores Odds](/pt-BR/api-reference/odds-best) - Melhores odds filtradas por mercado
+- [Esportes](/pt-BR/api-reference/sports) - Veja quais esportes estão disponíveis
+- [Casas de Apostas](/pt-BR/api-reference/sportsbooks) - Veja quais casas suportam quais mercados

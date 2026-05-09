@@ -1,0 +1,245 @@
+---
+description: "GET /api/v1/splits — Obtenha divisões públicas de apostas mostrando porcentagem de handle e porcentagem de apostas do DraftKings e Circa Sports. Identifique dinheiro inteligente vs público para apostas informadas."
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Divisões de Apostas
+
+Obtenha divisões públicas de apostas (handle % e bet %) do DraftKings e Circa Sports.
+
+```
+GET /api/v1/splits
+```
+
+## Autenticação
+
+Requer API key. Requer **tier Pro** ($229/mês) ou superior.
+
+## O que são divisões de apostas?
+
+**Handle %** é a porcentagem do dinheiro total apostado em cada lado.
+**Bet %** é a porcentagem dos tickets totais (apostas realizadas) em cada lado.
+
+A diferença entre bet % e handle % revela o dinheiro inteligente (sharp money). Se 30% dos tickets carregam 60% do dinheiro, apostadores sharp estão nesse lado.
+
+## Fontes de Dados
+
+| Fonte | Tipo | Frequência de Atualização |
+|--------|------|-----------------|
+| DraftKings | Casa recreativa (~35% de participação no mercado dos EUA) | A cada 5 minutos |
+| Circa Sports | Casa amigável a sharps (atrai profissionais) | A cada 5 minutos |
+
+Comparar as divisões do DraftKings (recreativo) vs Circa (sharp) revela onde o dinheiro profissional diverge do público.
+
+## Parâmetros de Consulta
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-------------|
+| `sport` | string | Filtrar por esporte (separado por vírgula). Exemplo: `basketball` |
+| `league` | string | Filtrar por liga (separado por vírgula). Exemplo: `nba,ncaab` |
+| `sportsbook` | string | Filtrar pela fonte das divisões. Exemplo: `draftkings,circa` |
+| `event_id` | string | Filtrar pelo ID canônico do evento (separado por vírgula) |
+| `market` | string | Filtrar para eventos que possuem um determinado mercado de divisão (separado por vírgula). Um ou mais de `spread`, `total`, `moneyline`. |
+| `limit` | integer | Máximo de resultados (padrão 100, máximo 200) |
+| `offset` | integer | Deslocamento de paginação (padrão 0) |
+
+## Resposta
+
+```json
+{
+  "data": [
+    {
+      "event_id": "mlb_guardians_orioles_2026-04-16",
+      "sport": "baseball",
+      "league": "mlb",
+      "sportsbook": "draftkings",
+      "away_team": "Baltimore Orioles",
+      "home_team": "Cleveland Guardians",
+      "spread": {
+        "away_odds": -1.5,
+        "home_odds": 1.5,
+        "handle_pct": { "away": 0.22, "home": 0.78 },
+        "bets_pct":   { "away": 0.20, "home": 0.80 }
+      },
+      "total": {
+        "line": 8,
+        "handle_pct": { "over": 0.53, "under": 0.47 },
+        "bets_pct":   { "over": 0.57, "under": 0.43 }
+      },
+      "moneyline": {
+        "away_odds": 104,
+        "home_odds": -126,
+        "handle_pct": { "away": 0.28, "home": 0.72 },
+        "bets_pct":   { "away": 0.33, "home": 0.67 }
+      },
+      "fetched_at": "2026-04-16T19:25:28.363825+00:00"
+    }
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "count": 1,
+    "total": 41,
+    "has_more": false,
+    "next_offset": null
+  },
+  "updated_at": "2026-04-16T19:29:38.920698424Z"
+}
+```
+
+<Callout type="warning">
+  Na resposta de `/splits`, o spread carrega valores de *linha* dentro das chaves `away_odds`/`home_odds` (ex.: `-1.5` / `+1.5`) — a nomenclatura do campo é uma inconsistência conhecida. O endpoint histórico utiliza `away_line`/`home_line` para os mesmos dados.
+</Callout>
+
+## Campos da Resposta
+
+| Campo | Tipo | Descrição |
+|-------|------|-------------|
+| `event_id` | string | ID canônico do evento — use isto para juntar com dados de `/odds` |
+| `sport` | string | Nome do esporte normalizado pelo Atlas |
+| `league` | string | Nome da liga normalizado pelo Atlas |
+| `sportsbook` | string | Casa de apostas fonte dos dados de divisões (`draftkings` ou `circa`) |
+| `away_team` | string | Nome do time visitante |
+| `home_team` | string | Nome do time da casa |
+| `spread.away_odds` | number | Valor da *linha* do spread visitante (ex.: `-1.5`) — veja o aviso acima |
+| `spread.home_odds` | number | Valor da *linha* do spread da casa (ex.: `+1.5`) |
+| `spread.handle_pct` | object | % do dinheiro em cada lado (`away`, `home`; 0.0-1.0) |
+| `spread.bets_pct` | object | % de tickets em cada lado (`away`, `home`; 0.0-1.0) |
+| `total.line` | number | Linha de over/under (ex.: 225.5) |
+| `total.handle_pct` | object | % do dinheiro (`over`, `under`; 0.0-1.0) |
+| `total.bets_pct` | object | % de tickets (`over`, `under`; 0.0-1.0) |
+| `moneyline.away_odds` | number | Odds da moneyline visitante (formato americano) |
+| `moneyline.home_odds` | number | Odds da moneyline da casa (formato americano) |
+| `moneyline.handle_pct` | object | % do dinheiro em cada lado (`away`, `home`; 0.0-1.0) |
+| `moneyline.bets_pct` | object | % de tickets em cada lado (`away`, `home`; 0.0-1.0) |
+| `fetched_at` | string | Timestamp ISO 8601 de quando os dados foram coletados pela última vez |
+
+<Callout type="info">
+  O campo `event_id` usa o mesmo formato de ID canônico que o endpoint `/odds`, então você pode juntar divisões com dados de odds diretamente.
+  Por exemplo, busque odds para um jogo específico e compare com suas divisões:
+
+  ```
+  GET /api/v1/odds?event_id=nba_thunder_timberwolves_2026-03-15
+  GET /api/v1/splits?event_id=nba_thunder_timberwolves_2026-03-15
+  ```
+</Callout>
+
+## Bet % por Seleção (BetMGM)
+
+Além das divisões em nível de jogo deste endpoint, os itens de odds da BetMGM na resposta de `/odds` incluem um campo inline `public_bet_pct` (0.0-1.0) representando a porcentagem de tickets por seleção. Isto está disponível em mercados pré-jogo de NBA (100%), MLB (100%) e NHL (~60%).
+
+## Exemplos
+
+<Tabs items={['Todas as Divisões NBA', 'Apenas DraftKings', 'Jogo Específico']}>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?league=nba" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?sportsbook=draftkings&sport=basketball" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits?event_id=nba_thunder_timberwolves_2026-03-15" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Histórico de Divisões
+
+Acompanhe como as divisões se alteram ao longo do tempo para um evento específico.
+
+```
+GET /api/v1/splits/history?event_id={event_id}
+```
+
+### Parâmetros de Consulta
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|----------|-------------|
+| `event_id` | string | Sim | ID canônico do evento |
+| `sportsbook` | string | Não | Filtrar por casa (separado por vírgula). Quando definido, `limit` é aplicado no lado do cliente após buscar todas as entradas correspondentes. |
+| `start_time` | string | Não | Limite inferior. RFC 3339 (`2026-04-16T13:00:00Z`) ou segundos Unix (`1776344602`). |
+| `end_time` | string | Não | Limite superior, mesmos formatos. |
+| `limit` | integer | Não | Máximo de entradas (padrão 100, máximo 200). |
+
+### Resposta
+
+As entradas são ordenadas das mais antigas para as mais recentes. Este endpoint emite o envelope de sucesso (`success`/`data`/`meta`) — distinto de `/splits` que emite `data`/`pagination`/`updated_at`.
+
+O payload do histórico utiliza `book` (não `sportsbook`) e o spread carrega `away_line`/`home_line` (não `away_odds`/`home_odds`). Ambas são inconsistências conhecidas vs `/splits`.
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "book": "circa",
+      "ts": "2026-04-16T13:03:21.071966+00:00",
+      "timestamp": 1776344602.36,
+      "spread": {
+        "away_line": -1.5,
+        "home_line": 1.5,
+        "handle_pct": { "away": 0.37, "home": 0.63 },
+        "bets_pct":   { "away": 0.27, "home": 0.73 }
+      },
+      "total": {
+        "line": 8,
+        "handle_pct": { "over": 0.43, "under": 0.57 },
+        "bets_pct":   { "over": 0.55, "under": 0.45 }
+      },
+      "moneyline": {
+        "away_odds": 104,
+        "home_odds": -126,
+        "handle_pct": { "away": 0.35, "home": 0.65 },
+        "bets_pct":   { "away": 0.35, "home": 0.65 }
+      }
+    }
+  ],
+  "meta": {
+    "event_id": "mlb_guardians_orioles_2026-04-16",
+    "total": 3,
+    "books": ["circa", "draftkings"],
+    "oldest": "2026-04-16T13:03:22.360588312Z",
+    "newest": "2026-04-16T13:08:41.199237823Z",
+    "updated_at": "2026-04-16T19:28:50.525875452Z"
+  }
+}
+```
+
+Os dados são coletados a cada ~5 minutos e retidos por 48 horas através de um sorted set do Valkey (`splits_history:{event_id}`) pontuado pelo timestamp Unix.
+
+<Tabs items={['Histórico Completo', 'Apenas DraftKings']}>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits/history?event_id=nba_thunder_timberwolves_2026-03-15" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl "https://api.sharpapi.io/api/v1/splits/history?event_id=nba_thunder_timberwolves_2026-03-15&sportsbook=draftkings" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Interpretando Divisões
+
+| Sinal | O que significa |
+|--------|--------------|
+| Bet % alto, Handle % baixo | Lado público — muitas apostas pequenas |
+| Bet % baixo, Handle % alto | Lado sharp — menos apostas, porém maiores |
+| DK e Circa concordam | Consenso de mercado — público e sharp alinhados |
+| DK e Circa divergem | Divisão sharp-público — Circa (sharp) discorda do DK (público) |
+
+<Callout type="warning">
+  Os dados de divisões vêm apenas de casas recreativas (DraftKings) e uma casa adjacente a sharps (Circa). Nenhuma casa sharp publica divisões. Use as divisões como um sinal junto com a movimentação de linhas e análise de +EV, não isoladamente.
+</Callout>

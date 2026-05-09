@@ -1,0 +1,103 @@
+---
+description: "Verstehen Sie die in Sportwetten verwendeten Quotenformate: American, Decimal und implizite Wahrscheinlichkeit. SharpAPI liefert alle drei Formate gleichzeitig für jeden Quoteneintrag."
+---
+
+# Quotenformate
+
+## Drei Formate, ein Konzept
+
+SharpAPI gibt Quoten gleichzeitig in drei Formaten zurück:
+
+```json
+{
+  "odds": {
+    "american": -110,
+    "decimal": 1.909,
+    "odds_probability": 0.5238
+  }
+}
+```
+
+## American Odds
+
+Der Standard in den USA. Zeigt an, wie viel Sie gewinnen oder riskieren müssen.
+
+| Quote | Bedeutung | Gewinn bei $100 Einsatz |
+|------|---------|-----------------|
+| **-110** | $110 riskieren, um $100 zu gewinnen | $90,91 |
+| **+150** | $100 riskieren, um $150 zu gewinnen | $150 |
+| **-200** | $200 riskieren, um $100 zu gewinnen | $50 |
+| **+200** | $100 riskieren, um $200 zu gewinnen | $200 |
+
+**Umrechnungsformeln:**
+
+```
+If negative: Decimal = 1 + (100 / |American|)
+If positive: Decimal = 1 + (American / 100)
+```
+
+## Decimal Odds
+
+Standard in Europa/Australien. Zeigt die Gesamtrückzahlung pro eingesetzter Einheit.
+
+| Decimal | Rückzahlung bei $100 Einsatz | Gewinn |
+|---------|-----------------|--------|
+| **1.909** | $190,90 | $90,90 |
+| **2.50** | $250,00 | $150,00 |
+| **1.50** | $150,00 | $50,00 |
+
+> **Tipp:**
+  Decimal Odds beinhalten Ihren Einsatz. Ein Einsatz von $100 zu einer Quote von 2.50 ergibt eine Gesamtrückzahlung von $250 ($150 Gewinn + $100 Einsatz).
+
+
+## Implizite Wahrscheinlichkeit
+
+Die Einschätzung des Marktes zur Wahrscheinlichkeit eines Ergebnisses.
+
+```
+Implied Probability = 1 / Decimal Odds
+```
+
+| Decimal | Wahrscheinlichkeit | Interpretation |
+|---------|-------------|----------------|
+| 2.00 | 50 % | Münzwurf |
+| 1.50 | 66,7 % | 2/3 Chance |
+| 3.00 | 33,3 % | 1/3 Chance |
+
+> **Warnung:**
+  Die implizite Wahrscheinlichkeit beinhaltet die Marge des Buchmachers (Vig). Die tatsächliche Wahrscheinlichkeit liegt typischerweise 2–5 % niedriger.
+
+
+## Der Vig (Juice)
+
+Buchmacher kalkulieren eine Gewinnmarge ein:
+
+```
+Fair coin flip: Both sides at 2.00 (50% + 50% = 100%)
+With vig:       Both sides at 1.91 (52.4% + 52.4% = 104.8%)
+```
+
+Die zusätzlichen 4,8 % sind der Vorteil des Buchmachers.
+
+## Umrechnung zwischen Formaten
+
+```javascript
+// American to Decimal
+function americanToDecimal(american) {
+  return american > 0
+    ? 1 + (american / 100)
+    : 1 + (100 / Math.abs(american));
+}
+
+// Decimal to American
+function decimalToAmerican(decimal) {
+  return decimal >= 2.0
+    ? (decimal - 1) * 100
+    : -100 / (decimal - 1);
+}
+
+// Decimal to Probability
+function decimalToProb(decimal) {
+  return 1 / decimal;
+}
+```

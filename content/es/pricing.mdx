@@ -1,0 +1,190 @@
+---
+description: "Compara los planes de precios de SharpAPI desde Free hasta Enterprise. Consulta los rate limits, el acceso al streaming, la disponibilidad de sportsbooks y el desglose detallado de funciones de cada plan."
+---
+
+import { Cards, Callout } from 'nextra/components'
+
+# Precios
+
+Elige el plan que mejor se adapte a tu estrategia de apuestas. Todos los planes incluyen acceso a nuestra completa base de datos de cuotas.
+
+## Niveles de suscripción
+
+| Nivel | Precio | Sol/Min | Streams | Retraso de datos | Casas | Funciones |
+|-------|--------|---------|---------|------------------|-------|-----------|
+| **Free** | 0 $/mes | 12 | 0 | 60 s | 2 | Cuotas, Calendario |
+| **Hobby** | 79 $/mes | 120 | Add-on* | Tiempo real | 5 | Cuotas, Calendario, Arbitraje |
+| **Pro** | 229 $/mes | 300 | Add-on* | Tiempo real | 15 | + EV, Middles, Low Hold, Splits |
+| **Sharp** | 399 $/mes | 1.000 | Add-on* | Tiempo real | Las 32 | + Soporte prioritario |
+| **Enterprise** | Personalizado | Personalizado | Personalizado | Tiempo real | Todas | + Histórico, Futuros, SLA |
+
+<Callout type="info">
+*El streaming requiere el **WebSocket Add-on** (99 $/mes). Todos los planes de pago incluyen por defecto **1 stream simultáneo por clave** con desplazamiento newer-wins (una segunda conexión expulsa a la primera). ¿Necesitas varios streams simultáneos para despliegues de flota? [Contacta con ventas](mailto:sales@sharpapi.io). SSE y WebSocket comparten el mismo add-on y el mismo límite.
+</Callout>
+
+## Detalles del plan
+
+<Cards>
+  <Cards.Card title="Free" href="https://sharpapi.io/sign-up">
+    **0 $/mes**
+
+    Para pruebas y exploración
+    - 12 solicitudes/minuto
+    - Sin streaming
+    - Retraso de datos de 60 s
+    - 2 sportsbooks
+    - Solo Cuotas y Calendario
+
+    Empieza gratis
+  </Cards.Card>
+
+  <Cards.Card title="Hobby" href="https://sharpapi.io/sign-up">
+    **79 $/mes**
+
+    Para apostantes ocasionales
+    - 120 solicitudes/minuto
+    - Sin streaming*
+    - Datos en tiempo real
+    - 5 sportsbooks
+    - Cuotas, Calendario, Arbitraje
+
+    Empieza ahora
+  </Cards.Card>
+
+  <Cards.Card title="Pro" href="https://sharpapi.io/sign-up">
+    **229 $/mes**
+
+    Para apostantes serios
+    - 300 solicitudes/minuto
+    - Sin streaming*
+    - Datos en tiempo real
+    - 15 sportsbooks
+    - Detección de +EV
+    - Alertas de arbitraje
+    - Detección de middles
+    - Detección de low hold
+    - Betting splits
+
+    Empieza ahora
+  </Cards.Card>
+
+  <Cards.Card title="Sharp" href="https://sharpapi.io/sign-up">
+    **399 $/mes**
+
+    Para profesionales
+    - 1.000 solicitudes/minuto
+    - Sin streaming*
+    - Datos en tiempo real
+    - Todos los sportsbooks
+    - Todas las funciones de Pro
+    - Closing Line Value (CLV)
+    - Histórico de cuotas de cierre (30 días)
+    - Soporte prioritario
+
+    Empieza ahora
+  </Cards.Card>
+</Cards>
+
+## WebSocket Add-on
+
+**99 $/mes** - Añade streaming en tiempo real a cualquier plan de pago.
+
+- 1 stream SSE/WebSocket simultáneo por clave (desplazamiento newer-wins)
+- Latencia inferior al segundo
+- Compatible con los planes Hobby, Pro, Sharp y Enterprise
+- Límites de flota (>1 stream) disponibles bajo petición
+
+<Callout type="warning">
+El WebSocket add-on requiere una suscripción de pago. El plan Free no admite streaming.
+</Callout>
+
+## Enterprise
+
+¿Necesitas límites más altos, funciones personalizadas o un SLA? Contáctanos para conocer los precios para empresas.
+
+- Rate limits personalizados
+- Streams simultáneos personalizados
+- [Futuros](/es/api-reference/enterprise) - Mercados de futuros y cuotas entre casas
+- Soporte dedicado
+- Acuerdo de nivel de servicio (SLA)
+- Integraciones personalizadas
+
+[Contactar con ventas](mailto:sales@sharpapi.io)
+
+## Comparativa de funciones
+
+| Función | Free | Hobby | Pro | Sharp | Enterprise |
+|---------|------|-------|-----|-------|------------|
+| `GET /odds` | Sí | Sí | Sí | Sí | Sí |
+| `GET /odds/best` | Sí | Sí | Sí | Sí | Sí |
+| `GET /events` | Sí | Sí | Sí | Sí | Sí |
+| `GET /sportsbooks` | Sí | Sí | Sí | Sí | Sí |
+| `GET /sports` | Sí | Sí | Sí | Sí | Sí |
+| `GET /leagues` | Sí | Sí | Sí | Sí | Sí |
+| `GET /markets` | Sí | Sí | Sí | Sí | Sí |
+| `GET /opportunities/ev` | No | No | Sí | Sí | Sí |
+| `GET /opportunities/arbitrage` | No | Sí | Sí | Sí | Sí |
+| `GET /opportunities/middles` | No | No | Sí | Sí | Sí |
+| `GET /opportunities/low_hold` | No | No | Sí | Sí | Sí |
+| `GET /splits` | No | No | Sí | Sí | Sí |
+| `GET /splits/history` | No | No | Sí | Sí | Sí |
+| `GET /odds/closing` | No | No | Sí | Sí | Sí |
+| `GET /historical/clv` | No | No | No | Sí | Sí |
+| `GET /historical/odds/closing` | No | No | No | Sí | Sí |
+| `GET /futures` | No | No | No | No | Sí |
+| Exportación CSV | No | No | Sí | Sí | Sí |
+| Streaming (SSE + WS) | No | +99 $/mes | +99 $/mes | +99 $/mes | Incluido |
+| Soporte prioritario | No | No | No | Sí | Sí |
+| SLA | No | No | No | No | Sí |
+
+## Rate Limiting
+
+Todas las solicitudes a la API tienen un rate limit por API key. Las cabeceras de rate limit se incluyen en cada respuesta:
+
+```
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 299
+X-RateLimit-Reset: 1703123460
+```
+
+### Respuesta al superar el rate limit
+
+Cuando superes tu rate limit, recibirás una respuesta `429`:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
+}
+```
+
+<Callout type="info">
+Utiliza el valor `retry_after` (en segundos) para implementar un backoff exponencial.
+</Callout>
+
+## Retraso de datos
+
+- **Plan Free**: retraso de 60 segundos en todos los datos de cuotas
+- **Planes de pago**: datos en tiempo real con latencia inferior al segundo
+
+## Acceso a sportsbooks
+
+El número de sportsbooks a los que puedes acceder depende de tu plan:
+
+| Nivel | Casas | Ejemplo de acceso |
+|-------|-------|-------------------|
+| Free | 2 | DraftKings, FanDuel |
+| Hobby | 5 | + BetMGM, Caesars, theScore Bet |
+| Pro | 15 | + Bet365, BetRivers, y más |
+| Sharp/Enterprise | Todas | Las 32 casas compatibles |
+
+## Mejoras de plan
+
+Mejora tu suscripción en cualquier momento. Los cambios se aplican de inmediato sin tiempo de inactividad.
+
+- Facturación prorrateada para mejoras a mitad de ciclo
+- Acceso instantáneo a las nuevas funciones
+- Conserva tu API key existente

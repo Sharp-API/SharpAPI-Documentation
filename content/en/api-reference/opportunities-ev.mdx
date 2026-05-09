@@ -44,7 +44,19 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `max_odds` | number | — | Maximum American odds (e.g., `+500`) |
 | `min_market_width` | number | — | Minimum market width (vig indicator). Lower width = sharper market. |
 | `max_market_width` | number | — | Maximum market width |
+| `max_hold` | number | 5.0 | Maximum book hold (vig) percentage. Drops opportunities where the market hold exceeds this threshold. |
+| `min_kelly` | number | — | Minimum Kelly percentage (e.g. `2` = 2% bankroll allocation) |
+| `max_kelly` | number | — | Maximum Kelly percentage |
+| `min_confidence` | number | — | Minimum confidence score (0–100) |
+| `max_confidence` | number | — | Maximum confidence score (0–100) |
 | `max_odds_age` | number | — | Maximum odds age in seconds. Filters out stale opportunities where the underlying odds are older than this threshold. |
+| `is_player_prop` | boolean | — | `true` = player props only, `false` = game-level markets only |
+| `is_alternate_line` | boolean | — | `true` = alternate lines only, `false` = main line only |
+| `arb_available` | boolean | — | `true` = only opportunities that also have an arbitrage cross-reference |
+| `player_name` | string | — | Filter to a specific player (alias: `player`). Case-insensitive exact match on the canonical name (e.g. `Aaron Judge`). |
+| `stat_category` | string | — | Filter to a player-prop stat category (e.g. `points`, `rebounds`, `passing_yards`) |
+| `selection` | string | — | Filter to a specific selection name (case-insensitive exact match) |
+| `devig_book` | string | — | Override the sharp anchor book used for devigging. Defaults to Pinnacle. |
 | `date_range` | string | — | Filter by event date: `today`, `tomorrow`, or `week`. Dates are evaluated in **US Eastern Time (ET)**. |
 | `sort` | string | `-ev` | Sort field. Options: `ev`, `confidence`/`confidence_score`, `kelly`/`kelly_percent`, `time`/`start_time`, `book_count`/`books`. Prefix with `-` for descending. |
 | `limit` | integer | 50 | Results per page (max 200) |

@@ -10,7 +10,7 @@ export default withNextra({
   images: { unoptimized: true },
   // Nextra reads i18n config, extracts locales, then removes it (App Router compatible)
   i18n: {
-    locales: ['en'],
+    locales: ['en', 'es', 'pt-BR', 'de'],
     defaultLocale: 'en',
   },
 });

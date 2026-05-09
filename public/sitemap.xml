@@ -1,47 +1,2123 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://docs.sharpapi.io/en</loc><lastmod>2026-03-22</lastmod><priority>1.0</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/quickstart</loc><lastmod>2026-03-22</lastmod><priority>0.9</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/authentication</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/pricing</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/overview</loc><lastmod>2026-03-22</lastmod><priority>0.9</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/odds</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/odds-best</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/odds-batch</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/odds-comparison</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/odds-delta</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/events</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/events-by-id</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/events-odds</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/events-markets</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/gamestate</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/splits</loc><lastmod>2026-03-21</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/sports</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/leagues</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/sportsbooks</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/markets</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/teams</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/opportunities-ev</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/opportunities-middles</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/opportunities-low-hold</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/deeplinks</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/stream</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/websocket</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/account</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/account-usage</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/account-keys</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/api-reference/health</loc><lastmod>2026-03-22</lastmod><priority>0.5</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/sdks/typescript</loc><lastmod>2026-03-21</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/sdks/python</loc><lastmod>2026-03-21</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/sdks/other-languages</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/streaming/overview</loc><lastmod>2026-03-22</lastmod><priority>0.8</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/streaming/websocket</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/concepts/arbitrage</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/concepts/ev-calculation</loc><lastmod>2026-03-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/concepts/odds-formats</loc><lastmod>2026-03-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/concepts/event-matching</loc><lastmod>2026-03-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/examples/arbitrage-scanner</loc><lastmod>2026-03-19</lastmod><priority>0.7</priority></url>
-  <url><loc>https://docs.sharpapi.io/en/examples/value-betting</loc><lastmod>2026-03-22</lastmod><priority>0.7</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://docs.sharpapi.io/en</loc>
+    <lastmod>2026-05-06</lastmod>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/account</loc>
+    <lastmod>2026-04-01</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/account</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/account</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/account</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/account-keys</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/account-keys</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/account-keys</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/account-keys</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-keys" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-keys" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/account-usage</loc>
+    <lastmod>2026-04-01</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/account-usage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/account-usage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/account-usage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/account-usage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/account-usage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/conventions</loc>
+    <lastmod>2026-04-25</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/conventions</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/conventions</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/conventions</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/conventions" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/conventions" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/deeplinks</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/deeplinks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/deeplinks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/deeplinks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/deeplinks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/deeplinks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/enterprise</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/enterprise</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/enterprise</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/enterprise</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/enterprise" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/enterprise" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/events</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/events</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/events</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/events</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/events-by-id</loc>
+    <lastmod>2026-04-01</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/events-by-id</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/events-by-id</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/events-by-id</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-by-id" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-by-id" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/events-markets</loc>
+    <lastmod>2026-04-01</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/events-markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/events-markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/events-markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/events-odds</loc>
+    <lastmod>2026-04-21</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/events-odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/events-odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/events-odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/events-odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/events-odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/gamestate</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/gamestate</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/gamestate</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/gamestate</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/gamestate" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/gamestate" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/health</loc>
+    <lastmod>2026-04-01</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/health" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/health</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/health" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/health</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/health" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/health</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/health" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/health" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/historical-clv</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/historical-clv</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/historical-clv</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/historical-clv</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-clv" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-clv" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/historical-odds-closing</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/historical-odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/historical-odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/historical-odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/historical-odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/historical-odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/leagues</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/leagues</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/leagues</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/leagues</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/leagues" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/leagues" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/markets</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/markets</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/markets" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/markets" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds-batch</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds-batch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds-batch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds-batch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-batch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-batch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds-best</loc>
+    <lastmod>2026-04-21</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds-best</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds-best</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds-best</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-best" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-best" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds-closing</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds-closing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-closing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-closing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds-comparison</loc>
+    <lastmod>2026-04-21</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds-comparison</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds-comparison</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds-comparison</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-comparison" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-comparison" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/odds-delta</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/odds-delta</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/odds-delta</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/odds-delta</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/odds-delta" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/odds-delta" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/opportunities-arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/opportunities-arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/opportunities-arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/opportunities-ev</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/opportunities-ev</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/opportunities-ev</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/opportunities-ev</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-ev" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-ev" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/opportunities-low-hold</loc>
+    <lastmod>2026-04-25</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/opportunities-low-hold</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/opportunities-low-hold</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/opportunities-low-hold</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-low-hold" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-low-hold" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/opportunities-middles</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/opportunities-middles</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/opportunities-middles</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/opportunities-middles-summary</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles-summary</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/opportunities-middles-summary</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/opportunities-middles-summary" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/opportunities-middles-summary" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/overview</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/splits</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/splits" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/splits</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/splits" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/splits</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/splits" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/splits</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/splits" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/splits" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/sports</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sports" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/sports</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sports" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/sports</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sports" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/sports</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sports" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sports" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/sportsbooks</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/sportsbooks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/sportsbooks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/sportsbooks</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/sportsbooks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/sportsbooks" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/stream</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/stream" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/stream</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/stream" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/stream</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/stream" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/stream</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/stream" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/stream" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/teams</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/teams" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/teams</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/teams" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/teams</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/teams" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/teams</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/teams" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/teams" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/api-reference/websocket</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/api-reference/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/api-reference/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/api-reference/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/api-reference/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/api-reference/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/authentication</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/authentication" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/authentication" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/authentication" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/authentication" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/authentication" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/authentication</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/authentication" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/authentication" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/authentication" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/authentication" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/authentication" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/authentication</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/authentication" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/authentication" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/authentication" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/authentication" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/authentication" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/authentication</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/authentication" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/authentication" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/authentication" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/authentication" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/authentication" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/arbitrage</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/arbitrage</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/arbitrage" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/arbitrage" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/ev-calculation</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/ev-calculation</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/ev-calculation</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/ev-calculation</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/ev-calculation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/ev-calculation" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/event-matching</loc>
+    <lastmod>2026-04-13</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/event-matching</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/event-matching</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/event-matching</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/event-matching" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/event-matching" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/live-vs-prematch</loc>
+    <lastmod>2026-04-22</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/live-vs-prematch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/live-vs-prematch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/live-vs-prematch</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/live-vs-prematch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/live-vs-prematch" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/odds-formats</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/odds-formats</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/odds-formats</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/odds-formats</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/odds-formats" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/odds-formats" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at</loc>
+    <lastmod>2026-04-21</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/concepts/pinnacle-odds-changed-at</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/concepts/pinnacle-odds-changed-at</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/concepts/pinnacle-odds-changed-at</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/concepts/pinnacle-odds-changed-at" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/concepts/pinnacle-odds-changed-at" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/examples/arbitrage-scanner</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/examples/arbitrage-scanner</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/examples/arbitrage-scanner</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/examples/arbitrage-scanner</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/arbitrage-scanner" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/arbitrage-scanner" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/examples/value-betting</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/value-betting" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/examples/value-betting</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/value-betting" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/examples/value-betting</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/value-betting" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/examples/value-betting</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/examples/value-betting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/examples/value-betting" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/pricing</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/pricing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/pricing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/pricing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/pricing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/pricing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/pricing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/pricing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/pricing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/pricing</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/pricing" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/pricing" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/quickstart</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/quickstart" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/quickstart" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/quickstart" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/quickstart" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/quickstart" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/quickstart</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/quickstart" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/quickstart" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/quickstart" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/quickstart" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/quickstart" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/quickstart</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/quickstart" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/quickstart" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/quickstart" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/quickstart" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/quickstart" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/quickstart</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/quickstart" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/quickstart" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/quickstart" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/quickstart" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/quickstart" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/sdks/mcp</loc>
+    <lastmod>2026-05-07</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/mcp" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/sdks/mcp</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/mcp" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/sdks/mcp</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/mcp" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/sdks/mcp</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/mcp" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/sdks/other-languages</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/sdks/other-languages</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/sdks/other-languages</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/sdks/other-languages</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/other-languages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/other-languages" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/sdks/python</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/python" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/sdks/python</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/python" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/sdks/python</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/python" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/sdks/python</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/python" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/python" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/sdks/typescript</loc>
+    <lastmod>2026-04-03</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/typescript" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/sdks/typescript</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/typescript" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/sdks/typescript</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/typescript" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/sdks/typescript</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/sdks/typescript" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/sdks/typescript" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/streaming/overview</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/streaming/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/streaming/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/streaming/overview</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/overview" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/overview" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/streaming/single-connection</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/streaming/single-connection</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/streaming/single-connection</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/streaming/single-connection</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/single-connection" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/single-connection" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/en/streaming/websocket</loc>
+    <lastmod>2026-05-05</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/es/streaming/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/pt-BR/streaming/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/websocket" />
+  </url>
+  <url>
+    <loc>https://docs.sharpapi.io/de/streaming/websocket</loc>
+    <lastmod>2026-05-09</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docs.sharpapi.io/en/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docs.sharpapi.io/es/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://docs.sharpapi.io/pt-BR/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docs.sharpapi.io/de/streaming/websocket" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docs.sharpapi.io/en/streaming/websocket" />
+  </url>
 </urlset>

@@ -9,8 +9,20 @@ import 'nextra-theme-docs/style.css'
 import '../globals.css'
 
 export function generateStaticParams() {
-  return [{ lang: 'en' }]
+  return [
+    { lang: 'en' },
+    { lang: 'es' },
+    { lang: 'pt-BR' },
+    { lang: 'de' },
+  ]
 }
+
+const i18nLocales = [
+  { locale: 'en', name: 'English' },
+  { locale: 'es', name: 'Español' },
+  { locale: 'pt-BR', name: 'Português' },
+  { locale: 'de', name: 'Deutsch' },
+]
 
 const logo = (
   <Link href="https://sharpapi.io" className="sa-logo">
@@ -54,6 +66,7 @@ export default async function LangLayout({ children, params }) {
       <body suppressHydrationWarning>
         <PostHogProvider>
           <Layout
+            i18n={i18nLocales}
             pageMap={await getPageMap(`/${lang}`)}
             search={<Search />}
             sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}

@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3002",
-    "build": "node scripts/stamp-openapi.mjs && next build && node scripts/fix-locale-links.mjs && pagefind --site out --output-subdir _pagefind",
+    "build": "node scripts/stamp-openapi.mjs && node scripts/generate-sitemap.mjs && next build && node scripts/fix-locale-links.mjs && pagefind --site out --output-subdir _pagefind",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "check-links": "./scripts/check-links.sh"

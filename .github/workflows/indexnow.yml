@@ -1,0 +1,79 @@
+name: IndexNow
+
+# Submits changed/added documentation URLs to IndexNow on every push to main.
+# IndexNow notifies Bing, Yandex, Seznam, and other participating engines.
+# Google does not participate in IndexNow (use Google Search Console for Google).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**/*.mdx'
+      - 'public/sitemap.xml'
+      - 'public/llms.txt'
+      - 'public/llms-full.txt'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  indexnow:
+    name: Submit URLs to IndexNow
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Collect changed URLs
+        id: urls
+        run: |
+          # Map content/{locale}/path.mdx → https://docs.sharpapi.io/{locale}/path
+          # index.mdx maps to the locale root (e.g. content/en/index.mdx → /en).
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || echo "")
+
+          URLS=""
+          for file in $CHANGED; do
+            if echo "$file" | grep -qE '^content/[^/]+/.*\.mdx$'; then
+              # Strip 'content/' prefix and '.mdx' suffix; trim '/index' so
+              # content/en/index.mdx becomes 'en'.
+              path=$(echo "$file" | sed 's|^content/||;s|\.mdx$||;s|/index$||')
+              URLS="$URLS,\"https://docs.sharpapi.io/${path}\""
+            fi
+          done
+
+          # If sitemap or llms.txt changed, also nudge the locale roots.
+          if echo "$CHANGED" | grep -qE 'sitemap\.xml|llms.*\.txt'; then
+            for loc in en es pt-BR de; do
+              URLS="$URLS,\"https://docs.sharpapi.io/${loc}\""
+            done
+          fi
+
+          # Trim leading comma; bail if nothing to submit.
+          URLS=$(echo "$URLS" | sed 's/^,//')
+          if [ -z "$URLS" ]; then
+            echo "No URLs to submit"
+            echo "urls=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "urls=[$URLS]" >> $GITHUB_OUTPUT
+          echo "Submitting URLs: [$URLS]"
+
+      - name: Submit to IndexNow
+        if: steps.urls.outputs.urls != ''
+        run: |
+          curl -s -o /tmp/indexnow.out -w "IndexNow HTTP %{http_code}\n" \
+            -X POST "https://api.indexnow.org/IndexNow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d '{
+              "host": "docs.sharpapi.io",
+              "key": "${{ secrets.INDEXNOW_KEY }}",
+              "keyLocation": "https://docs.sharpapi.io/${{ secrets.INDEXNOW_KEY }}.txt",
+              "urlList": ${{ steps.urls.outputs.urls }}
+            }'
+          cat /tmp/indexnow.out || true

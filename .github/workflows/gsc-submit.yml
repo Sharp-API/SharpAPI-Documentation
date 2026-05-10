@@ -1,0 +1,39 @@
+name: GSC Sitemap Submit
+
+# Submits the public sitemap to Google Search Console after content changes.
+# Pairs with indexnow.yml (Bing/Yandex/Seznam) — Google doesn't participate in IndexNow.
+#
+# Requires a GSC_SERVICE_ACCOUNT_KEY secret containing the JSON key of a
+# Google Cloud service account that's been added as a user on the
+# Search Console property for docs.sharpapi.io.
+# Setup: create SA in GCP → grant Search Console API → add SA email to GSC
+# property as Owner or Full → paste full JSON into the GH secret.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/sitemap.xml'
+      - 'content/**/*.mdx'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    name: Submit sitemap to GSC
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Submit sitemap
+        env:
+          GSC_SERVICE_ACCOUNT_KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_KEY }}
+        run: node scripts/submit-sitemap-gsc.mjs

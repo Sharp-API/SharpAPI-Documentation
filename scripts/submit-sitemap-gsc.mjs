@@ -108,10 +108,13 @@ async function main() {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE_URL)}/sitemaps/${encodeURIComponent(SITEMAP)}`
   console.log(`Submitting ${SITEMAP} to ${SITE_URL}...`)
 
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  // User credentials require x-goog-user-project; service accounts don't.
+  const headers = { Authorization: `Bearer ${token}` }
+  if (credentials.type === 'authorized_user' && credentials.quota_project_id) {
+    headers['x-goog-user-project'] = credentials.quota_project_id
+  }
+
+  const res = await fetch(url, { method: 'PUT', headers })
 
   if (!res.ok) {
     const body = await res.text()

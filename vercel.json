@@ -6,6 +6,11 @@
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ content/ public/ scripts/ next.config.mjs proxy.ts mdx-components.tsx package.json vercel.json",
   "redirects": [
     {
+      "source": "/",
+      "destination": "/en",
+      "permanent": true
+    },
+    {
       "source": "/en/sdks/sharpapi.d.ts",
       "destination": "/en/sdks/typescript",
       "permanent": true
@@ -172,10 +177,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/en"
-    },
     {
       "source": "/ingest/static/:path*",
       "destination": "https://us-assets.i.posthog.com/static/:path*"

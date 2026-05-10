@@ -28,6 +28,10 @@ const IGNORED_PATTERNS = [
   /Hydration failed/,
   /There was an error while hydrating/,
   /Text content did not match/,
+  // "Write permission denied." / "Permission denied to access property" — Chrome
+  // Android WebView sandbox / browser extension. No source file captured.
+  /Write permission denied/,
+  /Permission denied to access property/,
 ]
 
 function shouldIgnore(message: string): boolean {

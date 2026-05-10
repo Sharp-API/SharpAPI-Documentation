@@ -331,12 +331,12 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 {/* AUTO:START:tier-summary */}
 | Tier | Books Available | Included Sportsbooks |
-|------|-----------------|----------------------|
-| **Free** | 23 | Kalshi, BetMGM, DraftKings, Bet365, and 19 more |
-| **Hobby** | 23 | Same as Free |
-| **Pro** | 23 | Same as Hobby |
-| **Sharp** | 26 | All available sportsbooks |
-| **Enterprise** | 26 | All available sportsbooks |
+|----|----|----|
+| **Free** | 13 | bwin, sportzino, DraftKings, unibet_ca, and 9 more |
+| **Hobby** | 34 | + Kalshi, Ladbrokes, Bally Bet, Hard Rock Bet, Unibet, Bovada, Polymarket, theScore Bet, Betway, Stake, Caesars, BetRivers, BetMGM, Fanatics, Fliff, Novig, Rebet, Bet365 US, Bet365 UK, Sky Bet, BetOnline |
+| **Pro** | 35 | + SABA |
+| **Sharp** | 41 | All available sportsbooks |
+| **Enterprise** | 41 | All available sportsbooks |
 {/* AUTO:END:tier-summary */}
 
 <Callout type="warning">
@@ -358,29 +358,45 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 {/* AUTO:START:us-books */}
 | ID | Name | Live | Props | Tier |
-|----|------|------|-------|------|
-| `ballybet` | Bally Bet | Yes | No | Free |
-| `betmgm` | BetMGM | Yes | Yes | Free |
-| `betonline` | BetOnline | Yes | Yes | Free |
-| `betrivers` | BetRivers | Yes | Yes | Free |
-| `bovada` | Bovada | Yes | Yes | Free |
-| `caesars` | Caesars | Yes | Yes | Free |
+|----|----|----|----|----|
+| `betano` | betano | Yes | No | Free |
+| `betsson` | betsson | Yes | Yes | Free |
+| `bwin` | bwin | Yes | Yes | Free |
 | `draftkings` | DraftKings | Yes | Yes | Free |
-| `fanatics` | Fanatics | Yes | Yes | Free |
 | `fanduel` | FanDuel | Yes | Yes | Free |
-| `fliff` | Fliff | Yes | Yes | Free |
-| `novig` | Novig | No | No | Free |
-| `rebet` | Rebet | Yes | Yes | Free |
-| `thescorebet` | theScore Bet | Yes | Yes | Free |
+| `sportzino` | sportzino | Yes | No | Free |
+| `sx_bet` | sx_bet | No | No | Free |
+| `unibet_be` | unibet_be | Yes | No | Free |
+| `unibet_ca` | unibet_ca | Yes | No | Free |
+| `unibet_de` | unibet_de | Yes | No | Free |
+| `unibet_dk` | unibet_dk | Yes | No | Free |
+| `unibet_ro` | unibet_ro | Yes | No | Free |
+| `unibet_se` | unibet_se | Yes | No | Free |
+| `ballybet` | Bally Bet | Yes | Yes | Hobby |
+| `Bet365 US` | Bet365 US | Yes | Yes | Hobby |
+| `betmgm` | BetMGM | Yes | Yes | Hobby |
+| `betonline` | BetOnline | Yes | Yes | Hobby |
+| `betrivers` | BetRivers | Yes | Yes | Hobby |
+| `bovada` | Bovada | Yes | Yes | Hobby |
+| `caesars` | Caesars | Yes | Yes | Hobby |
+| `fanatics` | Fanatics | Yes | Yes | Hobby |
+| `fliff` | Fliff | Yes | Yes | Hobby |
+| `hardrock` | Hard Rock Bet | Yes | Yes | Hobby |
+| `novig` | Novig | Yes | Yes | Hobby |
+| `rebet` | Rebet | Yes | Yes | Hobby |
+| `thescorebet` | theScore Bet | Yes | Yes | Hobby |
 {/* AUTO:END:us-books */}
 
 ### Sharp Books
 
 {/* AUTO:START:sharp-books */}
 | ID | Name | Live | Props | Tier |
-|----|------|------|-------|------|
-| `circa` | Circa Sports | Yes | Limited | **Sharp** |
+|----|----|----|----|----|
+| `onexbet` | 1xBet | Yes | No | **Sharp** |
+| `bookmaker` | Bookmaker | Yes | Yes | **Sharp** |
+| `circa` | Circa Sports | Yes | Yes | **Sharp** |
 | `pinnacle` | Pinnacle | Yes | Yes | **Sharp** |
+| `sbobet` | SBOBET | Yes | No | **Sharp** |
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
@@ -391,32 +407,31 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 {/* AUTO:START:intl-books */}
 | ID | Name | Live | Props | Tier |
-|----|------|------|-------|------|
-| `bet105` | Bet105 | Yes | Yes | Free |
-| `bet365` | Bet365 | Yes | Yes | Free |
-| `betway` | Betway | Yes | Yes | Free |
-| `ladbrokes` | Ladbrokes | Yes | Yes | Free |
-| `saba` | SABA | Yes | No | Free |
-| `skybet` | Sky Bet | Yes | No | Free |
-| `stake` | Stake | Yes | Yes | Free |
-| `unibet` | Unibet | Yes | Yes | Free |
+|----|----|----|----|----|
+| `Bet365 UK` | Bet365 UK | Yes | Yes | Hobby |
+| `betway` | Betway | Yes | Yes | Hobby |
+| `ladbrokes` | Ladbrokes | Yes | Yes | Hobby |
+| `skybet` | Sky Bet | Yes | No | Hobby |
+| `stake` | Stake | Yes | Yes | Hobby |
+| `unibet` | Unibet | Yes | Yes | Hobby |
+| `saba` | SABA | Yes | Yes | Pro |
 {/* AUTO:END:intl-books */}
 
 ### Exchanges
 
 {/* AUTO:START:exchange-books */}
 | ID | Name | Live | Props | Tier |
-|----|------|------|-------|------|
-| `prophetx` | ProphetX | Yes | No | **Sharp** |
+|----|----|----|----|----|
+| `prophetx` | ProphetX | Yes | Yes | **Sharp** |
 {/* AUTO:END:exchange-books */}
 
 ### Prediction Markets
 
 {/* AUTO:START:prediction-books */}
 | ID | Name | Live | Props | Tier |
-|----|------|------|-------|------|
-| `kalshi` | Kalshi | Yes | No | Free |
-| `polymarket` | Polymarket | No | No | Free |
+|----|----|----|----|----|
+| `kalshi` | Kalshi | Yes | No | Hobby |
+| `polymarket` | Polymarket | No | No | Hobby |
 {/* AUTO:END:prediction-books */}
 
 <Callout type="info">

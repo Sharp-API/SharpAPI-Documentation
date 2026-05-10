@@ -330,13 +330,13 @@ O `event_count` pode ser 0 e `last_update` pode ser `null` se uma casa de aposta
 O campo `requires_tier` indica o nível mínimo de assinatura necessário para acessar os dados de odds de uma casa de apostas através da API.
 
 {/* AUTO:START:tier-summary */}
-| Nível | Casas Disponíveis | Casas de Apostas Incluídas |
-|-------|-------------------|----------------------------|
-| **Free** | 23 | Kalshi, BetMGM, DraftKings, Bet365, e mais 19 |
-| **Hobby** | 23 | Igual ao Free |
-| **Pro** | 23 | Igual ao Hobby |
-| **Sharp** | 26 | Todas as casas de apostas disponíveis |
-| **Enterprise** | 26 | Todas as casas de apostas disponíveis |
+| Plano | Casas disponíveis | Casas de apostas incluídas |
+|----|----|----|
+| **Free** | 13 | bwin, sportzino, DraftKings, unibet_ca, e mais 9 |
+| **Hobby** | 34 | + Kalshi, Ladbrokes, Bally Bet, Hard Rock Bet, Unibet, Bovada, Polymarket, theScore Bet, Betway, Stake, Caesars, BetRivers, BetMGM, Fanatics, Fliff, Novig, Rebet, Bet365 US, Bet365 UK, Sky Bet, BetOnline |
+| **Pro** | 35 | + SABA |
+| **Sharp** | 41 | Todas as casas de apostas disponíveis |
+| **Enterprise** | 41 | Todas as casas de apostas disponíveis |
 {/* AUTO:END:tier-summary */}
 
 <Callout type="warning">
@@ -357,30 +357,46 @@ O campo `requires_tier` indica o nível mínimo de assinatura necessário para a
 ### Principais Casas dos EUA
 
 {/* AUTO:START:us-books */}
-| ID | Nome | Ao Vivo | Props | Nível |
-|----|------|---------|-------|-------|
-| `ballybet` | Bally Bet | Sim | Não | Free |
-| `betmgm` | BetMGM | Sim | Sim | Free |
-| `betonline` | BetOnline | Sim | Sim | Free |
-| `betrivers` | BetRivers | Sim | Sim | Free |
-| `bovada` | Bovada | Sim | Sim | Free |
-| `caesars` | Caesars | Sim | Sim | Free |
+| ID | Nome | Ao vivo | Props | Plano |
+|----|----|----|----|----|
+| `betano` | betano | Sim | Não | Free |
+| `betsson` | betsson | Sim | Sim | Free |
+| `bwin` | bwin | Sim | Sim | Free |
 | `draftkings` | DraftKings | Sim | Sim | Free |
-| `fanatics` | Fanatics | Sim | Sim | Free |
 | `fanduel` | FanDuel | Sim | Sim | Free |
-| `fliff` | Fliff | Sim | Sim | Free |
-| `novig` | Novig | Não | Não | Free |
-| `rebet` | Rebet | Sim | Sim | Free |
-| `thescorebet` | theScore Bet | Sim | Sim | Free |
+| `sportzino` | sportzino | Sim | Não | Free |
+| `sx_bet` | sx_bet | Não | Não | Free |
+| `unibet_be` | unibet_be | Sim | Não | Free |
+| `unibet_ca` | unibet_ca | Sim | Não | Free |
+| `unibet_de` | unibet_de | Sim | Não | Free |
+| `unibet_dk` | unibet_dk | Sim | Não | Free |
+| `unibet_ro` | unibet_ro | Sim | Não | Free |
+| `unibet_se` | unibet_se | Sim | Não | Free |
+| `ballybet` | Bally Bet | Sim | Sim | Hobby |
+| `Bet365 US` | Bet365 US | Sim | Sim | Hobby |
+| `betmgm` | BetMGM | Sim | Sim | Hobby |
+| `betonline` | BetOnline | Sim | Sim | Hobby |
+| `betrivers` | BetRivers | Sim | Sim | Hobby |
+| `bovada` | Bovada | Sim | Sim | Hobby |
+| `caesars` | Caesars | Sim | Sim | Hobby |
+| `fanatics` | Fanatics | Sim | Sim | Hobby |
+| `fliff` | Fliff | Sim | Sim | Hobby |
+| `hardrock` | Hard Rock Bet | Sim | Sim | Hobby |
+| `novig` | Novig | Sim | Sim | Hobby |
+| `rebet` | Rebet | Sim | Sim | Hobby |
+| `thescorebet` | theScore Bet | Sim | Sim | Hobby |
 {/* AUTO:END:us-books */}
 
 ### Sharp Books
 
 {/* AUTO:START:sharp-books */}
-| ID | Nome | Ao Vivo | Props | Nível |
-|----|------|---------|-------|-------|
-| `circa` | Circa Sports | Sim | Limitado | **Sharp** |
+| ID | Nome | Ao vivo | Props | Plano |
+|----|----|----|----|----|
+| `onexbet` | 1xBet | Sim | Não | **Sharp** |
+| `bookmaker` | Bookmaker | Sim | Sim | **Sharp** |
+| `circa` | Circa Sports | Sim | Sim | **Sharp** |
 | `pinnacle` | Pinnacle | Sim | Sim | **Sharp** |
+| `sbobet` | SBOBET | Sim | Não | **Sharp** |
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
@@ -390,33 +406,32 @@ O campo `requires_tier` indica o nível mínimo de assinatura necessário para a
 ### Internacional
 
 {/* AUTO:START:intl-books */}
-| ID | Nome | Ao Vivo | Props | Nível |
-|----|------|---------|-------|-------|
-| `bet105` | Bet105 | Sim | Sim | Free |
-| `bet365` | Bet365 | Sim | Sim | Free |
-| `betway` | Betway | Sim | Sim | Free |
-| `ladbrokes` | Ladbrokes | Sim | Sim | Free |
-| `saba` | SABA | Sim | Não | Free |
-| `skybet` | Sky Bet | Sim | Não | Free |
-| `stake` | Stake | Sim | Sim | Free |
-| `unibet` | Unibet | Sim | Sim | Free |
+| ID | Nome | Ao vivo | Props | Plano |
+|----|----|----|----|----|
+| `Bet365 UK` | Bet365 UK | Sim | Sim | Hobby |
+| `betway` | Betway | Sim | Sim | Hobby |
+| `ladbrokes` | Ladbrokes | Sim | Sim | Hobby |
+| `skybet` | Sky Bet | Sim | Não | Hobby |
+| `stake` | Stake | Sim | Sim | Hobby |
+| `unibet` | Unibet | Sim | Sim | Hobby |
+| `saba` | SABA | Sim | Sim | Pro |
 {/* AUTO:END:intl-books */}
 
 ### Exchanges
 
 {/* AUTO:START:exchange-books */}
-| ID | Nome | Ao Vivo | Props | Nível |
-|----|------|---------|-------|-------|
-| `prophetx` | ProphetX | Sim | Não | **Sharp** |
+| ID | Nome | Ao vivo | Props | Plano |
+|----|----|----|----|----|
+| `prophetx` | ProphetX | Sim | Sim | **Sharp** |
 {/* AUTO:END:exchange-books */}
 
 ### Mercados de Previsão
 
 {/* AUTO:START:prediction-books */}
-| ID | Nome | Ao Vivo | Props | Nível |
-|----|------|---------|-------|-------|
-| `kalshi` | Kalshi | Sim | Não | Free |
-| `polymarket` | Polymarket | Não | Não | Free |
+| ID | Nome | Ao vivo | Props | Plano |
+|----|----|----|----|----|
+| `kalshi` | Kalshi | Sim | Não | Hobby |
+| `polymarket` | Polymarket | Não | Não | Hobby |
 {/* AUTO:END:prediction-books */}
 
 <Callout type="info">

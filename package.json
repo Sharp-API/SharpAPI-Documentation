@@ -2,7 +2,7 @@
   "name": "sharpapi-docs",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@11.0.9",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3002",
     "build": "node scripts/stamp-openapi.mjs && node scripts/generate-sitemap.mjs && next build && node scripts/fix-locale-links.mjs && pagefind --site out --output-subdir _pagefind",
@@ -23,6 +23,6 @@
     "@types/react": "19.2.14",
     "linkinator": "^7.6.1",
     "pagefind": "^1.4.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   }
 }

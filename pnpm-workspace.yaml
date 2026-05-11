@@ -1,0 +1,4 @@
+allowBuilds:
+  core-js: false      # postinstall only prints a funding/donate banner — no build needed
+  protobufjs: false   # postinstall is benign — no build needed
+  sharp: true         # native image lib used by Next image optimization — let its install/check run

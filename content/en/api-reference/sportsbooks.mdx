@@ -436,6 +436,8 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 
 <Callout type="info">
 **Polymarket** and **Kalshi** are prediction market platforms. Unlike traditional sportsbooks, they use binary outcome contracts priced between $0 and $1. SharpAPI normalizes contract prices into standard odds formats (American, decimal, implied probability) so you can compare them directly with sportsbook odds. Kalshi is CFTC-regulated.
+
+Polymarket rows additionally carry a `polymarketResolution` field reflecting the upstream UMA optimistic-oracle lifecycle (`settled_normal` / `voided` / `disputed` / `proposed` / `unknown`). See [Polymarket Resolution](/concepts/polymarket-resolution) for the per-value semantics and the upstream caveat that cancellation, participant withdrawal, and event-not-occurred all collapse to the single `voided` bucket.
 </Callout>
 
 ## Sharp vs Soft Books

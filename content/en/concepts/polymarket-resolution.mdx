@@ -7,13 +7,13 @@ import { Callout } from 'nextra/components'
 
 # Polymarket Resolution Status
 
-Polymarket is a prediction-market CLOB whose markets are graded by the [UMA optimistic oracle](https://docs.uma.xyz/), not by a sportsbook trading desk. When you read Polymarket odds through SharpAPI, the row may carry an extra field — `polymarketResolution` — that reflects where that market sits in the UMA resolution lifecycle.
+Polymarket is a prediction-market CLOB whose markets are graded by the [UMA optimistic oracle](https://docs.uma.xyz/), not by a sportsbook trading desk. When you read Polymarket odds through SharpAPI, the row may carry an extra field — `polymarket_resolution` — that reflects where that market sits in the UMA resolution lifecycle.
 
 This field is **Polymarket-only**. Other sportsbook rows (Pinnacle, DraftKings, FanDuel, etc.) do not carry it because their upstream wire formats don't emit an equivalent signal. See [Pinnacle wire survey](https://github.com/Mlaz-code/api-adapters/) for the parallel investigation that concluded the same field cannot be delivered for traditional books.
 
 ## When the field appears
 
-| Market state | `polymarketResolution` |
+| Market state | `polymarket_resolution` |
 |---|---|
 | Actively trading | omitted (field not present) |
 | Closed, resolved with a winner | `"settled_normal"` |
@@ -37,7 +37,7 @@ The UMA oracle declared a winning outcome. In a binary market, exactly one outco
   "marketType": "binary",
   "selection": "Yes",
   "odds": -10000,
-  "polymarketResolution": "settled_normal",
+  "polymarket_resolution": "settled_normal",
   "trueProbability": 1.0
 }
 ```
@@ -71,7 +71,7 @@ The market is closed but the UMA lifecycle fields are empty. This happens on leg
 
 ## Delayed resolution
 
-Polymarket markets can resolve days or weeks after the underlying event ends. The `polymarketResolution` field appears whenever the upstream resolution lifecycle advances, even long after the market closed.
+Polymarket markets can resolve days or weeks after the underlying event ends. The `polymarket_resolution` field appears whenever the upstream resolution lifecycle advances, even long after the market closed.
 
 If your application processes resolution events (for grading, settlement reconciliation, etc.), watch the SSE stream / WebSocket for these late-arriving rows.
 
@@ -79,7 +79,7 @@ If your application processes resolution events (for grading, settlement reconci
 
 | Book | Equivalent field? | Notes |
 |---|---|---|
-| **Polymarket** | `polymarketResolution` | 5-state enum, derived from UMA oracle |
+| **Polymarket** | `polymarket_resolution` | 5-state enum, derived from UMA oracle |
 | **Kalshi** | _(not yet)_ | Kalshi has settlement events but we don't surface them today — separate request |
 | **Pinnacle** | _(not available upstream)_ | Pinnacle's wire emits no real-time reason field; `cancellationReason` exists only on the post-grading Lines API partner endpoint |
 | **DraftKings / FanDuel / BetMGM / Caesars** | _(not available)_ | Suspended markets simply disappear from the feed; no status field is emitted |
@@ -89,7 +89,7 @@ The data customers want — a per-book settlement reason — is not industry-sta
 
 ## Why the field is Polymarket-prefixed
 
-We deliberately named the field `polymarketResolution` rather than a generic `resolutionStatus` so it's obvious the values are Polymarket-specific. A future Kalshi version would be a separate `kalshiResolution` field with its own enum — the wire formats are different enough that a unified enum would either be lowest-common-denominator (useless) or full of asterisks for "Polymarket-only" / "Kalshi-only" values.
+We deliberately named the field `polymarket_resolution` rather than a generic `resolutionStatus` so it's obvious the values are Polymarket-specific. A future Kalshi version would be a separate `kalshiResolution` field with its own enum — the wire formats are different enough that a unified enum would either be lowest-common-denominator (useless) or full of asterisks for "Polymarket-only" / "Kalshi-only" values.
 
 ## See also
 

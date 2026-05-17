@@ -142,6 +142,24 @@ es.addEventListener('odds:update', (e) => {
 });
 ```
 
+<Callout type="warning">
+**Track rows by `id`, not by a composite key.**
+
+The `id` field on every snapshot row and every `odds:update` delta is the **stable identifier for that (event, sportsbook, market, selection) tuple** — it does **not** change when the line moves. For asian-handicap / team-total / over-under markets, the `line` field updates in place under the same `id`, so building a composite key like `(event_id, market_type, selection, line)` makes your local map miss every line-change.
+
+```js
+// ✗ Wrong — composite key breaks on line updates (e.g. asian_handicap -0.5 → -0.75
+//   produces a different composite key, and your tracking map loses the row)
+const key = `${o.event_id}|${o.market_type}|${o.selection}|${o.line ?? ''}`
+oddsMap.set(key, o)
+
+// ✓ Right — `id` is stable across line updates
+oddsMap.set(o.id, o)
+```
+
+This affects asian-handicap, team-total, over/under, and any market where the line can move. Moneyline / win-only markets have `line=null` so composite keys happen to work for them — but the bug only surfaces the moment your client subscribes to a line-bearing market.
+</Callout>
+
 ### Python
 
 ```python

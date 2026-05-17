@@ -229,9 +229,43 @@ Every API response includes these headers:
 | `X-RateLimit-Reset` | `1705804800` | Unix timestamp when the rate limit resets |
 | `X-Data-Delay` | `0` | Data delay in seconds (`60` for Free, `0` for paid tiers) |
 | `X-Request-Id` | `req_a1b2c3d4` | Unique request identifier for debugging and support |
+| `X-Cache-Status` | `HIT` | Edge-cache state for this response (`HIT`, `MISS`, `STALE`, `BYPASS`). `STALE` means the edge briefly served slightly outdated content while revalidating against the origin — expected during transient origin slowness, not an error |
+| `Alt-Svc` | `h3=":443"; ma=86400` | Indicates HTTP/3 (QUIC) is available on this host. Clients that opt in skip the TCP + TLS handshake on subsequent connections — see [Connection Reuse](#connection-reuse) below |
 
 <Callout type="info">
 Include the `X-Request-Id` value when contacting support about a specific request.
+</Callout>
+
+## Connection Reuse
+
+For polling clients, the dominant cost on a *fresh* connection to `api.sharpapi.io` is the TLS handshake — typically 150–200 ms — not the API server itself, which returns in ~40–50 ms once TCP + TLS are up. Reusing a single TLS connection across requests collapses subsequent calls to roughly the server-side TTFB.
+
+```bash
+# Fresh connection — first request pays full TCP + TLS:
+curl -o /dev/null -s \
+  -w "ssl=%{time_appconnect}s ttfb=%{time_starttransfer}s total=%{time_total}s\n" \
+  -H "X-API-Key: $SHARPAPI_KEY" \
+  https://api.sharpapi.io/api/v1/gamestate/baseball
+# → ssl=0.16s ttfb=0.20s total=0.20s
+
+# Two URLs in one curl call — the second reuses the open connection:
+curl -o /dev/null -s \
+  -w "ssl=%{time_appconnect}s ttfb=%{time_starttransfer}s total=%{time_total}s\n" \
+  -H "X-API-Key: $SHARPAPI_KEY" \
+  https://api.sharpapi.io/api/v1/gamestate/baseball \
+  https://api.sharpapi.io/api/v1/gamestate/tennis
+# → ssl=0.00s ttfb=0.04s total=0.04s
+```
+
+### Recommendations
+
+- **HTTP/1.1 keep-alive is the default** in `curl`, Python `httpx` / `requests.Session()`, `aiohttp`, Node `fetch` / `axios` / `undici`, Go `http.Client`, OkHttp, and most other modern clients. Reuse a single client/session across calls — don't construct a new client per request.
+- **HTTP/2 connection coalescing** multiplexes many concurrent requests over one connection to the same host. Enabled by default in HTTP/2-capable clients.
+- **HTTP/3 (QUIC)** is offered via `Alt-Svc: h3=":443"`. Clients that opt in (`curl --http3`, `httpx[http2,http3]`, Node `undici` with `allowH2: true`) skip the TCP handshake entirely on subsequent connections. Worthwhile for cold-start workloads such as serverless functions.
+- **For real-time data, use streaming.** The [`/api/v1/stream`](/en/api-reference/stream) endpoint keeps a single connection open and pushes deltas as they happen — no per-request handshake at all.
+
+<Callout type="info">
+For a polling client hitting `/api/v1/odds` once per second, the TLS cost amortizes to ~0 after the first request. The 150 ms handshake matters most for serverless / short-lived clients that close the connection between calls.
 </Callout>
 
 ## Tier Comparison

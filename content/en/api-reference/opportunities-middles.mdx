@@ -245,6 +245,56 @@ X-Request-Id: req_mid456abc789
 | `stake_percent` | number | Recommended stake allocation (% of total) |
 | `odds_age_seconds` | number\|null | Age of this side's odds at detection time |
 | `deep_link` | string\|null | Direct link to place this bet at the sportsbook |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
+| `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
+| `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
+| `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
+| `sportsbook_ref` | object\|undefined | **New (May 2026).** Nested sportsbook reference for this side's book: `{id, numerical_id, label}`. |
+
+### New (May 2026): nested reference blocks on each side
+
+`side1` and `side2` each gain six optional nested reference objects, mirroring the shape on `/odds`, `/ev`, and `/arbitrage`. The flat top-level fields (`sport`, `league`, `home_team`, `away_team`, `market_type`) and per-side `book` / `selection` strings are unchanged — the new blocks are purely additive.
+
+```json
+{
+  "side1": {
+    "book": "draftkings",
+    "selection": "Kansas City Chiefs",
+    "line": -2.5,
+    "odds": { "american": -110, "decimal": 1.909, "probability": 0.524, "fair_probability": 0.524 },
+
+    "home": {
+      "id": "kansas_city_chiefs",
+      "numerical_id": 11,
+      "name": "Kansas City Chiefs",
+      "abbreviation": "KC",
+      "logo": "https://cdn.opticodds.com/team-logos/football/14.png",
+      "city": "Kansas City",
+      "mascot": "Chiefs",
+      "conference": "AFC",
+      "division": "AFC West"
+    },
+    "away": {
+      "id": "buffalo_bills",
+      "numerical_id":  4,
+      "name": "Buffalo Bills",
+      "abbreviation": "BUF",
+      "logo": "https://cdn.opticodds.com/team-logos/football/4.png",
+      "city": "Buffalo",
+      "mascot": "Bills",
+      "conference": "AFC",
+      "division": "AFC East"
+    },
+    "sport_ref":      { "id": "football",   "numerical_id":   2, "name": "Football" },
+    "league_ref":     { "id": "nfl",        "numerical_id":  90, "label": "NFL" },
+    "market_ref":     { "id": "point_spread","numerical_id": 880, "label": "Point Spread" },
+    "sportsbook_ref": { "id": "draftkings", "numerical_id":  12, "label": "DraftKings" }
+  }
+}
+```
+
+Each block is emitted only when the underlying entity is mapped in the atlas; treat every block (and every inner field) as **optional**. The two competitor blocks (`home`, `away`) are identical across both sides of the same middle — the sides differ only in `sportsbook_ref`, `selection`, `line`, and the price. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
 
 ### Warning Flags
 

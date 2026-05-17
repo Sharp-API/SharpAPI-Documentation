@@ -175,6 +175,8 @@ Cursors are opaque — do not parse or construct them. They encode the sort posi
 
 ### Success (200)
 
+The example below shows the flat fields only. As of May 2026, every row also carries optional nested reference blocks (`home`, `away`, `sport_ref`, `league_ref`, `market_ref`, `sportsbook_ref`) — see [Nested reference blocks](#new-may-2026-nested-reference-blocks) below.
+
 ```json
 {
   "success": true,
@@ -319,6 +321,61 @@ X-Request-Id: req_abc123def456
 | `stat_category` | string\|undefined | Stat category, e.g. `points`, `rebounds` (player prop markets only) |
 | `public_bet_pct` | number\|undefined | Public betting ticket percentage (0.0-1.0). Currently BetMGM only. |
 | `max_bet` | number\|undefined | Maximum wager amount (USD) for this market type. Currently Pinnacle only. |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
+| `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
+| `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
+| `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
+| `sportsbook_ref` | object\|undefined | **New (May 2026).** Nested sportsbook reference: `{id, numerical_id, label}`. |
+
+### New (May 2026): nested reference blocks
+
+Every odds row now carries six optional **nested reference objects** that bundle each entity's slug `id`, display label, and stable `numerical_id` directly with the row. The flat string fields (`sport`, `league`, `home_team`, `away_team`, `market_type`, `sportsbook`) remain unchanged — the new blocks are purely additive.
+
+```json
+{
+  "id": "pinnacle_mlb_yankees_redsox_moneyline_NYY",
+  "sportsbook": "pinnacle",
+  "sport": "baseball",
+  "league": "mlb",
+  "home_team": "New York Yankees",
+  "away_team": "Boston Red Sox",
+  "market_type": "moneyline",
+  "selection": "New York Yankees",
+  "odds_american": -135,
+
+  "home": {
+    "id": "new_york_yankees",
+    "numerical_id": 20,
+    "name": "New York Yankees",
+    "abbreviation": "NYY",
+    "logo": "https://cdn.opticodds.com/team-logos/baseball/36.png",
+    "city": "New York",
+    "mascot": "Yankees",
+    "conference": "AL",
+    "division": "East Division"
+  },
+  "away": {
+    "id": "boston_red_sox",
+    "numerical_id":  5,
+    "name": "Boston Red Sox",
+    "abbreviation": "BOS",
+    "logo": "https://cdn.opticodds.com/team-logos/baseball/14.png",
+    "city": "Boston",
+    "mascot": "Red Sox",
+    "conference": "AL",
+    "division": "East Division"
+  },
+  "sport_ref":      { "id": "baseball", "numerical_id":   3, "name": "Baseball" },
+  "league_ref":     { "id": "mlb",      "numerical_id": 354, "label": "MLB" },
+  "market_ref":     { "id": "moneyline","numerical_id": 878, "label": "Moneyline" },
+  "sportsbook_ref": { "id": "pinnacle", "numerical_id":  28, "label": "Pinnacle" }
+}
+```
+
+**When fields are absent.** Each block is emitted only when the underlying entity is mapped in the SharpAPI atlas. Unmapped entities (long-tail leagues, niche markets, fresh sportsbook additions) omit the block, in which case the flat field on the row is the only ID you'll see. Treat every block — and every inner field, including `numerical_id` and `abbreviation` — as optional.
+
+See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full semantics, the dense-from-1 / frozen / never-reused contract, and recommended use cases (storage keys, cross-feed mapping, display labels).
 
 ## Sorting
 

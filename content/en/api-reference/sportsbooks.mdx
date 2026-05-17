@@ -70,6 +70,7 @@ for book in result['data']:
   "data": [
     {
       "id": "draftkings",
+      "numerical_id": 12,
       "name": "draftkings",
       "display_name": "DraftKings",
       "has_live_odds": true,
@@ -83,6 +84,7 @@ for book in result['data']:
     },
     {
       "id": "fanduel",
+      "numerical_id": 14,
       "name": "fanduel",
       "display_name": "FanDuel",
       "has_live_odds": true,
@@ -161,6 +163,7 @@ for book in result['data']:
     },
     {
       "id": "pinnacle",
+      "numerical_id": 28,
       "name": "pinnacle",
       "display_name": "Pinnacle",
       "has_live_odds": true,
@@ -310,6 +313,7 @@ for book in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique identifier (use in API filters) |
+| `numerical_id` | integer \| null | Stable integer key for the sportsbook (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Internal name (same as `id`) |
 | `display_name` | string | Human-readable name |
 | `has_live_odds` | boolean | Supports live/in-play odds |
@@ -324,6 +328,16 @@ for book in result['data']:
 <Callout type="warning">
 The `event_count` may be 0 and `last_update` may be `null` if a sportsbook is temporarily unavailable or experiencing data delays.
 </Callout>
+
+### New (May 2026): `numerical_id`
+
+`numerical_id` is a frozen, dense-from-1 integer assigned per sportsbook in the SharpAPI atlas. It's stable across rebrands and slug renames — `pinnacle` is `numerical_id: 28` regardless of any future display-name changes.
+
+- **Frozen:** never reused or remapped.
+- **Optional:** absent (or `null`) for sportsbooks not yet mapped (e.g. brand-new books in the catalog before assignment); slug `id` is always present.
+- **Domain-scoped:** unique across sportsbooks only.
+
+Every odds row and opportunity leg also carries a matching `sportsbook_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids).
 
 ## Book Access by Tier
 

@@ -80,6 +80,7 @@ for market in result['data']:
   "data": [
     {
       "id": "moneyline",
+      "numerical_id": 878,
       "name": "Moneyline",
       "description": "Bet on which team will win the game outright",
       "hasLine": false,
@@ -90,6 +91,7 @@ for market in result['data']:
     },
     {
       "id": "point_spread",
+      "numerical_id": 880,
       "name": "Point Spread",
       "description": "Bet on the point margin between teams",
       "hasLine": true,
@@ -100,6 +102,7 @@ for market in result['data']:
     },
     {
       "id": "total_points",
+      "numerical_id": 881,
       "name": "Total Points",
       "description": "Bet on the combined score of both teams (over/under)",
       "hasLine": true,
@@ -187,6 +190,7 @@ for market in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique market identifier (use in API filters) |
+| `numerical_id` | integer \| null | Stable integer key for the market type (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Human-readable market name |
 | `description` | string | Brief description of the market |
 | `hasLine` | boolean | Whether this market includes a line value |
@@ -194,6 +198,16 @@ for market in result['data']:
 | `event_count` | number \| null | Number of events currently offering this market |
 | `selection_count` | number \| null | Number of unique selections across all events |
 | `sports` | string[] | Sport IDs that currently have this market |
+
+### New (May 2026): `numerical_id`
+
+`numerical_id` is a frozen, dense-from-1 integer assigned per market type in the SharpAPI atlas. The market catalog covers ~3,000 canonical types (core lines + period markets + player props across all sports).
+
+- **Frozen:** never reused or remapped.
+- **Optional:** absent (or `null`) for niche markets that haven't been assigned an integer yet — slug `id` is always present.
+- **Domain-scoped:** unique across markets only.
+
+Every odds row and opportunity leg also carries a matching `market_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids).
 
 ## Market Types
 

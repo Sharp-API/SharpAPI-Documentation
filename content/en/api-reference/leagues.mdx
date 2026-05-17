@@ -75,6 +75,7 @@ for league in result['data']:
   "data": [
     {
       "id": "nba",
+      "numerical_id": 87,
       "name": "NBA",
       "sport": "basketball",
       "event_count": 15,
@@ -82,6 +83,7 @@ for league in result['data']:
     },
     {
       "id": "ncaab",
+      "numerical_id": 88,
       "name": "NCAAB",
       "sport": "basketball",
       "event_count": 27,
@@ -89,6 +91,7 @@ for league in result['data']:
     },
     {
       "id": "wnba",
+      "numerical_id": 89,
       "name": "WNBA",
       "sport": "basketball",
       "event_count": 0,
@@ -250,10 +253,21 @@ for league in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | League identifier (lowercase, use in API filters) |
+| `numerical_id` | integer \| null | Stable integer key for the league (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
 | `name` | string | Human-readable league name |
 | `sport` | string | Parent sport ID |
 | `event_count` | integer | Total events currently available with odds |
 | `live_count` | integer | Events currently live/in-play |
+
+### New (May 2026): `numerical_id`
+
+`numerical_id` is a frozen, dense-from-1 integer assigned per league in the SharpAPI atlas. The full registry currently spans ~1,000 leagues across all 19 sports. Use it as a compact join/index key when storing rows in your own database.
+
+- **Frozen:** never reused or remapped.
+- **Optional:** absent (or `null`) for leagues that haven't been mapped yet — slug `id` is always present.
+- **Domain-scoped:** unique across leagues only.
+
+Every odds row and opportunity leg also carries a matching `league_ref` block (`{id, label, numerical_id}`) so you don't need to second-fetch this endpoint just to label a row. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
 
 ## Common Leagues
 

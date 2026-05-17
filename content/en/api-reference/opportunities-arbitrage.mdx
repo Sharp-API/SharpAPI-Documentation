@@ -262,6 +262,37 @@ X-Request-Id: req_arb789xyz012
 | `external_event_id` | string\|null | Sportsbook's native event ID |
 | `selection_id` | string\|null | Sportsbook's selection/outcome ID |
 | `market_id` | string\|null | Sportsbook's market ID |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation}`. |
+| `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
+| `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
+| `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
+| `sportsbook_ref` | object\|undefined | **New (May 2026).** Nested sportsbook reference for this leg's book: `{id, numerical_id, label}`. |
+
+### New (May 2026): nested reference blocks on each leg
+
+Every arbitrage leg now carries six optional nested reference objects, mirroring the shape on `/odds` and `/ev`. The flat top-level fields (`sport`, `league`, `home_team`, `away_team`, `market_type`) and per-leg `sportsbook` / `selection` strings are unchanged — the new blocks are purely additive.
+
+```json
+{
+  "legs": [
+    {
+      "sportsbook": "draftkings",
+      "selection": "Los Angeles Lakers",
+      "odds_american": 145,
+
+      "home":           { "id": "los_angeles_lakers", "numerical_id": 14, "name": "Los Angeles Lakers", "abbreviation": "LAL" },
+      "away":           { "id": "boston_celtics",     "numerical_id":  3, "name": "Boston Celtics",     "abbreviation": "BOS" },
+      "sport_ref":      { "id": "basketball", "numerical_id":   1, "name": "Basketball" },
+      "league_ref":     { "id": "nba",        "numerical_id":  87, "label": "NBA" },
+      "market_ref":     { "id": "moneyline",  "numerical_id": 878, "label": "Moneyline" },
+      "sportsbook_ref": { "id": "draftkings", "numerical_id":  12, "label": "DraftKings" }
+    }
+  ]
+}
+```
+
+Each block is emitted only when the underlying entity is mapped in the atlas; treat every block (and every inner field) as **optional**. The two competitor blocks (`home`, `away`) are identical across all legs of the same opportunity — the leg differs only in `sportsbook_ref`, `selection`, and the price. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
 
 ### CSV Format
 

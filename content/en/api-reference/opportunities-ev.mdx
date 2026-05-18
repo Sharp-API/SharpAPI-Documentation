@@ -317,8 +317,8 @@ X-Request-Id: req_abc123def456
 | `oldest_odds_age_seconds` | number\|null | Age of the stalest odds used in the EV calculation (seconds) |
 | `warnings` | string[] | Data quality warnings (e.g., `POTENTIALLY_STALE_ODDS`, `LIVE_STALE_ODDS`) |
 | `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
-| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
-| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation}`. |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
 | `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |

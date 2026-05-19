@@ -115,13 +115,12 @@ SharpAPI expone 35 rutas en 7 espacios de nombres, además de endpoints de refer
 
 ## Formato de la respuesta
 
-### Envoltura de éxito
+Dos formas en el nivel superior: ambas colocan `data` primero y `updated_at` al final, con un bloque `pagination` opcional en medio. **No** existe el campo `success`; el código de estado HTTP es la fuente de verdad. Consulta [Convenciones de respuesta](/es/api-reference/conventions) para el conjunto completo de reglas.
 
-Todas las respuestas correctas envuelven los datos en una envoltura coherente:
+### Respuesta de lista paginada
 
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": "draftkings_33483153_moneyline_PHO",
@@ -140,49 +139,34 @@ Todas las respuestas correctas envuelven los datos en una envoltura coherente:
   "pagination": {
     "limit": 50,
     "offset": 0,
+    "count": 1,
+    "total": 3095,
     "has_more": true,
     "next_offset": 50,
     "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
   },
-  "meta": {
-    "count": 1,
-    "total": 3095,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": true,
-      "next_offset": 50,
-      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
-    },
-    "updated_at": "2026-01-26T02:10:37.846Z",
-    "filters": {
-      "sportsbook": "draftkings",
-      "league": "nba"
-    }
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 
 | Campo | Descripción |
 |-------|-------------|
-| `success` | `true` para todas las respuestas correctas |
-| `data` | Array de resultados (u objeto único en endpoints de detalle) |
+| `data` | Array de resultados |
 | `pagination.limit` | Número máximo de elementos por página (predeterminado: 50, máximo: 200) |
 | `pagination.offset` | Desplazamiento actual dentro de los resultados |
+| `pagination.count` | Número de elementos devueltos en esta respuesta |
+| `pagination.total` | Total de elementos coincidentes en todas las páginas. Se omite en endpoints que no pueden calcularlo de forma barata (por ejemplo, `/odds`). |
 | `pagination.has_more` | Indica si existen más resultados más allá de esta página |
-| `pagination.next_offset` | Valor de desplazamiento para la siguiente página (heredado: utiliza `next_cursor` para endpoints con datos en vivo) |
-| `pagination.next_cursor` | Cursor opaco para la siguiente página. Pásalo como `?cursor=`: es estable frente a cambios en datos en vivo. Recomendado para recorridos de varias páginas. |
-| `meta.count` | Número de elementos devueltos en esta respuesta |
-| `meta.total` | Total de elementos coincidentes en todas las páginas |
-| `meta.pagination` | Igual que `pagination` en el nivel superior (incluido por compatibilidad retroactiva) |
-| `meta.updated_at` | Marca de tiempo ISO 8601 de la última actualización de los datos |
-| `meta.filters` | Reflejo de los filtros aplicados a esta solicitud |
+| `pagination.next_offset` | Valor de desplazamiento para la siguiente página. Prefiere `next_cursor` en endpoints con datos en vivo. |
+| `pagination.next_cursor` | Cursor opaco para la siguiente página. Pásalo como `?cursor=`: es estable frente a cambios en datos en vivo. Recomendado para recorridos de varias páginas. Solo aparece en endpoints que admiten cursor (`/odds`, `/odds/delta`). |
+| `updated_at` | Marca de tiempo ISO 8601 de la última actualización de los datos |
 
 ### Respuesta de un único recurso
 
+Se utiliza para recursos individuales (`/account`, `/events/:eventId`) y endpoints de referencia no paginados. Sin bloque `pagination`.
+
 ```json
 {
-  "success": true,
   "data": {
     "id": "evt_abc123",
     "sport": "nba",
@@ -190,9 +174,7 @@ Todas las respuestas correctas envuelven los datos en una envoltura coherente:
     "away_team": "PHO Suns",
     "start_time": "2026-01-26T19:00:00Z"
   },
-  "meta": {
-    "updated_at": "2026-01-26T02:10:37.846Z"
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 

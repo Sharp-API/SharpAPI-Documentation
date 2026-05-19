@@ -115,13 +115,12 @@ SharpAPI exposes 35 routes across 7 namespaces plus reference and health endpoin
 
 ## Response Format
 
-### Success Envelope
+Two top-level shapes — both put `data` first and `updated_at` last, with an optional `pagination` block in between. There is **no** `success` field; the HTTP status code is the source of truth. See [Response Conventions](/en/api-reference/conventions) for the full rule set.
 
-All successful responses wrap data in a consistent envelope:
+### Paginated list response
 
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": "draftkings_33483153_moneyline_PHO",
@@ -140,49 +139,34 @@ All successful responses wrap data in a consistent envelope:
   "pagination": {
     "limit": 50,
     "offset": 0,
+    "count": 1,
+    "total": 3095,
     "has_more": true,
     "next_offset": 50,
     "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
   },
-  "meta": {
-    "count": 1,
-    "total": 3095,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": true,
-      "next_offset": 50,
-      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
-    },
-    "updated_at": "2026-01-26T02:10:37.846Z",
-    "filters": {
-      "sportsbook": "draftkings",
-      "league": "nba"
-    }
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 
 | Field | Description |
 |-------|-------------|
-| `success` | `true` for all successful responses |
-| `data` | Array of results (or single object for detail endpoints) |
+| `data` | Array of results |
 | `pagination.limit` | Maximum items per page (default: 50, max: 200) |
 | `pagination.offset` | Current offset into results |
+| `pagination.count` | Number of items returned in this response |
+| `pagination.total` | Total matching items across all pages. Omitted on endpoints that can't compute it cheaply (e.g. `/odds`). |
 | `pagination.has_more` | Whether more results exist beyond this page |
-| `pagination.next_offset` | Offset value to use for the next page (legacy — use `next_cursor` for live-data endpoints) |
-| `pagination.next_cursor` | Opaque cursor for the next page. Pass as `?cursor=` — stable against live data changes. Recommended for multi-page scans. |
-| `meta.count` | Number of items returned in this response |
-| `meta.total` | Total matching items across all pages |
-| `meta.pagination` | Same as top-level `pagination` (included for backward compatibility) |
-| `meta.updated_at` | ISO 8601 timestamp of when the data was last refreshed |
-| `meta.filters` | Echo of the filters applied to this request |
+| `pagination.next_offset` | Offset value to use for the next page. Prefer `next_cursor` on live-data endpoints. |
+| `pagination.next_cursor` | Opaque cursor for the next page. Pass as `?cursor=` — stable against live data changes. Recommended for multi-page scans. Present only on cursor-supporting endpoints (`/odds`, `/odds/delta`). |
+| `updated_at` | ISO 8601 timestamp of when the data was last refreshed |
 
-### Single Resource Response
+### Single resource response
+
+Used for singletons (`/account`, `/events/:eventId`) and non-paginated reference endpoints. No `pagination` block.
 
 ```json
 {
-  "success": true,
   "data": {
     "id": "evt_abc123",
     "sport": "nba",
@@ -190,9 +174,7 @@ All successful responses wrap data in a consistent envelope:
     "away_team": "PHO Suns",
     "start_time": "2026-01-26T19:00:00Z"
   },
-  "meta": {
-    "updated_at": "2026-01-26T02:10:37.846Z"
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 

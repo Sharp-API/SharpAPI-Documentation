@@ -10,8 +10,8 @@ const DEFAULT_LOCALE = 'en'
 export async function generateMetadata(props) {
   const params = await props.params
   const { metadata } = await importPage(params.mdxPath, params.lang)
-  const path = params.mdxPath ? `/${params.lang}/${params.mdxPath.join('/')}` : `/${params.lang}`
-  const subPath = params.mdxPath ? `/${params.mdxPath.join('/')}` : ''
+  const path = params.mdxPath ? `/${params.lang}/${params.mdxPath.join('/')}` : `/${params.lang}/`
+  const subPath = params.mdxPath ? `/${params.mdxPath.join('/')}` : '/'
   const languages: Record<string, string> = {}
   for (const l of LOCALES) {
     languages[l] = `https://docs.sharpapi.io/${l}${subPath}`

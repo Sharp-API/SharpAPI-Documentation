@@ -583,7 +583,7 @@ The WebSocket layer emits a small, fixed set of frame-level error codes for clie
 | `not_authenticated` | Sent `subscribe`, `filter`, or `refresh_token` before `auth` succeeded |
 | `already_authenticated` | Client sent a second `auth` frame after the first one succeeded |
 
-WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restricted`, and `too_many_streams` codes — these cause the server to close the connection after the frame is sent. See [API Overview → Error Codes](/en/api-reference/overview#error-codes) for the full list.
+WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restricted`, and `too_many_streams` codes — these cause the server to close the connection after the frame is sent. See [API Overview → Error Codes](/en/api-reference/overview/#error-codes) for the full list.
 
 ## Close Codes
 
@@ -904,6 +904,6 @@ Exceeding your stream limit closes the connection with code `4029`. Close unused
 
 ## Related
 
-- [SSE Stream API Reference](/en/api-reference/stream) -- Server-Sent Events alternative
-- [Streaming Overview](/en/streaming/overview) -- Concepts and comparison
-- [WebSocket Streaming Guide](/en/streaming/websocket) -- Getting started guide
+- [SSE Stream API Reference](/en/api-reference/stream/) -- Server-Sent Events alternative
+- [Streaming Overview](/en/streaming/overview/) -- Concepts and comparison
+- [WebSocket Streaming Guide](/en/streaming/websocket/) -- Getting started guide

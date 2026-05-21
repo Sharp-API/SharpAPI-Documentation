@@ -22,7 +22,7 @@ Requires API key for `POST /deeplinks/batch`. Available to **Hobby tier and abov
 The redirect endpoint (`GET /deeplink/{id}`) is **public** and does not require authentication — the opaque ID prevents enumeration.
 
 <Callout type="info">
-The `id` parameter accepts both **odds IDs** (from `/odds`, `/odds/best`) and **opportunity hash IDs** (from [+EV](/en/api-reference/opportunities-ev), [Arbitrage](/en/api-reference/opportunities-arbitrage), [Middles](/en/api-reference/opportunities-middles), and [Low Hold](/en/api-reference/opportunities-low-hold) endpoints). Odds IDs resolve to market-specific links; opportunity hash IDs resolve to event-level links.
+The `id` parameter accepts both **odds IDs** (from `/odds`, `/odds/best`) and **opportunity hash IDs** (from [+EV](/en/api-reference/opportunities-ev/), [Arbitrage](/en/api-reference/opportunities-arbitrage/), [Middles](/en/api-reference/opportunities-middles/), and [Low Hold](/en/api-reference/opportunities-low-hold/) endpoints). Odds IDs resolve to market-specific links; opportunity hash IDs resolve to event-level links.
 </Callout>
 
 ---
@@ -280,7 +280,7 @@ Bet105, Bookmaker, Fliff, Rebet, SABA
 
 ## Related Endpoints
 
-- [+EV Opportunities](/en/api-reference/opportunities-ev) - Source of `hash_id` values for +EV bets
-- [Arbitrage](/en/api-reference/opportunities-arbitrage) - Source of `hash_id` values for arbitrage opportunities
-- [Middles](/en/api-reference/opportunities-middles) - Source of `hash_id` values for middle opportunities
-- [Low Hold](/en/api-reference/opportunities-low-hold) - Source of `hash_id` values for low-hold opportunities
+- [+EV Opportunities](/en/api-reference/opportunities-ev/) - Source of `hash_id` values for +EV bets
+- [Arbitrage](/en/api-reference/opportunities-arbitrage/) - Source of `hash_id` values for arbitrage opportunities
+- [Middles](/en/api-reference/opportunities-middles/) - Source of `hash_id` values for middle opportunities
+- [Low Hold](/en/api-reference/opportunities-low-hold/) - Source of `hash_id` values for low-hold opportunities

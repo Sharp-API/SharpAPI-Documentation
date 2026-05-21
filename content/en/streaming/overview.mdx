@@ -9,7 +9,7 @@ import { Callout, Tabs } from 'nextra/components'
 Real-time odds and opportunity updates via **SSE** or **WebSocket**.
 
 <Callout type="info">
-SharpAPI offers two streaming protocols: **[SSE (Server-Sent Events)](/en/api-reference/stream)** over HTTP and **[WebSocket](/en/api-reference/websocket)** for bidirectional communication. Both deliver the same real-time data — choose based on your use case.
+SharpAPI offers two streaming protocols: **[SSE (Server-Sent Events)](/en/api-reference/stream/)** over HTTP and **[WebSocket](/en/api-reference/websocket/)** for bidirectional communication. Both deliver the same real-time data — choose based on your use case.
 </Callout>
 
 ## Why Streaming?
@@ -62,7 +62,7 @@ SSE automatically reconnects on disconnect. The server uses `Last-Event-ID` to r
 | Enterprise | Included (custom limits) |
 
 <Callout type="warning">
-**Newer-wins displacement:** opening a second stream from the same API key closes the first one. One well-managed connection is sufficient for most use cases — see [Single-Connection Patterns](/en/streaming/single-connection) for techniques. Fleet deployments needing multiple simultaneous streams can request a higher limit via [sales](mailto:sales@sharpapi.io).
+**Newer-wins displacement:** opening a second stream from the same API key closes the first one. One well-managed connection is sufficient for most use cases — see [Single-Connection Patterns](/en/streaming/single-connection/) for techniques. Fleet deployments needing multiple simultaneous streams can request a higher limit via [sales](mailto:sales@sharpapi.io).
 </Callout>
 
 ## Quick Start
@@ -212,7 +212,7 @@ for event in client.events():
 | `ev:expired` | +EV opportunity no longer available |
 | `arb:detected` | New arbitrage opportunity found |
 | `arb:expired` | Arbitrage opportunity no longer available |
-| `middles:detected` | New middle opportunity found (see [Middles Summary](/en/api-reference/opportunities-middles-summary) for aggregated stats) |
+| `middles:detected` | New middle opportunity found (see [Middles Summary](/en/api-reference/opportunities-middles-summary/) for aggregated stats) |
 | `middles:expired` | Middle opportunity no longer available |
 | `low_hold:detected` | New low-hold opportunity found |
 | `low_hold:expired` | Low-hold opportunity no longer available |
@@ -235,16 +235,16 @@ Both protocols deliver the same event types and data payloads.
 
 ## Full API Reference
 
-- **[SSE Stream API Reference](/en/api-reference/stream)** -- Query parameters, event payloads, reconnection
-- **[WebSocket API Reference](/en/api-reference/websocket)** -- Connection lifecycle, message protocol, close codes
-- **[WebSocket Streaming Guide](/en/streaming/websocket)** -- Quick start, reconnection patterns, best practices
+- **[SSE Stream API Reference](/en/api-reference/stream/)** -- Query parameters, event payloads, reconnection
+- **[WebSocket API Reference](/en/api-reference/websocket/)** -- Connection lifecycle, message protocol, close codes
+- **[WebSocket Streaming Guide](/en/streaming/websocket/)** -- Quick start, reconnection patterns, best practices
 
 ## SDKs with Streaming Support
 
-- **[TypeScript SDK](/en/sdks/typescript)** -- Built-in SSE client with type-safe event handlers
-- **[Python SDK](/en/sdks/python)** -- Handler-based and iterator-based streaming patterns
+- **[TypeScript SDK](/en/sdks/typescript/)** -- Built-in SSE client with type-safe event handlers
+- **[Python SDK](/en/sdks/python/)** -- Handler-based and iterator-based streaming patterns
 
 ## Example Projects
 
-- [Arbitrage Scanner](/en/examples/arbitrage-scanner) -- Real-time arb detection with Discord alerts
-- [Value Betting Bot](/en/examples/value-betting) -- +EV alert bot for Discord/Telegram
+- [Arbitrage Scanner](/en/examples/arbitrage-scanner/) -- Real-time arb detection with Discord alerts
+- [Value Betting Bot](/en/examples/value-betting/) -- +EV alert bot for Discord/Telegram

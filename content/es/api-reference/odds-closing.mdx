@@ -12,7 +12,7 @@ Devuelve la instantánea de la línea de cierre para un evento — las cuotas po
 GET /api/v1/odds/closing
 ```
 
-Cada sportsbook se captura de forma independiente la primera vez que cambia un evento dado a `is_live=true`. Las instantáneas capturadas permanecen en Valkey durante **48 horas** después del inicio del evento. Más allá de esa ventana, utiliza [`/api/v1/historical/odds/closing`](/es/api-reference/enterprise) (Enterprise, respaldado por ClickHouse).
+Cada sportsbook se captura de forma independiente la primera vez que cambia un evento dado a `is_live=true`. Las instantáneas capturadas permanecen en Valkey durante **48 horas** después del inicio del evento. Más allá de esa ventana, utiliza [`/api/v1/historical/odds/closing`](/es/api-reference/enterprise/) (Enterprise, respaldado por ClickHouse).
 
 ## Autenticación
 
@@ -174,11 +174,11 @@ Las respuestas se almacenan en caché en el edge durante 30s (`s-maxage=30`) y e
 | Estado | Código | Significado |
 |--------|------|---------|
 | 400 | `validation_error` | `event_id` faltante o mal formado. |
-| 401 | `missing_api_key` / `invalid_api_key` | Consulta [Autenticación](/es/authentication). |
+| 401 | `missing_api_key` / `invalid_api_key` | Consulta [Autenticación](/es/authentication/). |
 | 403 | `tier_restricted` | Plan inferior a Pro. |
 | 503 | `not_ready` | La captura de la línea de cierre no está disponible actualmente (p. ej., el almacén de respaldo es inalcanzable). Reintenta. |
 
 ## Relacionado
 
-- [`/api/v1/historical/odds/closing`](/es/api-reference/enterprise) — Enterprise; historial a largo plazo en ClickHouse más allá de la ventana de 48h.
-- [`/api/v1/historical/clv`](/es/api-reference/enterprise) — Análisis CLV agregados entre oportunidades.
+- [`/api/v1/historical/odds/closing`](/es/api-reference/enterprise/) — Enterprise; historial a largo plazo en ClickHouse más allá de la ventana de 48h.
+- [`/api/v1/historical/clv`](/es/api-reference/enterprise/) — Análisis CLV agregados entre oportunidades.

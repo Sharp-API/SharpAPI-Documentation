@@ -6,7 +6,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Middles-Übersicht
 
-Aggregierte Statistiken für aktuelle Middle-Möglichkeiten ohne die vollständige Liste abrufen. Verwendet dieselben zugrunde liegenden Daten wie der [Middles](/de/api-reference/opportunities-middles)-Endpunkt.
+Aggregierte Statistiken für aktuelle Middle-Möglichkeiten ohne die vollständige Liste abrufen. Verwendet dieselben zugrunde liegenden Daten wie der [Middles](/de/api-reference/opportunities-middles/)-Endpunkt.
 
 ```
 GET /api/v1/opportunities/middles/summary
@@ -193,7 +193,7 @@ Nutzen Sie den Summary-Endpunkt, um Dashboard-Widgets zu betreiben, die Middle-M
 
 ### Polling vs. vollständiger Abruf
 
-Rufen Sie den Summary-Endpunkt in kürzeren Intervallen ab, um zu erkennen, wann neue Möglichkeiten erscheinen, und rufen Sie dann den vollständigen [Middles](/de/api-reference/opportunities-middles)-Endpunkt nur ab, wenn sich die Anzahl ändert.
+Rufen Sie den Summary-Endpunkt in kürzeren Intervallen ab, um zu erkennen, wann neue Möglichkeiten erscheinen, und rufen Sie dann den vollständigen [Middles](/de/api-reference/opportunities-middles/)-Endpunkt nur ab, wenn sich die Anzahl ändert.
 
 ```javascript
 // Poll summary every 10 seconds
@@ -214,7 +214,7 @@ Der Summary-Endpunkt wird 10 Sekunden lang zwischengespeichert und zählt genaus
 
 ## Verwandte Endpunkte
 
-- [Middles](/de/api-reference/opportunities-middles) — Vollständige Liste der Middle-Möglichkeiten
-- [+EV-Möglichkeiten](/de/api-reference/opportunities-ev) — Wetten mit positivem Erwartungswert
-- [Arbitrage-Möglichkeiten](/de/api-reference/opportunities-arbitrage) — Möglichkeiten mit garantiertem Gewinn
-- [SSE-Stream](/de/api-reference/stream) — Echtzeit-`middles:detected`- und `middles:expired`-Ereignisse
+- [Middles](/de/api-reference/opportunities-middles/) — Vollständige Liste der Middle-Möglichkeiten
+- [+EV-Möglichkeiten](/de/api-reference/opportunities-ev/) — Wetten mit positivem Erwartungswert
+- [Arbitrage-Möglichkeiten](/de/api-reference/opportunities-arbitrage/) — Möglichkeiten mit garantiertem Gewinn
+- [SSE-Stream](/de/api-reference/stream/) — Echtzeit-`middles:detected`- und `middles:expired`-Ereignisse

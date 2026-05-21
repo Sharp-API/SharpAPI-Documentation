@@ -62,7 +62,7 @@ Alle Antworten enthalten Standard-Header für Rate Limit und Metadaten:
 | `odds.decimal` | number | Dezimalquoten (z. B. 1.909) |
 | `odds.probability` | number | Implizite Wahrscheinlichkeit (z. B. 0.5238) |
 | `last_seen_at` | string | ISO-8601-Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie diesen als Aktualitätssignal der Pipeline. |
-| `odds_changed_at` | string | ISO-8601-Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert hat. Vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Refreshes hinweg fortgeschrieben — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | ISO-8601-Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert hat. Vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Refreshes hinweg fortgeschrieben — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
 
 ## Beispielanfragen
 
@@ -339,8 +339,8 @@ print(f"Fetched all {len(all_odds)} odds")
 
 ## Verwandte Endpoints
 
-- [Events](/de/api-reference/events) – Events auflisten und durchsuchen
-- [Event-Details](/de/api-reference/events-by-id) – Event-Details mit eingebetteten Marktdaten abrufen
-- [Event-Märkte](/de/api-reference/events-markets) – Verfügbare Markttypen für ein Event auflisten
-- [Quoten-Snapshot](/de/api-reference/odds) – Quoten über alle Events hinweg abrufen
-- [Beste Quoten](/de/api-reference/odds-best) – Die besten Quoten über alle Sportsbooks hinweg abrufen
+- [Events](/de/api-reference/events/) – Events auflisten und durchsuchen
+- [Event-Details](/de/api-reference/events-by-id/) – Event-Details mit eingebetteten Marktdaten abrufen
+- [Event-Märkte](/de/api-reference/events-markets/) – Verfügbare Markttypen für ein Event auflisten
+- [Quoten-Snapshot](/de/api-reference/odds/) – Quoten über alle Events hinweg abrufen
+- [Beste Quoten](/de/api-reference/odds-best/) – Die besten Quoten über alle Sportsbooks hinweg abrufen

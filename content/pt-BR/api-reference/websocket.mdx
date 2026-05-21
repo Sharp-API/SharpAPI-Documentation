@@ -583,7 +583,7 @@ A camada WebSocket emite um conjunto pequeno e fixo de códigos de erro em níve
 | `not_authenticated` | Enviou `subscribe`, `filter` ou `refresh_token` antes que o `auth` fosse bem-sucedido |
 | `already_authenticated` | O cliente enviou um segundo frame `auth` após o primeiro ter sido bem-sucedido |
 
-Os frames WebSocket também podem carregar os códigos no estilo HTTP `invalid_api_key`, `tier_restricted` e `too_many_streams` — esses fazem com que o servidor feche a conexão após o frame ser enviado. Veja [Visão Geral da API → Códigos de Erro](/pt-BR/api-reference/overview#error-codes) para a lista completa.
+Os frames WebSocket também podem carregar os códigos no estilo HTTP `invalid_api_key`, `tier_restricted` e `too_many_streams` — esses fazem com que o servidor feche a conexão após o frame ser enviado. Veja [Visão Geral da API → Códigos de Erro](/pt-BR/api-reference/overview/#error-codes) para a lista completa.
 
 ## Códigos de Fechamento
 
@@ -904,6 +904,6 @@ Exceder seu limite de streams fecha a conexão com o código `4029`. Feche conex
 
 ## Relacionados
 
-- [Referência da API SSE Stream](/pt-BR/api-reference/stream) -- Alternativa Server-Sent Events
-- [Visão Geral de Streaming](/pt-BR/streaming/overview) -- Conceitos e comparação
-- [Guia de Streaming WebSocket](/pt-BR/streaming/websocket) -- Guia de introdução
+- [Referência da API SSE Stream](/pt-BR/api-reference/stream/) -- Alternativa Server-Sent Events
+- [Visão Geral de Streaming](/pt-BR/streaming/overview/) -- Conceitos e comparação
+- [Guia de Streaming WebSocket](/pt-BR/streaming/websocket/) -- Guia de introdução

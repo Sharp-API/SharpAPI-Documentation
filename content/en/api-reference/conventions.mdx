@@ -9,7 +9,7 @@ import { Callout } from 'nextra/components'
 SharpAPI returns predictable response shapes across every REST endpoint. This page codifies those conventions so you can build generic parsers, not per-endpoint special cases.
 
 <Callout type="info">
-  This page describes the REST conventions. SSE streams are covered in [SSE Stream](/en/api-reference/stream), and the bidirectional WebSocket protocol has its own [AsyncAPI 3.0 spec](https://docs.sharpapi.io/asyncapi.yaml).
+  This page describes the REST conventions. SSE streams are covered in [SSE Stream](/en/api-reference/stream/), and the bidirectional WebSocket protocol has its own [AsyncAPI 3.0 spec](https://docs.sharpapi.io/asyncapi.yaml).
 </Callout>
 
 ## HTTP status codes, not envelopes
@@ -102,7 +102,7 @@ Every non-2xx response returns a single `error` object.
 
 `missing_api_key`, `invalid_api_key`, `validation_error`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
 
-See the full list (21 HTTP codes + 6 WebSocket frame codes, with HTTP statuses) in [API Overview → Error Codes](/en/api-reference/overview#error-codes). `bad_request` and `invalid_request` are deprecated — both were collapsed into `validation_error`.
+See the full list (21 HTTP codes + 6 WebSocket frame codes, with HTTP statuses) in [API Overview → Error Codes](/en/api-reference/overview/#error-codes). `bad_request` and `invalid_request` are deprecated — both were collapsed into `validation_error`.
 
 ## Timestamps
 

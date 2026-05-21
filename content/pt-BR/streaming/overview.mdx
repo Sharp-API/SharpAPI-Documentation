@@ -9,7 +9,7 @@ import { Callout, Tabs } from 'nextra/components'
 Atualizações de odds e oportunidades em tempo real via **SSE** ou **WebSocket**.
 
 <Callout type="info">
-A SharpAPI oferece dois protocolos de streaming: **[SSE (Server-Sent Events)](/pt-BR/api-reference/stream)** sobre HTTP e **[WebSocket](/pt-BR/api-reference/websocket)** para comunicação bidirecional. Ambos entregam os mesmos dados em tempo real — escolha conforme seu caso de uso.
+A SharpAPI oferece dois protocolos de streaming: **[SSE (Server-Sent Events)](/pt-BR/api-reference/stream/)** sobre HTTP e **[WebSocket](/pt-BR/api-reference/websocket/)** para comunicação bidirecional. Ambos entregam os mesmos dados em tempo real — escolha conforme seu caso de uso.
 </Callout>
 
 ## Por que Streaming?
@@ -62,7 +62,7 @@ O SSE reconecta automaticamente em caso de desconexão. O servidor usa `Last-Eve
 | Enterprise | Incluído (limites personalizados) |
 
 <Callout type="warning">
-**Substituição newer-wins:** abrir um segundo stream a partir da mesma API key encerra o primeiro. Uma conexão bem gerenciada é suficiente para a maioria dos casos de uso — veja [Padrões de Conexão Única](/pt-BR/streaming/single-connection) para técnicas. Implantações de fleet que precisem de múltiplos streams simultâneos podem solicitar um limite maior através do [time de vendas](mailto:sales@sharpapi.io).
+**Substituição newer-wins:** abrir um segundo stream a partir da mesma API key encerra o primeiro. Uma conexão bem gerenciada é suficiente para a maioria dos casos de uso — veja [Padrões de Conexão Única](/pt-BR/streaming/single-connection/) para técnicas. Implantações de fleet que precisem de múltiplos streams simultâneos podem solicitar um limite maior através do [time de vendas](mailto:sales@sharpapi.io).
 </Callout>
 
 ## Início Rápido
@@ -194,7 +194,7 @@ for event in client.events():
 | `ev:expired` | Oportunidade +EV não está mais disponível |
 | `arb:detected` | Nova oportunidade de arbitragem encontrada |
 | `arb:expired` | Oportunidade de arbitragem não está mais disponível |
-| `middles:detected` | Nova oportunidade de middle encontrada (veja [Resumo de Middles](/pt-BR/api-reference/opportunities-middles-summary) para estatísticas agregadas) |
+| `middles:detected` | Nova oportunidade de middle encontrada (veja [Resumo de Middles](/pt-BR/api-reference/opportunities-middles-summary/) para estatísticas agregadas) |
 | `middles:expired` | Oportunidade de middle não está mais disponível |
 | `low_hold:detected` | Nova oportunidade de low-hold encontrada |
 | `low_hold:expired` | Oportunidade de low-hold não está mais disponível |
@@ -217,16 +217,16 @@ Ambos os protocolos entregam os mesmos tipos de eventos e payloads de dados.
 
 ## Referência Completa da API
 
-- **[Referência da API SSE Stream](/pt-BR/api-reference/stream)** -- Parâmetros de query, payloads de eventos, reconexão
-- **[Referência da API WebSocket](/pt-BR/api-reference/websocket)** -- Ciclo de vida da conexão, protocolo de mensagens, códigos de fechamento
-- **[Guia de Streaming WebSocket](/pt-BR/streaming/websocket)** -- Início rápido, padrões de reconexão, melhores práticas
+- **[Referência da API SSE Stream](/pt-BR/api-reference/stream/)** -- Parâmetros de query, payloads de eventos, reconexão
+- **[Referência da API WebSocket](/pt-BR/api-reference/websocket/)** -- Ciclo de vida da conexão, protocolo de mensagens, códigos de fechamento
+- **[Guia de Streaming WebSocket](/pt-BR/streaming/websocket/)** -- Início rápido, padrões de reconexão, melhores práticas
 
 ## SDKs com Suporte a Streaming
 
-- **[TypeScript SDK](/pt-BR/sdks/typescript)** -- Cliente SSE integrado com handlers de eventos type-safe
-- **[Python SDK](/pt-BR/sdks/python)** -- Padrões de streaming baseados em handlers e iteradores
+- **[TypeScript SDK](/pt-BR/sdks/typescript/)** -- Cliente SSE integrado com handlers de eventos type-safe
+- **[Python SDK](/pt-BR/sdks/python/)** -- Padrões de streaming baseados em handlers e iteradores
 
 ## Projetos de Exemplo
 
-- [Scanner de Arbitragem](/pt-BR/examples/arbitrage-scanner) -- Detecção de arbitragem em tempo real com alertas no Discord
-- [Bot de Apostas de Valor](/pt-BR/examples/value-betting) -- Bot de alertas +EV para Discord/Telegram
+- [Scanner de Arbitragem](/pt-BR/examples/arbitrage-scanner/) -- Detecção de arbitragem em tempo real com alertas no Discord
+- [Bot de Apostas de Valor](/pt-BR/examples/value-betting/) -- Bot de alertas +EV para Discord/Telegram

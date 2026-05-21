@@ -17,7 +17,7 @@ GET /api/v1/odds/comparison
 Erfordert einen API key. Verfügbar für **alle Tarifstufen**.
 
 <Callout type="info">
-Welche Sportsbooks im Vergleich enthalten sind, hängt vom Buchmacher-Zugang Ihrer Tarifstufe ab. Die kostenlose Stufe vergleicht DraftKings und FanDuel; höhere Stufen umfassen weitere Buchmacher. Siehe [Buchmacher-Zugang nach Tarifstufe](/de/api-reference/odds#book-access-by-tier).
+Welche Sportsbooks im Vergleich enthalten sind, hängt vom Buchmacher-Zugang Ihrer Tarifstufe ab. Die kostenlose Stufe vergleicht DraftKings und FanDuel; höhere Stufen umfassen weitere Buchmacher. Siehe [Buchmacher-Zugang nach Tarifstufe](/de/api-reference/odds/#book-access-by-tier).
 </Callout>
 
 ## Query-Parameter
@@ -25,7 +25,7 @@ Welche Sportsbooks im Vergleich enthalten sind, hängt vom Buchmacher-Zugang Ihr
 | Parameter | Typ | Standard | Beschreibung |
 |-----------|------|---------|-------------|
 | `event` | string | **erforderlich** | Event-ID, für die Quoten verglichen werden sollen |
-| `market` | string | all | Filtern nach Markttyp (z. B. `moneyline`, `spread`). Unterstützt Kategorie-Aliase — siehe [Quoten: Marktkategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filtern nach Markttyp (z. B. `moneyline`, `spread`). Unterstützt Kategorie-Aliase — siehe [Quoten: Marktkategorie-Aliase](/de/api-reference/odds/#market-category-aliases). |
 | `sportsbook` | string | all | Komma-separierte Sportsbook-IDs zum Einbeziehen |
 
 <Callout type="warning">
@@ -254,7 +254,7 @@ Jeder Eintrag im `books`-Objekt:
 | `odds_american` | number | American Odds |
 | `odds_decimal` | number | Dezimal-Quoten |
 | `last_seen_at` | string | Wann unsere Pipeline die Zeile dieses Buchmachers zuletzt beobachtet hat — Pipeline-Aktualitätssignal |
-| `odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buchmachers zuletzt tatsächlich geändert hat. Bei Pinnacle wird dieser Wert über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buchmachers zuletzt tatsächlich geändert hat. Bei Pinnacle wird dieser Wert über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
 
 ## Hold verstehen
 
@@ -301,7 +301,7 @@ Vergleichen Sie `hold.best_available` mit den Holds der einzelnen Buchmacher. Ei
 
 ## Verwandte Endpoints
 
-- [Odds Snapshot](/de/api-reference/odds) - Rohquoten von einzelnen Sportsbooks abrufen
-- [Beste Quoten](/de/api-reference/odds-best) - Nur die besten Quoten mit Konsens und Hold abrufen
-- [Quoten-Delta](/de/api-reference/odds-delta) - Nur die Quoten abrufen, die sich seit einem bestimmten Zeitstempel geändert haben
-- [Batch-Quoten](/de/api-reference/odds-batch) - Vergleichsdaten für mehrere Ereignisse auf einmal abrufen
+- [Odds Snapshot](/de/api-reference/odds/) - Rohquoten von einzelnen Sportsbooks abrufen
+- [Beste Quoten](/de/api-reference/odds-best/) - Nur die besten Quoten mit Konsens und Hold abrufen
+- [Quoten-Delta](/de/api-reference/odds-delta/) - Nur die Quoten abrufen, die sich seit einem bestimmten Zeitstempel geändert haben
+- [Batch-Quoten](/de/api-reference/odds-batch/) - Vergleichsdaten für mehrere Ereignisse auf einmal abrufen

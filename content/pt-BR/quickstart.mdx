@@ -130,7 +130,7 @@ curl "https://api.sharpapi.io/api/v1/odds?market=moneyline,spread,total" \
 
 ## Encontre Apostas de Valor
 
-Com uma assinatura Pro, você pode encontrar [oportunidades +EV](/pt-BR/concepts/ev-calculation):
+Com uma assinatura Pro, você pode encontrar [oportunidades +EV](/pt-BR/concepts/ev-calculation/):
 
 ```bash
 curl "https://api.sharpapi.io/api/v1/opportunities/ev?min_ev=3.0" \
@@ -209,14 +209,14 @@ eventSource.addEventListener('ev:detected', (e) => {
 
 ## Próximos Passos
 
-- [Encontre Apostas +EV](/pt-BR/api-reference/opportunities-ev) - Encontre oportunidades com valor esperado positivo
-- [Encontre Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) - Detecte oportunidades de lucro sem risco ([entenda como funciona arb](/pt-BR/concepts/arbitrage))
-- [Mercados Low Hold](/pt-BR/api-reference/opportunities-low-hold) - Encontre as linhas mais apertadas entre as casas
-- [Streaming ao Vivo](/pt-BR/streaming/overview) - Atualizações em tempo real via SSE
-- [SDK TypeScript](/pt-BR/sdks/typescript) - Segurança total de tipos e streaming integrado
-- [SDK Python](/pt-BR/sdks/python) - Modelos Pydantic e suporte assíncrono
-- [Rate Limits](/pt-BR/authentication#rate-limits) - Entenda os limites de uso
-- [Preços](/pt-BR/pricing) - Compare planos e recursos
+- [Encontre Apostas +EV](/pt-BR/api-reference/opportunities-ev/) - Encontre oportunidades com valor esperado positivo
+- [Encontre Arbitragem](/pt-BR/api-reference/opportunities-arbitrage/) - Detecte oportunidades de lucro sem risco ([entenda como funciona arb](/pt-BR/concepts/arbitrage/))
+- [Mercados Low Hold](/pt-BR/api-reference/opportunities-low-hold/) - Encontre as linhas mais apertadas entre as casas
+- [Streaming ao Vivo](/pt-BR/streaming/overview/) - Atualizações em tempo real via SSE
+- [SDK TypeScript](/pt-BR/sdks/typescript/) - Segurança total de tipos e streaming integrado
+- [SDK Python](/pt-BR/sdks/python/) - Modelos Pydantic e suporte assíncrono
+- [Rate Limits](/pt-BR/authentication/#rate-limits) - Entenda os limites de uso
+- [Preços](/pt-BR/pricing/) - Compare planos e recursos
 
 ## Problemas Comuns
 
@@ -235,5 +235,5 @@ Você excedeu seu rate limit. Aguarde o tempo de reset indicado em `X-RateLimit-
 <Callout type="error" emoji="!">
 **Erro: 403 Tier Restricted**
 
-Este endpoint requer um tier superior. Confira a página de [Preços](/pt-BR/pricing) para ver os recursos de cada tier.
+Este endpoint requer um tier superior. Confira a página de [Preços](/pt-BR/pricing/) para ver os recursos de cada tier.
 </Callout>

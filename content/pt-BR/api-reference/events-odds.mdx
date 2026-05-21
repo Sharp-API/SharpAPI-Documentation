@@ -62,7 +62,7 @@ Todas as respostas incluem headers padrão de rate limit e metadados:
 | `odds.decimal` | number | Odds decimais (ex.: 1.909) |
 | `odds.probability` | number | Probabilidade implícita (ex.: 0.5238) |
 | `last_seen_at` | string | Timestamp ISO 8601 de quando nosso pipeline observou esta linha pela última vez. Use isto como seu sinal de atualização do pipeline. |
-| `odds_changed_at` | string | Timestamp ISO 8601 de quando o preço, a linha ou a flag `is_live` realmente mudou pela última vez. Fornecido pelo sportsbook quando disponível; na Pinnacle é propagado entre atualizações sem mudanças — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Timestamp ISO 8601 de quando o preço, a linha ou a flag `is_live` realmente mudou pela última vez. Fornecido pelo sportsbook quando disponível; na Pinnacle é propagado entre atualizações sem mudanças — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 
 ## Exemplos de Requisições
 
@@ -339,8 +339,8 @@ print(f"Fetched all {len(all_odds)} odds")
 
 ## Endpoints Relacionados
 
-- [Eventos](/pt-BR/api-reference/events) - Listar e buscar eventos
-- [Detalhes do Evento](/pt-BR/api-reference/events-by-id) - Obter detalhes do evento com dados de mercado incorporados
-- [Mercados do Evento](/pt-BR/api-reference/events-markets) - Listar tipos de mercado disponíveis para um evento
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obter odds em todos os eventos
-- [Melhores Odds](/pt-BR/api-reference/odds-best) - Obter as melhores odds em todos os sportsbooks
+- [Eventos](/pt-BR/api-reference/events/) - Listar e buscar eventos
+- [Detalhes do Evento](/pt-BR/api-reference/events-by-id/) - Obter detalhes do evento com dados de mercado incorporados
+- [Mercados do Evento](/pt-BR/api-reference/events-markets/) - Listar tipos de mercado disponíveis para um evento
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obter odds em todos os eventos
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) - Obter as melhores odds em todos os sportsbooks

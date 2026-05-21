@@ -55,7 +55,7 @@ Todas las respuestas incluyen cabeceras estándar de límite de peticiones (rate
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | string | Identificador canónico del evento — el mismo para cada casa de apuestas que cubra este evento. Úsalo como clave primaria para emparejamientos entre casas. Consulta [Emparejamiento de eventos](/es/concepts/event-matching). |
+| `id` | string | Identificador canónico del evento — el mismo para cada casa de apuestas que cubra este evento. Úsalo como clave primaria para emparejamientos entre casas. Consulta [Emparejamiento de eventos](/es/concepts/event-matching/). |
 | `external_ids` | object | Mapa del ID de la casa de apuestas al ID nativo del evento de esa casa (p. ej., `{"draftkings": "33483153"}`). Úsalos para enlaces directos a las páginas de las casas de apuestas. |
 | `sport` | string | Identificador del deporte (p. ej., `basketball`, `football`) |
 | `league` | string | Slug de la liga (p. ej., `nba`, `nfl`) |
@@ -359,11 +359,11 @@ Las respuestas previas a la v1 utilizaban nombres de campo en **camelCase** (`ho
 
 El campo `id` es un **identificador canónico de evento**: el mismo evento del mundo real recibe el mismo `id` independientemente de la casa de apuestas de la que provenga. Úsalo como clave primaria al construir herramientas de comparación entre casas. El campo `external_ids` mapea cada casa de apuestas con su ID nativo del evento para enlaces directos.
 
-Consulta [Emparejamiento de eventos](/es/concepts/event-matching) para conocer todos los detalles sobre cómo funcionan los IDs canónicos.
+Consulta [Emparejamiento de eventos](/es/concepts/event-matching/) para conocer todos los detalles sobre cómo funcionan los IDs canónicos.
 
 ## Endpoints relacionados
 
-- [Detalles del evento](/es/api-reference/events-by-id) - Obtener todos los detalles de un único evento
-- [Cuotas del evento](/es/api-reference/events-odds) - Obtener todas las cuotas de un evento concreto
-- [Mercados del evento](/es/api-reference/events-markets) - Obtener los mercados disponibles para un evento
-- [Snapshot de cuotas](/es/api-reference/odds) - Obtener las cuotas actuales en todos los eventos
+- [Detalles del evento](/es/api-reference/events-by-id/) - Obtener todos los detalles de un único evento
+- [Cuotas del evento](/es/api-reference/events-odds/) - Obtener todas las cuotas de un evento concreto
+- [Mercados del evento](/es/api-reference/events-markets/) - Obtener los mercados disponibles para un evento
+- [Snapshot de cuotas](/es/api-reference/odds/) - Obtener las cuotas actuales en todos los eventos

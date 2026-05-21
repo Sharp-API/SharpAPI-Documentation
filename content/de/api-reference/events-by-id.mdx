@@ -38,7 +38,7 @@ Alle Antworten enthalten standardmäßige Rate-Limit- und Metadaten-Header:
 
 | Feld | Typ | Beschreibung |
 |-------|------|-------------|
-| `id` | string | Kanonische Event-Kennung — identisch für jeden Sportsbook, der dieses Event abdeckt. Verwenden Sie diese als Primärschlüssel für den Abgleich zwischen Sportsbooks. Siehe [Event-Matching](/de/concepts/event-matching). |
+| `id` | string | Kanonische Event-Kennung — identisch für jeden Sportsbook, der dieses Event abdeckt. Verwenden Sie diese als Primärschlüssel für den Abgleich zwischen Sportsbooks. Siehe [Event-Matching](/de/concepts/event-matching/). |
 | `external_ids` | object | Zuordnung der Sportsbook-ID zur nativen Event-ID des jeweiligen Sportsbooks (z. B. `{ "draftkings": "12345", "fanduel": "67890" }`). Verwenden Sie diese für Deep-Links zurück zu den Sportsbook-Seiten. |
 | `sport` | string | Sportarten-Kennung (z. B. `basketball`, `football`) |
 | `league` | string | Liga-Name (z. B. `NBA`, `NFL`) |
@@ -219,14 +219,14 @@ Antworten für Einzelressourcen umschließen das Objekt in `data` als einzelnes 
 
 ## Anwendungsfälle
 
-- **Vergleich zwischen Sportsbooks** -- Die kanonische `id` ist über alle Sportsbooks hinweg identisch, sodass alle zurückgegebenen Quoten bereits demselben realen Event zugeordnet sind. Siehe [Event-Matching](/de/concepts/event-matching).
+- **Vergleich zwischen Sportsbooks** -- Die kanonische `id` ist über alle Sportsbooks hinweg identisch, sodass alle zurückgegebenen Quoten bereits demselben realen Event zugeordnet sind. Siehe [Event-Matching](/de/concepts/event-matching/).
 - **Marktanalyse** -- Sehen Sie jeden verfügbaren Markttyp und wie viele Sportsbooks ihn jeweils anbieten
 - **Sharp-Referenz** -- Vergleichen Sie Quoten von Soft Books mit Pinnacle (dem Sharp-Benchmark)
 - **Deep-Linking** -- Verwenden Sie `external_ids`, um Nutzer zur Event-Seite eines bestimmten Sportsbooks zu leiten
 
 ## Verwandte Endpoints
 
-- [Events](/de/api-reference/events) - Events auflisten und durchsuchen
-- [Event-Quoten](/de/api-reference/events-odds) - Paginierte Quoten für dieses Event abrufen
-- [Event-Märkte](/de/api-reference/events-markets) - Verfügbare Markttypen für dieses Event abrufen
-- [Quoten-Snapshot](/de/api-reference/odds) - Aktuelle Quoten für alle Events abrufen
+- [Events](/de/api-reference/events/) - Events auflisten und durchsuchen
+- [Event-Quoten](/de/api-reference/events-odds/) - Paginierte Quoten für dieses Event abrufen
+- [Event-Märkte](/de/api-reference/events-markets/) - Verfügbare Markttypen für dieses Event abrufen
+- [Quoten-Snapshot](/de/api-reference/odds/) - Aktuelle Quoten für alle Events abrufen

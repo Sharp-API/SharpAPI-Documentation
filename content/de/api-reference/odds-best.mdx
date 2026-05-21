@@ -26,7 +26,7 @@ Best Odds ist in allen Tarifen verfügbar, einschließlich Free. Die verglichene
 |-----------|------|---------|-------------|
 | `sport` | string | alle | Filter nach Sportart(en), kommagetrennt (z. B. `basketball`, `football`) |
 | `league` | string | alle | Filter nach Liga(en), kommagetrennt (z. B. `nba`, `nfl`) |
-| `market` | string | alle | Filter nach Markttyp(en), kommagetrennt (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase — siehe [Odds: Marktkategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `market` | string | alle | Filter nach Markttyp(en), kommagetrennt (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase — siehe [Odds: Marktkategorie-Aliase](/de/api-reference/odds/#market-category-aliases). |
 | `event` | string | — | Filter nach Event-ID(s), kommagetrennt |
 | `live` | boolean | — | `true` = nur live, `false` = nur prematch, weglassen = beides |
 | `min_odds` | number | — | Filter für minimale American Odds |
@@ -212,7 +212,7 @@ X-Request-Id: req_best_789xyz
 | `all_books[].edge` | number | Edge gegenüber den schlechtesten verfügbaren Quoten (Prozentpunkte) |
 | `all_books[].line` | number \| null | Linie bei diesem Sportwettenanbieter |
 | `all_books[].last_seen_at` | string | Wann unsere Pipeline die Zeile dieses Buches zuletzt beobachtet hat — Aktualitätssignal der Pipeline |
-| `all_books[].odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buches zuletzt tatsächlich geändert hat. Bei Pinnacle wird dies über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at). |
+| `all_books[].odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buches zuletzt tatsächlich geändert hat. Bei Pinnacle wird dies über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
 | `last_seen_at` | string | ISO-8601-Zeitstempel der Best-Odds-Bestimmung |
 | `player_name` | string\|undefined | Spielername (nur bei Player-Prop-Märkten) |
 | `stat_category` | string\|undefined | Statistik-Kategorie, z. B. `points`, `rebounds` (nur bei Player-Prop-Märkten) |
@@ -252,7 +252,7 @@ Das `edge`-Feld jedes Buches in `all_books` zeigt, wie viel besser (oder schlech
 
 ## Verwandte Endpoints
 
-- [Odds Snapshot](/de/api-reference/odds) - Erhalten Sie Rohquoten von einzelnen Sportwettenanbietern
-- [Odds Delta](/de/api-reference/odds-delta) - Erhalten Sie nur Quoten, die sich seit einem bestimmten Zeitstempel geändert haben
-- [Odds Comparison](/de/api-reference/odds-comparison) - Vergleichen Sie Quoten Seite an Seite über mehrere Bücher hinweg
-- [Sportsbooks](/de/api-reference/sportsbooks) - Sehen Sie, welche Bücher verfügbar sind und welchen Status sie haben
+- [Odds Snapshot](/de/api-reference/odds/) - Erhalten Sie Rohquoten von einzelnen Sportwettenanbietern
+- [Odds Delta](/de/api-reference/odds-delta/) - Erhalten Sie nur Quoten, die sich seit einem bestimmten Zeitstempel geändert haben
+- [Odds Comparison](/de/api-reference/odds-comparison/) - Vergleichen Sie Quoten Seite an Seite über mehrere Bücher hinweg
+- [Sportsbooks](/de/api-reference/sportsbooks/) - Sehen Sie, welche Bücher verfügbar sind und welchen Status sie haben

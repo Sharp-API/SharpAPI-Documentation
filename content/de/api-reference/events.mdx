@@ -55,7 +55,7 @@ Alle Antworten enthalten standardmäßige Rate-Limit- und Metadaten-Header:
 
 | Feld | Typ | Beschreibung |
 |-------|------|-------------|
-| `id` | string | Kanonische Event-Kennung — für jedes Sportsbook, das dieses Event abdeckt, identisch. Verwenden Sie diese als Primärschlüssel für den Abgleich zwischen Sportsbooks. Siehe [Event-Matching](/de/concepts/event-matching). |
+| `id` | string | Kanonische Event-Kennung — für jedes Sportsbook, das dieses Event abdeckt, identisch. Verwenden Sie diese als Primärschlüssel für den Abgleich zwischen Sportsbooks. Siehe [Event-Matching](/de/concepts/event-matching/). |
 | `external_ids` | object | Zuordnung von Sportsbook-ID zur nativen Event-ID des jeweiligen Sportsbooks (z. B. `{"draftkings": "33483153"}`). Verwenden Sie diese für Deep Links zurück zu den Sportsbook-Seiten. |
 | `sport` | string | Sportart-Kennung (z. B. `basketball`, `football`) |
 | `league` | string | Liga-Slug (z. B. `nba`, `nfl`) |
@@ -359,11 +359,11 @@ Antworten vor v1 verwendeten Feldnamen in **camelCase** (`homeTeam`, `awayTeam`,
 
 Das Feld `id` ist eine **kanonische Event-Kennung** — dasselbe reale Event erhält dieselbe `id`, unabhängig davon, von welchem Sportsbook es stammt. Verwenden Sie sie als Primärschlüssel beim Erstellen von Vergleichstools über mehrere Sportsbooks hinweg. Das Feld `external_ids` ordnet jedem Sportsbook seine native Event-ID für Deep Links zu.
 
-Vollständige Details zur Funktionsweise kanonischer IDs finden Sie unter [Event-Matching](/de/concepts/event-matching).
+Vollständige Details zur Funktionsweise kanonischer IDs finden Sie unter [Event-Matching](/de/concepts/event-matching/).
 
 ## Verwandte Endpoints
 
-- [Event-Details](/de/api-reference/events-by-id) - Vollständige Details für ein einzelnes Event abrufen
-- [Event-Quoten](/de/api-reference/events-odds) - Alle Quoten für ein bestimmtes Event abrufen
-- [Event-Märkte](/de/api-reference/events-markets) - Verfügbare Märkte für ein Event abrufen
-- [Quoten-Snapshot](/de/api-reference/odds) - Aktuelle Quoten über alle Events hinweg abrufen
+- [Event-Details](/de/api-reference/events-by-id/) - Vollständige Details für ein einzelnes Event abrufen
+- [Event-Quoten](/de/api-reference/events-odds/) - Alle Quoten für ein bestimmtes Event abrufen
+- [Event-Märkte](/de/api-reference/events-markets/) - Verfügbare Märkte für ein Event abrufen
+- [Quoten-Snapshot](/de/api-reference/odds/) - Aktuelle Quoten über alle Events hinweg abrufen

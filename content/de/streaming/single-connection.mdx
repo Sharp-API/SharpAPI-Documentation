@@ -154,7 +154,7 @@ function addNFL() {
 }
 ```
 
-Siehe die [WebSocket-API-Referenz](/de/api-reference/websocket) für das vollständige Subscribe-Message-Schema.
+Siehe die [WebSocket-API-Referenz](/de/api-reference/websocket/) für das vollständige Subscribe-Message-Schema.
 
 ## Fleet & Multi-Prozess
 
@@ -185,12 +185,12 @@ Wenn Sie von einer Multi-Stream-Architektur migrieren:
 1. **Identitätsfilter kombinieren** — sammeln Sie jeden `sport`-, `league`-, `sportsbook`-, `market`- und `event`-Wert aus Ihren alten Streams und verbinden Sie sie mit Kommas in einer URL.
 2. **Verwenden Sie `channel=all`** (SSE) oder jeden benötigten `channels=`-Wert (WS) statt eines Streams pro Event-Typ.
 3. **Verteilen Sie im Handler** — lesen Sie `odds[].league` / `odds[].sportsbook` / `event.event`, um Nachrichten intern genau wie zuvor zu routen.
-4. **Verwerfen Sie Ihre Reconnect-N-Mal-Logik** — ein Socket bedeutet einen Reconnect-Pfad. SSE verbindet sich automatisch wieder; für WS siehe das [Reconnect-Muster](/de/streaming/websocket#reconnection).
+4. **Verwerfen Sie Ihre Reconnect-N-Mal-Logik** — ein Socket bedeutet einen Reconnect-Pfad. SSE verbindet sich automatisch wieder; für WS siehe das [Reconnect-Muster](/de/streaming/websocket/#reconnection).
 5. **Behalten Sie `min_ev` / `min_profit`-Schwellwerte** — diese verengen den Opportunity-Stream weiterhin serverseitig und reduzieren die Bandbreite.
 
 ## Siehe auch
 
-- [Streaming-Übersicht](/de/streaming/overview) — Protokollvergleich und Schnellstart
-- [WebSocket-Streaming-Leitfaden](/de/streaming/websocket) — Subscribe-Nachrichten, Reconnect
-- [SSE-API-Referenz](/de/api-reference/stream) — vollständige Liste der Filterparameter
-- [WebSocket-API-Referenz](/de/api-reference/websocket) — Subscribe-Schema, Close-Codes
+- [Streaming-Übersicht](/de/streaming/overview/) — Protokollvergleich und Schnellstart
+- [WebSocket-Streaming-Leitfaden](/de/streaming/websocket/) — Subscribe-Nachrichten, Reconnect
+- [SSE-API-Referenz](/de/api-reference/stream/) — vollständige Liste der Filterparameter
+- [WebSocket-API-Referenz](/de/api-reference/websocket/) — Subscribe-Schema, Close-Codes

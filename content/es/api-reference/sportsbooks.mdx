@@ -400,7 +400,7 @@ El campo `requires_tier` indica el nivel de suscripción mínimo necesario para 
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Lectura de las marcas de tiempo de Pinnacle.** El campo `odds_changed_at` en una fila de Pinnacle es la marca de tiempo de su mesa de trading, no la de nuestro pipeline. Pinnacle mantiene las líneas estables cuando el mercado no se ha movido — un valor inactivo de más de 30 minutos es habitual en props de jugadores de MLB y mercados de la NBA. Usa `last_seen_at` para conocer la frescura del pipeline. Consulta [Entender el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at) para saber qué significa realmente "obsoleto" en su feed.
+**Lectura de las marcas de tiempo de Pinnacle.** El campo `odds_changed_at` en una fila de Pinnacle es la marca de tiempo de su mesa de trading, no la de nuestro pipeline. Pinnacle mantiene las líneas estables cuando el mercado no se ha movido — un valor inactivo de más de 30 minutos es habitual en props de jugadores de MLB y mercados de la NBA. Usa `last_seen_at` para conocer la frescura del pipeline. Consulta [Entender el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/) para saber qué significa realmente "obsoleto" en su feed.
 </Callout>
 
 ### Internacionales
@@ -458,12 +458,12 @@ Las casas sharp como Pinnacle establecen líneas eficientes con rapidez. Las cas
 </Callout>
 
 <Callout type="info">
-**¿Estás creando una herramienta de apuestas en directo?** DraftKings y FanDuel tienen `has_live_odds: true`, pero suspenden frecuentemente los mercados durante jugadas de anotación y momentos clave. Si necesitas cobertura continua en directo, Pinnacle (nivel Sharp) es la referencia fiable. Consulta [En directo vs. Pre-Match](/es/concepts/live-vs-prematch) para un desglose completo del comportamiento de las casas durante el juego en directo.
+**¿Estás creando una herramienta de apuestas en directo?** DraftKings y FanDuel tienen `has_live_odds: true`, pero suspenden frecuentemente los mercados durante jugadas de anotación y momentos clave. Si necesitas cobertura continua en directo, Pinnacle (nivel Sharp) es la referencia fiable. Consulta [En directo vs. Pre-Match](/es/concepts/live-vs-prematch/) para un desglose completo del comportamiento de las casas durante el juego en directo.
 </Callout>
 
 ## Endpoints relacionados
 
-- [Snapshot de cuotas](/es/api-reference/odds) - Filtrar cuotas por casa de apuestas
-- [Mejores cuotas](/es/api-reference/odds-best) - Mejores cuotas en todas las casas con referencia sharp
-- [Comparación de cuotas](/es/api-reference/odds-comparison) - Comparar cuotas entre casas lado a lado
-- [Deportes](/es/api-reference/sports) - Listar deportes disponibles
+- [Snapshot de cuotas](/es/api-reference/odds/) - Filtrar cuotas por casa de apuestas
+- [Mejores cuotas](/es/api-reference/odds-best/) - Mejores cuotas en todas las casas con referencia sharp
+- [Comparación de cuotas](/es/api-reference/odds-comparison/) - Comparar cuotas entre casas lado a lado
+- [Deportes](/es/api-reference/sports/) - Listar deportes disponibles

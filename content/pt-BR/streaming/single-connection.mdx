@@ -154,7 +154,7 @@ function addNFL() {
 }
 ```
 
-Veja a [Referência da API WebSocket](/pt-BR/api-reference/websocket) para o schema completo da mensagem de subscribe.
+Veja a [Referência da API WebSocket](/pt-BR/api-reference/websocket/) para o schema completo da mensagem de subscribe.
 
 ## Frota & multi-processo
 
@@ -185,12 +185,12 @@ Se você está migrando de uma arquitetura multi-stream:
 1. **Combine os filtros de identidade** — colete cada valor de `sport`, `league`, `sportsbook`, `market` e `event` dos seus streams antigos e una-os com vírgulas em uma única URL.
 2. **Use `channel=all`** (SSE) ou cada valor necessário de `channels=` (WS) em vez de um stream por tipo de evento.
 3. **Despache no seu handler** — leia `odds[].league` / `odds[].sportsbook` / `event.event` para rotear mensagens internamente, exatamente como antes.
-4. **Descarte sua lógica de reconexão N-vezes** — um socket significa um único caminho de reconexão. SSE reconecta automaticamente; para WS, veja o [padrão de reconexão](/pt-BR/streaming/websocket#reconnection).
+4. **Descarte sua lógica de reconexão N-vezes** — um socket significa um único caminho de reconexão. SSE reconecta automaticamente; para WS, veja o [padrão de reconexão](/pt-BR/streaming/websocket/#reconnection).
 5. **Mantenha os thresholds `min_ev` / `min_profit`** — eles ainda restringem o stream de oportunidades no servidor e reduzem a largura de banda.
 
 ## Veja também
 
-- [Visão Geral de Streaming](/pt-BR/streaming/overview) — comparação de protocolos e início rápido
-- [Guia de Streaming WebSocket](/pt-BR/streaming/websocket) — mensagens de subscribe, reconexão
-- [Referência da API SSE](/pt-BR/api-reference/stream) — lista completa de parâmetros de filtro
-- [Referência da API WebSocket](/pt-BR/api-reference/websocket) — schema de subscribe, códigos de fechamento
+- [Visão Geral de Streaming](/pt-BR/streaming/overview/) — comparação de protocolos e início rápido
+- [Guia de Streaming WebSocket](/pt-BR/streaming/websocket/) — mensagens de subscribe, reconexão
+- [Referência da API SSE](/pt-BR/api-reference/stream/) — lista completa de parâmetros de filtro
+- [Referência da API WebSocket](/pt-BR/api-reference/websocket/) — schema de subscribe, códigos de fechamento

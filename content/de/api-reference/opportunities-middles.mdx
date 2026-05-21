@@ -23,7 +23,7 @@ Erfordert einen API-Schlüssel. **Pro-Tarif oder höher erforderlich.**
 | `sport` | string | alle | Nach Sportart(en) filtern, kommagetrennt (z. B. `basketball`, `football`) |
 | `league` | string | alle | Nach Liga(en) filtern, kommagetrennt (z. B. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tarifabhängig | Nach Sportsbook(s) filtern, kommagetrennt. Tarifgrenzen werden durchgesetzt. |
-| `market` | string | alle | Nach Markttyp(en) filtern, kommagetrennt (z. B. `point_spread`, `total_points`). Unterstützt Kategorie-Aliase — siehe [Odds: Markt-Kategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `market` | string | alle | Nach Markttyp(en) filtern, kommagetrennt (z. B. `point_spread`, `total_points`). Unterstützt Kategorie-Aliase — siehe [Odds: Markt-Kategorie-Aliase](/de/api-reference/odds/#market-category-aliases). |
 | `min_size` | number | 0.5 | Minimale Middle-Größe in Punkten |
 | `live` | boolean | — | `true` = nur live, `false` = nur Vorspiel, weglassen = beide |
 | `max_odds_age` | number | — | Maximales Quotenalter in Sekunden. Filtert veraltete Gelegenheiten heraus. |
@@ -352,14 +352,14 @@ Das Feld `odds_age_seconds` zeigt, wie alt die zugrunde liegenden Quoten zum Erk
 2. **Auf Schlüsselzahlen achten** — Middles, die NFL 3/7 oder NHL/MLB/Soccer 1 enthalten, haben erhöhte Trefferquoten
 3. **Garantierten Gewinn priorisieren** — Filtern Sie nach `is_guaranteed_profit`, um risikofreie Gelegenheiten zu finden
 4. **Quotenfrische prüfen** — Ein niedriger `odds_age_seconds`-Wert bedeutet, dass die Linien aktuell und handlungsfähig sind
-5. **Mit dem Summary-Endpunkt kombinieren** — Verwenden Sie [`/middles/summary`](/de/api-reference/opportunities-middles-summary) für Dashboard-Übersichten
+5. **Mit dem Summary-Endpunkt kombinieren** — Verwenden Sie [`/middles/summary`](/de/api-reference/opportunities-middles-summary/) für Dashboard-Übersichten
 6. **Schnell handeln** — Linien konvergieren, sobald die Books anpassen, und schließen damit das Middle-Fenster
-7. **Streaming nutzen** — Abonnieren Sie `middles:detected`-Events über [SSE](/de/api-reference/stream) oder [WebSocket](/de/api-reference/websocket) für Echtzeit-Benachrichtigungen
+7. **Streaming nutzen** — Abonnieren Sie `middles:detected`-Events über [SSE](/de/api-reference/stream/) oder [WebSocket](/de/api-reference/websocket/) für Echtzeit-Benachrichtigungen
 
 ## Verwandte Endpunkte
 
-- [Middles-Zusammenfassung](/de/api-reference/opportunities-middles-summary) — Aggregierte Statistiken ohne die vollständige Liste
-- [+EV-Gelegenheiten](/de/api-reference/opportunities-ev) — Wetten mit positivem Erwartungswert
-- [Arbitrage-Gelegenheiten](/de/api-reference/opportunities-arbitrage) — Gelegenheiten mit garantiertem Gewinn
-- [SSE-Stream](/de/api-reference/stream) — Echtzeit-Events `middles:detected` und `middles:expired`
-- [Beste Quoten](/de/api-reference/odds-best) — Quoten über alle Books hinweg vergleichen
+- [Middles-Zusammenfassung](/de/api-reference/opportunities-middles-summary/) — Aggregierte Statistiken ohne die vollständige Liste
+- [+EV-Gelegenheiten](/de/api-reference/opportunities-ev/) — Wetten mit positivem Erwartungswert
+- [Arbitrage-Gelegenheiten](/de/api-reference/opportunities-arbitrage/) — Gelegenheiten mit garantiertem Gewinn
+- [SSE-Stream](/de/api-reference/stream/) — Echtzeit-Events `middles:detected` und `middles:expired`
+- [Beste Quoten](/de/api-reference/odds-best/) — Quoten über alle Books hinweg vergleichen

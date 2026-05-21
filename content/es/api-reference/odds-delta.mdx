@@ -28,7 +28,7 @@ Utiliza el `server_time` de cada respuesta como valor `since` para tu siguiente 
 | `sportsbook` | string | todos | IDs de casas de apuestas separados por comas (p. ej., `draftkings,fanduel`) |
 | `sport` | string | todos | Filtrar por deporte (p. ej., `basketball`, `football`) |
 | `league` | string | todas | Filtrar por liga (p. ej., `nba`, `nfl`) |
-| `market` | string | todos | Filtrar por tipo de mercado (p. ej., `moneyline`, `spread`, `total`). Admite alias de categoría — consulta [Cuotas: Alias de Categoría de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `market` | string | todos | Filtrar por tipo de mercado (p. ej., `moneyline`, `spread`, `total`). Admite alias de categoría — consulta [Cuotas: Alias de Categoría de Mercado](/es/api-reference/odds/#market-category-aliases). |
 | `event` | string | - | Filtrar por ID de evento |
 | `live` | boolean | false | Devolver solo eventos en vivo/in-play |
 | `sort` | string | - | Campo de ordenación con prefijo `-` opcional para descendente (p. ej., `-odds_american`, `odds_probability`) |
@@ -199,7 +199,7 @@ X-Request-Id: req_delta_abc123
 
 ## Esquema de Respuesta del Delta
 
-El array `data` contiene los mismos objetos de cuotas que el endpoint [`/odds`](/es/api-reference/odds). Solo se incluyen las cuotas actualizadas después de la marca de tiempo `since`.
+El array `data` contiene los mismos objetos de cuotas que el endpoint [`/odds`](/es/api-reference/odds/). Solo se incluyen las cuotas actualizadas después de la marca de tiempo `since`.
 
 El objeto `meta` incluye dos campos adicionales:
 
@@ -237,6 +237,6 @@ Si ninguna cuota ha cambiado desde tu marca de tiempo `since`, la respuesta tend
 
 ## Endpoints Relacionados
 
-- [Instantánea de Cuotas](/es/api-reference/odds) - Obtén la instantánea completa actual de cuotas
-- [SSE Stream](/es/api-reference/stream) - Actualizaciones push en tiempo real mediante Server-Sent Events
-- [WebSocket Stream](/es/api-reference/websocket) - Actualizaciones push en tiempo real mediante WebSocket
+- [Instantánea de Cuotas](/es/api-reference/odds/) - Obtén la instantánea completa actual de cuotas
+- [SSE Stream](/es/api-reference/stream/) - Actualizaciones push en tiempo real mediante Server-Sent Events
+- [WebSocket Stream](/es/api-reference/websocket/) - Actualizaciones push en tiempo real mediante WebSocket

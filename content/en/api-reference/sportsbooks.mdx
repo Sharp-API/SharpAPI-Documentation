@@ -313,7 +313,7 @@ for book in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique identifier (use in API filters) |
-| `numerical_id` | integer \| null | Stable integer key for the sportsbook (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `numerical_id` | integer \| null | Stable integer key for the sportsbook (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `name` | string | Internal name (same as `id`) |
 | `display_name` | string | Human-readable name |
 | `has_live_odds` | boolean | Supports live/in-play odds |
@@ -337,7 +337,7 @@ The `event_count` may be 0 and `last_update` may be `null` if a sportsbook is te
 - **Optional:** absent (or `null`) for sportsbooks not yet mapped (e.g. brand-new books in the catalog before assignment); slug `id` is always present.
 - **Domain-scoped:** unique across sportsbooks only.
 
-Every odds row and opportunity leg also carries a matching `sportsbook_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids).
+Every odds row and opportunity leg also carries a matching `sportsbook_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids/).
 
 ## Book Access by Tier
 
@@ -414,7 +414,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Reading Pinnacle timestamps.** `odds_changed_at` on a Pinnacle row is their trading-desk timestamp, not our pipeline's. Pinnacle holds lines steady when the market has not moved — an idle value of 30+ minutes is common on MLB player props and NBA markets. Use `last_seen_at` for pipeline freshness. See [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at) for what "stale" actually means on their feed.
+**Reading Pinnacle timestamps.** `odds_changed_at` on a Pinnacle row is their trading-desk timestamp, not our pipeline's. Pinnacle holds lines steady when the market has not moved — an idle value of 30+ minutes is common on MLB player props and NBA markets. Use `last_seen_at` for pipeline freshness. See [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/) for what "stale" actually means on their feed.
 </Callout>
 
 ### International
@@ -451,7 +451,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 <Callout type="info">
 **Polymarket** and **Kalshi** are prediction market platforms. Unlike traditional sportsbooks, they use binary outcome contracts priced between $0 and $1. SharpAPI normalizes contract prices into standard odds formats (American, decimal, implied probability) so you can compare them directly with sportsbook odds. Kalshi is CFTC-regulated.
 
-Polymarket rows additionally carry a `polymarket_resolution` field reflecting the upstream UMA optimistic-oracle lifecycle (`settled_normal` / `voided` / `disputed` / `proposed` / `unknown`). See [Polymarket Resolution](/concepts/polymarket-resolution) for the per-value semantics and the upstream caveat that cancellation, participant withdrawal, and event-not-occurred all collapse to the single `voided` bucket.
+Polymarket rows additionally carry a `polymarket_resolution` field reflecting the upstream UMA optimistic-oracle lifecycle (`settled_normal` / `voided` / `disputed` / `proposed` / `unknown`). See [Polymarket Resolution](/concepts/polymarket-resolution/) for the per-value semantics and the upstream caveat that cancellation, participant withdrawal, and event-not-occurred all collapse to the single `voided` bucket.
 </Callout>
 
 ## Sharp vs Soft Books
@@ -474,12 +474,12 @@ Sharp books like Pinnacle set efficient lines quickly. Soft books often lag behi
 </Callout>
 
 <Callout type="info">
-**Building a live betting tool?** DraftKings and FanDuel have `has_live_odds: true` but frequently suspend markets during scoring plays and key moments. If you need continuous live coverage, Pinnacle (Sharp tier) is the reliable reference. See [Live vs. Pre-Match](/en/concepts/live-vs-prematch) for a full breakdown of book behavior during live play.
+**Building a live betting tool?** DraftKings and FanDuel have `has_live_odds: true` but frequently suspend markets during scoring plays and key moments. If you need continuous live coverage, Pinnacle (Sharp tier) is the reliable reference. See [Live vs. Pre-Match](/en/concepts/live-vs-prematch/) for a full breakdown of book behavior during live play.
 </Callout>
 
 ## Related Endpoints
 
-- [Odds Snapshot](/en/api-reference/odds) - Filter odds by sportsbook
-- [Best Odds](/en/api-reference/odds-best) - Best odds across all books with sharp reference
-- [Odds Comparison](/en/api-reference/odds-comparison) - Compare odds across books side by side
-- [Sports](/en/api-reference/sports) - List available sports
+- [Odds Snapshot](/en/api-reference/odds/) - Filter odds by sportsbook
+- [Best Odds](/en/api-reference/odds-best/) - Best odds across all books with sharp reference
+- [Odds Comparison](/en/api-reference/odds-comparison/) - Compare odds across books side by side
+- [Sports](/en/api-reference/sports/) - List available sports

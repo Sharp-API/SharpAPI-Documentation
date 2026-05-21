@@ -17,7 +17,7 @@ GET /api/v1/odds/comparison
 Requiere API key. Disponible para **todos los planes**.
 
 <Callout type="info">
-Las casas de apuestas incluidas en la comparación dependen del acceso a libros de tu plan. El plan gratuito compara DraftKings y FanDuel; los planes superiores incluyen más casas. Consulta [Acceso a Libros por Plan](/es/api-reference/odds#book-access-by-tier).
+Las casas de apuestas incluidas en la comparación dependen del acceso a libros de tu plan. El plan gratuito compara DraftKings y FanDuel; los planes superiores incluyen más casas. Consulta [Acceso a Libros por Plan](/es/api-reference/odds/#book-access-by-tier).
 </Callout>
 
 ## Parámetros de Consulta
@@ -25,7 +25,7 @@ Las casas de apuestas incluidas en la comparación dependen del acceso a libros 
 | Parámetro | Tipo | Por defecto | Descripción |
 |-----------|------|-------------|-------------|
 | `event` | string | **obligatorio** | ID del evento para comparar las cuotas |
-| `market` | string | todos | Filtrar por tipo de mercado (p. ej., `moneyline`, `spread`). Admite alias de categoría — consulta [Cuotas: Alias de Categorías de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `market` | string | todos | Filtrar por tipo de mercado (p. ej., `moneyline`, `spread`). Admite alias de categoría — consulta [Cuotas: Alias de Categorías de Mercado](/es/api-reference/odds/#market-category-aliases). |
 | `sportsbook` | string | todos | IDs de casas de apuestas separados por comas a incluir |
 
 <Callout type="warning">
@@ -254,7 +254,7 @@ Cada entrada en el objeto `books`:
 | `odds_american` | number | Cuota americana |
 | `odds_decimal` | number | Cuota decimal |
 | `last_seen_at` | string | Cuándo nuestro pipeline observó por última vez la fila de esta casa — señal de frescura del pipeline |
-| `odds_changed_at` | string | Cuándo cambió por última vez el precio, la línea o el flag `is_live` de esta casa. En Pinnacle, se mantiene a través de actualizaciones sin cambios — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Cuándo cambió por última vez el precio, la línea o el flag `is_live` de esta casa. En Pinnacle, se mantiene a través de actualizaciones sin cambios — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
 
 ## Entendiendo el Hold
 
@@ -301,7 +301,7 @@ Compara `hold.best_available` con los holds de cada casa individual. Una gran di
 
 ## Endpoints Relacionados
 
-- [Snapshot de Cuotas](/es/api-reference/odds) - Obtén cuotas en bruto de casas de apuestas individuales
-- [Mejores Cuotas](/es/api-reference/odds-best) - Obtén solo las mejores cuotas con consenso y hold
-- [Delta de Cuotas](/es/api-reference/odds-delta) - Obtén solo las cuotas que han cambiado desde una marca de tiempo dada
-- [Cuotas en Lote](/es/api-reference/odds-batch) - Recupera datos de comparación para múltiples eventos a la vez
+- [Snapshot de Cuotas](/es/api-reference/odds/) - Obtén cuotas en bruto de casas de apuestas individuales
+- [Mejores Cuotas](/es/api-reference/odds-best/) - Obtén solo las mejores cuotas con consenso y hold
+- [Delta de Cuotas](/es/api-reference/odds-delta/) - Obtén solo las cuotas que han cambiado desde una marca de tiempo dada
+- [Cuotas en Lote](/es/api-reference/odds-batch/) - Recupera datos de comparación para múltiples eventos a la vez

@@ -154,7 +154,7 @@ function addNFL() {
 }
 ```
 
-See the [WebSocket API Reference](/en/api-reference/websocket) for the full subscribe-message schema.
+See the [WebSocket API Reference](/en/api-reference/websocket/) for the full subscribe-message schema.
 
 ## Fleet & multi-process
 
@@ -185,12 +185,12 @@ If you're moving from a multi-stream architecture:
 1. **Combine identity filters** — collect every `sport`, `league`, `sportsbook`, `market`, and `event` value across your old streams and join them with commas on one URL.
 2. **Use `channel=all`** (SSE) or every needed `channels=` value (WS) instead of one stream per event type.
 3. **Dispatch in your handler** — read `odds[].league` / `odds[].sportsbook` / `event.event` to route messages internally exactly as before.
-4. **Drop your reconnect-N-times logic** — one socket means one reconnect path. SSE auto-reconnects; for WS, see the [reconnection pattern](/en/streaming/websocket#reconnection).
+4. **Drop your reconnect-N-times logic** — one socket means one reconnect path. SSE auto-reconnects; for WS, see the [reconnection pattern](/en/streaming/websocket/#reconnection).
 5. **Keep `min_ev` / `min_profit` thresholds** — these still narrow the opportunity stream server-side and reduce bandwidth.
 
 ## See also
 
-- [Streaming Overview](/en/streaming/overview) — protocol comparison and quick start
-- [WebSocket Streaming Guide](/en/streaming/websocket) — subscribe messages, reconnection
-- [SSE API Reference](/en/api-reference/stream) — full filter parameter list
-- [WebSocket API Reference](/en/api-reference/websocket) — subscribe schema, close codes
+- [Streaming Overview](/en/streaming/overview/) — protocol comparison and quick start
+- [WebSocket Streaming Guide](/en/streaming/websocket/) — subscribe messages, reconnection
+- [SSE API Reference](/en/api-reference/stream/) — full filter parameter list
+- [WebSocket API Reference](/en/api-reference/websocket/) — subscribe schema, close codes

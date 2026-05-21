@@ -55,7 +55,7 @@ Todas as respostas incluem headers padrão de rate limit e metadados:
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
-| `id` | string | Identificador canônico do evento — o mesmo para todos os sportsbooks que cobrem este evento. Use como sua chave primária para correspondência entre sportsbooks. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching). |
+| `id` | string | Identificador canônico do evento — o mesmo para todos os sportsbooks que cobrem este evento. Use como sua chave primária para correspondência entre sportsbooks. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching/). |
 | `external_ids` | object | Mapa de ID do sportsbook para o ID nativo do evento naquele sportsbook (ex: `{"draftkings": "33483153"}`). Use estes para deep linking de volta às páginas dos sportsbooks. |
 | `sport` | string | Identificador do esporte (ex: `basketball`, `football`) |
 | `league` | string | Slug da liga (ex: `nba`, `nfl`) |
@@ -359,11 +359,11 @@ Respostas pré-v1 usavam nomes de campos em **camelCase** (`homeTeam`, `awayTeam
 
 O campo `id` é um **identificador canônico de evento** — o mesmo evento do mundo real recebe o mesmo `id` independentemente de qual sportsbook ele venha. Use-o como sua chave primária ao construir ferramentas de comparação entre sportsbooks. O campo `external_ids` mapeia cada sportsbook para seu ID nativo de evento para deep linking.
 
-Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching) para detalhes completos sobre como funcionam os IDs canônicos.
+Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching/) para detalhes completos sobre como funcionam os IDs canônicos.
 
 ## Endpoints Relacionados
 
-- [Detalhes do Evento](/pt-BR/api-reference/events-by-id) - Obter detalhes completos de um único evento
-- [Odds do Evento](/pt-BR/api-reference/events-odds) - Obter todas as odds para um evento específico
-- [Mercados do Evento](/pt-BR/api-reference/events-markets) - Obter mercados disponíveis para um evento
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obter odds atuais em todos os eventos
+- [Detalhes do Evento](/pt-BR/api-reference/events-by-id/) - Obter detalhes completos de um único evento
+- [Odds do Evento](/pt-BR/api-reference/events-odds/) - Obter todas as odds para um evento específico
+- [Mercados do Evento](/pt-BR/api-reference/events-markets/) - Obter mercados disponíveis para um evento
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obter odds atuais em todos os eventos

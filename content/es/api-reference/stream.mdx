@@ -46,7 +46,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 |-------|--------------------|-------------|
 | `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Seguimiento de movimientos de cuotas |
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alertas sobre oportunidades |
-| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Marcadores en vivo, periodos, relojes y datos situacionales por evento. **Solo plan Enterprise.** Consulta [Estado del juego en vivo](/api-reference/gamestate) para el catálogo completo de campos. |
+| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Marcadores en vivo, periodos, relojes y datos situacionales por evento. **Solo plan Enterprise.** Consulta [Estado del juego en vivo](/api-reference/gamestate/) para el catálogo completo de campos. |
 | `all` | Todos los tipos de eventos | Imagen completa en tiempo real |
 
 ### Rutas de conveniencia
@@ -92,7 +92,7 @@ data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `odds` | array | Array de objetos `Odds` completos (consulta el [endpoint de Odds](/es/api-reference/odds) para todos los campos) |
+| `odds` | array | Array de objetos `Odds` completos (consulta el [endpoint de Odds](/es/api-reference/odds/) para todos los campos) |
 | `count` | number | Número de cuotas en este fragmento |
 | `total` | number | Número total de cuotas que coinciden con los filtros |
 | `offset` | number | Desplazamiento de este fragmento dentro del resultado completo |
@@ -132,7 +132,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `odds_probability` | number | Probabilidad implícita actualizada (p. ej. `0.6`) |
 | `line` | number \| null | Línea/handicap actualizada (p. ej. `-3.5`), o `null` para moneyline |
 | `is_live` | boolean | Indica si el evento está actualmente en vivo |
-| `odds_changed_at` | string | Marca de tiempo ISO 8601 de la propia actualización del sportsbook para esta línea, cuando esté disponible. En Pinnacle, se mantiene mientras el precio/línea/flag `is_live` subyacentes no cambien — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Marca de tiempo ISO 8601 de la propia actualización del sportsbook para esta línea, cuando esté disponible. En Pinnacle, se mantiene mientras el precio/línea/flag `is_live` subyacentes no cambien — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
 
 **Campos del envoltorio:**
 
@@ -611,8 +611,8 @@ eventSource.addEventListener('odds:update', (e) => {
 
 ## Endpoints relacionados
 
-- [Oportunidades +EV](/es/api-reference/opportunities-ev) - Endpoint REST para datos de EV (transmitidos vía `ev:detected`)
-- [Oportunidades de arbitraje](/es/api-reference/opportunities-arbitrage) - Endpoint REST para arbitrajes (transmitidos vía `arb:detected`)
-- [Oportunidades de Low Hold](/es/api-reference/opportunities-low-hold) - Endpoint REST para low hold (transmitidos vía `low_hold:detected`)
-- [Resumen de Middles](/es/api-reference/opportunities-middles-summary) - Estadísticas agregadas de middles para sondeo en dashboards
-- [API WebSocket](/es/api-reference/websocket) - Alternativa bidireccional a SSE
+- [Oportunidades +EV](/es/api-reference/opportunities-ev/) - Endpoint REST para datos de EV (transmitidos vía `ev:detected`)
+- [Oportunidades de arbitraje](/es/api-reference/opportunities-arbitrage/) - Endpoint REST para arbitrajes (transmitidos vía `arb:detected`)
+- [Oportunidades de Low Hold](/es/api-reference/opportunities-low-hold/) - Endpoint REST para low hold (transmitidos vía `low_hold:detected`)
+- [Resumen de Middles](/es/api-reference/opportunities-middles-summary/) - Estadísticas agregadas de middles para sondeo en dashboards
+- [API WebSocket](/es/api-reference/websocket/) - Alternativa bidireccional a SSE

@@ -59,7 +59,7 @@ Each `numerical_id` is allocated from a frozen, per-domain registry under `api-a
 | **Dense from 1** | IDs start at `1` and are issued sequentially per domain. There are no negative or zero IDs and no large skips. Sports, leagues, sportsbooks, markets, and teams each have an independent dense range. |
 | **Domain-scoped** | A `numerical_id` is only unique within its domain (sport, league, sportsbook, market, team). `numerical_id: 3` on a sport is unrelated to `numerical_id: 3` on a team. Pair the integer with the domain to disambiguate. |
 | **Assigned, not derived** | IDs are explicitly tracked in the atlas JSONs — they are not hashes of the slug or computed from sort order. Adding a new entity allocates the next free integer; renaming a slug does not change its `numerical_id`. |
-| **Not a sportsbook ID** | This is SharpAPI's identifier, not the sportsbook's internal one. A book's native event/market/selection IDs are still emitted on a per-row basis — see `external_event_id`, `selection_id`, `market_id`, and `external_ids` on the [Events](/en/api-reference/events) endpoint. |
+| **Not a sportsbook ID** | This is SharpAPI's identifier, not the sportsbook's internal one. A book's native event/market/selection IDs are still emitted on a per-row basis — see `external_event_id`, `selection_id`, `market_id`, and `external_ids` on the [Events](/en/api-reference/events/) endpoint. |
 
 ## When fields are absent
 
@@ -95,11 +95,11 @@ Every reference endpoint adds `numerical_id` to its existing object schema. `/te
 
 | Endpoint | Added field | Type | Notes |
 |---|---|---|---|
-| [`/sports`](/en/api-reference/sports) | `numerical_id` | integer \| null | Sport-scoped domain |
-| [`/leagues`](/en/api-reference/leagues) | `numerical_id` | integer \| null | League-scoped domain |
-| [`/sportsbooks`](/en/api-reference/sportsbooks) | `numerical_id` | integer \| null | Sportsbook-scoped domain |
-| [`/markets`](/en/api-reference/markets) | `numerical_id` | integer \| null | Market-type-scoped domain |
-| [`/teams`](/en/api-reference/teams) | `numerical_id`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | integer \| null, string \| null | Team-scoped domain. Latter five are atlas metadata sourced from OpticOdds. |
+| [`/sports`](/en/api-reference/sports/) | `numerical_id` | integer \| null | Sport-scoped domain |
+| [`/leagues`](/en/api-reference/leagues/) | `numerical_id` | integer \| null | League-scoped domain |
+| [`/sportsbooks`](/en/api-reference/sportsbooks/) | `numerical_id` | integer \| null | Sportsbook-scoped domain |
+| [`/markets`](/en/api-reference/markets/) | `numerical_id` | integer \| null | Market-type-scoped domain |
+| [`/teams`](/en/api-reference/teams/) | `numerical_id`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | integer \| null, string \| null | Team-scoped domain. Latter five are atlas metadata sourced from OpticOdds. |
 
 ### Nested reference blocks on odds & opportunity legs
 
@@ -139,6 +139,6 @@ The flat fields and the nested blocks describe the same row — they will not co
 
 ## Related
 
-- [Sports](/en/api-reference/sports), [Leagues](/en/api-reference/leagues), [Sportsbooks](/en/api-reference/sportsbooks), [Markets](/en/api-reference/markets), [Teams](/en/api-reference/teams) — reference endpoints with the new `numerical_id` field
-- [Odds Snapshot](/en/api-reference/odds), [+EV Opportunities](/en/api-reference/opportunities-ev), [Arbitrage](/en/api-reference/opportunities-arbitrage), [Middles](/en/api-reference/opportunities-middles) — endpoints with nested reference blocks
-- [Event Matching](/en/concepts/event-matching) — how SharpAPI joins the same fixture across books
+- [Sports](/en/api-reference/sports/), [Leagues](/en/api-reference/leagues/), [Sportsbooks](/en/api-reference/sportsbooks/), [Markets](/en/api-reference/markets/), [Teams](/en/api-reference/teams/) — reference endpoints with the new `numerical_id` field
+- [Odds Snapshot](/en/api-reference/odds/), [+EV Opportunities](/en/api-reference/opportunities-ev/), [Arbitrage](/en/api-reference/opportunities-arbitrage/), [Middles](/en/api-reference/opportunities-middles/) — endpoints with nested reference blocks
+- [Event Matching](/en/concepts/event-matching/) — how SharpAPI joins the same fixture across books

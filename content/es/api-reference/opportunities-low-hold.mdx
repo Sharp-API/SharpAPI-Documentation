@@ -17,7 +17,7 @@ GET /api/v1/opportunities/low_hold
 Requiere API key. **Se requiere nivel Pro o superior.** Tu cuenta debe tener la característica `low_hold` habilitada.
 
 <Callout type="warning">
-**Cambio incompatible:** El campo `game_state` (marcador/periodo/reloj) se eliminó de esta respuesta. El estado del juego en vivo ahora se sirve exclusivamente a través del endpoint [Game State](/es/api-reference/gamestate) y el canal de stream `gamestate`. Une las filas con el estado del juego mediante `event_id`.
+**Cambio incompatible:** El campo `game_state` (marcador/periodo/reloj) se eliminó de esta respuesta. El estado del juego en vivo ahora se sirve exclusivamente a través del endpoint [Game State](/es/api-reference/gamestate/) y el canal de stream `gamestate`. Une las filas con el estado del juego mediante `event_id`.
 </Callout>
 
 ## Parámetros de Consulta
@@ -345,12 +345,12 @@ El cálculo del hold se extiende a los tres lados: `implied_prob_1 + implied_pro
 2. **Pasa el parámetro `state`** — Obtén deep links precisos para la jurisdicción de tu usuario
 3. **Combínalo con datos de +EV** — Bajo hold + EV positivo es la combinación ideal
 4. **Comprueba `possibly_stale`** — Omite oportunidades en las que las cuotas pueden haberse movido ya
-5. **Utiliza streaming** — Suscríbete a los eventos `low_hold:detected` mediante [SSE](/es/api-reference/stream) o [WebSocket](/es/api-reference/websocket) para alertas en tiempo real
+5. **Utiliza streaming** — Suscríbete a los eventos `low_hold:detected` mediante [SSE](/es/api-reference/stream/) o [WebSocket](/es/api-reference/websocket/) para alertas en tiempo real
 6. **Monitorea `all_books`** — Más casas participando generalmente significa precios más fiables
 
 ## Endpoints Relacionados
 
-- [Oportunidades +EV](/es/api-reference/opportunities-ev) — Apuestas de valor esperado positivo
-- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage) — Beneficio garantizado entre casas
-- [Middles](/es/api-reference/opportunities-middles) — Oportunidades por discrepancia de líneas
-- [Mejores Cuotas](/es/api-reference/odds-best) — Encuentra el mejor precio entre todas las casas
+- [Oportunidades +EV](/es/api-reference/opportunities-ev/) — Apuestas de valor esperado positivo
+- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage/) — Beneficio garantizado entre casas
+- [Middles](/es/api-reference/opportunities-middles/) — Oportunidades por discrepancia de líneas
+- [Mejores Cuotas](/es/api-reference/odds-best/) — Encuentra el mejor precio entre todas las casas

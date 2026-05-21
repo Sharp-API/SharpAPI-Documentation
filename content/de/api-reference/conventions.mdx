@@ -9,7 +9,7 @@ import { Callout } from 'nextra/components'
 SharpAPI liefert vorhersehbare Antwortstrukturen über jeden REST-Endpoint hinweg. Diese Seite kodifiziert diese Konventionen, damit Sie generische Parser bauen können statt Sonderfälle pro Endpoint.
 
 <Callout type="info">
-  Diese Seite beschreibt die REST-Konventionen. SSE-Streams werden in [SSE Stream](/de/api-reference/stream) behandelt, und das bidirektionale WebSocket-Protokoll hat seine eigene [AsyncAPI 3.0 Spezifikation](/asyncapi.yaml).
+  Diese Seite beschreibt die REST-Konventionen. SSE-Streams werden in [SSE Stream](/de/api-reference/stream) behandelt, und das bidirektionale WebSocket-Protokoll hat seine eigene [AsyncAPI 3.0 Spezifikation](https://docs.sharpapi.io/asyncapi.yaml).
 </Callout>
 
 ## HTTP-Statuscodes, keine Envelopes
@@ -192,6 +192,6 @@ ETag: "9dc023776c4b382"
 ## Maschinenlesbare Quelle der Wahrheit
 
 - REST-Oberfläche: [`openapi.json`](/openapi.json) (OpenAPI 3.1)
-- WebSocket-Oberfläche: [`asyncapi.yaml`](/asyncapi.yaml) (AsyncAPI 3.0)
+- WebSocket-Oberfläche: [`asyncapi.yaml`](https://docs.sharpapi.io/asyncapi.yaml) (AsyncAPI 3.0)
 
 Beide Dateien werden als statische Assets veröffentlicht und können in CI verglichen werden. Wenn diese Seite von der Spezifikation abweicht, gewinnt die Spezifikation — die Spezifikation wird vom bereitgestellten Server generiert.

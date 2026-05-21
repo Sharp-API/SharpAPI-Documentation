@@ -115,13 +115,12 @@ SharpAPI bietet 35 Routen über 7 Namespaces hinweg, zuzüglich Referenz- und He
 
 ## Response-Format
 
-### Erfolgs-Envelope
+Zwei Formen auf oberster Ebene — beide stellen `data` an den Anfang und `updated_at` ans Ende, mit einem optionalen `pagination`-Block dazwischen. Es gibt **kein** `success`-Feld; der HTTP-Statuscode ist die Quelle der Wahrheit. Siehe [Response Conventions](/de/api-reference/conventions) für das vollständige Regelwerk.
 
-Alle erfolgreichen Antworten verpacken Daten in einem konsistenten Envelope:
+### Paginierte Listen-Antwort
 
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": "draftkings_33483153_moneyline_PHO",
@@ -140,49 +139,34 @@ Alle erfolgreichen Antworten verpacken Daten in einem konsistenten Envelope:
   "pagination": {
     "limit": 50,
     "offset": 0,
+    "count": 1,
+    "total": 3095,
     "has_more": true,
     "next_offset": 50,
     "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
   },
-  "meta": {
-    "count": 1,
-    "total": 3095,
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "has_more": true,
-      "next_offset": 50,
-      "next_cursor": "eyJlIjoiMzM0ODMxNTMiLCJiIjoiZHJhZnRraW5ncyIsIm0iOiJtb25leWxpbmUiLCJpIjoiZHJhZnRraW5nc18zMzQ4MzE1M19tb25leWxpbmVfUEhJIn0"
-    },
-    "updated_at": "2026-01-26T02:10:37.846Z",
-    "filters": {
-      "sportsbook": "draftkings",
-      "league": "nba"
-    }
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 
 | Feld | Beschreibung |
 |------|--------------|
-| `success` | `true` für alle erfolgreichen Antworten |
-| `data` | Array von Ergebnissen (oder einzelnes Objekt für Detail-Endpoints) |
+| `data` | Array von Ergebnissen |
 | `pagination.limit` | Maximale Anzahl von Elementen pro Seite (Standard: 50, Max: 200) |
 | `pagination.offset` | Aktueller Offset in den Ergebnissen |
+| `pagination.count` | Anzahl der in dieser Antwort zurückgegebenen Elemente |
+| `pagination.total` | Gesamtanzahl übereinstimmender Elemente über alle Seiten hinweg. Wird auf Endpoints weggelassen, die das nicht günstig berechnen können (z. B. `/odds`). |
 | `pagination.has_more` | Ob weitere Ergebnisse über diese Seite hinaus existieren |
-| `pagination.next_offset` | Offset-Wert für die nächste Seite (veraltet — verwenden Sie `next_cursor` für Live-Daten-Endpoints) |
-| `pagination.next_cursor` | Opaker Cursor für die nächste Seite. Übergeben als `?cursor=` — stabil gegenüber Live-Datenänderungen. Empfohlen für mehrseitige Scans. |
-| `meta.count` | Anzahl der in dieser Antwort zurückgegebenen Elemente |
-| `meta.total` | Gesamtanzahl übereinstimmender Elemente über alle Seiten hinweg |
-| `meta.pagination` | Identisch mit dem `pagination` auf oberster Ebene (zur Abwärtskompatibilität enthalten) |
-| `meta.updated_at` | ISO 8601-Zeitstempel der letzten Datenaktualisierung |
-| `meta.filters` | Echo der auf diese Anfrage angewendeten Filter |
+| `pagination.next_offset` | Offset-Wert für die nächste Seite. Bevorzugen Sie `next_cursor` auf Live-Daten-Endpoints. |
+| `pagination.next_cursor` | Opaker Cursor für die nächste Seite. Übergeben als `?cursor=` — stabil gegenüber Live-Datenänderungen. Empfohlen für mehrseitige Scans. Nur auf Cursor-fähigen Endpoints (`/odds`, `/odds/delta`) vorhanden. |
+| `updated_at` | ISO 8601-Zeitstempel der letzten Datenaktualisierung |
 
 ### Antwort für einzelne Ressource
 
+Wird für Einzelressourcen (`/account`, `/events/:eventId`) und nicht-paginierte Referenz-Endpoints verwendet. Kein `pagination`-Block.
+
 ```json
 {
-  "success": true,
   "data": {
     "id": "evt_abc123",
     "sport": "nba",
@@ -190,9 +174,7 @@ Alle erfolgreichen Antworten verpacken Daten in einem konsistenten Envelope:
     "away_team": "PHO Suns",
     "start_time": "2026-01-26T19:00:00Z"
   },
-  "meta": {
-    "updated_at": "2026-01-26T02:10:37.846Z"
-  }
+  "updated_at": "2026-01-26T02:10:37.846Z"
 }
 ```
 

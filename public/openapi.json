@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "SharpAPI",
-    "version": "2.0.0",
-    "description": "Real-time sports betting odds API with +EV detection, arbitrage, middles, and low-hold opportunities.\n\n## Authentication\n\nAll authenticated endpoints accept an API key via one of three methods:\n\n| Method | Header / Param | Use case |\n|--------|---------------|----------|\n| `X-API-Key` | `X-API-Key: sk_live_...` | Recommended for server-side |\n| `Authorization` | `Authorization: Bearer sk_live_...` | Standard Bearer token |\n| `api_key` query | `?api_key=sk_live_...` | SSE/EventSource (cannot set headers) |\n\n## Subscription Tiers\n\n| Tier | Rate Limit | Data Delay | Max Books | EV | Arb | Middles | Game State |\n|------|-----------|------------|-----------|-----|-----|---------|------------|\n| Free | 12/min | 60s | 2 (DK, FD) | - | - | - | - |\n| Hobby | 120/min | Real-time | 5 | - | Yes | - | - |\n| Pro | 300/min | Real-time | 15 | Yes | Yes | Yes | - |\n| Sharp | 1000/min | Real-time | All | Yes | Yes | Yes | - |\n| Enterprise | Custom | Real-time | All | Yes | Yes | Yes | Yes |\n\n## Rate Limit Headers\n\nEvery authenticated response includes:\n\n- `X-RateLimit-Limit` - Requests allowed per minute\n- `X-RateLimit-Remaining` - Requests remaining in current window\n- `X-RateLimit-Reset` - Unix timestamp when the window resets\n- `X-Data-Delay` - Odds delay in seconds for your tier (0 = real-time)\n- `X-Request-Id` - Unique request identifier for support\n\n## WebSocket Streaming\n\nThe WebSocket endpoint at `wss://ws.sharpapi.io` is documented separately in [`asyncapi.yaml`](./asyncapi.yaml) (AsyncAPI 3.0). OpenAPI 3.x cannot express WebSocket subprotocols and message channels, so the SSE endpoint (`/stream`) is the only stream covered by this document.\n\n## MCP Server\n\nThe `POST /mcp` endpoint is a Model Context Protocol server (JSON-RPC 2.0 over Streamable HTTP). Tools are self-described at runtime via `tools/list`, so it's documented as a setup guide rather than an OpenAPI path — see [`/sdks/mcp`](https://docs.sharpapi.io/sdks/mcp).\n",
+    "version": "2.1.0",
+    "description": "Real-time sports betting odds API with +EV detection, arbitrage, middles, and low-hold opportunities.\n\n## Spec Versioning\n\n`info.version` is bumped on every schema or path change. Minor version (`2.x.0`) for additive changes or breaking shape fixes that align the spec to the live response; major version (`x.0.0`) for backward-incompatible redesigns. Removed paths and renamed fields always bump the minor at minimum. Check `x-generated-at` and `x-commit-sha` for the build provenance of a given snapshot.\n\n## Authentication\n\nAll authenticated endpoints accept an API key via one of three methods:\n\n| Method | Header / Param | Use case |\n|--------|---------------|----------|\n| `X-API-Key` | `X-API-Key: sk_live_...` | Recommended for server-side |\n| `Authorization` | `Authorization: Bearer sk_live_...` | Standard Bearer token |\n| `api_key` query | `?api_key=sk_live_...` | SSE/EventSource (cannot set headers) |\n\n## Subscription Tiers\n\n| Tier | Rate Limit | Data Delay | Max Books | EV | Arb | Middles | Game State |\n|------|-----------|------------|-----------|-----|-----|---------|------------|\n| Free | 12/min | 60s | 2 (DK, FD) | - | - | - | - |\n| Hobby | 120/min | Real-time | 5 | - | Yes | - | - |\n| Pro | 300/min | Real-time | 15 | Yes | Yes | Yes | - |\n| Sharp | 1000/min | Real-time | All | Yes | Yes | Yes | - |\n| Enterprise | Custom | Real-time | All | Yes | Yes | Yes | Yes |\n\n## Rate Limit Headers\n\nEvery authenticated response includes:\n\n- `X-RateLimit-Limit` - Requests allowed per minute\n- `X-RateLimit-Remaining` - Requests remaining in current window\n- `X-RateLimit-Reset` - Unix timestamp when the window resets\n- `X-Data-Delay` - Odds delay in seconds for your tier (0 = real-time)\n- `X-Request-Id` - Unique request identifier for support\n\n## WebSocket Streaming\n\nThe WebSocket endpoint at `wss://ws.sharpapi.io` is documented separately in [`asyncapi.yaml`](./asyncapi.yaml) (AsyncAPI 3.0). OpenAPI 3.x cannot express WebSocket subprotocols and message channels, so the SSE endpoint (`/stream`) is the only stream covered by this document.\n\n## MCP Server\n\nThe `POST /mcp` endpoint is a Model Context Protocol server (JSON-RPC 2.0 over Streamable HTTP). Tools are self-described at runtime via `tools/list`, so it's documented as a setup guide rather than an OpenAPI path — see [`/sdks/mcp`](https://docs.sharpapi.io/sdks/mcp).\n",
     "contact": {
       "name": "SharpAPI Support",
       "url": "https://sharpapi.io",
@@ -2391,27 +2391,29 @@
                   ]
                 },
                 "example": {
-                  "success": true,
                   "data": {
-                    "key": {
-                      "id": "key_abc123",
-                      "tier": "pro",
-                      "user_id": "user_xyz"
-                    },
-                    "limits": {
+                    "key_id": "key_abc123",
+                    "tier": "pro",
+                    "rate_limit": {
                       "requests_per_minute": 300,
-                      "max_streams": 0,
-                      "odds_delay_seconds": 0,
                       "max_books": 15
                     },
-                    "features": {
-                      "ev": true,
-                      "arbitrage": true,
-                      "middles": true,
-                      "streaming": false
-                    },
-                    "addons": []
-                  }
+                    "features": [
+                      "odds",
+                      "schedule",
+                      "ev",
+                      "arbitrage",
+                      "middles",
+                      "low_hold",
+                      "closing_line",
+                      "splits"
+                    ],
+                    "streaming": {
+                      "enabled": false,
+                      "max_connections": 0
+                    }
+                  },
+                  "updated_at": "2026-02-08T14:44:32.123Z"
                 }
               }
             }
@@ -5322,115 +5324,80 @@
       },
       "Account": {
         "type": "object",
+        "description": "Flat account shape returned by `GET /api/v1/account`. All fields are always present.",
         "required": [
-          "key",
-          "limits",
+          "key_id",
+          "tier",
+          "rate_limit",
           "features",
-          "addons"
+          "streaming"
         ],
         "properties": {
-          "key": {
-            "type": "object",
-            "required": [
-              "id",
-              "tier"
-            ],
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "tier": {
-                "type": "string",
-                "enum": [
-                  "free",
-                  "hobby",
-                  "pro",
-                  "sharp",
-                  "enterprise"
-                ]
-              },
-              "user_id": {
-                "type": "string"
-              }
-            }
+          "key_id": {
+            "type": "string",
+            "description": "Identifier for the API key used in this request."
           },
-          "limits": {
+          "tier": {
+            "type": "string",
+            "description": "Subscription tier.",
+            "enum": [
+              "free",
+              "hobby",
+              "pro",
+              "sharp",
+              "enterprise"
+            ]
+          },
+          "rate_limit": {
             "type": "object",
             "required": [
               "requests_per_minute",
-              "max_streams",
-              "odds_delay_seconds",
               "max_books"
             ],
             "properties": {
               "requests_per_minute": {
-                "type": "integer"
-              },
-              "max_streams": {
-                "type": "integer"
-              },
-              "odds_delay_seconds": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Maximum API requests allowed per minute on this tier."
               },
               "max_books": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Maximum sportsbooks accessible on this tier (999 = unlimited)."
               }
             }
           },
           "features": {
+            "type": "array",
+            "description": "Capabilities enabled on this tier.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "odds",
+                "schedule",
+                "ev",
+                "arbitrage",
+                "middles",
+                "low_hold",
+                "history",
+                "futures",
+                "closing_line",
+                "splits"
+              ]
+            }
+          },
+          "streaming": {
             "type": "object",
             "required": [
-              "ev",
-              "arbitrage",
-              "middles",
-              "streaming"
+              "enabled",
+              "max_connections"
             ],
             "properties": {
-              "ev": {
-                "type": "boolean"
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether SSE/WebSocket streaming is available (via tier, add-on, or trial)."
               },
-              "arbitrage": {
-                "type": "boolean"
-              },
-              "middles": {
-                "type": "boolean"
-              },
-              "streaming": {
-                "type": "boolean"
-              }
-            }
-          },
-          "addons": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "streaming_trial": {
-            "type": "object",
-            "properties": {
-              "active": {
-                "type": "boolean"
-              },
-              "eligible": {
-                "type": "boolean"
-              },
-              "used": {
-                "type": "boolean"
-              },
-              "activated_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "expires_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "remaining_hours": {
-                "type": "number"
+              "max_connections": {
+                "type": "integer",
+                "description": "Maximum concurrent SSE/WebSocket connections (0 if streaming not enabled)."
               }
             }
           }

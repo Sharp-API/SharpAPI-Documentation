@@ -37,9 +37,9 @@ const response = await fetch(
 );
 const { data } = await response.json();
 
-console.log(`Tier: ${data.key.tier}`);
-console.log(`Rate limit: ${data.limits.requests_per_minute} req/min`);
-console.log(`Max books: ${data.limits.max_books}`);
+console.log(`Tier: ${data.tier}`);
+console.log(`Rate limit: ${data.rate_limit.requests_per_minute} req/min`);
+console.log(`Max books: ${data.rate_limit.max_books}`);
 ```
   </Tabs.Tab>
   <Tabs.Tab>
@@ -52,9 +52,9 @@ response = requests.get(
 )
 account = response.json()['data']
 
-print(f"Tier: {account['key']['tier']}")
+print(f"Tier: {account['tier']}")
 print(f"Features: {account['features']}")
-print(f"Add-ons: {account['addons']}")
+print(f"Streaming: {account['streaming']['enabled']}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -66,34 +66,28 @@ print(f"Add-ons: {account['addons']}")
 ```json
 {
   "data": {
-    "key": {
-      "id": "key_abc123def456",
-      "tier": "pro"
-    },
-    "limits": {
+    "key_id": "key_abc123def456",
+    "tier": "pro",
+    "rate_limit": {
       "requests_per_minute": 300,
-      "max_streams": 10,
-      "odds_delay_seconds": 0,
       "max_books": 15
     },
-    "features": {
-      "ev": true,
-      "arbitrage": true,
-      "middles": true,
-      "streaming": true
-    },
-    "addons": ["websocket"],
-    "streaming_trial": {
-      "active": false,
-      "eligible": false,
-      "used": true,
-      "activated_at": "2026-01-15T12:00:00Z",
-      "expires_at": "2026-01-15T16:00:00Z"
+    "features": [
+      "odds",
+      "schedule",
+      "ev",
+      "arbitrage",
+      "middles",
+      "low_hold",
+      "closing_line",
+      "splits"
+    ],
+    "streaming": {
+      "enabled": true,
+      "max_connections": 10
     }
   },
-  "meta": {
-    "updated_at": "2026-02-08T14:44:32.123Z"
-  }
+  "updated_at": "2026-02-08T14:44:32.123Z"
 }
 ```
 
@@ -122,50 +116,48 @@ X-Request-Id: req_acct123xyz
 
 ## Antwortfelder
 
-### Key-Objekt
+### `data`-Objekt
 
 | Feld | Typ | Beschreibung |
 |-------|------|-------------|
-| `id` | string | Bezeichner für den in dieser Anfrage verwendeten API-Schlüssel |
+| `key_id` | string | Bezeichner für den in dieser Anfrage verwendeten API-Schlüssel |
 | `tier` | string | Abonnementstufe: `free`, `hobby`, `pro`, `sharp` oder `enterprise` |
-| `user_id` | string | Benutzerkennung (sofern verfügbar) |
+| `rate_limit` | object | Rate Limit und Sportsbook-Zugriff — siehe unten |
+| `features` | string[] | Auf Ihrer Stufe aktivierte Funktionen — siehe unten |
+| `streaming` | object | Verfügbarkeit von SSE-/WebSocket-Streaming — siehe unten |
 
-### Limits-Objekt
+Ein `updated_at`-Feld auf oberster Ebene (ISO 8601-Zeitstempel) begleitet `data`.
 
-| Feld | Typ | Beschreibung |
-|-------|------|-------------|
-| `requests_per_minute` | number | Maximal zulässige API-Anfragen pro Minute |
-| `max_streams` | number | Maximale gleichzeitige SSE-/WebSocket-Streams (0 wenn Streaming nicht aktiviert ist) |
-| `odds_delay_seconds` | number | Verzögerung der Odds-Daten in Sekunden (`0` für kostenpflichtige Stufen, `60` für kostenlos) |
-| `max_books` | number | Maximale Anzahl der für Ihre Stufe zugänglichen Sportsbooks |
-
-### Features-Objekt
+### `rate_limit`-Objekt
 
 | Feld | Typ | Beschreibung |
 |-------|------|-------------|
-| `ev` | boolean | Zugriff auf +EV-Gelegenheitserkennung |
-| `arbitrage` | boolean | Zugriff auf Arbitrage-Erkennung |
-| `middles` | boolean | Zugriff auf Middles-Erkennung |
-| `streaming` | boolean | Zugriff auf SSE-/WebSocket-Streaming (über Add-on, Testversion oder Enterprise) |
+| `requests_per_minute` | number | Maximal zulässige API-Anfragen pro Minute auf Ihrer Stufe |
+| `max_books` | number | Maximale Anzahl der für Ihre Stufe zugänglichen Sportsbooks (`999` bedeutet unbegrenzt) |
 
-### Add-ons
+### `features`-Array
+
+Array von Funktions-Tokens, die auf Ihrer Stufe aktiviert sind. Mögliche Werte:
+
+| Wert | Beschreibung |
+|-------|-------------|
+| `odds` | Live-Odds-Endpoints |
+| `schedule` | Event-/Spielplan-Endpoints |
+| `ev` | +EV-Gelegenheitserkennung |
+| `arbitrage` | Arbitrage-Erkennung |
+| `middles` | Middles-Erkennung |
+| `low_hold` | Low-Hold-Gelegenheitserkennung |
+| `history` | Historische Odds-Endpoints |
+| `futures` | Futures-Märkte |
+| `closing_line` | Closing-Line-Value-Endpoints |
+| `splits` | Öffentliche Wett-Splits |
+
+### `streaming`-Objekt
 
 | Feld | Typ | Beschreibung |
 |-------|------|-------------|
-| `addons` | string[] | Aktive Add-ons (z. B. `["websocket"]`) |
-
-### Streaming-Testversion-Objekt (optional)
-
-Vorhanden, wenn der Benutzer eine aktive Testversion hat, berechtigt ist oder bereits eine Testversion genutzt hat.
-
-| Feld | Typ | Beschreibung |
-|-------|------|-------------|
-| `active` | boolean | Ob aktuell eine Streaming-Testversion aktiv ist |
-| `eligible` | boolean | Ob der Benutzer für eine Testversion berechtigt ist |
-| `used` | boolean | Ob der Benutzer seine Testversion bereits genutzt hat |
-| `activated_at` | string | ISO 8601-Zeitstempel der Aktivierung der Testversion |
-| `expires_at` | string | ISO 8601-Zeitstempel des Ablaufs der Testversion |
-| `remaining_hours` | number | Verbleibende Stunden der Testversion |
+| `enabled` | boolean | Ob SSE-/WebSocket-Streaming verfügbar ist (über Stufe, Add-on oder Testversion) |
+| `max_connections` | number | Maximale Anzahl gleichzeitiger Streaming-Verbindungen (`0` wenn Streaming nicht aktiviert ist) |
 
 ## Anwendungsfälle
 
@@ -177,7 +169,7 @@ const { data: account } = await fetch(
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 ).then(r => r.json());
 
-if (!account.features.ev) {
+if (!account.features.includes('ev')) {
   console.log('Upgrade to Pro tier for +EV detection');
 } else {
   // Proceed with EV endpoint

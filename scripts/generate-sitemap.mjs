@@ -64,7 +64,7 @@ async function lastmod(file) {
 }
 
 function url(locale, route) {
-  const path = route ? `/${locale}/${route}` : `/${locale}`
+  const path = route ? `/${locale}/${route}/` : `/${locale}/`
   return `${HOST}${path}`
 }
 

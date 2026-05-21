@@ -7,6 +7,7 @@ const withNextra = nextra({
 
 export default withNextra({
   output: 'export',
+  trailingSlash: true,
   images: { unoptimized: true },
   // Nextra reads i18n config, extracts locales, then removes it (App Router compatible)
   i18n: {

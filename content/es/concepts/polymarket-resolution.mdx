@@ -1,0 +1,98 @@
+---
+title: "Estado de Resolución de Polymarket"
+description: "Cómo SharpAPI expone el ciclo de vida de resolución del oráculo optimista UMA en los mercados de Polymarket — liquidado, anulado, disputado, propuesto."
+---
+
+import { Callout } from 'nextra/components'
+
+# Estado de Resolución de Polymarket
+
+Polymarket es un CLOB de mercados de predicción cuyos mercados son calificados por el [oráculo optimista UMA](https://docs.uma.xyz/), no por una mesa de trading de una casa de apuestas. Cuando consultas las cuotas de Polymarket a través de SharpAPI, la fila puede incluir un campo adicional — `polymarket_resolution` — que refleja en qué punto del ciclo de vida de resolución UMA se encuentra ese mercado.
+
+Este campo es **exclusivo de Polymarket**. Las filas de otras casas de apuestas (Pinnacle, DraftKings, FanDuel, etc.) no lo incluyen, ya que sus formatos de datos de origen no emiten una señal equivalente. Consulta el [análisis del wire de Pinnacle](https://github.com/Mlaz-code/api-adapters/) para ver la investigación paralela que concluyó que el mismo campo no puede entregarse para los libros tradicionales.
+
+## Cuándo aparece el campo
+
+| Estado del mercado | `polymarket_resolution` |
+|---|---|
+| En operación activa | omitido (campo no presente) |
+| Cerrado, resuelto con ganador | `"settled_normal"` |
+| Cerrado, anulado / reembolsado | `"voided"` |
+| Cerrado, disputa UMA en curso | `"disputed"` |
+| Cerrado, propuesta UMA enviada, ventana de disputa abierta | `"proposed"` |
+| Cerrado, campos del ciclo de vida vacíos (mercado heredado) | `"unknown"` |
+| Cualquier libro que no sea Polymarket | omitido |
+
+El campo es **aditivo**. Los analizadores sintácticos existentes que ignoran campos desconocidos seguirán funcionando sin cambios.
+
+## Semántica de los valores
+
+### `settled_normal`
+
+El oráculo UMA declaró un resultado ganador. En un mercado binario, exactamente un resultado se resolvió a `$1.00` y el otro a `$0.00`. Este es el estado final habitual.
+
+```json
+{
+  "sportsbook": "polymarket",
+  "marketType": "binary",
+  "selection": "Yes",
+  "odds": -10000,
+  "polymarket_resolution": "settled_normal",
+  "trueProbability": 1.0
+}
+```
+
+### `voided`
+
+El oráculo UMA anuló el mercado — ambos resultados binarios se resolvieron a `$0.50` ("reembolso a todos"). Esta es la misma firma de wire para todos los casos siguientes:
+
+- Un partido cancelado (evento deportivo cancelado o abandonado)
+- Un participante que se retira antes del evento
+- El evento que nunca llega a ocurrir (por ejemplo, "ganador del Mapa 3" cuando la serie terminó en 2 mapas)
+- Cualquier otra anulación determinada por UMA
+
+<Callout type="warning">
+**Polymarket no distingue *por qué* se anuló un mercado.** El motivo en lenguaje natural se encuentra en el hilo de disputa UMA fuera de la cadena, en el frontend del oráculo UMA, no en la API de Polymarket. Si tu aplicación necesita saber si fue cancelación, retirada o no celebración del evento, esa información no puede obtenerse del wire de Polymarket — tendrías que leer directamente el cuerpo de la disputa UMA.
+
+Esta es una decisión de diseño intencional de la arquitectura del oráculo optimista de UMA, no una omisión de SharpAPI. Elegimos exponer `voided` como un único grupo en lugar de inferir a partir de heurísticas — según nuestra [política de no inferencia](https://github.com/Mlaz-code/api-adapters/), si el origen es ambiguo, no hacemos suposiciones.
+</Callout>
+
+### `disputed`
+
+El proponente UMA envió una resolución que fue impugnada. El mercado se encuentra ahora en una votación de los poseedores de tokens UMA, típicamente de 48 horas. La resolución final eventualmente pasará a `settled_normal` o `voided` una vez concluya la votación.
+
+### `proposed`
+
+El proponente UMA envió una resolución candidata; la ventana de disputa está abierta (típicamente 2 horas). El mercado pasará a `settled_normal` / `voided` una vez que la ventana se cierre sin impugnación, o a `disputed` si es impugnado.
+
+### `unknown`
+
+El mercado está cerrado pero los campos del ciclo de vida UMA están vacíos. Esto ocurre en mercados heredados de Polymarket anteriores al seguimiento del estado UMA, o en casos extremos poco frecuentes donde la API de Gamma no expone el historial del ciclo de vida. El campo es `unknown` en lugar de hacer suposiciones.
+
+## Resolución diferida
+
+Los mercados de Polymarket pueden resolverse días o semanas después de que termine el evento subyacente. El campo `polymarket_resolution` aparece siempre que el ciclo de vida de resolución avanza en el origen, incluso mucho después de que el mercado haya cerrado.
+
+Si tu aplicación procesa eventos de resolución (para calificación, conciliación de liquidaciones, etc.), monitoriza el stream SSE / WebSocket para detectar estas filas de llegada tardía.
+
+## Comparación con otros libros
+
+| Libro | ¿Campo equivalente? | Notas |
+|---|---|---|
+| **Polymarket** | `polymarket_resolution` | Enumeración de 5 estados, derivada del oráculo UMA |
+| **Kalshi** | _(aún no)_ | Kalshi tiene eventos de liquidación pero actualmente no los exponemos — solicitud separada |
+| **Pinnacle** | _(no disponible en origen)_ | El wire de Pinnacle no emite ningún campo de motivo en tiempo real; `cancellationReason` solo existe en el endpoint de socio de la Lines API posterior a la calificación |
+| **DraftKings / FanDuel / BetMGM / Caesars** | _(no disponible)_ | Los mercados suspendidos simplemente desaparecen del feed; no se emite ningún campo de estado |
+| **OpticOdds (comparación con el sector)** | _(sin motivo)_ | Existe `status: cancelled` a nivel de evento pero no incluye motivo; los objetos por mercado no tienen campo de estado |
+
+Los datos que los clientes desean — un motivo de liquidación por libro — no son un estándar del sector. Polymarket es el caso excepcional donde el wire de origen sí lo incluye, porque la resolución UMA está en cadena y es públicamente observable.
+
+## Por qué el campo lleva el prefijo de Polymarket
+
+Nombramos deliberadamente el campo `polymarket_resolution` en lugar de un genérico `resolutionStatus` para que quede claro que los valores son específicos de Polymarket. Una futura versión para Kalshi sería un campo `kalshiResolution` separado con su propio enumerado — los formatos de wire son suficientemente distintos como para que un enumerado unificado resultara o bien en el mínimo común denominador (inútil) o bien repleto de asteriscos para los valores "solo Polymarket" / "solo Kalshi".
+
+## Véase también
+
+- [Lista de casas de apuestas — mercados de predicción](/es/api-reference/sportsbooks#prediction-markets)
+- [Referencia de la API de cuotas](/es/api-reference/odds)
+- [En vivo vs. Previo al partido](/es/concepts/live-vs-prematch) — cubre la semántica relacionada de `marketStatus`

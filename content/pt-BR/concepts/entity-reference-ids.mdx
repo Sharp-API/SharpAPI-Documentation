@@ -1,0 +1,144 @@
+---
+description: "IDs de referência de entidade — semântica de numerical_id, objetos de referência aninhados de time/esporte/liga/mercado/casa de apostas e como usá-los para joins, indexação e mapeamento entre feeds."
+---
+
+import { Callout } from 'nextra/components'
+
+# IDs de referência de entidade
+
+A SharpAPI emite identificadores inteiros estáveis (`numerical_id`) em cada entidade de referência, além de objetos de referência aninhados autodescritivos em cada linha de odds e leg de oportunidade. Esta página documenta o que esses IDs garantem, como usá-los e como eles se relacionam com os IDs de string existentes.
+
+<Callout type="info">
+  **Novo (maio de 2026).** Tanto o `numerical_id` quanto os objetos de referência aninhados são **aditivos**. Os IDs de string existentes (`sport: "baseball"`, `league: "mlb"`, `sportsbook: "pinnacle"`, `home_team: "New York Yankees"`) permanecem em todas as respostas e não estão obsoletos. Não há prazo de remoção — ambos os formatos são suportados indefinidamente.
+</Callout>
+
+## O que há de novo
+
+Cada endpoint de referência (`/sports`, `/leagues`, `/sportsbooks`, `/markets`, `/teams`) agora retorna um inteiro `numerical_id` ao lado do `id` slug existente. `/teams` retorna adicionalmente um campo `abbreviation` quando disponível.
+
+Cada linha de odds (e cada leg de uma oportunidade EV / arbitragem / middle) agora carrega seis **objetos de referência aninhados** opcionais que agrupam o `id`, o rótulo de exibição e o `numerical_id` da entidade diretamente com a linha — sem necessidade de segunda consulta a `/sports` ou `/teams`:
+
+```json
+{
+  "home": {
+    "id": "new_york_yankees",
+    "numerical_id": 20,
+    "name": "New York Yankees",
+    "abbreviation": "NYY",
+    "logo": "https://cdn.opticodds.com/team-logos/baseball/36.png",
+    "city": "New York",
+    "mascot": "Yankees",
+    "conference": "AL",
+    "division": "East Division"
+  },
+  "away": {
+    "id": "boston_red_sox",
+    "numerical_id":  5,
+    "name": "Boston Red Sox",
+    "abbreviation": "BOS",
+    "logo": "https://cdn.opticodds.com/team-logos/baseball/14.png",
+    "city": "Boston",
+    "mascot": "Red Sox",
+    "conference": "AL",
+    "division": "East Division"
+  },
+  "sport_ref":      { "id": "baseball",         "numerical_id":  3, "name": "Baseball" },
+  "league_ref":     { "id": "mlb",              "numerical_id": 354, "label": "MLB" },
+  "market_ref":     { "id": "moneyline",        "numerical_id": 878, "label": "Moneyline" },
+  "sportsbook_ref": { "id": "pinnacle",         "numerical_id":  28, "label": "Pinnacle" }
+}
+```
+
+## Semântica do `numerical_id`
+
+Cada `numerical_id` é alocado a partir de um registro congelado por domínio em `api-adapters/sharp_atlas/`. O contrato é:
+
+| Propriedade | Garantia |
+|---|---|
+| **Congelado** | Uma vez atribuído, um `numerical_id` nunca é reutilizado, reemitido ou remapeado para uma entidade diferente. O `numerical_id: 20` dos Yankees sempre será `20` até a aposentadoria da API. |
+| **Denso a partir de 1** | Os IDs começam em `1` e são emitidos sequencialmente por domínio. Não há IDs negativos, zeros ou grandes saltos. Esportes, ligas, casas de apostas, mercados e times têm cada um um intervalo denso independente. |
+| **Escopo por domínio** | Um `numerical_id` é único apenas dentro do seu domínio (esporte, liga, casa de apostas, mercado, time). `numerical_id: 3` em um esporte não tem relação com `numerical_id: 3` em um time. Combine o inteiro com o domínio para desambiguar. |
+| **Atribuído, não derivado** | Os IDs são rastreados explicitamente nos JSONs do atlas — não são hashes do slug nem calculados pela ordem de classificação. Adicionar uma nova entidade aloca o próximo inteiro livre; renomear um slug não altera seu `numerical_id`. |
+| **Não é um ID de casa de apostas** | Este é o identificador da SharpAPI, não o interno da casa de apostas. Os IDs nativos de evento/mercado/seleção de cada casa ainda são emitidos por linha — veja `external_event_id`, `selection_id`, `market_id` e `external_ids` no endpoint de [Eventos](/pt-BR/api-reference/events). |
+
+## Quando os campos estão ausentes
+
+Os objetos de referência aninhados são emitidos **somente quando a entidade subjacente foi mapeada no atlas**. Para entidades não mapeadas — tipicamente ligas de cauda longa, mercados exóticos ou casas de apostas recém-adicionadas antes da atribuição de catálogo — o bloco `*_ref` correspondente é omitido (ou tem `numerical_id: null`) e o campo de string existente na linha é o único ID disponível.
+
+Na prática:
+
+- Principais esportes, ligas e casas são totalmente mapeados — espere que todos os blocos `*_ref` estejam presentes.
+- Mercados de prop de jogadores e mercados de escanteios/cartões/períodos no futebol têm o catálogo mais amplo; alguns tipos de prop de nicho ainda estão sendo atribuídos.
+- O `abbreviation` de times é preenchido onde amplamente conhecido (ligas principais dos EUA, EPL, códigos curtos ATP/WTA). Para times menores ou internacionais, pode estar ausente.
+
+Os consumidores devem tratar cada bloco aninhado como **opcional**. Clientes genéricos devem recorrer ao campo de string plano (`sport`, `league`, `sportsbook`, `home_team`, `away_team`, `market_type`) quando o `*_ref` correspondente não estiver presente.
+
+## Uso recomendado
+
+### Indexação e joins
+Use `numerical_id` como chave primária ao armazenar odds/oportunidades em seu próprio banco de dados. Chaves inteiras são menores, mais baratas de indexar e estáveis em relação a renomeações de slug ou ajustes de rótulo de exibição.
+
+### Mapeamento entre feeds
+Se você ingere dados de múltiplos provedores, `numerical_id` fornece uma verificação de igualdade rápida dentro das linhas da SharpAPI. Para mapeamento **entre** fornecedores, o slug `id` ainda é a chave de join mais portátil — slugs são legíveis por humanos e tendem a se sobrepor entre fornecedores mais do que IDs inteiros.
+
+### Exibição na interface
+Use `name` (esportes, times) ou `label` (ligas, mercados, casas de apostas) para exibição; o `abbreviation` em `home`/`away` é adequado para células compactas.
+
+### Streaming
+Os mesmos objetos aninhados aparecem nos frames SSE de `/api/v1/stream/odds` e nos payloads de odds do WebSocket v1 / v1.5 — nenhum stream separado é necessário.
+
+## Referência de campos
+
+### Endpoints de referência
+
+Cada endpoint de referência adiciona `numerical_id` ao seu esquema de objeto existente. `/teams` adicionalmente inclui `abbreviation`.
+
+| Endpoint | Campo adicionado | Tipo | Notas |
+|---|---|---|---|
+| [`/sports`](/pt-BR/api-reference/sports) | `numerical_id` | integer \| null | Domínio de escopo de esporte |
+| [`/leagues`](/pt-BR/api-reference/leagues) | `numerical_id` | integer \| null | Domínio de escopo de liga |
+| [`/sportsbooks`](/pt-BR/api-reference/sportsbooks) | `numerical_id` | integer \| null | Domínio de escopo de casa de apostas |
+| [`/markets`](/pt-BR/api-reference/markets) | `numerical_id` | integer \| null | Domínio de escopo de tipo de mercado |
+| [`/teams`](/pt-BR/api-reference/teams) | `numerical_id`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | integer \| null, string \| null | Domínio de escopo de time. Os últimos cinco são metadados do atlas provenientes da OpticOdds. |
+
+### Blocos de referência aninhados em odds e legs de oportunidade
+
+| Bloco | Onde | Campos | Finalidade |
+|---|---|---|---|
+| `home`, `away` | Cada linha de odds, cada leg de oportunidade | `id`, `numerical_id`, `name`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | Resolva os dois competidores sem uma chamada separada a `/teams`. |
+| `sport_ref` | Mesmo | `id`, `numerical_id`, `name` | Referência de esporte pronta para exibição. |
+| `league_ref` | Mesmo | `id`, `numerical_id`, `label` | Referência de liga pronta para exibição. |
+| `market_ref` | Mesmo | `id`, `numerical_id`, `label` | Referência de mercado pronta para exibição (tipo de mercado canônico). |
+| `sportsbook_ref` | Mesmo | `id`, `numerical_id`, `label` | Referência de casa de apostas pronta para exibição. |
+
+Todos os campos internos são **opcionais** dentro de um bloco. Um bloco pode estar presente com `numerical_id` como `null` se o slug foi mapeado mas a atribuição do inteiro está pendente; tanto `numerical_id` quanto o bloco inteiro também podem estar ausentes para entidades não mapeadas.
+
+### Campos de metadados de times
+
+Os blocos `home` / `away` expõem cinco campos de metadados opcionais adicionais além de `id` / `numerical_id` / `name` / `abbreviation`. Eles são provenientes do atlas da SharpAPI e preenchidos para a grande maioria dos times (≈93% em `logo`, com cobertura comparável nos demais):
+
+| Campo | Exemplo | Notas |
+|---|---|---|
+| `logo` | `"https://cdn.opticodds.com/team-logos/baseball/36.png"` | URL completa da CDN para o escudo do time. Trate o host como opaco; a SharpAPI pode rehospedar o mesmo asset em seu próprio domínio no futuro. |
+| `city` | `"New York"` | A referência geográfica do time. Para times de múltiplas cidades (ex.: New York Football Giants que joga no NJ) seguimos a cidade convencional da liga. |
+| `mascot` | `"Yankees"` | A parte do mascote / apelido do nome completo do time. |
+| `conference` | `"AL"`, `"AFC"`, `"Western"` | Conferência / agrupamento definido pela liga. O formato varia por liga. |
+| `division` | `"East Division"`, `"NL East"`, `"Pacific Division"` | Sub-agrupamento dentro da conferência, definido pela liga. |
+
+Competidores de esportes individuais (tenistas, lutadores de MMA, golfistas, pilotos) geralmente não têm nenhum desses campos preenchidos — eles não são "times" no sentido convencional e herdam apenas `id` / `numerical_id` / `name`.
+
+## Migração
+
+Não há nada a migrar. Continue usando os campos de string planos se eles atenderem às suas necessidades. Adote os blocos `*_ref` e o `numerical_id` seletivamente quando:
+
+- você precisar de uma chave inteira estável para armazenamento,
+- quiser rótulos prontos para exibição sem uma segunda chamada de API,
+- ou estiver construindo uma camada de normalização entre feeds.
+
+Os campos planos e os blocos aninhados descrevem a mesma linha — eles não se contradirão.
+
+## Relacionados
+
+- [Sports](/pt-BR/api-reference/sports), [Leagues](/pt-BR/api-reference/leagues), [Sportsbooks](/pt-BR/api-reference/sportsbooks), [Markets](/pt-BR/api-reference/markets), [Teams](/pt-BR/api-reference/teams) — endpoints de referência com o novo campo `numerical_id`
+- [Odds Snapshot](/pt-BR/api-reference/odds), [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev), [Arbitragem](/pt-BR/api-reference/opportunities-arbitrage), [Middles](/pt-BR/api-reference/opportunities-middles) — endpoints com blocos de referência aninhados
+- [Correspondência de Eventos](/pt-BR/concepts/event-matching) — como a SharpAPI une o mesmo evento entre casas de apostas

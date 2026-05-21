@@ -1,0 +1,98 @@
+---
+title: "Polymarket Auflösungsstatus"
+description: "Wie SharpAPI den UMA Optimistic-Oracle-Auflösungslebenszyklus auf Polymarket-Märkten abbildet — abgerechnet, storniert, bestritten, vorgeschlagen."
+---
+
+import { Callout } from 'nextra/components'
+
+# Polymarket Auflösungsstatus
+
+Polymarket ist ein Vorhersagemarkt-CLOB, dessen Märkte durch das [UMA Optimistic Oracle](https://docs.uma.xyz/) bewertet werden, nicht durch einen Sportsbook-Trading-Desk. Wenn Sie Polymarket-Quoten über SharpAPI abrufen, kann die Zeile ein zusätzliches Feld enthalten — `polymarket_resolution` — das angibt, wo sich dieser Markt im UMA-Auflösungslebenszyklus befindet.
+
+Dieses Feld ist **nur für Polymarket** verfügbar. Andere Sportsbook-Zeilen (Pinnacle, DraftKings, FanDuel, usw.) enthalten es nicht, da ihre vorgelagerten Wire-Formate kein entsprechendes Signal ausgeben. Siehe [Pinnacle Wire-Analyse](https://github.com/Mlaz-code/api-adapters/) für die parallele Untersuchung, die zu dem Schluss gelangte, dass dasselbe Feld für traditionelle Bücher nicht bereitgestellt werden kann.
+
+## Wann das Feld erscheint
+
+| Marktstatus | `polymarket_resolution` |
+|---|---|
+| Aktiv im Handel | weggelassen (Feld nicht vorhanden) |
+| Geschlossen, mit einem Gewinner aufgelöst | `"settled_normal"` |
+| Geschlossen, storniert / rückerstattet | `"voided"` |
+| Geschlossen, UMA-Einspruch läuft | `"disputed"` |
+| Geschlossen, UMA-Vorschlag eingereicht, Einspruchsfenster offen | `"proposed"` |
+| Geschlossen, Lebenszyklus-Felder leer (Legacy-Markt) | `"unknown"` |
+| Kein Polymarket-Buch | weggelassen |
+
+Das Feld ist **additiv**. Bestehende Parser, die unbekannte Felder ignorieren, funktionieren weiterhin unverändert.
+
+## Wertsemantik
+
+### `settled_normal`
+
+Das UMA-Oracle hat ein Gewinnergebnis erklärt. Bei einem binären Markt wurde genau ein Ergebnis zu `$1.00` aufgelöst und das andere zu `$0.00`. Dies ist der typische Endzustand.
+
+```json
+{
+  "sportsbook": "polymarket",
+  "marketType": "binary",
+  "selection": "Yes",
+  "odds": -10000,
+  "polymarket_resolution": "settled_normal",
+  "trueProbability": 1.0
+}
+```
+
+### `voided`
+
+Das UMA-Oracle hat den Markt storniert — beide binären Ergebnisse wurden zu `$0.50` aufgelöst ("alle erstatten"). Dies ist dieselbe Wire-Signatur für alle folgenden Fälle:
+
+- Ein abgesagtes Spiel (Sportereignis abgesagt oder abgebrochen)
+- Ein Teilnehmer zieht sich vor dem Ereignis zurück
+- Das Ereignis findet nicht statt (z. B. "Karte 3 Gewinner", wenn die Serie in 2 Karten endete)
+- Jede andere durch UMA festgestellte Stornierung
+
+<Callout type="warning">
+**Polymarket unterscheidet nicht, *warum* ein Markt storniert wurde.** Der menschenlesbare Grund liegt im Off-Chain-UMA-Einspruchs-Thread auf dem UMA-Oracle-Frontend, nicht in der Polymarket-API. Wenn Ihre Anwendung zwischen Absage, Rückzug und Nicht-Stattfinden unterscheiden muss, können diese Informationen nicht aus Polymarks Wire bezogen werden — Sie müssten den UMA-Einspruchstext direkt lesen.
+
+Dies ist eine bewusste Designentscheidung der UMA-Optimistic-Oracle-Architektur, keine SharpAPI-Auslassung. Wir haben uns entschieden, `voided` als einzelnen Bucket darzustellen, anstatt aus Heuristiken zu raten — gemäß unserer [Keine-Inferenz-Richtlinie](https://github.com/Mlaz-code/api-adapters/): Wenn das Upstream mehrdeutig ist, raten wir nicht.
+</Callout>
+
+### `disputed`
+
+Der UMA-Vorschlagende hat eine Auflösung eingereicht, die angefochten wurde. Der Markt befindet sich nun in einer UMA-Token-Inhaber-Abstimmung, typischerweise 48 Stunden. Die endgültige Auflösung wird nach Abschluss der Abstimmung schließlich `settled_normal` oder `voided` werden.
+
+### `proposed`
+
+Der UMA-Vorschlagende hat eine Kandidatenauflösung eingereicht; das Einspruchsfenster ist offen (typischerweise 2 Stunden). Der Markt wird zu `settled_normal` / `voided` übergehen, sobald das Fenster unangefochten schließt, oder zu `disputed`, falls ein Einspruch erhoben wird.
+
+### `unknown`
+
+Der Markt ist geschlossen, aber die UMA-Lebenszyklus-Felder sind leer. Dies geschieht bei älteren Polymarket-Märkten, die vor dem UMA-Status-Tracking entstanden sind, oder in seltenen Grenzfällen, bei denen die Gamma-API den Lebenszyklus-Verlauf nicht zurückgibt. Das Feld ist `unknown` statt zu raten.
+
+## Verzögerte Auflösung
+
+Polymarket-Märkte können sich Tage oder Wochen nach dem Ende des zugrundeliegenden Ereignisses auflösen. Das Feld `polymarket_resolution` erscheint, sobald der vorgelagerte Auflösungslebenszyklus voranschreitet, auch lange nach dem Schließen des Marktes.
+
+Wenn Ihre Anwendung Auflösungsereignisse verarbeitet (zur Bewertung, Abrechnungsabgleich usw.), beobachten Sie den SSE-Stream / WebSocket für diese spät eintreffenden Zeilen.
+
+## Vergleich mit anderen Büchern
+
+| Buch | Entsprechendes Feld? | Hinweise |
+|---|---|---|
+| **Polymarket** | `polymarket_resolution` | 5-Status-Enum, abgeleitet vom UMA-Oracle |
+| **Kalshi** | _(noch nicht)_ | Kalshi hat Abrechnungsereignisse, aber wir stellen sie heute nicht bereit — separate Anfrage |
+| **Pinnacle** | _(upstream nicht verfügbar)_ | Pinnacles Wire gibt kein Echtzeit-Grundfeld aus; `cancellationReason` existiert nur am post-grading Lines-API-Partnerendpunkt |
+| **DraftKings / FanDuel / BetMGM / Caesars** | _(nicht verfügbar)_ | Gesperrte Märkte verschwinden einfach aus dem Feed; kein Statusfeld wird ausgegeben |
+| **OpticOdds (Branchenvergleich)** | _(kein Grund)_ | Fixture-level `status: cancelled` existiert, trägt aber keinen Grund; Per-Markt-Objekte haben kein Statusfeld |
+
+Die von Datenkunden gewünschten Informationen — ein buchspezifischer Abrechnungsgrund — sind kein Branchenstandard. Polymarket ist der seltene Fall, bei dem der vorgelagerte Wire ihn tatsächlich enthält, da die UMA-Auflösung on-chain und öffentlich beobachtbar ist.
+
+## Warum das Feld mit Polymarket-Präfix versehen ist
+
+Wir haben das Feld bewusst `polymarket_resolution` statt einem generischen `resolutionStatus` genannt, damit klar ist, dass die Werte Polymarket-spezifisch sind. Eine zukünftige Kalshi-Version wäre ein separates `kalshiResolution`-Feld mit eigenem Enum — die Wire-Formate sind unterschiedlich genug, dass ein einheitliches Enum entweder dem kleinsten gemeinsamen Nenner entsprechen würde (nutzlos) oder voller Sternchen für "nur Polymarket" / "nur Kalshi"-Werte wäre.
+
+## Siehe auch
+
+- [Sportsbook-Liste — Vorhersagemärkte](/api-reference/sportsbooks#prediction-markets)
+- [Odds-API-Referenz](/api-reference/odds)
+- [Live vs. Vor dem Spiel](/de/concepts/live-vs-prematch) — behandelt die verwandte `marketStatus`-Semantik

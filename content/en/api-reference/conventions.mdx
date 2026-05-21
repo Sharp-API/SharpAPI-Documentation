@@ -9,7 +9,7 @@ import { Callout } from 'nextra/components'
 SharpAPI returns predictable response shapes across every REST endpoint. This page codifies those conventions so you can build generic parsers, not per-endpoint special cases.
 
 <Callout type="info">
-  This page describes the REST conventions. SSE streams are covered in [SSE Stream](/en/api-reference/stream), and the bidirectional WebSocket protocol has its own [AsyncAPI 3.0 spec](/asyncapi.yaml).
+  This page describes the REST conventions. SSE streams are covered in [SSE Stream](/en/api-reference/stream), and the bidirectional WebSocket protocol has its own [AsyncAPI 3.0 spec](https://docs.sharpapi.io/asyncapi.yaml).
 </Callout>
 
 ## HTTP status codes, not envelopes
@@ -192,6 +192,6 @@ ETag: "9dc023776c4b382"
 ## Machine-readable source of truth
 
 - REST surface: [`openapi.json`](/openapi.json) (OpenAPI 3.1)
-- WebSocket surface: [`asyncapi.yaml`](/asyncapi.yaml) (AsyncAPI 3.0)
+- WebSocket surface: [`asyncapi.yaml`](https://docs.sharpapi.io/asyncapi.yaml) (AsyncAPI 3.0)
 
 Both files are published as static assets and can be diffed in CI. If this page drifts from the spec, the spec wins — the spec is generated from the deployed server.

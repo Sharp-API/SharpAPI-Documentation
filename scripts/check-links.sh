@@ -22,7 +22,7 @@ set -euo pipefail
 
 PORT=${PORT:-8765}
 OUT_DIR=${OUT_DIR:-out}
-ENTRY_PATH=${ENTRY_PATH:-/en.html}
+ENTRY_PATH=${ENTRY_PATH:-/en/}
 
 if [ ! -d "$OUT_DIR" ]; then
     echo "ERROR: $OUT_DIR not found — run \`pnpm build\` first" >&2

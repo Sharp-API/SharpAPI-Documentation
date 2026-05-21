@@ -1,12 +1,12 @@
 ---
-description: "How Pinnacle's odds_changed_at field behaves — why it is the trading-desk timestamp, why it can look stale on MLB and NBA, and how to read it alongside last_seen_at as a pipeline freshness signal."
+description: "How Pinnacle's odds_changed_at field behaves — why it is the trading-desk timestamp, why it can look stale on MLB and NBA, and which field (wire_received_at) to use when benchmarking SharpAPI's pipeline latency."
 ---
 
 import { Callout } from 'nextra/components'
 
 # Understanding Pinnacle's `odds_changed_at`
 
-Sharp customers building +EV and arbitrage tooling against Pinnacle frequently ask the same question: "why does `odds_changed_at` on this Pinnacle row look 20 minutes old?" The short answer is that it is working as designed — it carries Pinnacle's own trading-desk timestamp, not ours. This page explains what the field actually tracks, why it can sit unchanged for long stretches, and how to pair it with `last_seen_at` for a clean read on pipeline freshness.
+Sharp customers building +EV and arbitrage tooling against Pinnacle frequently ask the same question: "why does `odds_changed_at` on this Pinnacle row look 20 minutes old?" The short answer is that it is working as designed — it carries Pinnacle's own trading-desk timestamp, not ours. This page explains what the field actually tracks, why it can sit unchanged for long stretches, and which timestamp to use when benchmarking SharpAPI's pipeline latency (spoiler: it is `wire_received_at`, not `odds_changed_at`).
 
 ## What `odds_changed_at` Actually Means
 
@@ -15,7 +15,7 @@ On Pinnacle rows, `odds_changed_at` is **Pinnacle's own trading-desk timestamp**
 It carries forward unchanged whenever Pinnacle signals that the price, line, and `is_live` flag on a market have not moved. Internally SharpAPI hashes those three fields for every odds row on every refresh; when the hash is identical to the previous snapshot, we keep the previous `odds_changed_at` rather than overwriting it with the observation time. This preserves the "when did this line last move" semantic across repeated polls of an unchanged market.
 
 <Callout type="warning">
-`odds_changed_at` is **not** the last time our pipeline refreshed or touched this row. For pipeline freshness, use `last_seen_at`.
+`odds_changed_at` is **not** the last time our pipeline refreshed or touched this row, and it is **not** the right field for benchmarking SharpAPI's ingest latency. For "when did SharpAPI first observe this content," use `wire_received_at`. For "is this row still being kept alive by the pipeline," use `last_seen_at`. See [Benchmarking Pipeline Latency](#benchmarking-pipeline-latency) below.
 </Callout>
 
 ## Why It Can Look Stale
@@ -36,18 +36,21 @@ NBA and MLB player props commonly show long idle windows — 30+ minutes is not 
 
 ## How to Read the Fields Together
 
-Every odds row exposes two timestamps. They answer different questions:
+Every odds row exposes three timestamps. Each answers a different question:
 
-| Field              | What it tells you                                                    |
-|--------------------|----------------------------------------------------------------------|
-| `odds_changed_at`  | The last time Pinnacle's trading desk moved this line                |
-| `last_seen_at`     | The last time our pipeline observed this row                         |
-
-For pipeline freshness checks, use `last_seen_at` — this updates every time we ingest the row, regardless of whether the price moved.
+| Field               | What it tells you                                                                                  |
+|---------------------|----------------------------------------------------------------------------------------------------|
+| `odds_changed_at`   | The last time Pinnacle's trading desk moved this line (their source timestamp; can be hours old). |
+| `wire_received_at`  | The last time SharpAPI's pipeline first observed a content change for this row.                    |
+| `last_seen_at`      | The last time the pipeline touched this row at all (advances every ingest cycle).                  |
 
 For "when did Pinnacle last move this line," use `odds_changed_at`.
 
-A large gap between the two (fresh `last_seen_at`, old `odds_changed_at`) means Pinnacle is holding the line steady. This is normal and is the single most common source of confusion when reading Pinnacle data.
+For "when did this content arrive at SharpAPI" (ingest-latency benchmarking), use `wire_received_at`.
+
+For a heartbeat-style check ("is the row still being maintained by the pipeline"), use `last_seen_at`.
+
+A large gap between `wire_received_at` and `odds_changed_at` (fresh `wire_received_at`, old `odds_changed_at`) means Pinnacle is holding the line steady — the pipeline has the row fresh, the trading desk just has not moved it. This is normal and is the single most common source of confusion when reading Pinnacle data.
 
 ```json
 {
@@ -56,16 +59,28 @@ A large gap between the two (fresh `last_seen_at`, old `odds_changed_at`) means 
   "selection": "Edmundo Sosa Over",
   "line": 0.5,
   "odds_american": -129,
-  "last_seen_at":    "2026-04-21T21:35:02Z",
-  "odds_changed_at": "2026-04-21T18:49:00Z"
+  "last_seen_at":      "2026-04-21T21:35:02Z",
+  "wire_received_at":  "2026-04-21T21:34:58Z",
+  "odds_changed_at":   "2026-04-21T18:49:00Z"
 }
 ```
 
-In this example the pipeline saw this row 4 seconds before the client fetched it (`last_seen_at` is fresh). The price itself last moved 2h 46m earlier (`odds_changed_at`), because Pinnacle's trading desk has not repriced Sosa's total-bases line since pre-market open. Both values are correct.
+In this example the pipeline last touched this row 4 seconds before the client fetched it (`last_seen_at`), and last saw a content change 8 seconds before (`wire_received_at`). The price itself last moved 2h 46m earlier (`odds_changed_at`), because Pinnacle's trading desk has not repriced Sosa's total-bases line since pre-market open. All three values are correct.
 
 <Callout type="info">
-If `last_seen_at` is stale (more than a minute or two old for a major-league market), that is a pipeline signal worth investigating. If `odds_changed_at` is stale but `last_seen_at` is fresh, Pinnacle is holding the line — treat the displayed price as current.
+If `wire_received_at` and `last_seen_at` are both stale (more than a minute or two old for a major-league market), that is a pipeline signal worth investigating. If only `odds_changed_at` is stale, Pinnacle is holding the line — treat the displayed price as current.
 </Callout>
+
+## Benchmarking Pipeline Latency
+
+If you are comparing SharpAPI's Pinnacle delivery latency against another vendor, the field to measure against is **`wire_received_at`**, not `odds_changed_at`. The difference matters a lot:
+
+- `odds_changed_at` is Pinnacle's own source timestamp. Computing `now - odds_changed_at` measures **Pinnacle's publish cadence plus our pipeline lag** — including the long idle windows from the cadence table above. On NBA player props this can routinely sit hours old because Pinnacle has not moved the line, not because we are slow.
+- `wire_received_at` is stamped by SharpAPI at the moment we first observe a content change for the row, then carried forward across subsequent unchanged refreshes. Computing `now - wire_received_at` (or `wire_received_at - odds_changed_at`) isolates SharpAPI's ingest contribution from Pinnacle's trading-desk cadence.
+
+Vendors do not all expose their internal arrival stamp explicitly, and some surface their own ingest time under the `odds_changed_at` name. Benchmarking SharpAPI's `odds_changed_at` against another vendor's `odds_changed_at` without checking the semantic on each side is comparing the time-since-source-update on one platform to the time-since-ingest on another, which structurally makes the platform that preserves source semantics look slower even when the pipeline is faster.
+
+For an internal counterpart to per-row `wire_received_at`, the `/health` endpoint exposes Pinnacle's CDN publish cadence per sport (`cdn_fetch_pct_1h`, `cdn_fetch_pct_24h`). Low values for a given sport indicate the trading desk is holding lines steady; high values indicate active repricing. This panel lets you separate "Pinnacle is quiet" from "pipeline is stuck" without having to instrument anything yourself.
 
 ## Why Pinnacle Is Different
 
@@ -73,7 +88,7 @@ Pinnacle accepts sharp action and re-prices based on real flow rather than shadi
 
 ## Related
 
-- [Odds Snapshot](/en/api-reference/odds/) — `odds_changed_at` and `last_seen_at` fields on the REST odds response
+- [Odds Snapshot](/en/api-reference/odds/) — `odds_changed_at`, `wire_received_at`, and `last_seen_at` fields on the REST odds response
 - [Streaming](/en/api-reference/stream/) — `odds_changed_at` on `odds:update` deltas
 - [Live vs. Pre-Match](/en/concepts/live-vs-prematch/) — publish cadence and book delivery mechanisms
 - [EV Calculation](/en/concepts/ev-calculation/) — why Pinnacle is the sharp reference

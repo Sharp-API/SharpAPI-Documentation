@@ -313,7 +313,7 @@ X-Request-Id: req_abc123def456
 | `line` | number \| null | Spread- oder Total-Linienwert (`null` bei Moneyline) |
 | `event_start_time` | string | ISO 8601 Event-Startzeit |
 | `last_seen_at` | string | ISO 8601 Zeitstempel der letzten Beobachtung dieser Zeile durch unseren Adapter. Wird in jedem Ingest-Zyklus aktualisiert — dies ist das Pipeline-Frische-Signal. |
-| `odds_changed_at` | string | ISO 8601 Zeitstempel der quelleneigenen Aktualisierung des Sportwettenanbieters für diese Linie, sofern verfügbar. Bei Pinnacle wird er fortgeführt, solange Preis/Linie/`is_live`-Flag unverändert bleiben (siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at)). Verwenden Sie `last_seen_at` für die Pipeline-Frische. |
+| `odds_changed_at` | string | ISO 8601 Zeitstempel der quelleneigenen Aktualisierung des Sportwettenanbieters für diese Linie, sofern verfügbar. Bei Pinnacle wird er fortgeführt, solange Preis/Linie/`is_live`-Flag unverändert bleiben (siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/)). Verwenden Sie `last_seen_at` für die Pipeline-Frische. |
 | `is_live` | boolean | Ob das Event derzeit live läuft |
 | `player_name` | string\|undefined | Spielername (nur bei Player-Prop-Märkten) |
 | `stat_category` | string\|undefined | Statistikkategorie, z. B. `points`, `rebounds` (nur bei Player-Prop-Märkten) |
@@ -456,9 +456,9 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread&limit=200" \
 
 ## Verwandte Endpoints
 
-- [Odds Delta](/de/api-reference/odds-delta) - Nur Quoten abrufen, die sich seit einem bestimmten Zeitstempel geändert haben
-- [Best Odds](/de/api-reference/odds-best) - Die besten Quoten über alle Anbieter hinweg für jede Auswahl abrufen
-- [Odds Comparison](/de/api-reference/odds-comparison) - Quoten anbieterübergreifend nebeneinander vergleichen
-- [Batch Odds](/de/api-reference/odds-batch) - Quoten für mehrere Events in einer Anfrage abrufen
-- [Markets](/de/api-reference/markets) - Verfügbare Markttypen auflisten
-- [Sportsbooks](/de/api-reference/sportsbooks) - Verfügbare Sportwettenanbieter und ihren Status auflisten
+- [Odds Delta](/de/api-reference/odds-delta/) - Nur Quoten abrufen, die sich seit einem bestimmten Zeitstempel geändert haben
+- [Best Odds](/de/api-reference/odds-best/) - Die besten Quoten über alle Anbieter hinweg für jede Auswahl abrufen
+- [Odds Comparison](/de/api-reference/odds-comparison/) - Quoten anbieterübergreifend nebeneinander vergleichen
+- [Batch Odds](/de/api-reference/odds-batch/) - Quoten für mehrere Events in einer Anfrage abrufen
+- [Markets](/de/api-reference/markets/) - Verfügbare Markttypen auflisten
+- [Sportsbooks](/de/api-reference/sportsbooks/) - Verfügbare Sportwettenanbieter und ihren Status auflisten

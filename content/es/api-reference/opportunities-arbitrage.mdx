@@ -23,7 +23,7 @@ Requiere API key. **Se requiere nivel Hobby o superior.** Tu cuenta debe tener l
 | `sport` | string | all | Filtrar por deporte(s), separados por comas (p. ej. `basketball`, `football`) |
 | `league` | string | all | Filtrar por liga(s), separadas por comas (p. ej. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filtrar por casa(s) de apuestas, separadas por comas. Se aplican los límites del nivel. |
-| `market` | string | all | Filtrar por tipo(s) de mercado, separados por comas. Admite alias de categoría — consulta [Odds: Alias de Categoría de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filtrar por tipo(s) de mercado, separados por comas. Admite alias de categoría — consulta [Odds: Alias de Categoría de Mercado](/es/api-reference/odds/#market-category-aliases). |
 | `min_profit` | number | 0.5 | Porcentaje mínimo de beneficio (p. ej. `1.0` = 1%) |
 | `live` | boolean | — | `true` = solo en vivo, `false` = solo prepartido, omitir = ambos |
 | `format` | string | `json` | Formato de respuesta: `json` o `csv`. El CSV se descarga como `arbitrage_YYYY-MM-DD.csv`. |
@@ -35,7 +35,7 @@ Requiere API key. **Se requiere nivel Hobby o superior.** Tu cuenta debe tener l
 </Callout>
 
 <Callout type="warning">
-**Cambio incompatible:** El campo `game_state` (marcador/periodo/reloj) se eliminó de esta respuesta. El estado del partido en vivo ahora se sirve exclusivamente desde el endpoint [Game State](/es/api-reference/gamestate) y el canal de stream `gamestate`. Une las filas con el estado del partido mediante `event_id`.
+**Cambio incompatible:** El campo `game_state` (marcador/periodo/reloj) se eliminó de esta respuesta. El estado del partido en vivo ahora se sirve exclusivamente desde el endpoint [Game State](/es/api-reference/gamestate/) y el canal de stream `gamestate`. Une las filas con el estado del partido mediante `event_id`.
 </Callout>
 
 ### Filtrado de Múltiples Valores
@@ -371,12 +371,12 @@ Se aplica el mismo cálculo de stake: divide la probabilidad implícita de cada 
 | Sostenibilidad | Limitada por la salud de la cuenta | Viable a largo plazo |
 
 <Callout type="info">
-Muchos apostadores experimentados prefieren las apuestas +EV al arbitraje porque las cuentas duran más y las ventajas esperadas suelen ser mayores. Consulta el endpoint de [Oportunidades +EV](/es/api-reference/opportunities-ev) para más detalles.
+Muchos apostadores experimentados prefieren las apuestas +EV al arbitraje porque las cuentas duran más y las ventajas esperadas suelen ser mayores. Consulta el endpoint de [Oportunidades +EV](/es/api-reference/opportunities-ev/) para más detalles.
 </Callout>
 
 ## Endpoints Relacionados
 
-- [Oportunidades +EV](/es/api-reference/opportunities-ev) - Apuestas con valor esperado positivo
-- [Middles](/es/api-reference/opportunities-middles) - Oportunidades por discrepancia de líneas
-- [Conceptos de Arbitraje](/es/concepts/arbitrage) - Teoría detallada del arbitraje
-- [Ejemplo de Escáner de Arbitraje](/es/examples/arbitrage-scanner) - Construye un escáner en tiempo real
+- [Oportunidades +EV](/es/api-reference/opportunities-ev/) - Apuestas con valor esperado positivo
+- [Middles](/es/api-reference/opportunities-middles/) - Oportunidades por discrepancia de líneas
+- [Conceptos de Arbitraje](/es/concepts/arbitrage/) - Teoría detallada del arbitraje
+- [Ejemplo de Escáner de Arbitraje](/es/examples/arbitrage-scanner/) - Construye un escáner en tiempo real

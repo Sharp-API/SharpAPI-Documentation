@@ -145,7 +145,7 @@ for sport in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Sport identifier (lowercase, use in API filters) |
-| `numerical_id` | integer \| null | Stable integer key for the sport (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `numerical_id` | integer \| null | Stable integer key for the sport (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `name` | string | Human-readable sport name |
 | `leagues` | string[] | League IDs within this sport |
 | `event_count` | integer | Total events currently available with odds |
@@ -159,7 +159,7 @@ for sport in result['data']:
 - **Optional:** absent (or `null`) for sports that haven't been mapped yet — the slug `id` is always present.
 - **Domain-scoped:** unique across sports only; pair with the entity domain to disambiguate.
 
-See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full semantics, plus the matching `sport_ref` block emitted on every odds row and opportunity leg.
+See [Entity reference IDs](/en/concepts/entity-reference-ids/) for the full semantics, plus the matching `sport_ref` block emitted on every odds row and opportunity leg.
 
 ## Available Sports
 
@@ -205,6 +205,6 @@ curl "https://api.sharpapi.io/api/v1/events?sport=basketball,football" \
 
 ## Related Endpoints
 
-- [Leagues](/en/api-reference/leagues) - List leagues with optional sport filter
-- [Odds Snapshot](/en/api-reference/odds) - Filter odds by sport
-- [Events](/en/api-reference/events) - Filter events by sport
+- [Leagues](/en/api-reference/leagues/) - List leagues with optional sport filter
+- [Odds Snapshot](/en/api-reference/odds/) - Filter odds by sport
+- [Events](/en/api-reference/events/) - Filter events by sport

@@ -17,7 +17,7 @@ GET /api/v1/opportunities/low_hold
 Requer chave de API. **Tier Pro ou superior obrigatório.** Sua conta deve ter o recurso `low_hold` habilitado.
 
 <Callout type="warning">
-**Mudança incompatível:** O campo `game_state` (placar/período/relógio) foi removido desta resposta. O estado ao vivo do jogo agora é servido exclusivamente pelo endpoint [Game State](/pt-BR/api-reference/gamestate) e pelo canal de stream `gamestate`. Faça o join das linhas com o estado do jogo por `event_id`.
+**Mudança incompatível:** O campo `game_state` (placar/período/relógio) foi removido desta resposta. O estado ao vivo do jogo agora é servido exclusivamente pelo endpoint [Game State](/pt-BR/api-reference/gamestate/) e pelo canal de stream `gamestate`. Faça o join das linhas com o estado do jogo por `event_id`.
 </Callout>
 
 ## Parâmetros de Query
@@ -345,12 +345,12 @@ O cálculo do hold se estende a todos os três lados: `implied_prob_1 + implied_
 2. **Passe o parâmetro `state`** — Obtenha deep links precisos para a jurisdição do seu usuário
 3. **Combine com dados de +EV** — Low hold + EV positivo é a combinação ideal
 4. **Verifique `possibly_stale`** — Pule oportunidades em que as odds podem já ter se movido
-5. **Use streaming** — Assine eventos `low_hold:detected` via [SSE](/pt-BR/api-reference/stream) ou [WebSocket](/pt-BR/api-reference/websocket) para alertas em tempo real
+5. **Use streaming** — Assine eventos `low_hold:detected` via [SSE](/pt-BR/api-reference/stream/) ou [WebSocket](/pt-BR/api-reference/websocket/) para alertas em tempo real
 6. **Monitore `all_books`** — Mais books participando geralmente significa precificação mais confiável
 
 ## Endpoints Relacionados
 
-- [Oportunidades de +EV](/pt-BR/api-reference/opportunities-ev) — Apostas com valor esperado positivo
-- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) — Lucro garantido entre books
-- [Middles](/pt-BR/api-reference/opportunities-middles) — Oportunidades de discrepância de linha
-- [Melhores Odds](/pt-BR/api-reference/odds-best) — Encontre o melhor preço entre todos os books
+- [Oportunidades de +EV](/pt-BR/api-reference/opportunities-ev/) — Apostas com valor esperado positivo
+- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage/) — Lucro garantido entre books
+- [Middles](/pt-BR/api-reference/opportunities-middles/) — Oportunidades de discrepância de linha
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) — Encontre o melhor preço entre todos os books

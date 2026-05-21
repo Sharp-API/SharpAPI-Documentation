@@ -21,7 +21,7 @@ Dieser Endpoint ersetzt die früheren Endpoints `/positive-ev` und `/value-bets`
 </Callout>
 
 <Callout type="warning">
-**Live-Spielstatus:** EV-Zeilen enthalten keine Spielstände, Spielabschnitte oder Spielzeit. Der Live-Spielstatus wird ausschließlich über den [Game State](/de/api-reference/gamestate)-Endpoint und den `gamestate`-Streamkanal bereitgestellt. Verknüpfen Sie Zeilen mit dem Spielstatus über `event_id`.
+**Live-Spielstatus:** EV-Zeilen enthalten keine Spielstände, Spielabschnitte oder Spielzeit. Der Live-Spielstatus wird ausschließlich über den [Game State](/de/api-reference/gamestate/)-Endpoint und den `gamestate`-Streamkanal bereitgestellt. Verknüpfen Sie Zeilen mit dem Spielstatus über `event_id`.
 </Callout>
 
 ## Authentifizierung
@@ -35,7 +35,7 @@ Erfordert API-Key. **Pro-Tarif oder höher erforderlich.** Ihr Konto muss das `e
 | `sport` | string | alle | Filtern nach Sportart(en), kommagetrennt (z. B. `basketball`, `football`, `ice_hockey`) |
 | `league` | string | alle | Filtern nach Liga(en), kommagetrennt (z. B. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tarifabhängig | Filtern nach Sportwettenanbieter(n), kommagetrennt. Tarifgrenzen werden durchgesetzt. |
-| `market` | string | alle | Filtern nach Markttyp(en), kommagetrennt. Unterstützt [Kategorie-Aliase](/de/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) oder exakte Typen (`point_spread`, `player_points`). |
+| `market` | string | alle | Filtern nach Markttyp(en), kommagetrennt. Unterstützt [Kategorie-Aliase](/de/api-reference/odds/#market-category-aliases) (`main`, `spread`, `total`, `props`) oder exakte Typen (`point_spread`, `player_points`). |
 | `event` | string | alle | Filtern nach Spiel-/Event-ID(s), kommagetrennt |
 | `min_ev` | number | 0 | Mindestschwellenwert für EV-Prozentsatz |
 | `max_ev` | number | — | Höchstschwellenwert für EV-Prozentsatz |
@@ -440,8 +440,8 @@ Kelly% = (fair_prob × decimal_odds - 1) / (decimal_odds - 1) × 100
 
 ## Verwandte Endpoints
 
-- [Arbitrage-Möglichkeiten](/de/api-reference/opportunities-arbitrage) - Garantierter Gewinn über mehrere Anbieter
-- [Low-Hold-Möglichkeiten](/de/api-reference/opportunities-low-hold) - Engste Linien über mehrere Anbieter
-- [Middles](/de/api-reference/opportunities-middles) - Möglichkeiten durch Linienunterschiede
-- [Beste Quoten](/de/api-reference/odds-best) - Finden Sie den besten Preis bei allen Anbietern
-- [EV-Berechnungs-Konzepte](/de/concepts/ev-calculation) - Tiefer Einblick in die Mathematik
+- [Arbitrage-Möglichkeiten](/de/api-reference/opportunities-arbitrage/) - Garantierter Gewinn über mehrere Anbieter
+- [Low-Hold-Möglichkeiten](/de/api-reference/opportunities-low-hold/) - Engste Linien über mehrere Anbieter
+- [Middles](/de/api-reference/opportunities-middles/) - Möglichkeiten durch Linienunterschiede
+- [Beste Quoten](/de/api-reference/odds-best/) - Finden Sie den besten Preis bei allen Anbietern
+- [EV-Berechnungs-Konzepte](/de/concepts/ev-calculation/) - Tiefer Einblick in die Mathematik

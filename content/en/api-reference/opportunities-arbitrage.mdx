@@ -23,7 +23,7 @@ Requires API key. **Hobby tier or higher required.** Your account must have the 
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated. Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds/#market-category-aliases). |
 | `min_profit` | number | 0.5 | Minimum profit percentage (e.g. `1.0` = 1%) |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
 | `format` | string | `json` | Response format: `json` or `csv`. CSV downloads as `arbitrage_YYYY-MM-DD.csv`. |
@@ -35,7 +35,7 @@ Requires API key. **Hobby tier or higher required.** Your account must have the 
 </Callout>
 
 <Callout type="warning">
-**Breaking change:** The `game_state` field (score/period/clock) was removed from this response. Live game state is now served exclusively by the [Game State](/en/api-reference/gamestate) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
+**Breaking change:** The `game_state` field (score/period/clock) was removed from this response. Live game state is now served exclusively by the [Game State](/en/api-reference/gamestate/) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
 </Callout>
 
 ### Filtering Multiple Values
@@ -262,7 +262,7 @@ X-Request-Id: req_arb789xyz012
 | `external_event_id` | string\|null | Sportsbook's native event ID |
 | `selection_id` | string\|null | Sportsbook's selection/outcome ID |
 | `market_id` | string\|null | Sportsbook's market ID |
-| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
@@ -312,7 +312,7 @@ Every arbitrage leg now carries six optional nested reference objects, mirroring
 }
 ```
 
-Each block is emitted only when the underlying entity is mapped in the atlas; treat every block (and every inner field) as **optional**. The two competitor blocks (`home`, `away`) are identical across all legs of the same opportunity — the leg differs only in `sportsbook_ref`, `selection`, and the price. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
+Each block is emitted only when the underlying entity is mapped in the atlas; treat every block (and every inner field) as **optional**. The two competitor blocks (`home`, `away`) are identical across all legs of the same opportunity — the leg differs only in `sportsbook_ref`, `selection`, and the price. See [Entity reference IDs](/en/concepts/entity-reference-ids/) for the full contract.
 
 ### CSV Format
 
@@ -422,12 +422,12 @@ The same stake calculation applies -- divide each leg's implied probability by t
 | Sustainability | Limited by account health | Long-term viable |
 
 <Callout type="info">
-Many experienced bettors prefer +EV betting over arbitrage because accounts last longer and the expected edges are often larger. See the [+EV Opportunities](/en/api-reference/opportunities-ev) endpoint for details.
+Many experienced bettors prefer +EV betting over arbitrage because accounts last longer and the expected edges are often larger. See the [+EV Opportunities](/en/api-reference/opportunities-ev/) endpoint for details.
 </Callout>
 
 ## Related Endpoints
 
-- [+EV Opportunities](/en/api-reference/opportunities-ev) - Positive expected value bets
-- [Middles](/en/api-reference/opportunities-middles) - Line discrepancy opportunities
-- [Arbitrage Concepts](/en/concepts/arbitrage) - Detailed arbitrage theory
-- [Arbitrage Scanner Example](/en/examples/arbitrage-scanner) - Build a real-time scanner
+- [+EV Opportunities](/en/api-reference/opportunities-ev/) - Positive expected value bets
+- [Middles](/en/api-reference/opportunities-middles/) - Line discrepancy opportunities
+- [Arbitrage Concepts](/en/concepts/arbitrage/) - Detailed arbitrage theory
+- [Arbitrage Scanner Example](/en/examples/arbitrage-scanner/) - Build a real-time scanner

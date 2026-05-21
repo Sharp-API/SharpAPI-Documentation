@@ -9,7 +9,7 @@ import { Callout, Tabs } from 'nextra/components'
 Echtzeit-Aktualisierungen von Quoten und Opportunitäten über **SSE** oder **WebSocket**.
 
 <Callout type="info">
-SharpAPI bietet zwei Streaming-Protokolle: **[SSE (Server-Sent Events)](/de/api-reference/stream)** über HTTP und **[WebSocket](/de/api-reference/websocket)** für bidirektionale Kommunikation. Beide liefern dieselben Echtzeitdaten — wählen Sie basierend auf Ihrem Anwendungsfall.
+SharpAPI bietet zwei Streaming-Protokolle: **[SSE (Server-Sent Events)](/de/api-reference/stream/)** über HTTP und **[WebSocket](/de/api-reference/websocket/)** für bidirektionale Kommunikation. Beide liefern dieselben Echtzeitdaten — wählen Sie basierend auf Ihrem Anwendungsfall.
 </Callout>
 
 ## Warum Streaming?
@@ -62,7 +62,7 @@ SSE verbindet sich bei einer Trennung automatisch wieder. Der Server verwendet `
 | Enterprise | Inklusive (individuelle Limits) |
 
 <Callout type="warning">
-**Newer-Wins-Verdrängung:** Das Öffnen eines zweiten Streams mit demselben API-Schlüssel schließt den ersten. Eine gut verwaltete Verbindung reicht für die meisten Anwendungsfälle aus — siehe [Single-Connection-Patterns](/de/streaming/single-connection) für Techniken. Flotten-Deployments, die mehrere gleichzeitige Streams benötigen, können über den [Vertrieb](mailto:sales@sharpapi.io) ein höheres Limit anfordern.
+**Newer-Wins-Verdrängung:** Das Öffnen eines zweiten Streams mit demselben API-Schlüssel schließt den ersten. Eine gut verwaltete Verbindung reicht für die meisten Anwendungsfälle aus — siehe [Single-Connection-Patterns](/de/streaming/single-connection/) für Techniken. Flotten-Deployments, die mehrere gleichzeitige Streams benötigen, können über den [Vertrieb](mailto:sales@sharpapi.io) ein höheres Limit anfordern.
 </Callout>
 
 ## Schnellstart
@@ -194,7 +194,7 @@ for event in client.events():
 | `ev:expired` | +EV-Opportunität nicht mehr verfügbar |
 | `arb:detected` | Neue Arbitrage-Opportunität gefunden |
 | `arb:expired` | Arbitrage-Opportunität nicht mehr verfügbar |
-| `middles:detected` | Neue Middle-Opportunität gefunden (siehe [Middles-Zusammenfassung](/de/api-reference/opportunities-middles-summary) für aggregierte Statistiken) |
+| `middles:detected` | Neue Middle-Opportunität gefunden (siehe [Middles-Zusammenfassung](/de/api-reference/opportunities-middles-summary/) für aggregierte Statistiken) |
 | `middles:expired` | Middle-Opportunität nicht mehr verfügbar |
 | `low_hold:detected` | Neue Low-Hold-Opportunität gefunden |
 | `low_hold:expired` | Low-Hold-Opportunität nicht mehr verfügbar |
@@ -217,16 +217,16 @@ Beide Protokolle liefern dieselben Ereignistypen und Daten-Nutzlasten.
 
 ## Vollständige API-Referenz
 
-- **[SSE Stream API-Referenz](/de/api-reference/stream)** -- Query-Parameter, Event-Nutzlasten, Wiederverbindung
-- **[WebSocket API-Referenz](/de/api-reference/websocket)** -- Verbindungslebenszyklus, Nachrichtenprotokoll, Close-Codes
-- **[WebSocket Streaming-Anleitung](/de/streaming/websocket)** -- Schnellstart, Wiederverbindungsmuster, Best Practices
+- **[SSE Stream API-Referenz](/de/api-reference/stream/)** -- Query-Parameter, Event-Nutzlasten, Wiederverbindung
+- **[WebSocket API-Referenz](/de/api-reference/websocket/)** -- Verbindungslebenszyklus, Nachrichtenprotokoll, Close-Codes
+- **[WebSocket Streaming-Anleitung](/de/streaming/websocket/)** -- Schnellstart, Wiederverbindungsmuster, Best Practices
 
 ## SDKs mit Streaming-Unterstützung
 
-- **[TypeScript SDK](/de/sdks/typescript)** -- Eingebauter SSE-Client mit typsicheren Event-Handlern
-- **[Python SDK](/de/sdks/python)** -- Handler-basierte und Iterator-basierte Streaming-Muster
+- **[TypeScript SDK](/de/sdks/typescript/)** -- Eingebauter SSE-Client mit typsicheren Event-Handlern
+- **[Python SDK](/de/sdks/python/)** -- Handler-basierte und Iterator-basierte Streaming-Muster
 
 ## Beispielprojekte
 
-- [Arbitrage-Scanner](/de/examples/arbitrage-scanner) -- Echtzeit-Arb-Erkennung mit Discord-Benachrichtigungen
-- [Value-Betting-Bot](/de/examples/value-betting) -- +EV-Benachrichtigungs-Bot für Discord/Telegram
+- [Arbitrage-Scanner](/de/examples/arbitrage-scanner/) -- Echtzeit-Arb-Erkennung mit Discord-Benachrichtigungen
+- [Value-Betting-Bot](/de/examples/value-betting/) -- +EV-Benachrichtigungs-Bot für Discord/Telegram

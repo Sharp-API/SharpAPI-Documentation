@@ -290,7 +290,7 @@ Jedes Element im `data.events`-Array ist ein Event-Objekt mit verschachtelten Qu
 | `odds_decimal` | number | Dezimalquoten |
 | `line` | number \| null | Linienwert |
 | `last_seen_at` | string | ISO 8601 Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie dies als Frische-Signal für die Pipeline. |
-| `odds_changed_at` | string | ISO 8601 Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert haben. Wird vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Aktualisierungen hinweg übertragen — siehe [Understanding Pinnacle's `odds_changed_at`](/de/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | ISO 8601 Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert haben. Wird vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Aktualisierungen hinweg übertragen — siehe [Understanding Pinnacle's `odds_changed_at`](/de/concepts/pinnacle-odds-changed-at/). |
 
 ## Anwendungsfälle
 
@@ -342,6 +342,6 @@ async function refreshWatchlist(eventIds) {
 
 ## Verwandte Endpoints
 
-- [Odds Snapshot](/de/api-reference/odds) - Quoten mit flexiblen Abfragefiltern abrufen
-- [Best Odds](/de/api-reference/odds-best) - Beste Quoten über Sportsbooks pro Auswahl abrufen
-- [Events](/de/api-reference/events) - Events auflisten, um Event-IDs für Batch-Anfragen zu erhalten
+- [Odds Snapshot](/de/api-reference/odds/) - Quoten mit flexiblen Abfragefiltern abrufen
+- [Best Odds](/de/api-reference/odds-best/) - Beste Quoten über Sportsbooks pro Auswahl abrufen
+- [Events](/de/api-reference/events/) - Events auflisten, um Event-IDs für Batch-Anfragen zu erhalten

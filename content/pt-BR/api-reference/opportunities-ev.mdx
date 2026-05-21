@@ -21,7 +21,7 @@ Este endpoint substitui os antigos endpoints `/positive-ev` e `/value-bets`. Tod
 </Callout>
 
 <Callout type="warning">
-**Estado do jogo ao vivo:** As linhas de EV não carregam placares, período ou tempo de jogo. O estado do jogo ao vivo é servido exclusivamente pelo endpoint [Game State](/pt-BR/api-reference/gamestate) e pelo canal de stream `gamestate`. Faça o join das linhas com o estado do jogo por `event_id`.
+**Estado do jogo ao vivo:** As linhas de EV não carregam placares, período ou tempo de jogo. O estado do jogo ao vivo é servido exclusivamente pelo endpoint [Game State](/pt-BR/api-reference/gamestate/) e pelo canal de stream `gamestate`. Faça o join das linhas com o estado do jogo por `event_id`.
 </Callout>
 
 ## Autenticação
@@ -35,7 +35,7 @@ Requer API key. **Plano Pro ou superior necessário.** Sua conta deve ter o recu
 | `sport` | string | todos | Filtra por esporte(s), separados por vírgula (ex.: `basketball`, `football`, `ice_hockey`) |
 | `league` | string | todas | Filtra por liga(s), separadas por vírgula (ex.: `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | permitido pelo plano | Filtra por casa(s) de apostas, separadas por vírgula. Limites do plano são aplicados. |
-| `market` | string | todos | Filtra por tipo(s) de mercado, separados por vírgula. Suporta [aliases de categoria](/pt-BR/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) ou tipos exatos (`point_spread`, `player_points`). |
+| `market` | string | todos | Filtra por tipo(s) de mercado, separados por vírgula. Suporta [aliases de categoria](/pt-BR/api-reference/odds/#market-category-aliases) (`main`, `spread`, `total`, `props`) ou tipos exatos (`point_spread`, `player_points`). |
 | `event` | string | todos | Filtra por ID(s) de jogo/evento, separados por vírgula |
 | `min_ev` | number | 0 | Limite mínimo de porcentagem de EV |
 | `max_ev` | number | — | Limite máximo de porcentagem de EV |
@@ -440,8 +440,8 @@ Kelly% = (fair_prob × decimal_odds - 1) / (decimal_odds - 1) × 100
 
 ## Endpoints Relacionados
 
-- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage) - Lucro garantido entre casas
-- [Oportunidades de Low Hold](/pt-BR/api-reference/opportunities-low-hold) - Linhas mais apertadas entre casas
-- [Middles](/pt-BR/api-reference/opportunities-middles) - Oportunidades de discrepância de linhas
-- [Melhores Odds](/pt-BR/api-reference/odds-best) - Encontre o melhor preço em todas as casas
-- [Conceitos de Cálculo de EV](/pt-BR/concepts/ev-calculation) - Aprofundamento na matemática
+- [Oportunidades de Arbitragem](/pt-BR/api-reference/opportunities-arbitrage/) - Lucro garantido entre casas
+- [Oportunidades de Low Hold](/pt-BR/api-reference/opportunities-low-hold/) - Linhas mais apertadas entre casas
+- [Middles](/pt-BR/api-reference/opportunities-middles/) - Oportunidades de discrepância de linhas
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) - Encontre o melhor preço em todas as casas
+- [Conceitos de Cálculo de EV](/pt-BR/concepts/ev-calculation/) - Aprofundamento na matemática

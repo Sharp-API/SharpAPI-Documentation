@@ -28,7 +28,7 @@ Use o `server_time` de cada resposta como o valor `since` para sua próxima requ
 | `sportsbook` | string | todos | IDs de sportsbook separados por vírgula (ex.: `draftkings,fanduel`) |
 | `sport` | string | todos | Filtrar por esporte (ex.: `basketball`, `football`) |
 | `league` | string | todas | Filtrar por liga (ex.: `nba`, `nfl`) |
-| `market` | string | todos | Filtrar por tipo de mercado (ex.: `moneyline`, `spread`, `total`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds#market-category-aliases). |
+| `market` | string | todos | Filtrar por tipo de mercado (ex.: `moneyline`, `spread`, `total`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds/#market-category-aliases). |
 | `event` | string | - | Filtrar por ID do evento |
 | `live` | boolean | false | Retornar apenas eventos ao vivo/in-play |
 | `sort` | string | - | Campo de ordenação com prefixo opcional `-` para ordem decrescente (ex.: `-odds_american`, `odds_probability`) |
@@ -199,7 +199,7 @@ X-Request-Id: req_delta_abc123
 
 ## Schema da Resposta de Delta
 
-O array `data` contém os mesmos objetos de odds que o endpoint [`/odds`](/pt-BR/api-reference/odds). Apenas odds atualizadas após o timestamp `since` são incluídas.
+O array `data` contém os mesmos objetos de odds que o endpoint [`/odds`](/pt-BR/api-reference/odds/). Apenas odds atualizadas após o timestamp `since` são incluídas.
 
 O objeto `meta` inclui dois campos adicionais:
 
@@ -237,6 +237,6 @@ Se nenhuma odd tiver mudado desde o seu timestamp `since`, a resposta terá um a
 
 ## Endpoints Relacionados
 
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obtenha o snapshot completo atual de odds
-- [Stream SSE](/pt-BR/api-reference/stream) - Atualizações push em tempo real via Server-Sent Events
-- [Stream WebSocket](/pt-BR/api-reference/websocket) - Atualizações push em tempo real via WebSocket
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obtenha o snapshot completo atual de odds
+- [Stream SSE](/pt-BR/api-reference/stream/) - Atualizações push em tempo real via Server-Sent Events
+- [Stream WebSocket](/pt-BR/api-reference/websocket/) - Atualizações push em tempo real via WebSocket

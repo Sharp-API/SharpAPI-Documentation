@@ -25,7 +25,7 @@ with `addon: "game_state"` in the error body. Add the add-on from the
 (Hobby / Pro / Sharp); Enterprise keys get it included.
 
 Live game state also streams over the `gamestate` channel on
-[SSE](/api-reference/stream) and [WebSocket](/api-reference/websocket)
+[SSE](/api-reference/stream/) and [WebSocket](/api-reference/websocket/)
 — see [Streaming](#streaming) below. (Streaming access requires the
 WebSocket add-on or Enterprise, in addition to the Game State
 requirement above.)
@@ -239,9 +239,9 @@ for the event at merge time.
 Every update that the REST endpoint would surface on the next poll
 also fires a `gamestate:update` event on the streaming channels:
 
-- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream#gamestate)
+- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream/#gamestate)
 - **WebSocket**: subscribe to `{channels: ["gamestate"]}` on
-  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket)
+  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket/)
 
 Streaming clients receive an initial `gamestate:snapshot` with the full
 current state (a flat list of event rows), then `gamestate:update`

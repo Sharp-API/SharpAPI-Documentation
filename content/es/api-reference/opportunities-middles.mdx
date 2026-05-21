@@ -23,7 +23,7 @@ Requiere API key. **Se requiere nivel Pro o superior.**
 | `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball`, `football`) |
 | `league` | string | todas | Filtrar por liga(s), separadas por comas (p. ej. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | permitidos por nivel | Filtrar por sportsbook(s), separados por comas. Se aplican los límites de nivel. |
-| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por comas (p. ej. `point_spread`, `total_points`). Admite alias de categorías — consulta [Odds: Alias de Categorías de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `market` | string | todos | Filtrar por tipo(s) de mercado, separados por comas (p. ej. `point_spread`, `total_points`). Admite alias de categorías — consulta [Odds: Alias de Categorías de Mercado](/es/api-reference/odds/#market-category-aliases). |
 | `min_size` | number | 0.5 | Tamaño mínimo del middle en puntos |
 | `live` | boolean | — | `true` = solo en vivo, `false` = solo prepartido, omitir = ambos |
 | `max_odds_age` | number | — | Antigüedad máxima de las cuotas en segundos. Filtra oportunidades obsoletas. |
@@ -352,14 +352,14 @@ El campo `odds_age_seconds` muestra la antigüedad de las cuotas subyacentes cua
 2. **Vigila los números clave** — Los middles que contienen NFL 3/7 o NHL/MLB/soccer 1 tienen tasas de acierto elevadas
 3. **Prioriza el beneficio garantizado** — Filtra por `is_guaranteed_profit` para encontrar oportunidades sin riesgo
 4. **Comprueba la frescura de las cuotas** — Un `odds_age_seconds` bajo significa que las líneas son actuales y accionables
-5. **Combínalo con el endpoint de resumen** — Usa [`/middles/summary`](/es/api-reference/opportunities-middles-summary) para vistas generales de dashboard
+5. **Combínalo con el endpoint de resumen** — Usa [`/middles/summary`](/es/api-reference/opportunities-middles-summary/) para vistas generales de dashboard
 6. **Actúa con rapidez** — Las líneas convergen a medida que los books se ajustan, cerrando la ventana del middle
-7. **Usa streaming** — Suscríbete a los eventos `middles:detected` mediante [SSE](/es/api-reference/stream) o [WebSocket](/es/api-reference/websocket) para alertas en tiempo real
+7. **Usa streaming** — Suscríbete a los eventos `middles:detected` mediante [SSE](/es/api-reference/stream/) o [WebSocket](/es/api-reference/websocket/) para alertas en tiempo real
 
 ## Endpoints relacionados
 
-- [Resumen de Middles](/es/api-reference/opportunities-middles-summary) — Estadísticas agregadas sin la lista completa
-- [Oportunidades +EV](/es/api-reference/opportunities-ev) — Apuestas de valor esperado positivo
-- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage) — Oportunidades de beneficio garantizado
-- [Stream SSE](/es/api-reference/stream) — Eventos `middles:detected` y `middles:expired` en tiempo real
-- [Mejores Cuotas](/es/api-reference/odds-best) — Compara cuotas entre todos los books
+- [Resumen de Middles](/es/api-reference/opportunities-middles-summary/) — Estadísticas agregadas sin la lista completa
+- [Oportunidades +EV](/es/api-reference/opportunities-ev/) — Apuestas de valor esperado positivo
+- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage/) — Oportunidades de beneficio garantizado
+- [Stream SSE](/es/api-reference/stream/) — Eventos `middles:detected` y `middles:expired` en tiempo real
+- [Mejores Cuotas](/es/api-reference/odds-best/) — Compara cuotas entre todos los books

@@ -26,7 +26,7 @@ Best Odds está disponível em todos os planos, incluindo o Free. As casas de ap
 |-----------|------|---------|-------------|
 | `sport` | string | all | Filtrar por esporte(s), separados por vírgula (ex.: `basketball`, `football`) |
 | `league` | string | all | Filtrar por liga(s), separadas por vírgula (ex.: `nba`, `nfl`) |
-| `market` | string | all | Filtrar por tipo(s) de mercado, separados por vírgula (ex.: `moneyline`, `spread`, `total`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filtrar por tipo(s) de mercado, separados por vírgula (ex.: `moneyline`, `spread`, `total`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds/#market-category-aliases). |
 | `event` | string | — | Filtrar por ID(s) de evento, separados por vírgula |
 | `live` | boolean | — | `true` = apenas ao vivo, `false` = apenas pré-jogo, omitir = ambos |
 | `min_odds` | number | — | Filtro de odds americanas mínimas |
@@ -212,7 +212,7 @@ X-Request-Id: req_best_789xyz
 | `all_books[].edge` | number | Edge sobre as piores odds disponíveis (pontos percentuais) |
 | `all_books[].line` | number \| null | Linha nesta casa de apostas |
 | `all_books[].last_seen_at` | string | Quando nosso pipeline observou pela última vez a linha desta casa — sinal de atualização do pipeline |
-| `all_books[].odds_changed_at` | string | Quando o preço, linha ou flag `is_live` desta casa mudou pela última vez. No Pinnacle, é mantido entre atualizações sem alterações — veja [Entendendo o `odds_changed_at` do Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+| `all_books[].odds_changed_at` | string | Quando o preço, linha ou flag `is_live` desta casa mudou pela última vez. No Pinnacle, é mantido entre atualizações sem alterações — veja [Entendendo o `odds_changed_at` do Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 | `last_seen_at` | string | Timestamp ISO 8601 da determinação das melhores odds |
 | `player_name` | string\|undefined | Nome do jogador (apenas mercados de player prop) |
 | `stat_category` | string\|undefined | Categoria estatística, ex.: `points`, `rebounds` (apenas mercados de player prop) |
@@ -252,7 +252,7 @@ O campo `edge` em cada casa em `all_books` mostra o quanto melhores (ou piores) 
 
 ## Endpoints Relacionados
 
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obtenha odds brutas de casas de apostas individuais
-- [Delta de Odds](/pt-BR/api-reference/odds-delta) - Obtenha apenas as odds que mudaram desde um determinado timestamp
-- [Comparação de Odds](/pt-BR/api-reference/odds-comparison) - Compare odds lado a lado entre casas
-- [Casas de Apostas](/pt-BR/api-reference/sportsbooks) - Veja quais casas estão disponíveis e seu status
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obtenha odds brutas de casas de apostas individuais
+- [Delta de Odds](/pt-BR/api-reference/odds-delta/) - Obtenha apenas as odds que mudaram desde um determinado timestamp
+- [Comparação de Odds](/pt-BR/api-reference/odds-comparison/) - Compare odds lado a lado entre casas
+- [Casas de Apostas](/pt-BR/api-reference/sportsbooks/) - Veja quais casas estão disponíveis e seu status

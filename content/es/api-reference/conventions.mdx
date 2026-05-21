@@ -9,7 +9,7 @@ import { Callout } from 'nextra/components'
 SharpAPI devuelve estructuras de respuesta predecibles en todos los endpoints REST. Esta página recoge dichas convenciones para que puedas crear analizadores genéricos en lugar de casos especiales por endpoint.
 
 <Callout type="info">
-  Esta página describe las convenciones REST. Los flujos SSE se tratan en [Flujo SSE](/es/api-reference/stream), y el protocolo WebSocket bidireccional dispone de su propia [especificación AsyncAPI 3.0](https://docs.sharpapi.io/asyncapi.yaml).
+  Esta página describe las convenciones REST. Los flujos SSE se tratan en [Flujo SSE](/es/api-reference/stream/), y el protocolo WebSocket bidireccional dispone de su propia [especificación AsyncAPI 3.0](https://docs.sharpapi.io/asyncapi.yaml).
 </Callout>
 
 ## Códigos de estado HTTP, no envoltorios
@@ -102,7 +102,7 @@ Cada respuesta no 2xx devuelve un único objeto `error`.
 
 `missing_api_key`, `invalid_api_key`, `validation_error`, `tier_restricted`, `rate_limited`, `too_many_streams`, `not_found`, `upstream_error`, `internal_error`.
 
-Consulta la lista completa (21 códigos HTTP + 6 códigos de frame WebSocket, con sus estados HTTP) en [Visión general de la API → Códigos de error](/es/api-reference/overview#error-codes). `bad_request` e `invalid_request` están obsoletos: ambos se han fusionado en `validation_error`.
+Consulta la lista completa (21 códigos HTTP + 6 códigos de frame WebSocket, con sus estados HTTP) en [Visión general de la API → Códigos de error](/es/api-reference/overview/#error-codes). `bad_request` e `invalid_request` están obsoletos: ambos se han fusionado en `validation_error`.
 
 ## Marcas de tiempo
 

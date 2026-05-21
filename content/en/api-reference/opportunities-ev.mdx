@@ -21,7 +21,7 @@ This endpoint replaces the former `/positive-ev` and `/value-bets` endpoints. Al
 </Callout>
 
 <Callout type="warning">
-**Live game state:** EV rows do not carry scores, period, or clock. Live game state is served exclusively by the [Game State](/en/api-reference/gamestate) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
+**Live game state:** EV rows do not carry scores, period, or clock. Live game state is served exclusively by the [Game State](/en/api-reference/gamestate/) endpoint and the `gamestate` stream channel. Join rows to game state by `event_id`.
 </Callout>
 
 ## Authentication
@@ -35,7 +35,7 @@ Requires API key. **Pro tier or higher required.** Your account must have the `e
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `league` | string | all | Filter by league(s), comma-separated (e.g. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated. Tier limits enforced. |
-| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](/en/api-reference/odds#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
+| `market` | string | all | Filter by market type(s), comma-separated. Supports [category aliases](/en/api-reference/odds/#market-category-aliases) (`main`, `spread`, `total`, `props`) or exact types (`point_spread`, `player_points`). |
 | `event` | string | all | Filter by game/event ID(s), comma-separated |
 | `min_ev` | number | 0 | Minimum EV percentage threshold |
 | `max_ev` | number | — | Maximum EV percentage threshold |
@@ -317,7 +317,7 @@ X-Request-Id: req_abc123def456
 | `oldest_odds_age_seconds` | number\|null | Age of the stalest odds used in the EV calculation (seconds) |
 | `warnings` | string[] | Data quality warnings (e.g., `POTENTIALLY_STALE_ODDS`, `LIVE_STALE_ODDS`) |
 | `detected_at` | string | ISO 8601 timestamp when the +EV was first detected |
-| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
@@ -346,7 +346,7 @@ Every +EV row now carries six optional nested reference objects that bundle each
 }
 ```
 
-Each block is emitted only when the underlying entity is mapped in the SharpAPI atlas — treat every block (and every inner field) as **optional**. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract, the dense-from-1 / frozen / never-reused guarantees, and recommended use.
+Each block is emitted only when the underlying entity is mapped in the SharpAPI atlas — treat every block (and every inner field) as **optional**. See [Entity reference IDs](/en/concepts/entity-reference-ids/) for the full contract, the dense-from-1 / frozen / never-reused guarantees, and recommended use.
 
 ### Meta Summary Fields
 
@@ -470,8 +470,8 @@ Kelly% = (fair_prob × decimal_odds - 1) / (decimal_odds - 1) × 100
 
 ## Related Endpoints
 
-- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) - Guaranteed profit across books
-- [Low Hold Opportunities](/en/api-reference/opportunities-low-hold) - Tightest lines across books
-- [Middles](/en/api-reference/opportunities-middles) - Line discrepancy opportunities
-- [Best Odds](/en/api-reference/odds-best) - Find the best price across all books
-- [EV Calculation Concepts](/en/concepts/ev-calculation) - Deep dive into the math
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage/) - Guaranteed profit across books
+- [Low Hold Opportunities](/en/api-reference/opportunities-low-hold/) - Tightest lines across books
+- [Middles](/en/api-reference/opportunities-middles/) - Line discrepancy opportunities
+- [Best Odds](/en/api-reference/odds-best/) - Find the best price across all books
+- [EV Calculation Concepts](/en/concepts/ev-calculation/) - Deep dive into the math

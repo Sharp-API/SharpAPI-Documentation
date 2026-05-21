@@ -290,7 +290,7 @@ Cada item no array `data.events` é um objeto de evento com odds aninhadas:
 | `odds_decimal` | number | Odds decimais |
 | `line` | number \| null | Valor da linha |
 | `last_seen_at` | string | Timestamp ISO 8601 de quando nosso pipeline observou esta linha pela última vez. Use isto como seu sinal de atualização do pipeline. |
-| `odds_changed_at` | string | Timestamp ISO 8601 de quando o preço, a linha ou a flag `is_live` realmente mudou pela última vez. Fornecido pela casa de apostas quando disponível; na Pinnacle, ele é mantido entre atualizações sem mudanças — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Timestamp ISO 8601 de quando o preço, a linha ou a flag `is_live` realmente mudou pela última vez. Fornecido pela casa de apostas quando disponível; na Pinnacle, ele é mantido entre atualizações sem mudanças — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 
 ## Casos de Uso
 
@@ -342,6 +342,6 @@ async function refreshWatchlist(eventIds) {
 
 ## Endpoints Relacionados
 
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obtenha odds com filtros de consulta flexíveis
-- [Melhores Odds](/pt-BR/api-reference/odds-best) - Obtenha as melhores odds entre casas por seleção
-- [Eventos](/pt-BR/api-reference/events) - Liste eventos para obter IDs de eventos para requisições em lote
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obtenha odds com filtros de consulta flexíveis
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) - Obtenha as melhores odds entre casas por seleção
+- [Eventos](/pt-BR/api-reference/events/) - Liste eventos para obter IDs de eventos para requisições em lote

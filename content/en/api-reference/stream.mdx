@@ -46,7 +46,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 |---------|-----------------|----------|
 | `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Track odds movements |
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alert on opportunities |
-| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live scores, periods, clocks, and situational data per event. **Enterprise tier only.** See [Live Game State](/api-reference/gamestate) for the full field catalog. |
+| `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live scores, periods, clocks, and situational data per event. **Enterprise tier only.** See [Live Game State](/api-reference/gamestate/) for the full field catalog. |
 | `all` | All event types | Full real-time picture |
 
 ### Convenience Routes
@@ -92,7 +92,7 @@ data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `odds` | array | Array of full `Odds` objects (see [Odds endpoint](/en/api-reference/odds) for all fields) |
+| `odds` | array | Array of full `Odds` objects (see [Odds endpoint](/en/api-reference/odds/) for all fields) |
 | `count` | number | Number of odds in this chunk |
 | `total` | number | Total number of odds matching filters |
 | `offset` | number | Offset of this chunk in the full result |
@@ -132,7 +132,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `odds_probability` | number | Updated implied probability (e.g. `0.6`) |
 | `line` | number \| null | Updated line/spread (e.g. `-3.5`), or `null` for moneyline |
 | `is_live` | boolean | Whether the event is currently live |
-| `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
 
 **Envelope fields:**
 
@@ -611,8 +611,8 @@ eventSource.addEventListener('odds:update', (e) => {
 
 ## Related Endpoints
 
-- [+EV Opportunities](/en/api-reference/opportunities-ev) - REST endpoint for EV data (streamed via `ev:detected`)
-- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage) - REST endpoint for arbs (streamed via `arb:detected`)
-- [Low Hold Opportunities](/en/api-reference/opportunities-low-hold) - REST endpoint for low hold (streamed via `low_hold:detected`)
-- [Middles Summary](/en/api-reference/opportunities-middles-summary) - Aggregate middle stats for dashboard polling
-- [WebSocket API](/en/api-reference/websocket) - Bidirectional alternative to SSE
+- [+EV Opportunities](/en/api-reference/opportunities-ev/) - REST endpoint for EV data (streamed via `ev:detected`)
+- [Arbitrage Opportunities](/en/api-reference/opportunities-arbitrage/) - REST endpoint for arbs (streamed via `arb:detected`)
+- [Low Hold Opportunities](/en/api-reference/opportunities-low-hold/) - REST endpoint for low hold (streamed via `low_hold:detected`)
+- [Middles Summary](/en/api-reference/opportunities-middles-summary/) - Aggregate middle stats for dashboard polling
+- [WebSocket API](/en/api-reference/websocket/) - Bidirectional alternative to SSE

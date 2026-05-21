@@ -290,7 +290,7 @@ Cada elemento del array `data.events` es un objeto de evento con cuotas anidadas
 | `odds_decimal` | number | Cuotas decimales |
 | `line` | number \| null | Valor de la línea |
 | `last_seen_at` | string | Marca de tiempo ISO 8601 de cuándo nuestro pipeline observó esta fila por última vez. Úsala como señal de frescura del pipeline. |
-| `odds_changed_at` | string | Marca de tiempo ISO 8601 de cuándo el precio, la línea o el flag `is_live` cambiaron realmente por última vez. Proporcionada por el sportsbook cuando está disponible; en Pinnacle se mantiene a lo largo de actualizaciones sin cambios — consulta [Entendiendo `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Marca de tiempo ISO 8601 de cuándo el precio, la línea o el flag `is_live` cambiaron realmente por última vez. Proporcionada por el sportsbook cuando está disponible; en Pinnacle se mantiene a lo largo de actualizaciones sin cambios — consulta [Entendiendo `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
 
 ## Casos de Uso
 
@@ -342,6 +342,6 @@ async function refreshWatchlist(eventIds) {
 
 ## Endpoints Relacionados
 
-- [Snapshot de Cuotas](/es/api-reference/odds) - Obtén cuotas con filtros de consulta flexibles
-- [Mejores Cuotas](/es/api-reference/odds-best) - Obtén las mejores cuotas entre books por selección
-- [Eventos](/es/api-reference/events) - Lista los eventos para obtener los IDs de evento para peticiones por lotes
+- [Snapshot de Cuotas](/es/api-reference/odds/) - Obtén cuotas con filtros de consulta flexibles
+- [Mejores Cuotas](/es/api-reference/odds-best/) - Obtén las mejores cuotas entre books por selección
+- [Eventos](/es/api-reference/events/) - Lista los eventos para obtener los IDs de evento para peticiones por lotes

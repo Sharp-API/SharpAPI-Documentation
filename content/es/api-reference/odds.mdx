@@ -313,7 +313,7 @@ X-Request-Id: req_abc123def456
 | `line` | number \| null | Valor de la línea de spread o total (`null` para moneyline) |
 | `event_start_time` | string | Hora de inicio del evento en ISO 8601 |
 | `last_seen_at` | string | Marca de tiempo ISO 8601 de la última observación de esta fila por nuestro adaptador. Se actualiza en cada ciclo de ingesta — esta es la señal de frescura del pipeline. |
-| `odds_changed_at` | string | Marca de tiempo ISO 8601 de la propia actualización en origen de la casa de apuestas para esta línea, cuando esté disponible. En Pinnacle, se mantiene mientras el precio/línea/flag `is_live` no cambien (consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at)). Usa `last_seen_at` para la frescura del pipeline. |
+| `odds_changed_at` | string | Marca de tiempo ISO 8601 de la propia actualización en origen de la casa de apuestas para esta línea, cuando esté disponible. En Pinnacle, se mantiene mientras el precio/línea/flag `is_live` no cambien (consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/)). Usa `last_seen_at` para la frescura del pipeline. |
 | `is_live` | boolean | Si el evento está actualmente en directo |
 | `player_name` | string\|undefined | Nombre del jugador (solo mercados de player props) |
 | `stat_category` | string\|undefined | Categoría estadística, p. ej. `points`, `rebounds` (solo mercados de player props) |
@@ -456,9 +456,9 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nfl&market=spread&limit=200" \
 
 ## Endpoints Relacionados
 
-- [Odds Delta](/es/api-reference/odds-delta) - Obtén solo las cuotas que cambiaron desde una marca de tiempo dada
-- [Best Odds](/es/api-reference/odds-best) - Obtén las mejores cuotas de todas las casas para cada selección
-- [Odds Comparison](/es/api-reference/odds-comparison) - Compara cuotas entre casas lado a lado
-- [Batch Odds](/es/api-reference/odds-batch) - Obtén cuotas para varios eventos en una sola solicitud
-- [Markets](/es/api-reference/markets) - Lista los tipos de mercado disponibles
-- [Sportsbooks](/es/api-reference/sportsbooks) - Lista las casas de apuestas disponibles y su estado
+- [Odds Delta](/es/api-reference/odds-delta/) - Obtén solo las cuotas que cambiaron desde una marca de tiempo dada
+- [Best Odds](/es/api-reference/odds-best/) - Obtén las mejores cuotas de todas las casas para cada selección
+- [Odds Comparison](/es/api-reference/odds-comparison/) - Compara cuotas entre casas lado a lado
+- [Batch Odds](/es/api-reference/odds-batch/) - Obtén cuotas para varios eventos en una sola solicitud
+- [Markets](/es/api-reference/markets/) - Lista los tipos de mercado disponibles
+- [Sportsbooks](/es/api-reference/sportsbooks/) - Lista las casas de apuestas disponibles y su estado

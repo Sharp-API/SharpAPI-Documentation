@@ -38,7 +38,7 @@ Todas as respostas incluem headers padrão de rate limit e metadados:
 
 | Campo | Tipo | Descrição |
 |-------|------|-------------|
-| `id` | string | Identificador canônico do evento — o mesmo para cada sportsbook que cobre este evento. Use como sua chave primária para correspondência entre books. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching). |
+| `id` | string | Identificador canônico do evento — o mesmo para cada sportsbook que cobre este evento. Use como sua chave primária para correspondência entre books. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching/). |
 | `external_ids` | object | Mapa do ID do sportsbook para o ID nativo do evento daquele book (ex.: `{ "draftkings": "12345", "fanduel": "67890" }`). Use estes para deep linking de volta às páginas do sportsbook. |
 | `sport` | string | Identificador do esporte (ex.: `basketball`, `football`) |
 | `league` | string | Nome da liga (ex.: `NBA`, `NFL`) |
@@ -219,14 +219,14 @@ Respostas de recurso único envolvem o objeto em `data` como um objeto único (n
 
 ## Casos de Uso
 
-- **Comparação entre books** -- O `id` canônico é o mesmo em todos os sportsbooks, portanto todas as odds retornadas já estão correspondidas ao mesmo evento do mundo real. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching).
+- **Comparação entre books** -- O `id` canônico é o mesmo em todos os sportsbooks, portanto todas as odds retornadas já estão correspondidas ao mesmo evento do mundo real. Veja [Correspondência de Eventos](/pt-BR/concepts/event-matching/).
 - **Análise de mercado** -- Veja cada tipo de mercado disponível e quantos books oferecem cada um
 - **Referência sharp** -- Compare odds de soft books contra a Pinnacle (o benchmark sharp)
 - **Deep linking** -- Use `external_ids` para direcionar usuários à página do evento de um sportsbook específico
 
 ## Endpoints Relacionados
 
-- [Eventos](/pt-BR/api-reference/events) - Lista e pesquisa eventos
-- [Odds do Evento](/pt-BR/api-reference/events-odds) - Obtenha odds paginadas para este evento
-- [Mercados do Evento](/pt-BR/api-reference/events-markets) - Obtenha tipos de mercado disponíveis para este evento
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obtenha odds atuais em todos os eventos
+- [Eventos](/pt-BR/api-reference/events/) - Lista e pesquisa eventos
+- [Odds do Evento](/pt-BR/api-reference/events-odds/) - Obtenha odds paginadas para este evento
+- [Mercados do Evento](/pt-BR/api-reference/events-markets/) - Obtenha tipos de mercado disponíveis para este evento
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obtenha odds atuais em todos os eventos

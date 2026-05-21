@@ -152,7 +152,7 @@ for team in result['data'][:10]:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique team identifier (slug format, e.g., `alabama-crimson-tide`) |
-| `numerical_id` | integer \| null | Stable integer key for the team (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `numerical_id` | integer \| null | Stable integer key for the team (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `name` | string | Display name (e.g., `Alabama Crimson Tide`) |
 | `abbreviation` | string \| null | Short code (e.g., `ALA`, `ARS`, `NYY`). New (May 2026) — populated where a broadly-recognized abbreviation exists. |
 | `logo` | string \| null | Full CDN URL for the team crest. New (May 2026) — populated for ~93% of teams. Treat the host as opaque. |
@@ -174,7 +174,7 @@ for team in result['data'][:10]:
 - **Optional:** every new field is absent (or `null`) for teams that haven't been mapped or for individual-sport competitors (tennis players, MMA fighters, golfers, drivers — they're not "teams" in the conventional sense). The slug `id` and `name` are always present.
 - **Domain-scoped:** `numerical_id` is unique across teams only.
 
-Every odds row and opportunity leg also carries `home` and `away` blocks with the same shape (`{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`), so you don't need to second-fetch this endpoint just to label rows. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
+Every odds row and opportunity leg also carries `home` and `away` blocks with the same shape (`{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`), so you don't need to second-fetch this endpoint just to label rows. See [Entity reference IDs](/en/concepts/entity-reference-ids/) for the full contract.
 
 ## Meta Object
 
@@ -220,6 +220,6 @@ Filter by `event_count` or `live_count` client-side to show only teams with curr
 
 ## Related Endpoints
 
-- [Events](/en/api-reference/events) - Get events for specific teams
-- [Leagues](/en/api-reference/leagues) - List available leagues
-- [Sports](/en/api-reference/sports) - List available sports
+- [Events](/en/api-reference/events/) - Get events for specific teams
+- [Leagues](/en/api-reference/leagues/) - List available leagues
+- [Sports](/en/api-reference/sports/) - List available sports

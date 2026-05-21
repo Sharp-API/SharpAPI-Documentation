@@ -253,7 +253,7 @@ for league in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | League identifier (lowercase, use in API filters) |
-| `numerical_id` | integer \| null | Stable integer key for the league (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `numerical_id` | integer \| null | Stable integer key for the league (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `name` | string | Human-readable league name |
 | `sport` | string | Parent sport ID |
 | `event_count` | integer | Total events currently available with odds |
@@ -267,7 +267,7 @@ for league in result['data']:
 - **Optional:** absent (or `null`) for leagues that haven't been mapped yet — slug `id` is always present.
 - **Domain-scoped:** unique across leagues only.
 
-Every odds row and opportunity leg also carries a matching `league_ref` block (`{id, label, numerical_id}`) so you don't need to second-fetch this endpoint just to label a row. See [Entity reference IDs](/en/concepts/entity-reference-ids) for the full contract.
+Every odds row and opportunity leg also carries a matching `league_ref` block (`{id, label, numerical_id}`) so you don't need to second-fetch this endpoint just to label a row. See [Entity reference IDs](/en/concepts/entity-reference-ids/) for the full contract.
 
 ## Common Leagues
 
@@ -306,6 +306,6 @@ curl "https://api.sharpapi.io/api/v1/odds/best?league=nfl,nba" \
 
 ## Related Endpoints
 
-- [Sports](/en/api-reference/sports) - List available sports
-- [Odds Snapshot](/en/api-reference/odds) - Filter odds by league
-- [Events](/en/api-reference/events) - Filter events by league
+- [Sports](/en/api-reference/sports/) - List available sports
+- [Odds Snapshot](/en/api-reference/odds/) - Filter odds by league
+- [Events](/en/api-reference/events/) - Filter events by league

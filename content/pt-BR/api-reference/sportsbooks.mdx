@@ -400,7 +400,7 @@ O campo `requires_tier` indica o nível mínimo de assinatura necessário para a
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Lendo timestamps da Pinnacle.** O `odds_changed_at` em uma linha da Pinnacle é o timestamp da mesa de operações deles, não do nosso pipeline. A Pinnacle mantém as linhas estáveis quando o mercado não se moveu — um valor ocioso de 30+ minutos é comum em player props da MLB e mercados da NBA. Use `last_seen_at` para frescor do pipeline. Veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at) para o que "stale" realmente significa no feed deles.
+**Lendo timestamps da Pinnacle.** O `odds_changed_at` em uma linha da Pinnacle é o timestamp da mesa de operações deles, não do nosso pipeline. A Pinnacle mantém as linhas estáveis quando o mercado não se moveu — um valor ocioso de 30+ minutos é comum em player props da MLB e mercados da NBA. Use `last_seen_at` para frescor do pipeline. Veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/) para o que "stale" realmente significa no feed deles.
 </Callout>
 
 ### Internacional
@@ -458,12 +458,12 @@ Sharp books como a Pinnacle definem linhas eficientes rapidamente. As soft books
 </Callout>
 
 <Callout type="info">
-**Construindo uma ferramenta de apostas ao vivo?** DraftKings e FanDuel têm `has_live_odds: true`, mas frequentemente suspendem mercados durante jogadas de pontuação e momentos-chave. Se você precisa de cobertura ao vivo contínua, a Pinnacle (nível Sharp) é a referência confiável. Veja [Ao Vivo vs. Pré-Jogo](/pt-BR/concepts/live-vs-prematch) para uma análise completa do comportamento das casas durante o jogo ao vivo.
+**Construindo uma ferramenta de apostas ao vivo?** DraftKings e FanDuel têm `has_live_odds: true`, mas frequentemente suspendem mercados durante jogadas de pontuação e momentos-chave. Se você precisa de cobertura ao vivo contínua, a Pinnacle (nível Sharp) é a referência confiável. Veja [Ao Vivo vs. Pré-Jogo](/pt-BR/concepts/live-vs-prematch/) para uma análise completa do comportamento das casas durante o jogo ao vivo.
 </Callout>
 
 ## Endpoints Relacionados
 
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Filtre odds por casa de apostas
-- [Melhores Odds](/pt-BR/api-reference/odds-best) - Melhores odds entre todas as casas com referência sharp
-- [Comparação de Odds](/pt-BR/api-reference/odds-comparison) - Compare odds entre casas lado a lado
-- [Esportes](/pt-BR/api-reference/sports) - Lista de esportes disponíveis
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Filtre odds por casa de apostas
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) - Melhores odds entre todas as casas com referência sharp
+- [Comparação de Odds](/pt-BR/api-reference/odds-comparison/) - Compare odds entre casas lado a lado
+- [Esportes](/pt-BR/api-reference/sports/) - Lista de esportes disponíveis

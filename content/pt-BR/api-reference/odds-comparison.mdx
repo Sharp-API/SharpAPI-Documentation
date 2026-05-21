@@ -17,7 +17,7 @@ GET /api/v1/odds/comparison
 Requer API key. Disponível para **todos os tiers**.
 
 <Callout type="info">
-Os sportsbooks incluídos na comparação dependem do acesso a books do seu tier. O tier Free compara DraftKings e FanDuel; tiers superiores incluem mais books. Veja [Acesso a Books por Tier](/pt-BR/api-reference/odds#book-access-by-tier).
+Os sportsbooks incluídos na comparação dependem do acesso a books do seu tier. O tier Free compara DraftKings e FanDuel; tiers superiores incluem mais books. Veja [Acesso a Books por Tier](/pt-BR/api-reference/odds/#book-access-by-tier).
 </Callout>
 
 ## Parâmetros de Query
@@ -25,7 +25,7 @@ Os sportsbooks incluídos na comparação dependem do acesso a books do seu tier
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|---------|-------------|
 | `event` | string | **obrigatório** | ID do evento para comparar odds |
-| `market` | string | all | Filtrar por tipo de mercado (ex.: `moneyline`, `spread`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filtrar por tipo de mercado (ex.: `moneyline`, `spread`). Suporta aliases de categoria — veja [Odds: Aliases de Categoria de Mercado](/pt-BR/api-reference/odds/#market-category-aliases). |
 | `sportsbook` | string | all | IDs de sportsbooks separados por vírgula a serem incluídos |
 
 <Callout type="warning">
@@ -254,7 +254,7 @@ Cada entrada no objeto `books`:
 | `odds_american` | number | Odds americanas |
 | `odds_decimal` | number | Odds decimais |
 | `last_seen_at` | string | Quando nosso pipeline observou pela última vez a linha deste book — sinal de atualidade do pipeline |
-| `odds_changed_at` | string | Quando o preço, linha ou flag `is_live` deste book mudou efetivamente pela última vez. Na Pinnacle, é mantido em refreshes sem alteração — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at). |
+| `odds_changed_at` | string | Quando o preço, linha ou flag `is_live` deste book mudou efetivamente pela última vez. Na Pinnacle, é mantido em refreshes sem alteração — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 
 ## Entendendo o Hold
 
@@ -301,7 +301,7 @@ Compare `hold.best_available` versus os holds individuais dos books. Uma diferen
 
 ## Endpoints Relacionados
 
-- [Snapshot de Odds](/pt-BR/api-reference/odds) - Obter odds brutas de sportsbooks individuais
-- [Melhores Odds](/pt-BR/api-reference/odds-best) - Obter apenas as melhores odds com consenso e hold
-- [Delta de Odds](/pt-BR/api-reference/odds-delta) - Obter apenas odds que mudaram desde um determinado timestamp
-- [Odds em Lote](/pt-BR/api-reference/odds-batch) - Buscar dados de comparação para múltiplos eventos de uma só vez
+- [Snapshot de Odds](/pt-BR/api-reference/odds/) - Obter odds brutas de sportsbooks individuais
+- [Melhores Odds](/pt-BR/api-reference/odds-best/) - Obter apenas as melhores odds com consenso e hold
+- [Delta de Odds](/pt-BR/api-reference/odds-delta/) - Obter apenas odds que mudaram desde um determinado timestamp
+- [Odds em Lote](/pt-BR/api-reference/odds-batch/) - Buscar dados de comparação para múltiplos eventos de uma só vez

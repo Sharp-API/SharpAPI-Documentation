@@ -115,7 +115,7 @@ SharpAPI exposes 35 routes across 7 namespaces plus reference and health endpoin
 
 ## Response Format
 
-Two top-level shapes — both put `data` first and `updated_at` last, with an optional `pagination` block in between. There is **no** `success` field; the HTTP status code is the source of truth. See [Response Conventions](/en/api-reference/conventions) for the full rule set.
+Two top-level shapes — both put `data` first and `updated_at` last, with an optional `pagination` block in between. There is **no** `success` field; the HTTP status code is the source of truth. See [Response Conventions](/en/api-reference/conventions/) for the full rule set.
 
 ### Paginated list response
 
@@ -244,7 +244,7 @@ curl -o /dev/null -s \
 - **HTTP/1.1 keep-alive is the default** in `curl`, Python `httpx` / `requests.Session()`, `aiohttp`, Node `fetch` / `axios` / `undici`, Go `http.Client`, OkHttp, and most other modern clients. Reuse a single client/session across calls — don't construct a new client per request.
 - **HTTP/2 connection coalescing** multiplexes many concurrent requests over one connection to the same host. Enabled by default in HTTP/2-capable clients.
 - **HTTP/3 (QUIC)** is offered via `Alt-Svc: h3=":443"`. Clients that opt in (`curl --http3`, `httpx[http2,http3]`, Node `undici` with `allowH2: true`) skip the TCP handshake entirely on subsequent connections. Worthwhile for cold-start workloads such as serverless functions.
-- **For real-time data, use streaming.** The [`/api/v1/stream`](/en/api-reference/stream) endpoint keeps a single connection open and pushes deltas as they happen — no per-request handshake at all.
+- **For real-time data, use streaming.** The [`/api/v1/stream`](/en/api-reference/stream/) endpoint keeps a single connection open and pushes deltas as they happen — no per-request handshake at all.
 
 <Callout type="info">
 For a polling client hitting `/api/v1/odds` once per second, the TLS cost amortizes to ~0 after the first request. The 150 ms handshake matters most for serverless / short-lived clients that close the connection between calls.

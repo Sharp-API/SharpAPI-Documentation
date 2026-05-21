@@ -6,7 +6,7 @@ import { Callout, Tabs } from 'nextra/components'
 
 # Resumen de Middles
 
-Obtén estadísticas agregadas de las oportunidades de middles actuales sin la lista completa. Utiliza los mismos datos subyacentes que el endpoint [Middles](/es/api-reference/opportunities-middles).
+Obtén estadísticas agregadas de las oportunidades de middles actuales sin la lista completa. Utiliza los mismos datos subyacentes que el endpoint [Middles](/es/api-reference/opportunities-middles/).
 
 ```
 GET /api/v1/opportunities/middles/summary
@@ -193,7 +193,7 @@ Utiliza el endpoint de resumen para alimentar widgets del panel que muestren los
 
 ### Sondeo vs. Recuperación Completa
 
-Sondea el endpoint de resumen a intervalos más cortos para detectar cuándo aparecen nuevas oportunidades, y solo recupera el endpoint completo de [Middles](/es/api-reference/opportunities-middles) cuando cambie el conteo.
+Sondea el endpoint de resumen a intervalos más cortos para detectar cuándo aparecen nuevas oportunidades, y solo recupera el endpoint completo de [Middles](/es/api-reference/opportunities-middles/) cuando cambie el conteo.
 
 ```javascript
 // Poll summary every 10 seconds
@@ -214,7 +214,7 @@ El endpoint de resumen está cacheado durante 10 segundos y cuenta para tu rate 
 
 ## Endpoints Relacionados
 
-- [Middles](/es/api-reference/opportunities-middles) — Lista completa de oportunidades de middles
-- [Oportunidades +EV](/es/api-reference/opportunities-ev) — Apuestas con valor esperado positivo
-- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage) — Oportunidades de beneficio garantizado
-- [Stream SSE](/es/api-reference/stream) — Eventos en tiempo real `middles:detected` y `middles:expired`
+- [Middles](/es/api-reference/opportunities-middles/) — Lista completa de oportunidades de middles
+- [Oportunidades +EV](/es/api-reference/opportunities-ev/) — Apuestas con valor esperado positivo
+- [Oportunidades de Arbitraje](/es/api-reference/opportunities-arbitrage/) — Oportunidades de beneficio garantizado
+- [Stream SSE](/es/api-reference/stream/) — Eventos en tiempo real `middles:detected` y `middles:expired`

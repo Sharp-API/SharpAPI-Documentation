@@ -28,7 +28,7 @@ Verwenden Sie den `server_time`-Wert aus jeder Antwort als `since`-Wert für Ihr
 | `sportsbook` | string | alle | Kommagetrennte Sportsbook-IDs (z. B. `draftkings,fanduel`) |
 | `sport` | string | alle | Filter nach Sportart (z. B. `basketball`, `football`) |
 | `league` | string | alle | Filter nach Liga (z. B. `nba`, `nfl`) |
-| `market` | string | alle | Filter nach Markttyp (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase – siehe [Quoten: Markt-Kategorie-Aliase](/de/api-reference/odds#market-category-aliases). |
+| `market` | string | alle | Filter nach Markttyp (z. B. `moneyline`, `spread`, `total`). Unterstützt Kategorie-Aliase – siehe [Quoten: Markt-Kategorie-Aliase](/de/api-reference/odds/#market-category-aliases). |
 | `event` | string | - | Filter nach Event-ID |
 | `live` | boolean | false | Gibt nur Live-/In-Play-Events zurück |
 | `sort` | string | - | Sortierfeld mit optionalem `-`-Präfix für absteigende Sortierung (z. B. `-odds_american`, `odds_probability`) |
@@ -199,7 +199,7 @@ X-Request-Id: req_delta_abc123
 
 ## Delta-Antwort-Schema
 
-Das `data`-Array enthält dieselben Quotenobjekte wie der [`/odds`](/de/api-reference/odds)-Endpoint. Es werden nur Quoten einbezogen, die nach dem `since`-Zeitstempel aktualisiert wurden.
+Das `data`-Array enthält dieselben Quotenobjekte wie der [`/odds`](/de/api-reference/odds/)-Endpoint. Es werden nur Quoten einbezogen, die nach dem `since`-Zeitstempel aktualisiert wurden.
 
 Das `meta`-Objekt enthält zwei zusätzliche Felder:
 
@@ -237,6 +237,6 @@ Wenn sich seit Ihrem `since`-Zeitstempel keine Quoten geändert haben, hat die A
 
 ## Verwandte Endpoints
 
-- [Quoten-Snapshot](/de/api-reference/odds) – Den vollständigen aktuellen Quoten-Snapshot abrufen
-- [SSE-Stream](/de/api-reference/stream) – Push-Aktualisierungen in Echtzeit über Server-Sent Events
-- [WebSocket-Stream](/de/api-reference/websocket) – Push-Aktualisierungen in Echtzeit über WebSocket
+- [Quoten-Snapshot](/de/api-reference/odds/) – Den vollständigen aktuellen Quoten-Snapshot abrufen
+- [SSE-Stream](/de/api-reference/stream/) – Push-Aktualisierungen in Echtzeit über Server-Sent Events
+- [WebSocket-Stream](/de/api-reference/websocket/) – Push-Aktualisierungen in Echtzeit über WebSocket

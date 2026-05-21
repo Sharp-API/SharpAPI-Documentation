@@ -59,7 +59,7 @@ Cada `numerical_id` é alocado a partir de um registro congelado por domínio em
 | **Denso a partir de 1** | Os IDs começam em `1` e são emitidos sequencialmente por domínio. Não há IDs negativos, zeros ou grandes saltos. Esportes, ligas, casas de apostas, mercados e times têm cada um um intervalo denso independente. |
 | **Escopo por domínio** | Um `numerical_id` é único apenas dentro do seu domínio (esporte, liga, casa de apostas, mercado, time). `numerical_id: 3` em um esporte não tem relação com `numerical_id: 3` em um time. Combine o inteiro com o domínio para desambiguar. |
 | **Atribuído, não derivado** | Os IDs são rastreados explicitamente nos JSONs do atlas — não são hashes do slug nem calculados pela ordem de classificação. Adicionar uma nova entidade aloca o próximo inteiro livre; renomear um slug não altera seu `numerical_id`. |
-| **Não é um ID de casa de apostas** | Este é o identificador da SharpAPI, não o interno da casa de apostas. Os IDs nativos de evento/mercado/seleção de cada casa ainda são emitidos por linha — veja `external_event_id`, `selection_id`, `market_id` e `external_ids` no endpoint de [Eventos](/pt-BR/api-reference/events). |
+| **Não é um ID de casa de apostas** | Este é o identificador da SharpAPI, não o interno da casa de apostas. Os IDs nativos de evento/mercado/seleção de cada casa ainda são emitidos por linha — veja `external_event_id`, `selection_id`, `market_id` e `external_ids` no endpoint de [Eventos](/pt-BR/api-reference/events/). |
 
 ## Quando os campos estão ausentes
 
@@ -95,11 +95,11 @@ Cada endpoint de referência adiciona `numerical_id` ao seu esquema de objeto ex
 
 | Endpoint | Campo adicionado | Tipo | Notas |
 |---|---|---|---|
-| [`/sports`](/pt-BR/api-reference/sports) | `numerical_id` | integer \| null | Domínio de escopo de esporte |
-| [`/leagues`](/pt-BR/api-reference/leagues) | `numerical_id` | integer \| null | Domínio de escopo de liga |
-| [`/sportsbooks`](/pt-BR/api-reference/sportsbooks) | `numerical_id` | integer \| null | Domínio de escopo de casa de apostas |
-| [`/markets`](/pt-BR/api-reference/markets) | `numerical_id` | integer \| null | Domínio de escopo de tipo de mercado |
-| [`/teams`](/pt-BR/api-reference/teams) | `numerical_id`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | integer \| null, string \| null | Domínio de escopo de time. Os últimos cinco são metadados do atlas provenientes da OpticOdds. |
+| [`/sports`](/pt-BR/api-reference/sports/) | `numerical_id` | integer \| null | Domínio de escopo de esporte |
+| [`/leagues`](/pt-BR/api-reference/leagues/) | `numerical_id` | integer \| null | Domínio de escopo de liga |
+| [`/sportsbooks`](/pt-BR/api-reference/sportsbooks/) | `numerical_id` | integer \| null | Domínio de escopo de casa de apostas |
+| [`/markets`](/pt-BR/api-reference/markets/) | `numerical_id` | integer \| null | Domínio de escopo de tipo de mercado |
+| [`/teams`](/pt-BR/api-reference/teams/) | `numerical_id`, `abbreviation`, `logo`, `city`, `mascot`, `conference`, `division` | integer \| null, string \| null | Domínio de escopo de time. Os últimos cinco são metadados do atlas provenientes da OpticOdds. |
 
 ### Blocos de referência aninhados em odds e legs de oportunidade
 
@@ -139,6 +139,6 @@ Os campos planos e os blocos aninhados descrevem a mesma linha — eles não se 
 
 ## Relacionados
 
-- [Sports](/pt-BR/api-reference/sports), [Leagues](/pt-BR/api-reference/leagues), [Sportsbooks](/pt-BR/api-reference/sportsbooks), [Markets](/pt-BR/api-reference/markets), [Teams](/pt-BR/api-reference/teams) — endpoints de referência com o novo campo `numerical_id`
-- [Odds Snapshot](/pt-BR/api-reference/odds), [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev), [Arbitragem](/pt-BR/api-reference/opportunities-arbitrage), [Middles](/pt-BR/api-reference/opportunities-middles) — endpoints com blocos de referência aninhados
-- [Correspondência de Eventos](/pt-BR/concepts/event-matching) — como a SharpAPI une o mesmo evento entre casas de apostas
+- [Sports](/pt-BR/api-reference/sports/), [Leagues](/pt-BR/api-reference/leagues/), [Sportsbooks](/pt-BR/api-reference/sportsbooks/), [Markets](/pt-BR/api-reference/markets/), [Teams](/pt-BR/api-reference/teams/) — endpoints de referência com o novo campo `numerical_id`
+- [Odds Snapshot](/pt-BR/api-reference/odds/), [Oportunidades +EV](/pt-BR/api-reference/opportunities-ev/), [Arbitragem](/pt-BR/api-reference/opportunities-arbitrage/), [Middles](/pt-BR/api-reference/opportunities-middles/) — endpoints com blocos de referência aninhados
+- [Correspondência de Eventos](/pt-BR/concepts/event-matching/) — como a SharpAPI une o mesmo evento entre casas de apostas

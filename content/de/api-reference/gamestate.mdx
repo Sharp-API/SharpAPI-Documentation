@@ -25,7 +25,7 @@ mit `addon: "game_state"` im Fehler-Body. Fügen Sie das Add-on über die
 hinzu (Hobby / Pro / Sharp); Enterprise-Schlüssel haben es bereits enthalten.
 
 Live-Spielstatus wird auch über den Kanal `gamestate` per
-[SSE](/api-reference/stream) und [WebSocket](/api-reference/websocket) gestreamt
+[SSE](/api-reference/stream/) und [WebSocket](/api-reference/websocket/) gestreamt
 — siehe [Streaming](#streaming) unten. (Streaming-Zugriff erfordert das
 WebSocket Add-on oder Enterprise, zusätzlich zur oben genannten Game State-
 Anforderung.)
@@ -239,9 +239,9 @@ irgendeinen Status zum Event beigetragen haben.
 Jede Aktualisierung, die der REST-Endpoint beim nächsten Poll anzeigen würde,
 löst auch ein `gamestate:update`-Event auf den Streaming-Kanälen aus:
 
-- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream#gamestate)
+- **SSE**: [`GET /api/v1/stream/gamestate`](/api-reference/stream/#gamestate)
 - **WebSocket**: Abonnieren Sie `{channels: ["gamestate"]}` auf
-  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket)
+  [`wss://ws.sharpapi.io/ws`](/api-reference/websocket/)
 
 Streaming-Clients erhalten einen initialen `gamestate:snapshot` mit dem vollständigen
 aktuellen Status (eine flache Liste von Event-Zeilen), dann `gamestate:update`-

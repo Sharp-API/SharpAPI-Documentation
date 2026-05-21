@@ -23,7 +23,7 @@ Erfordert einen API key. **Hobby-Tarif oder höher erforderlich.** In Ihrem Kont
 | `sport` | string | alle | Filter nach Sportart(en), kommagetrennt (z. B. `basketball`, `football`) |
 | `league` | string | alle | Filter nach Liga(s), kommagetrennt (z. B. `nba`, `nfl`, `nhl`) |
 | `sportsbook` | string | tarifabhängig | Filter nach Sportwettenanbieter(n), kommagetrennt. Tarifgrenzen werden durchgesetzt. |
-| `market` | string | alle | Filter nach Markttyp(en), kommagetrennt. Unterstützt Kategorie-Aliasse — siehe [Odds: Marktkategorie-Aliasse](/de/api-reference/odds#market-category-aliases). |
+| `market` | string | alle | Filter nach Markttyp(en), kommagetrennt. Unterstützt Kategorie-Aliasse — siehe [Odds: Marktkategorie-Aliasse](/de/api-reference/odds/#market-category-aliases). |
 | `min_profit` | number | 0.5 | Minimaler Gewinnprozentsatz (z. B. `1.0` = 1 %) |
 | `live` | boolean | — | `true` = nur Live, `false` = nur Prematch, weglassen = beides |
 | `format` | string | `json` | Antwortformat: `json` oder `csv`. CSV wird als `arbitrage_YYYY-MM-DD.csv` heruntergeladen. |
@@ -35,7 +35,7 @@ Erfordert einen API key. **Hobby-Tarif oder höher erforderlich.** In Ihrem Kont
 </Callout>
 
 <Callout type="warning">
-**Breaking Change:** Das Feld `game_state` (Spielstand/Periode/Uhr) wurde aus dieser Antwort entfernt. Der Live-Spielstand wird jetzt ausschließlich über den [Game State](/de/api-reference/gamestate)-Endpoint und den `gamestate`-Stream-Channel bereitgestellt. Verknüpfen Sie Datensätze über `event_id` mit dem Spielstand.
+**Breaking Change:** Das Feld `game_state` (Spielstand/Periode/Uhr) wurde aus dieser Antwort entfernt. Der Live-Spielstand wird jetzt ausschließlich über den [Game State](/de/api-reference/gamestate/)-Endpoint und den `gamestate`-Stream-Channel bereitgestellt. Verknüpfen Sie Datensätze über `event_id` mit dem Spielstand.
 </Callout>
 
 ### Mehrere Werte filtern
@@ -371,12 +371,12 @@ Es gilt dieselbe Einsatzberechnung — teilen Sie die implizite Wahrscheinlichke
 | Nachhaltigkeit | Durch Kontogesundheit begrenzt | Langfristig tragfähig |
 
 <Callout type="info">
-Viele erfahrene Wettende bevorzugen +EV-Wetten gegenüber Arbitrage, weil Konten länger halten und die erwarteten Edges oft größer sind. Weitere Informationen finden Sie unter dem [+EV Opportunities](/de/api-reference/opportunities-ev)-Endpoint.
+Viele erfahrene Wettende bevorzugen +EV-Wetten gegenüber Arbitrage, weil Konten länger halten und die erwarteten Edges oft größer sind. Weitere Informationen finden Sie unter dem [+EV Opportunities](/de/api-reference/opportunities-ev/)-Endpoint.
 </Callout>
 
 ## Verwandte Endpoints
 
-- [+EV Opportunities](/de/api-reference/opportunities-ev) – Wetten mit positivem Erwartungswert
-- [Middles](/de/api-reference/opportunities-middles) – Möglichkeiten durch Linienunterschiede
-- [Arbitrage-Konzepte](/de/concepts/arbitrage) – Detaillierte Arbitrage-Theorie
-- [Arbitrage-Scanner-Beispiel](/de/examples/arbitrage-scanner) – Erstellen Sie einen Echtzeit-Scanner
+- [+EV Opportunities](/de/api-reference/opportunities-ev/) – Wetten mit positivem Erwartungswert
+- [Middles](/de/api-reference/opportunities-middles/) – Möglichkeiten durch Linienunterschiede
+- [Arbitrage-Konzepte](/de/concepts/arbitrage/) – Detaillierte Arbitrage-Theorie
+- [Arbitrage-Scanner-Beispiel](/de/examples/arbitrage-scanner/) – Erstellen Sie einen Echtzeit-Scanner

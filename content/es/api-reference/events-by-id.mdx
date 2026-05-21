@@ -38,7 +38,7 @@ Todas las respuestas incluyen cabeceras estándar de límite de tasa (rate limit
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | string | Identificador canónico del evento — el mismo para cada sportsbook que cubra este evento. Úsalo como clave principal para emparejar entre books. Consulta [Emparejamiento de eventos](/es/concepts/event-matching). |
+| `id` | string | Identificador canónico del evento — el mismo para cada sportsbook que cubra este evento. Úsalo como clave principal para emparejar entre books. Consulta [Emparejamiento de eventos](/es/concepts/event-matching/). |
 | `external_ids` | object | Mapa del ID del sportsbook al ID nativo del evento en ese book (p. ej., `{ "draftkings": "12345", "fanduel": "67890" }`). Úsalos para enlaces directos (deep linking) a las páginas del sportsbook. |
 | `sport` | string | Identificador del deporte (p. ej., `basketball`, `football`) |
 | `league` | string | Nombre de la liga (p. ej., `NBA`, `NFL`) |
@@ -219,14 +219,14 @@ Las respuestas de un único recurso envuelven el objeto en `data` como un único
 
 ## Casos de uso
 
-- **Comparación entre books** -- El `id` canónico es el mismo en todos los sportsbooks, por lo que todas las cuotas devueltas ya están emparejadas con el mismo evento real. Consulta [Emparejamiento de eventos](/es/concepts/event-matching).
+- **Comparación entre books** -- El `id` canónico es el mismo en todos los sportsbooks, por lo que todas las cuotas devueltas ya están emparejadas con el mismo evento real. Consulta [Emparejamiento de eventos](/es/concepts/event-matching/).
 - **Análisis de mercado** -- Consulta todos los tipos de mercado disponibles y cuántos books ofrecen cada uno
 - **Referencia sharp** -- Compara las cuotas de los soft books con las de Pinnacle (el referente sharp)
 - **Enlaces directos (deep linking)** -- Usa `external_ids` para enviar a los usuarios a la página del evento en un sportsbook concreto
 
 ## Endpoints relacionados
 
-- [Eventos](/es/api-reference/events) - Lista y busca eventos
-- [Cuotas del evento](/es/api-reference/events-odds) - Obtén las cuotas paginadas de este evento
-- [Mercados del evento](/es/api-reference/events-markets) - Obtén los tipos de mercado disponibles para este evento
-- [Snapshot de cuotas](/es/api-reference/odds) - Obtén las cuotas actuales de todos los eventos
+- [Eventos](/es/api-reference/events/) - Lista y busca eventos
+- [Cuotas del evento](/es/api-reference/events-odds/) - Obtén las cuotas paginadas de este evento
+- [Mercados del evento](/es/api-reference/events-markets/) - Obtén los tipos de mercado disponibles para este evento
+- [Snapshot de cuotas](/es/api-reference/odds/) - Obtén las cuotas actuales de todos los eventos

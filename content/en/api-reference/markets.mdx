@@ -190,7 +190,7 @@ for market in result['data']:
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Unique market identifier (use in API filters) |
-| `numerical_id` | integer \| null | Stable integer key for the market type (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids). |
+| `numerical_id` | integer \| null | Stable integer key for the market type (frozen, never reused). New (May 2026) — additive, optional. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `name` | string | Human-readable market name |
 | `description` | string | Brief description of the market |
 | `hasLine` | boolean | Whether this market includes a line value |
@@ -207,7 +207,7 @@ for market in result['data']:
 - **Optional:** absent (or `null`) for niche markets that haven't been assigned an integer yet — slug `id` is always present.
 - **Domain-scoped:** unique across markets only.
 
-Every odds row and opportunity leg also carries a matching `market_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids).
+Every odds row and opportunity leg also carries a matching `market_ref` block (`{id, label, numerical_id}`). See [Entity reference IDs](/en/concepts/entity-reference-ids/).
 
 ## Market Types
 
@@ -311,7 +311,7 @@ Markets with `hasLine: false` (like moneyline) will have `line: null` in the odd
 
 ## Related Endpoints
 
-- [Odds Snapshot](/en/api-reference/odds) - Filter odds by market type
-- [Best Odds](/en/api-reference/odds-best) - Best odds filtered by market
-- [Sports](/en/api-reference/sports) - See which sports are available
-- [Sportsbooks](/en/api-reference/sportsbooks) - See which books support which markets
+- [Odds Snapshot](/en/api-reference/odds/) - Filter odds by market type
+- [Best Odds](/en/api-reference/odds-best/) - Best odds filtered by market
+- [Sports](/en/api-reference/sports/) - See which sports are available
+- [Sportsbooks](/en/api-reference/sportsbooks/) - See which books support which markets

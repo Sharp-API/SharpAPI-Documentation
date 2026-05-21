@@ -583,7 +583,7 @@ La capa WebSocket emite un conjunto pequeño y fijo de códigos de error a nivel
 | `not_authenticated` | Se envió `subscribe`, `filter` o `refresh_token` antes de que `auth` tuviera éxito |
 | `already_authenticated` | El cliente envió un segundo frame `auth` después de que el primero tuviera éxito |
 
-Los frames WebSocket también pueden transportar los códigos al estilo HTTP `invalid_api_key`, `tier_restricted` y `too_many_streams` — estos hacen que el servidor cierre la conexión después de enviar el frame. Consulta [Visión general de la API → Códigos de error](/es/api-reference/overview#error-codes) para la lista completa.
+Los frames WebSocket también pueden transportar los códigos al estilo HTTP `invalid_api_key`, `tier_restricted` y `too_many_streams` — estos hacen que el servidor cierre la conexión después de enviar el frame. Consulta [Visión general de la API → Códigos de error](/es/api-reference/overview/#error-codes) para la lista completa.
 
 ## Códigos de cierre
 
@@ -904,6 +904,6 @@ Superar tu límite de streams cierra la conexión con el código `4029`. Cierra 
 
 ## Relacionado
 
-- [Referencia de la API SSE Stream](/es/api-reference/stream) -- Alternativa con Server-Sent Events
-- [Visión general del streaming](/es/streaming/overview) -- Conceptos y comparativa
-- [Guía de streaming WebSocket](/es/streaming/websocket) -- Guía de inicio
+- [Referencia de la API SSE Stream](/es/api-reference/stream/) -- Alternativa con Server-Sent Events
+- [Visión general del streaming](/es/streaming/overview/) -- Conceptos y comparativa
+- [Guía de streaming WebSocket](/es/streaming/websocket/) -- Guía de inicio

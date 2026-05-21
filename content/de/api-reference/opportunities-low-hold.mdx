@@ -17,7 +17,7 @@ GET /api/v1/opportunities/low_hold
 Erfordert einen API-Key. **Pro-Tier oder höher erforderlich.** Ihr Konto muss das Feature `low_hold` aktiviert haben.
 
 <Callout type="warning">
-**Breaking Change:** Das Feld `game_state` (Spielstand/Periode/Uhr) wurde aus dieser Response entfernt. Live-Spielzustände werden nun ausschließlich über den [Game State](/de/api-reference/gamestate)-Endpoint und den `gamestate`-Stream-Channel bereitgestellt. Verknüpfen Sie Datensätze mit dem Spielzustand über `event_id`.
+**Breaking Change:** Das Feld `game_state` (Spielstand/Periode/Uhr) wurde aus dieser Response entfernt. Live-Spielzustände werden nun ausschließlich über den [Game State](/de/api-reference/gamestate/)-Endpoint und den `gamestate`-Stream-Channel bereitgestellt. Verknüpfen Sie Datensätze mit dem Spielzustand über `event_id`.
 </Callout>
 
 ## Query-Parameter
@@ -345,12 +345,12 @@ Die Hold-Berechnung erstreckt sich auf alle drei Seiten: `implied_prob_1 + impli
 2. **Übergeben Sie den `state`-Parameter** — Erhalten Sie korrekte Deep Links für die Jurisdiktion Ihres Nutzers
 3. **Kombinieren Sie mit +EV-Daten** — Niedriger Hold + positiver EV ist die ideale Kombination
 4. **Prüfen Sie `possibly_stale`** — Überspringen Sie Opportunities, bei denen sich die Quoten möglicherweise bereits bewegt haben
-5. **Nutzen Sie Streaming** — Abonnieren Sie `low_hold:detected`-Events über [SSE](/de/api-reference/stream) oder [WebSocket](/de/api-reference/websocket) für Echtzeit-Benachrichtigungen
+5. **Nutzen Sie Streaming** — Abonnieren Sie `low_hold:detected`-Events über [SSE](/de/api-reference/stream/) oder [WebSocket](/de/api-reference/websocket/) für Echtzeit-Benachrichtigungen
 6. **Beobachten Sie `all_books`** — Mehr teilnehmende Sportsbooks bedeuten in der Regel zuverlässigere Preise
 
 ## Verwandte Endpoints
 
-- [+EV-Opportunities](/de/api-reference/opportunities-ev) — Wetten mit positivem Erwartungswert
-- [Arbitrage-Opportunities](/de/api-reference/opportunities-arbitrage) — Garantierter Gewinn über mehrere Sportsbooks
-- [Middles](/de/api-reference/opportunities-middles) — Linienunterschieds-Opportunities
-- [Beste Quoten](/de/api-reference/odds-best) — Den besten Preis über alle Sportsbooks finden
+- [+EV-Opportunities](/de/api-reference/opportunities-ev/) — Wetten mit positivem Erwartungswert
+- [Arbitrage-Opportunities](/de/api-reference/opportunities-arbitrage/) — Garantierter Gewinn über mehrere Sportsbooks
+- [Middles](/de/api-reference/opportunities-middles/) — Linienunterschieds-Opportunities
+- [Beste Quoten](/de/api-reference/odds-best/) — Den besten Preis über alle Sportsbooks finden

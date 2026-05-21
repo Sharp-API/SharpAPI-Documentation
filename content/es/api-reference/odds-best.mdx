@@ -26,7 +26,7 @@ Best Odds está disponible en todos los planes, incluido el Free. Las casas de a
 |-----------|------|-------------|-------------|
 | `sport` | string | all | Filtrar por deporte(s), separados por comas (p. ej., `basketball`, `football`) |
 | `league` | string | all | Filtrar por liga(s), separadas por comas (p. ej., `nba`, `nfl`) |
-| `market` | string | all | Filtrar por tipo(s) de mercado, separados por comas (p. ej., `moneyline`, `spread`, `total`). Admite alias de categoría — consulta [Odds: Alias de Categoría de Mercado](/es/api-reference/odds#market-category-aliases). |
+| `market` | string | all | Filtrar por tipo(s) de mercado, separados por comas (p. ej., `moneyline`, `spread`, `total`). Admite alias de categoría — consulta [Odds: Alias de Categoría de Mercado](/es/api-reference/odds/#market-category-aliases). |
 | `event` | string | — | Filtrar por ID(s) de evento, separados por comas |
 | `live` | boolean | — | `true` = solo en vivo, `false` = solo prepartido, omitir = ambos |
 | `min_odds` | number | — | Filtro mínimo de cuotas americanas |
@@ -212,7 +212,7 @@ X-Request-Id: req_best_789xyz
 | `all_books[].edge` | number | Margen sobre las peores cuotas disponibles (puntos porcentuales) |
 | `all_books[].line` | number \| null | Línea en esta casa de apuestas |
 | `all_books[].last_seen_at` | string | Cuándo nuestra pipeline observó por última vez la fila de esta casa — señal de frescura de la pipeline |
-| `all_books[].odds_changed_at` | string | Cuándo cambió realmente por última vez el precio, la línea o el indicador `is_live` de esta casa. En Pinnacle, se mantiene durante actualizaciones sin cambios — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at). |
+| `all_books[].odds_changed_at` | string | Cuándo cambió realmente por última vez el precio, la línea o el indicador `is_live` de esta casa. En Pinnacle, se mantiene durante actualizaciones sin cambios — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
 | `last_seen_at` | string | Marca temporal ISO 8601 de la determinación de las mejores cuotas |
 | `player_name` | string\|undefined | Nombre del jugador (solo mercados de player props) |
 | `stat_category` | string\|undefined | Categoría estadística, p. ej. `points`, `rebounds` (solo mercados de player props) |
@@ -252,7 +252,7 @@ El campo `edge` de cada casa en `all_books` muestra cuánto mejores (o peores) s
 
 ## Endpoints Relacionados
 
-- [Snapshot de Cuotas](/es/api-reference/odds) - Obtén cuotas en bruto de casas de apuestas individuales
-- [Delta de Cuotas](/es/api-reference/odds-delta) - Obtén solo las cuotas que han cambiado desde una marca temporal dada
-- [Comparación de Cuotas](/es/api-reference/odds-comparison) - Compara cuotas lado a lado entre casas
-- [Casas de Apuestas](/es/api-reference/sportsbooks) - Consulta qué casas están disponibles y su estado
+- [Snapshot de Cuotas](/es/api-reference/odds/) - Obtén cuotas en bruto de casas de apuestas individuales
+- [Delta de Cuotas](/es/api-reference/odds-delta/) - Obtén solo las cuotas que han cambiado desde una marca temporal dada
+- [Comparación de Cuotas](/es/api-reference/odds-comparison/) - Compara cuotas lado a lado entre casas
+- [Casas de Apuestas](/es/api-reference/sportsbooks/) - Consulta qué casas están disponibles y su estado

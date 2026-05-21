@@ -12,7 +12,7 @@ Retorna o snapshot da linha de fechamento para um evento — as odds por book ca
 GET /api/v1/odds/closing
 ```
 
-Cada sportsbook é capturado de forma independente na primeira vez em que faz a transição de um determinado evento para `is_live=true`. Os snapshots capturados ficam no Valkey por **48 horas** após o início do evento. Após esse período, utilize [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise) (Enterprise, com suporte do ClickHouse).
+Cada sportsbook é capturado de forma independente na primeira vez em que faz a transição de um determinado evento para `is_live=true`. Os snapshots capturados ficam no Valkey por **48 horas** após o início do evento. Após esse período, utilize [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise/) (Enterprise, com suporte do ClickHouse).
 
 ## Autenticação
 
@@ -174,11 +174,11 @@ As respostas são armazenadas em cache na edge por 30s (`s-maxage=30`) e no clie
 | Status | Código | Significado |
 |--------|------|---------|
 | 400 | `validation_error` | `event_id` ausente ou malformado. |
-| 401 | `missing_api_key` / `invalid_api_key` | Veja [Autenticação](/pt-BR/authentication). |
+| 401 | `missing_api_key` / `invalid_api_key` | Veja [Autenticação](/pt-BR/authentication/). |
 | 403 | `tier_restricted` | Tier abaixo de Pro. |
 | 503 | `not_ready` | A captura da linha de fechamento não está disponível no momento (ex.: armazenamento de apoio inacessível). Tente novamente. |
 
 ## Relacionados
 
-- [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise) — Enterprise; histórico de longo prazo no ClickHouse além da janela de 48h.
-- [`/api/v1/historical/clv`](/pt-BR/api-reference/enterprise) — Análises de CLV agregadas entre oportunidades.
+- [`/api/v1/historical/odds/closing`](/pt-BR/api-reference/enterprise/) — Enterprise; histórico de longo prazo no ClickHouse além da janela de 48h.
+- [`/api/v1/historical/clv`](/pt-BR/api-reference/enterprise/) — Análises de CLV agregadas entre oportunidades.

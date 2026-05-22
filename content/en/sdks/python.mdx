@@ -61,10 +61,10 @@ client.odds.get(sport="basketball", league="nba", limit=100)
 client.odds.best(league="nfl", market="moneyline")
 
 # Side-by-side comparison for an event
-client.odds.comparison(event_id="evt_abc123")
+client.odds.comparison(event_id="nba_celtics_lakers_2026-02-08_b3")
 
 # Batch lookup
-client.odds.batch(event_ids=["evt_abc123", "evt_def456"])
+client.odds.batch(event_ids=["nba_celtics_lakers_2026-02-08_b3", "nfl_bills_chiefs_2026-02-17_b2"])
 ```
 
 ### +EV Opportunities (Pro+)
@@ -248,7 +248,7 @@ client.stream.opportunities(min_ev=3.0)
 client.stream.all(sport="basketball")
 
 # Single event
-client.stream.event("evt_abc123")
+client.stream.event("nba_celtics_lakers_2026-02-08_b3")
 ```
 
 ## Data Quality

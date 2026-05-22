@@ -308,25 +308,64 @@ X-Request-Id: req_abc123def456
 | `away_team` | string | Away team name |
 | `market_type` | string | `moneyline`, `spread`, `total`, `player_prop`, etc. |
 | `selection` | string | The selection (team name, Over/Under, player name) |
-| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `selection_type` | string | Canonical side identifier. See [Selection types](#selection-types) below for the full enum, including compound forms (e.g. `home_over`) emitted on multi-axis markets. |
+| `team_side` | string\|undefined | Raw team-side hint from the adapter — one of `home`, `away`, `draw`. Useful when `selection_type` carries a compound value (e.g. `home_over`) and you want just the team axis without parsing. Absent when the adapter did not stamp it. |
 | `odds_american` | number | American odds (e.g., -110, +150) |
 | `odds_decimal` | number | Decimal odds (e.g., 1.909) |
 | `odds_probability` | number | Implied probability (e.g., 0.5238) |
 | `line` | number \| null | Spread or total line value (`null` for moneyline) |
+| `is_alternate_line` | boolean\|undefined | `true` when this row's `line` differs from the canonical main line for its `(event, market_type, player)` group. Always `false` for markets with no line (moneyline, outright). Stable on [`/opportunities/ev`](/en/api-reference/opportunities-ev/) today; rolling out to `/odds` rows. Use to separate main-line and alt-line snapshots. |
 | `event_start_time` | string | ISO 8601 event start time |
 | `last_seen_at` | string | ISO 8601 timestamp of our adapter's last observation of this row. Updates every ingest cycle — this is the pipeline freshness signal. |
 | `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the price/line/`is_live` flag are unchanged (see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/)). Use `last_seen_at` for pipeline freshness. |
+| `wire_received_at` | string\|undefined | ISO 8601 timestamp of when sharp-api-go last observed a content-hash change for this row — the pipeline-arrival stamp. Distinct from `last_seen_at` (adapter observation) and `odds_changed_at` (sportsbook's own source update). |
 | `is_live` | boolean | Whether the event is currently live |
+| `event_uuid` | string\|undefined | Stable canonical event UUID from the SharpAPI atlas, when the event is mapped. Where `event_id` carries the adapter's primary event identifier (often the originating sportsbook's), `event_uuid` is a feed-stable hash you can use for cross-feed joins. Absent for unmapped events. |
+| `external_event_id` | string\|undefined | The sportsbook's own native event ID, when distinct from `event_id`. Useful for round-tripping rows back to the sportsbook's UI or API. |
+| `deep_link` | string\|undefined | Resolver URL pointing to the sportsbook's event or bet-slip page. Pass `state=` (e.g. `state=nj`) on the request to route through state-specific subdomains for books that need them (BetMGM, Caesars, BetRivers). |
+| `market_id` | string\|undefined | The sportsbook's own native market identifier. Some books don't expose one — absent when unknown. |
+| `selection_id` | string\|undefined | The sportsbook's own native selection/outcome identifier. Some books don't expose one — absent when unknown. |
 | `player_name` | string\|undefined | Player name (player prop markets only) |
 | `stat_category` | string\|undefined | Stat category, e.g. `points`, `rebounds` (player prop markets only) |
+| `home_pitcher` | string\|undefined | MLB only. Home-team starting pitcher when published by the book. |
+| `away_pitcher` | string\|undefined | MLB only. Away-team starting pitcher when published by the book. |
 | `public_bet_pct` | number\|undefined | Public betting ticket percentage (0.0-1.0). Currently BetMGM only. |
 | `max_bet` | number\|undefined | Maximum wager amount (USD) for this market type. Currently Pinnacle only. |
+| `volume` | number\|undefined | Matched-volume on this selection. Exchange books only (Betfair, Novig, ProphetX, Polymarket). Units follow the originating book (e.g. matched stake for Betfair, share volume for prediction markets). |
+| `volume_24h` | number\|undefined | Trailing 24-hour matched volume on this selection. Exchange books only. |
+| `open_interest` | number\|undefined | Outstanding open interest (matched stake / shares currently held) on this selection. Exchange books only. |
+| `polymarket_resolution` | string\|undefined | Polymarket only. UMA optimistic-oracle resolution status when the market has terminated — one of `settled_normal`, `voided`, `disputed`, `proposed`, `unknown`. Absent for live (unresolved) Polymarket markets and for every non-Polymarket book. |
 | `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |
 | `sport_ref` | object\|undefined | **New (May 2026).** Nested sport reference: `{id, numerical_id, name}`. |
 | `league_ref` | object\|undefined | **New (May 2026).** Nested league reference: `{id, numerical_id, label}`. |
 | `market_ref` | object\|undefined | **New (May 2026).** Nested market reference: `{id, numerical_id, label}`. |
 | `sportsbook_ref` | object\|undefined | **New (May 2026).** Nested sportsbook reference: `{id, numerical_id, label}`. |
+
+### Selection types
+
+`selection_type` carries the canonical side identifier for each `selection`. Most markets are two-way (e.g. moneyline, point spread, total) and emit one of the simple values below. A small set of multi-axis markets (soccer double-chance, BTTS-combined, result × O/U, MMA round betting, tennis set betting, correct-score, etc.) encode two outcomes per selection and emit **compound** values joined by `_`.
+
+| Family | Values | Where they appear |
+|--------|--------|-------------------|
+| Two-way (team side) | `home`, `away` | `moneyline`, `point_spread`, `puck_line`, `run_line`, `team_total`, `set_handicap`, most period markets |
+| Two-way (line direction) | `over`, `under` | `total_points`, `total_goals`, `total_runs`, `total_games`, `total_rounds`, `team_total`, all `player_*_o_u` props |
+| Two-way (yes/no) | `yes`, `no` | `binary`, prop-style yes/no markets, exchange "back/lay" outcomes, Polymarket prediction markets |
+| Two-way (parity) | `even`, `odd` | Total-parity markets (e.g. total points odd/even) |
+| Three-way | `draw` | Three-way moneyline (soccer 1X2), draw-no-bet's complementary side, `next_goal` "no goal" |
+| Compound (team × O/U) | `home_over`, `home_under`, `away_over`, `away_under` | Soccer `match_result_total_goals` ("Team A and Over N.5") and analogous result-plus-total markets |
+| Compound (team × BTTS) | `home_yes`, `home_no`, `away_yes`, `away_no`, `draw_yes`, `draw_no` | Soccer `match_result_both_teams_to_score` |
+| Compound (double chance) | `home_draw`, `away_draw`, `home_away` | Soccer `double_chance` (1X / X2 / 12) and MMA double-chance |
+| Compound (round / method) | `home_r1`, `home_r2`, `home_decision`, `away_r1`, etc. | MMA `round_betting` and method-of-victory markets |
+| Catch-all | `other` | `game_prop`, `next_goal` "no goal", and any selection where the canonical-side mapper cannot decompose the outcome cleanly. Always present in low volume; treat as opaque. |
+
+<Callout type="info">
+**Parsing compound values.** Compound `selection_type` strings always join the team axis (`home` / `away` / `draw`) to the secondary axis with a single underscore. To recover just the team axis without parsing, read [`team_side`](#odds-object-schema) — it is the raw side stamped by the adapter for the same row.
+</Callout>
+
+<Callout type="warning">
+**Long-tail markets emit additional forms.** Markets such as `correct_score` (e.g. `"2_1"`), `set_betting` (e.g. `"0_2"`), `winning_margin`, `halftime_fulltime`, `first_goal`, and `anytime_goal` encode score-level or compound outcomes directly in `selection_type`. If you depend on a closed enum, filter to the families above and treat any unrecognised value as opaque — do not error.
+</Callout>
 
 ### New (May 2026): nested reference blocks
 

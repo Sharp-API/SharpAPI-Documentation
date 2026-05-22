@@ -13,8 +13,8 @@
       "name": "Proprietary",
       "url": "https://sharpapi.io/terms"
     },
-    "x-generated-at": "2026-04-23T20:18:17-04:00",
-    "x-commit-sha": "39e2c5d"
+    "x-generated-at": "2026-05-20T23:30:42-04:00",
+    "x-commit-sha": "13f97e3"
   },
   "servers": [
     {
@@ -4391,7 +4391,42 @@
           },
           "selection_type": {
             "type": "string",
+            "description": "Canonical side identifier. Two-way markets emit one of the simple values listed in `enum`. Multi-axis markets (soccer double-chance, BTTS-combined, result × O/U, MMA round betting, tennis set betting, correct-score, etc.) emit compound forms joined by `_` — e.g. `home_over`, `away_under`, `home_yes`, `home_r1`. Long-tail markets such as `correct_score` and `set_betting` also encode score-level outcomes directly (e.g. `2_1`). Treat any unrecognised value as opaque rather than erroring. See the `/odds` page for the full table.",
+            "enum": [
+              "home",
+              "away",
+              "over",
+              "under",
+              "yes",
+              "no",
+              "even",
+              "odd",
+              "draw",
+              "other",
+              "home_over",
+              "home_under",
+              "away_over",
+              "away_under",
+              "home_yes",
+              "home_no",
+              "away_yes",
+              "away_no",
+              "draw_yes",
+              "draw_no",
+              "home_draw",
+              "away_draw",
+              "home_away"
+            ],
             "example": "away"
+          },
+          "team_side": {
+            "type": "string",
+            "description": "Raw team-side hint from the adapter — useful when `selection_type` carries a compound value (e.g. `home_over`) and you want just the team axis without parsing. Absent when the adapter did not stamp it.",
+            "enum": [
+              "home",
+              "away",
+              "draw"
+            ]
           },
           "odds_american": {
             "type": "number",
@@ -4412,6 +4447,10 @@
             "description": "Point spread or total line (null for moneyline)",
             "example": null
           },
+          "is_alternate_line": {
+            "type": "boolean",
+            "description": "True when this row's `line` differs from the canonical main line for its (event, market_type, player) group. Always false for markets with no line (moneyline, outright). Stable on /opportunities/ev today; rolling out to /odds rows."
+          },
           "event_start_time": {
             "type": "string",
             "format": "date-time"
@@ -4424,6 +4463,43 @@
             "format": "date-time",
             "description": "When these odds were last updated"
           },
+          "wire_received_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Pipeline-arrival stamp — when sharp-api-go last observed a content-hash change for this row. Distinct from `last_seen_at` (adapter observation) and `odds_changed_at` (sportsbook's own source update)."
+          },
+          "event_uuid": {
+            "type": "string",
+            "description": "Stable canonical event UUID from the SharpAPI atlas. Use for cross-feed joins; absent for unmapped events."
+          },
+          "external_event_id": {
+            "type": "string",
+            "description": "The sportsbook's own native event ID, when distinct from `event_id`."
+          },
+          "deep_link": {
+            "type": "string",
+            "description": "Resolver URL pointing to the sportsbook's event or bet-slip page. Pass `state=` on the request to route through state-specific subdomains for books that need them (BetMGM, Caesars, BetRivers)."
+          },
+          "market_id": {
+            "type": "string",
+            "description": "Sportsbook's own native market identifier. Absent when the book does not expose one."
+          },
+          "selection_id": {
+            "type": "string",
+            "description": "Sportsbook's own native selection/outcome identifier. Absent when the book does not expose one."
+          },
+          "volume": {
+            "type": "number",
+            "description": "Matched volume on this selection. Exchange books only (Betfair, Novig, ProphetX, Polymarket). Units follow the originating book."
+          },
+          "volume_24h": {
+            "type": "number",
+            "description": "Trailing 24-hour matched volume on this selection. Exchange books only."
+          },
+          "open_interest": {
+            "type": "number",
+            "description": "Outstanding open interest on this selection. Exchange books only."
+          },
           "player_name": {
             "type": "string",
             "nullable": true,
@@ -4433,6 +4509,25 @@
             "type": "string",
             "nullable": true,
             "description": "Stat category (player prop markets only)"
+          },
+          "home_pitcher": {
+            "type": "string",
+            "description": "MLB only. Home-team starting pitcher when published by the book."
+          },
+          "away_pitcher": {
+            "type": "string",
+            "description": "MLB only. Away-team starting pitcher when published by the book."
+          },
+          "polymarket_resolution": {
+            "type": "string",
+            "description": "Polymarket only. UMA optimistic-oracle resolution status when the market has terminated. Absent for live (unresolved) markets and for non-Polymarket books.",
+            "enum": [
+              "settled_normal",
+              "voided",
+              "disputed",
+              "proposed",
+              "unknown"
+            ]
           }
         }
       },

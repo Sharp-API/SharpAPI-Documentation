@@ -1,0 +1,64 @@
+---
+description: "What liquidity and limit signals SharpAPI surfaces (max_bet, volume, volume_24h, open_interest, exchange_token_id) and what upstream books don't expose."
+---
+
+import { Callout } from 'nextra/components'
+
+# Liquidity & Limits
+
+SharpAPI surfaces every liquidity and limit signal we receive from upstream
+books. This page enumerates exactly what's available, which books emit each
+field, and what isn't surfaced (with a note on why).
+
+## What we surface
+
+Each field below is an optional column on the `/api/v1/odds` response. The
+field is only present on rows where the upstream book actually publishes it —
+treat all five as `undefined`-tolerant.
+
+| Field | Type | Meaning | Emitting books |
+|-------|------|---------|----------------|
+| `max_bet` | number (USD) | Maximum wager the book will accept on this market / selection at the current line. | Pinnacle, SBObet |
+| `volume` | number | Cumulative traded volume on the selection, in the exchange's native units (USD for Kalshi). | Kalshi |
+| `volume_24h` | number | Rolling 24-hour traded volume in the exchange's native units. | Polymarket, Kalshi |
+| `open_interest` | number | Outstanding open contracts on the selection. | Kalshi |
+| `exchange_token_id` | string | Exchange's native token / market hash — used for downstream order routing on the exchange. | Polymarket (`token_id`), SX Bet (`marketHash`) |
+
+<Callout type="info">
+The exchange-side fields (`volume`, `volume_24h`, `open_interest`,
+`exchange_token_id`) are the closest thing to a depth-of-book proxy that any
+public sportsbook API exposes. Use them as a coverage / liquidity signal when
+ranking selections within an exchange book; they are not directly comparable
+across books with different units.
+</Callout>
+
+## What we don't surface (and why)
+
+These are commonly asked about but are not surfaced today, because upstream
+books don't expose them in the public APIs we consume:
+
+- **Bid / ask order-book depth.** Traditional sportsbooks don't operate a
+  visible order book. Exchanges (Polymarket, Kalshi, Novig, SX Bet) operate an
+  internal book but only publish aggregate volume / open-interest, not depth.
+- **Pre-bet limit checks.** No upstream book exposes a "will this wager be
+  accepted at this size" probe via public API. The `max_bet` field above is
+  the book's posted ceiling on the market — the actual accept-or-reject
+  decision is made at slip-submission time.
+- **Real-time book-side suspension reasons.** When a book pulls a line we
+  emit a `removed` delta on `/api/v1/odds/delta` and the row disappears from
+  `/api/v1/odds`, but we do not publish a structured reason code (suspended /
+  void / cashout-only / etc.) — upstream books don't expose one.
+
+## Detecting coverage gaps
+
+If a customer-side coverage check relies on liquidity, the recommended
+pattern is:
+
+1. Filter `/api/v1/odds` by your books of interest.
+2. For exchange books, additionally filter rows where `volume_24h` or
+   `open_interest` exceeds your minimum threshold.
+3. For traditional books, use `max_bet` (when emitted) as a coarse limit
+   signal — Pinnacle and SBObet only.
+4. For everything else, fall back to row presence: an odds row in
+   `/api/v1/odds` is a positive signal that the book is currently quoting
+   that market.

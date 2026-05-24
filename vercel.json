@@ -41,8 +41,18 @@
       "permanent": true
     },
     {
+      "source": "/api/v1/:path*/",
+      "destination": "/en/api-reference/overview/",
+      "permanent": true
+    },
+    {
       "source": "/api/v1/monitoring/:path*",
       "destination": "/en/api-reference/health",
+      "permanent": true
+    },
+    {
+      "source": "/api/v1/monitoring/:path*/",
+      "destination": "/en/api-reference/health/",
       "permanent": true
     },
     {
@@ -121,6 +131,11 @@
       "permanent": true
     },
     {
+      "source": "/streaming/:path*/",
+      "destination": "/en/streaming/:path*/",
+      "permanent": true
+    },
+    {
       "source": "/api-reference",
       "destination": "/en/api-reference/overview",
       "permanent": true
@@ -146,6 +161,11 @@
       "permanent": true
     },
     {
+      "source": "/api-reference/:path*/",
+      "destination": "/en/api-reference/:path*/",
+      "permanent": true
+    },
+    {
       "source": "/concepts",
       "destination": "/en/concepts/arbitrage",
       "permanent": true
@@ -158,6 +178,11 @@
     {
       "source": "/concepts/:path*",
       "destination": "/en/concepts/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/concepts/:path*/",
+      "destination": "/en/concepts/:path*/",
       "permanent": true
     },
     {
@@ -176,6 +201,11 @@
       "permanent": true
     },
     {
+      "source": "/sdks/:path*/",
+      "destination": "/en/sdks/:path*/",
+      "permanent": true
+    },
+    {
       "source": "/examples",
       "destination": "/en/examples/arbitrage-scanner",
       "permanent": true
@@ -188,6 +218,11 @@
     {
       "source": "/examples/:path*",
       "destination": "/en/examples/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/examples/:path*/",
+      "destination": "/en/examples/:path*/",
       "permanent": true
     },
     {

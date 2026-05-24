@@ -6,6 +6,26 @@
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ content/ public/ scripts/ next.config.mjs proxy.ts mdx-components.tsx package.json vercel.json",
   "redirects": [
     {
+      "source": "/me",
+      "destination": "/en/",
+      "permanent": true
+    },
+    {
+      "source": "/me/",
+      "destination": "/en/",
+      "permanent": true
+    },
+    {
+      "source": "/value-bets",
+      "destination": "/en/api-reference/opportunities-ev",
+      "permanent": true
+    },
+    {
+      "source": "/value-bets/",
+      "destination": "/en/api-reference/opportunities-ev/",
+      "permanent": true
+    },
+    {
       "source": "/",
       "destination": "/en/",
       "permanent": true
@@ -31,8 +51,18 @@
       "permanent": true
     },
     {
+      "source": "/api/v1/futures/odds/",
+      "destination": "/en/api-reference/odds/",
+      "permanent": true
+    },
+    {
       "source": "/splits",
       "destination": "/en/api-reference/splits",
+      "permanent": true
+    },
+    {
+      "source": "/splits/",
+      "destination": "/en/api-reference/splits/",
       "permanent": true
     },
     {
@@ -41,8 +71,18 @@
       "permanent": true
     },
     {
+      "source": "/odds/delta/",
+      "destination": "/en/api-reference/odds-delta/",
+      "permanent": true
+    },
+    {
       "source": "/odds/best",
       "destination": "/en/api-reference/odds-best",
+      "permanent": true
+    },
+    {
+      "source": "/odds/best/",
+      "destination": "/en/api-reference/odds-best/",
       "permanent": true
     },
     {
@@ -51,13 +91,28 @@
       "permanent": true
     },
     {
+      "source": "/odds/",
+      "destination": "/en/api-reference/odds/",
+      "permanent": true
+    },
+    {
       "source": "/streaming",
       "destination": "/en/streaming/overview",
       "permanent": true
     },
     {
+      "source": "/streaming/",
+      "destination": "/en/streaming/overview/",
+      "permanent": true
+    },
+    {
       "source": "/streaming/overview",
       "destination": "/en/streaming/overview",
+      "permanent": true
+    },
+    {
+      "source": "/streaming/overview/",
+      "destination": "/en/streaming/overview/",
       "permanent": true
     },
     {
@@ -71,8 +126,18 @@
       "permanent": true
     },
     {
+      "source": "/api-reference/",
+      "destination": "/en/api-reference/overview/",
+      "permanent": true
+    },
+    {
       "source": "/api-reference/overview",
       "destination": "/en/api-reference/overview",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/overview/",
+      "destination": "/en/api-reference/overview/",
       "permanent": true
     },
     {
@@ -86,6 +151,11 @@
       "permanent": true
     },
     {
+      "source": "/concepts/",
+      "destination": "/en/concepts/arbitrage/",
+      "permanent": true
+    },
+    {
       "source": "/concepts/:path*",
       "destination": "/en/concepts/:path*",
       "permanent": true
@@ -93,6 +163,11 @@
     {
       "source": "/sdks",
       "destination": "/en/sdks/typescript",
+      "permanent": true
+    },
+    {
+      "source": "/sdks/",
+      "destination": "/en/sdks/typescript/",
       "permanent": true
     },
     {
@@ -106,6 +181,11 @@
       "permanent": true
     },
     {
+      "source": "/examples/",
+      "destination": "/en/examples/arbitrage-scanner/",
+      "permanent": true
+    },
+    {
       "source": "/examples/:path*",
       "destination": "/en/examples/:path*",
       "permanent": true
@@ -116,8 +196,18 @@
       "permanent": true
     },
     {
+      "source": "/authentication/",
+      "destination": "/en/authentication/",
+      "permanent": true
+    },
+    {
       "source": "/quickstart",
       "destination": "/en/quickstart",
+      "permanent": true
+    },
+    {
+      "source": "/quickstart/",
+      "destination": "/en/quickstart/",
       "permanent": true
     },
     {
@@ -126,8 +216,18 @@
       "permanent": true
     },
     {
+      "source": "/pricing/",
+      "destination": "/en/pricing/",
+      "permanent": true
+    },
+    {
       "source": "/en/streaming",
       "destination": "/en/streaming/overview",
+      "permanent": true
+    },
+    {
+      "source": "/en/streaming/",
+      "destination": "/en/streaming/overview/",
       "permanent": true
     },
     {
@@ -136,8 +236,18 @@
       "permanent": true
     },
     {
+      "source": "/en/api-reference/",
+      "destination": "/en/api-reference/overview/",
+      "permanent": true
+    },
+    {
       "source": "/en/concepts",
       "destination": "/en/concepts/arbitrage",
+      "permanent": true
+    },
+    {
+      "source": "/en/concepts/",
+      "destination": "/en/concepts/arbitrage/",
       "permanent": true
     },
     {
@@ -146,8 +256,18 @@
       "permanent": true
     },
     {
+      "source": "/en/sdks/",
+      "destination": "/en/sdks/typescript/",
+      "permanent": true
+    },
+    {
       "source": "/en/examples",
       "destination": "/en/examples/arbitrage-scanner",
+      "permanent": true
+    },
+    {
+      "source": "/en/examples/",
+      "destination": "/en/examples/arbitrage-scanner/",
       "permanent": true
     },
     {

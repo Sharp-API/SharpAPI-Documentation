@@ -20,7 +20,7 @@ Requires API key via `X-API-Key` header, `Authorization: Bearer` header, or `api
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `eventId` | string | Yes | Unique event identifier (e.g., `evt_nba_bos_lal_20260208`) |
+| `eventId` | string | Yes | Unique event identifier (e.g., `nba_celtics_lakers_2026-02-08_b3`) |
 
 ## Response Headers
 
@@ -76,13 +76,13 @@ Each entry in the `markets` array summarizes an available market type for this e
 <Tabs items={['cURL', 'JavaScript', 'Python']}>
   <Tabs.Tab>
 ```bash
-curl -X GET "https://api.sharpapi.io/api/v1/events/evt_nba_bos_lal_20260208" \
+curl -X GET "https://api.sharpapi.io/api/v1/events/nba_celtics_lakers_2026-02-08_b3" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
-const eventId = 'evt_nba_bos_lal_20260208';
+const eventId = 'nba_celtics_lakers_2026-02-08_b3';
 const response = await fetch(
   `https://api.sharpapi.io/api/v1/events/${eventId}`,
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
@@ -96,7 +96,7 @@ console.log(`Markets: ${data.markets.map(m => m.type).join(', ')}`);
 ```python
 import requests
 
-event_id = 'evt_nba_bos_lal_20260208'
+event_id = 'nba_celtics_lakers_2026-02-08_b3'
 response = requests.get(
     f'https://api.sharpapi.io/api/v1/events/{event_id}',
     headers={'X-API-Key': 'YOUR_API_KEY'}
@@ -119,7 +119,7 @@ Single-resource responses wrap the object in `data` as a single object (not an a
 ```json
 {
   "data": {
-    "id": "evt_nba_bos_lal_20260208",
+    "id": "nba_celtics_lakers_2026-02-08_b3",
     "external_ids": {
       "draftkings": "12345678",
       "fanduel": "87654321",
@@ -188,7 +188,7 @@ Single-resource responses wrap the object in `data` as a single object (not an a
     ]
   },
   "meta": {
-    "event_id": "evt_nba_bos_lal_20260208"
+    "event_id": "nba_celtics_lakers_2026-02-08_b3"
   }
 }
 ```

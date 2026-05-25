@@ -27,6 +27,39 @@ Before opening a PR:
 
 PRs that fix a single issue are easier to review than batched ones.
 
+## OpenAPI spec versioning
+
+`public/openapi.json` is the published API contract. Some consumers pin against it
+and run CI-graded contract testing, so spec changes must be programmatically
+detectable.
+
+**Bump `info.version` (SemVer) whenever you change `paths` or response schemas:**
+
+| Bump | When |
+|------|------|
+| MAJOR (`x.0.0`) | Backward-incompatible redesign; removed or renamed response field; breaking schema change |
+| MINOR (`2.x.0`) | New path or field; a shape fix that aligns the spec to the live response. **Removed paths bump the MINOR at minimum.** |
+| PATCH (`2.1.x`) | Description-only edits, examples, doc clarifications |
+
+**Enforcement.** [`.github/workflows/openapi-version-check.yml`](.github/workflows/openapi-version-check.yml)
+runs on every PR that touches `public/openapi.json`. It fails if paths/schemas
+changed without an `info.version` bump, and if a bump has no matching
+[`CHANGELOG.md`](CHANGELOG.md) entry. Run it locally before pushing:
+
+```bash
+git show "origin/main:public/openapi.json" > /tmp/openapi.base.json
+node scripts/check-openapi-version.mjs /tmp/openapi.base.json public/openapi.json
+```
+
+**Consumer signal.** Clients can poll the lightweight sidecar at
+[`https://docs.sharpapi.io/openapi-version.json`](https://docs.sharpapi.io/openapi-version.json)
+(`{ "version", "x-generated-at", "x-commit-sha" }`) to detect changes without
+downloading the full spec. The same provenance is also stamped into
+`info["x-generated-at"]` / `info["x-commit-sha"]` inside `openapi.json` at build time.
+
+**History.** Each bump gets a one-line entry in [`CHANGELOG.md`](CHANGELOG.md);
+deploys additionally cut a dated GitHub Release.
+
 ## Style
 
 - **Tone**: terse and concrete. Show the request, the response, and the interesting details. Skip filler.

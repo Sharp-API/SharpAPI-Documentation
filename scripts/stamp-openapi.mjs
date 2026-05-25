@@ -10,11 +10,15 @@
 //
 // Both fields are advisory — they don't affect the OpenAPI semantics. Tools
 // that don't recognise the `x-` extensions ignore them.
+//
+// It also emits public/openapi-version.json — a tiny sidecar consumers can poll
+// to detect spec changes without downloading the full spec (issue #233).
 
 import { execSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const SPEC_PATH = 'public/openapi.json'
+const VERSION_SIDECAR_PATH = 'public/openapi-version.json'
 
 function git (args) {
   try {
@@ -39,3 +43,11 @@ spec.info['x-commit-sha'] = commitSHA
 
 writeFileSync(SPEC_PATH, JSON.stringify(spec, null, 2) + '\n')
 console.log(`[stamp-openapi] ${SPEC_PATH} → x-generated-at=${commitISO} x-commit-sha=${commitSHA}`)
+
+const versionSidecar = {
+  version: spec.info.version,
+  'x-generated-at': commitISO,
+  'x-commit-sha': commitSHA
+}
+writeFileSync(VERSION_SIDECAR_PATH, JSON.stringify(versionSidecar, null, 2) + '\n')
+console.log(`[stamp-openapi] ${VERSION_SIDECAR_PATH} → version=${spec.info.version}`)

@@ -4,8 +4,8 @@ export default {
   arbitrage: "Arbitrage",
   "event-matching": "Event Matching",
   "entity-reference-ids": "Entity Reference IDs",
-  liquidity: "Liquidity & Limits",
   "live-vs-prematch": "Live vs. Pre-Match",
+  liquidity: "Liquidity and Limits",
   "pinnacle-odds-changed-at": "Pinnacle `odds_changed_at`",
   "polymarket-resolution": "Polymarket Resolution",
 }

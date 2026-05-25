@@ -306,19 +306,58 @@ X-Request-Id: req_abc123def456
 | `away_team` | string | Nome do time visitante |
 | `market_type` | string | `moneyline`, `spread`, `total`, `player_prop`, etc. |
 | `selection` | string | A seleção (nome do time, Over/Under, nome do jogador) |
-| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `selection_type` | string | Identificador canônico do lado. Veja [Tipos de seleção](#tipos-de-seleção) abaixo para o enum completo, incluindo formas compostas (ex.: `home_over`) emitidas em mercados multieixo. |
+| `team_side` | string\|undefined | Dica bruta de lado do time vinda do adaptador — um dentre `home`, `away`, `draw`. Útil quando `selection_type` carrega um valor composto (ex.: `home_over`) e você quer apenas o eixo de time sem precisar fazer parsing. Ausente quando o adaptador não o carimbou. |
 | `odds_american` | number | Odds americanas (ex.: -110, +150) |
 | `odds_decimal` | number | Odds decimais (ex.: 1.909) |
 | `odds_probability` | number | Probabilidade implícita (ex.: 0.5238) |
 | `line` | number \| null | Valor da linha de spread ou total (`null` para moneyline) |
+| `is_alternate_line` | boolean\|undefined | `true` quando o `line` desta linha difere da linha principal canônica para seu grupo `(event, market_type, player)`. Sempre `false` para mercados sem linha (moneyline, outright). Estável em [`/opportunities/ev`](/pt-BR/api-reference/opportunities-ev/) hoje; em rollout para as linhas de `/odds`. Use para separar snapshots de linha principal e linhas alternativas. |
 | `event_start_time` | string | Hora de início do evento em ISO 8601 |
 | `last_seen_at` | string | Timestamp ISO 8601 da última observação desta linha pelo nosso adaptador. Atualiza a cada ciclo de ingestão — este é o sinal de frescor do pipeline. |
 | `odds_changed_at` | string | Timestamp ISO 8601 da atualização da própria fonte da casa de apostas para esta linha, quando disponível. Na Pinnacle, é mantido enquanto o preço/linha/flag `is_live` permanecerem inalterados (veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/)). Use `last_seen_at` para frescor do pipeline. |
+| `wire_received_at` | string\|undefined | Timestamp ISO 8601 de quando o sharp-api-go observou pela última vez uma mudança no hash de conteúdo desta linha — o carimbo de chegada ao pipeline. Distinto de `last_seen_at` (observação do adaptador) e `odds_changed_at` (atualização da própria fonte da casa de apostas). |
 | `is_live` | boolean | Se o evento está atualmente ao vivo |
+| `event_uuid` | string\|undefined | UUID canônico estável do evento do atlas do SharpAPI, quando o evento está mapeado. Enquanto `event_id` carrega o identificador primário do adaptador (frequentemente o da casa de apostas originadora), `event_uuid` é um hash estável entre feeds para joins cross-feed. Ausente para eventos não mapeados. |
+| `external_event_id` | string\|undefined | O ID de evento nativo da própria casa de apostas, quando distinto de `event_id`. Útil para vincular linhas de volta à UI ou API da casa de apostas. |
+| `deep_link` | string\|undefined | URL resolvedora apontando para a página de evento ou bilhete da casa de apostas. Passe `state=` (ex.: `state=nj`) na requisição para rotear via subdomínios específicos por estado em casas que os exigem (BetMGM, Caesars, BetRivers). |
+| `market_id` | string\|undefined | Identificador nativo de mercado da casa de apostas. Algumas casas não o expõem — ausente quando desconhecido. |
+| `selection_id` | string\|undefined | Identificador nativo de seleção/resultado da casa de apostas. Algumas casas não o expõem — ausente quando desconhecido. |
 | `player_name` | string\|undefined | Nome do jogador (apenas mercados de player prop) |
 | `stat_category` | string\|undefined | Categoria estatística, ex.: `points`, `rebounds` (apenas mercados de player prop) |
+| `home_pitcher` | string\|undefined | Apenas MLB. Pitcher abridor do time da casa quando publicado pela casa de apostas. |
+| `away_pitcher` | string\|undefined | Apenas MLB. Pitcher abridor do time visitante quando publicado pela casa de apostas. |
 | `public_bet_pct` | number\|undefined | Porcentagem de tickets de apostas públicos (0.0-1.0). Atualmente apenas BetMGM. |
 | `max_bet` | number\|undefined | Valor máximo de aposta (USD) para este tipo de mercado. Atualmente apenas Pinnacle. |
+| `volume` | number\|undefined | Volume casado nesta seleção. Apenas casas de exchange (Betfair, Novig, ProphetX, Polymarket). As unidades seguem a casa originadora (ex.: stake casado na Betfair, volume de ações em mercados de previsão). |
+| `volume_24h` | number\|undefined | Volume casado das últimas 24 horas nesta seleção. Apenas casas de exchange. |
+| `open_interest` | number\|undefined | Interesse aberto pendente (stake casado / ações atualmente detidas) nesta seleção. Apenas casas de exchange. |
+| `polymarket_resolution` | string\|undefined | Apenas Polymarket. Status de resolução do oráculo otimista UMA quando o mercado terminou — um dentre `settled_normal`, `voided`, `disputed`, `proposed`, `unknown`. Ausente em mercados Polymarket ainda ao vivo e em todas as casas não-Polymarket. |
+
+### Tipos de seleção
+
+`selection_type` carrega o identificador canônico de lado para cada `selection`. A maioria dos mercados é de duas vias (ex.: moneyline, point spread, total) e emite um dos valores simples abaixo. Um pequeno conjunto de mercados multieixo (dupla chance no futebol, BTTS combinado, resultado × O/U, round betting de MMA, set betting de tênis, placar exato, etc.) codifica dois resultados por seleção e emite valores **compostos** unidos por `_`.
+
+| Família | Valores | Onde aparecem |
+|--------|--------|----------------|
+| Duas vias (lado do time) | `home`, `away` | `moneyline`, `point_spread`, `puck_line`, `run_line`, `team_total`, `set_handicap`, a maioria dos mercados por período |
+| Duas vias (direção da linha) | `over`, `under` | `total_points`, `total_goals`, `total_runs`, `total_games`, `total_rounds`, `team_total`, todos os props `player_*_o_u` |
+| Duas vias (sim/não) | `yes`, `no` | `binary`, mercados estilo prop sim/não, resultados de exchange "back/lay", mercados de previsão Polymarket |
+| Duas vias (paridade) | `even`, `odd` | Mercados de paridade de totais (ex.: total de pontos par/ímpar) |
+| Três vias | `draw` | Moneyline a três vias (1X2 do futebol), lado complementar do draw-no-bet, "sem gol" em `next_goal` |
+| Composto (time × O/U) | `home_over`, `home_under`, `away_over`, `away_under` | `match_result_total_goals` do futebol ("Time A e Over N.5") e mercados análogos resultado-mais-total |
+| Composto (time × BTTS) | `home_yes`, `home_no`, `away_yes`, `away_no`, `draw_yes`, `draw_no` | `match_result_both_teams_to_score` do futebol |
+| Composto (dupla chance) | `home_draw`, `away_draw`, `home_away` | `double_chance` do futebol (1X / X2 / 12) e dupla chance de MMA |
+| Composto (round / método) | `home_r1`, `home_r2`, `home_decision`, `away_r1` etc. | `round_betting` de MMA e mercados de método de vitória |
+| Coringa | `other` | `game_prop`, "sem gol" em `next_goal`, e qualquer seleção em que o mapeador de lado canônico não consegue decompor o resultado de forma limpa. Sempre presente em baixo volume; trate como opaco. |
+
+<Callout type="info">
+**Parseando valores compostos.** Strings compostas de `selection_type` sempre unem o eixo de time (`home` / `away` / `draw`) ao eixo secundário com um único underscore. Para recuperar apenas o eixo de time sem parsing, leia [`team_side`](#schema-do-objeto-odds) — é o lado bruto carimbado pelo adaptador para a mesma linha.
+</Callout>
+
+<Callout type="warning">
+**Mercados de cauda longa emitem formas adicionais.** Mercados como `correct_score` (ex.: `"2_1"`), `set_betting` (ex.: `"0_2"`), `winning_margin`, `halftime_fulltime`, `first_goal` e `anytime_goal` codificam resultados de placar ou compostos diretamente em `selection_type`. Se você depende de um enum fechado, filtre para as famílias acima e trate qualquer valor não reconhecido como opaco — não lance erro.
+</Callout>
 
 ## Ordenação
 

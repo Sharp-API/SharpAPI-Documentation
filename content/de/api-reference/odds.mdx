@@ -306,19 +306,58 @@ X-Request-Id: req_abc123def456
 | `away_team` | string | Name der Auswärtsmannschaft |
 | `market_type` | string | `moneyline`, `spread`, `total`, `player_prop` usw. |
 | `selection` | string | Die Auswahl (Mannschaftsname, Over/Under, Spielername) |
-| `selection_type` | string | `home`, `away`, `over`, `under` |
+| `selection_type` | string | Kanonische Seiten-Kennung. Siehe [Selektionstypen](#selektionstypen) unten für die vollständige Aufzählung, einschließlich zusammengesetzter Formen (z. B. `home_over`), die auf Mehrachsen-Märkten emittiert werden. |
+| `team_side` | string\|undefined | Roher Team-Seiten-Hinweis aus dem Adapter — einer aus `home`, `away`, `draw`. Nützlich, wenn `selection_type` einen zusammengesetzten Wert (z. B. `home_over`) trägt und Sie nur die Team-Achse ohne Parsing möchten. Fehlt, wenn der Adapter ihn nicht gesetzt hat. |
 | `odds_american` | number | American Odds (z. B. -110, +150) |
 | `odds_decimal` | number | Dezimalquoten (z. B. 1.909) |
 | `odds_probability` | number | Implizite Wahrscheinlichkeit (z. B. 0.5238) |
 | `line` | number \| null | Spread- oder Total-Linienwert (`null` bei Moneyline) |
+| `is_alternate_line` | boolean\|undefined | `true`, wenn das `line` dieser Zeile von der kanonischen Hauptlinie für ihre `(event, market_type, player)`-Gruppe abweicht. Immer `false` für Märkte ohne Linie (Moneyline, Outright). Stabil auf [`/opportunities/ev`](/de/api-reference/opportunities-ev/) heute; Rollout auf `/odds`-Zeilen läuft. Verwenden Sie es, um Haupt- und Alternativlinien-Snapshots zu trennen. |
 | `event_start_time` | string | ISO 8601 Event-Startzeit |
 | `last_seen_at` | string | ISO 8601 Zeitstempel der letzten Beobachtung dieser Zeile durch unseren Adapter. Wird in jedem Ingest-Zyklus aktualisiert — dies ist das Pipeline-Frische-Signal. |
 | `odds_changed_at` | string | ISO 8601 Zeitstempel der quelleneigenen Aktualisierung des Sportwettenanbieters für diese Linie, sofern verfügbar. Bei Pinnacle wird er fortgeführt, solange Preis/Linie/`is_live`-Flag unverändert bleiben (siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/)). Verwenden Sie `last_seen_at` für die Pipeline-Frische. |
+| `wire_received_at` | string\|undefined | ISO 8601 Zeitstempel des Zeitpunkts, an dem sharp-api-go zuletzt eine Inhaltshash-Änderung für diese Zeile beobachtet hat — der Pipeline-Eingangsstempel. Unterschiedlich von `last_seen_at` (Adapter-Beobachtung) und `odds_changed_at` (quelleneigene Aktualisierung des Sportwettenanbieters). |
 | `is_live` | boolean | Ob das Event derzeit live läuft |
+| `event_uuid` | string\|undefined | Stabile kanonische Event-UUID aus dem SharpAPI-Atlas, sofern das Event gemappt ist. Während `event_id` die primäre Event-Kennung des Adapters trägt (oft die des ursprünglichen Sportwettenanbieters), ist `event_uuid` ein feed-stabiler Hash für Cross-Feed-Joins. Fehlt bei nicht gemappten Events. |
+| `external_event_id` | string\|undefined | Die native Event-ID des Sportwettenanbieters, sofern sie sich von `event_id` unterscheidet. Nützlich, um Zeilen in die UI oder API des Sportwettenanbieters zurückzuverknüpfen. |
+| `deep_link` | string\|undefined | Auflösungs-URL, die auf die Event- oder Wettschein-Seite des Sportwettenanbieters zeigt. Übergeben Sie `state=` (z. B. `state=nj`) in der Anfrage, um über staatsspezifische Subdomains zu routen, sofern die Buchmacher diese benötigen (BetMGM, Caesars, BetRivers). |
+| `market_id` | string\|undefined | Native Markt-Kennung des Sportwettenanbieters. Einige Buchmacher legen keine offen — fehlt, wenn unbekannt. |
+| `selection_id` | string\|undefined | Native Selektions-/Outcome-Kennung des Sportwettenanbieters. Einige Buchmacher legen keine offen — fehlt, wenn unbekannt. |
 | `player_name` | string\|undefined | Spielername (nur bei Player-Prop-Märkten) |
 | `stat_category` | string\|undefined | Statistikkategorie, z. B. `points`, `rebounds` (nur bei Player-Prop-Märkten) |
+| `home_pitcher` | string\|undefined | Nur MLB. Heim-Starter-Pitcher, sofern vom Buchmacher veröffentlicht. |
+| `away_pitcher` | string\|undefined | Nur MLB. Auswärts-Starter-Pitcher, sofern vom Buchmacher veröffentlicht. |
 | `public_bet_pct` | number\|undefined | Öffentlicher Wetttickets-Prozentsatz (0.0-1.0). Derzeit nur BetMGM. |
 | `max_bet` | number\|undefined | Maximaler Einsatzbetrag (USD) für diesen Markttyp. Derzeit nur Pinnacle. |
+| `volume` | number\|undefined | Gematchtes Volumen auf dieser Selektion. Nur Wettbörsen (Betfair, Novig, ProphetX, Polymarket). Einheiten folgen dem ursprünglichen Buchmacher (z. B. gematchter Einsatz bei Betfair, Aktien-Volumen bei Vorhersagemärkten). |
+| `volume_24h` | number\|undefined | Gematchtes Volumen der letzten 24 Stunden auf dieser Selektion. Nur Wettbörsen. |
+| `open_interest` | number\|undefined | Offenes Interesse (gematchter Einsatz / aktuell gehaltene Aktien) auf dieser Selektion. Nur Wettbörsen. |
+| `polymarket_resolution` | string\|undefined | Nur Polymarket. UMA Optimistic-Oracle-Resolutionsstatus, sobald der Markt beendet ist — einer aus `settled_normal`, `voided`, `disputed`, `proposed`, `unknown`. Fehlt bei laufenden Polymarket-Märkten und bei allen Nicht-Polymarket-Buchmachern. |
+
+### Selektionstypen
+
+`selection_type` trägt die kanonische Seiten-Kennung für jede `selection`. Die meisten Märkte sind zweiseitig (z. B. Moneyline, Point Spread, Total) und emittieren einen der einfachen Werte unten. Eine kleine Menge an Mehrachsen-Märkten (Fußball Doppelchance, BTTS-kombiniert, Ergebnis × O/U, MMA Round Betting, Tennis Set Betting, korrekter Endstand usw.) kodiert zwei Outcomes pro Selektion und emittiert **zusammengesetzte** Werte, die mit `_` verbunden sind.
+
+| Familie | Werte | Wo sie erscheinen |
+|--------|--------|-------------------|
+| Zweiseitig (Team-Seite) | `home`, `away` | `moneyline`, `point_spread`, `puck_line`, `run_line`, `team_total`, `set_handicap`, die meisten Periodenmärkte |
+| Zweiseitig (Linien-Richtung) | `over`, `under` | `total_points`, `total_goals`, `total_runs`, `total_games`, `total_rounds`, `team_total`, alle `player_*_o_u`-Props |
+| Zweiseitig (Ja/Nein) | `yes`, `no` | `binary`, Prop-artige Ja/Nein-Märkte, Börsen-"Back/Lay"-Ausgänge, Polymarket-Vorhersagemärkte |
+| Zweiseitig (Parität) | `even`, `odd` | Total-Paritätsmärkte (z. B. Total-Punkte gerade/ungerade) |
+| Dreiseitig | `draw` | Dreiseitige Moneyline (Fußball 1X2), komplementäre Seite des Draw-No-Bet, "Kein Tor" bei `next_goal` |
+| Zusammengesetzt (Team × O/U) | `home_over`, `home_under`, `away_over`, `away_under` | Fußball `match_result_total_goals` ("Team A und Über N.5") und analoge Ergebnis-plus-Total-Märkte |
+| Zusammengesetzt (Team × BTTS) | `home_yes`, `home_no`, `away_yes`, `away_no`, `draw_yes`, `draw_no` | Fußball `match_result_both_teams_to_score` |
+| Zusammengesetzt (Doppelchance) | `home_draw`, `away_draw`, `home_away` | Fußball `double_chance` (1X / X2 / 12) und MMA-Doppelchance |
+| Zusammengesetzt (Runde / Methode) | `home_r1`, `home_r2`, `home_decision`, `away_r1` usw. | MMA `round_betting` und Method-of-Victory-Märkte |
+| Auffangwert | `other` | `game_prop`, "Kein Tor" bei `next_goal` und jede Selektion, bei der der kanonische Seiten-Mapper das Outcome nicht sauber zerlegen kann. Immer in geringem Volumen vorhanden; behandeln Sie ihn als opak. |
+
+<Callout type="info">
+**Parsing zusammengesetzter Werte.** Zusammengesetzte `selection_type`-Strings verbinden die Team-Achse (`home` / `away` / `draw`) stets mit einem einzelnen Unterstrich mit der sekundären Achse. Um nur die Team-Achse ohne Parsing zu erhalten, lesen Sie [`team_side`](#schema-des-quoten-objekts) — es ist die rohe vom Adapter gesetzte Seite für dieselbe Zeile.
+</Callout>
+
+<Callout type="warning">
+**Long-Tail-Märkte emittieren zusätzliche Formen.** Märkte wie `correct_score` (z. B. `"2_1"`), `set_betting` (z. B. `"0_2"`), `winning_margin`, `halftime_fulltime`, `first_goal` und `anytime_goal` kodieren Score-Level- oder zusammengesetzte Outcomes direkt in `selection_type`. Wenn Sie auf ein geschlossenes Enum angewiesen sind, filtern Sie auf die Familien oben und behandeln Sie jeden unbekannten Wert als opak — werfen Sie keinen Fehler.
+</Callout>
 
 ## Sortierung
 

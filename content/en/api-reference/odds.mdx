@@ -330,10 +330,11 @@ X-Request-Id: req_abc123def456
 | `home_pitcher` | string\|undefined | MLB only. Home-team starting pitcher when published by the book. |
 | `away_pitcher` | string\|undefined | MLB only. Away-team starting pitcher when published by the book. |
 | `public_bet_pct` | number\|undefined | Public betting ticket percentage (0.0-1.0). Currently BetMGM only. |
-| `max_bet` | number\|undefined | Maximum wager amount (USD) for this market type. Currently Pinnacle only. |
-| `volume` | number\|undefined | Matched-volume on this selection. Exchange books only (Betfair, Novig, ProphetX, Polymarket). Units follow the originating book (e.g. matched stake for Betfair, share volume for prediction markets). |
+| `max_bet` | number\|undefined | Maximum wager amount (USD) for this market type. Currently Pinnacle and SBObet. See [Liquidity and limits](/en/concepts/liquidity/). |
+| `volume` | number\|undefined | Matched-volume on this selection. Exchange books only (Betfair, Kalshi, Novig, ProphetX, Polymarket, SX Bet). Units follow the originating book (e.g. matched stake for Betfair, share volume for prediction markets). See [Liquidity and limits](/en/concepts/liquidity/). |
 | `volume_24h` | number\|undefined | Trailing 24-hour matched volume on this selection. Exchange books only. |
 | `open_interest` | number\|undefined | Outstanding open interest (matched stake / shares currently held) on this selection. Exchange books only. |
+| `exchange_token_id` | string\|undefined | Exchange-native token or market identifier for order-routing use cases. Emitted where the upstream exchange exposes a stable token ID, such as Polymarket CLOB token IDs and SX Bet market hashes. |
 | `polymarket_resolution` | string\|undefined | Polymarket only. UMA optimistic-oracle resolution status when the market has terminated — one of `settled_normal`, `voided`, `disputed`, `proposed`, `unknown`. Absent for live (unresolved) Polymarket markets and for every non-Polymarket book. |
 | `home` | object\|undefined | **New (May 2026).** Nested home-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. See [Entity reference IDs](/en/concepts/entity-reference-ids/). |
 | `away` | object\|undefined | **New (May 2026).** Nested away-team reference: `{id, numerical_id, name, abbreviation, logo, city, mascot, conference, division}`. |

@@ -1,0 +1,26 @@
+---
+title: "Liquidity and Limits"
+description: "What liquidity, open-interest, and max-bet signals SharpAPI surfaces on odds rows, and what upstream sportsbooks do not expose."
+---
+
+# Liquidity and Limits
+
+SharpAPI exposes liquidity-adjacent fields when the upstream book or exchange publishes them. These fields are optional because traditional sportsbooks and exchange-style books expose different data.
+
+## Fields on odds rows
+
+| Field | Meaning | Typical sources |
+|---|---|---|
+| `volume` | Matched volume on the selection. Units follow the upstream venue. | Exchange-style books such as Betfair, Novig, ProphetX, Polymarket, SX Bet |
+| `volume_24h` | Trailing 24-hour matched volume. | Prediction markets and exchanges such as Kalshi and Polymarket |
+| `open_interest` | Outstanding open interest or currently held contracts/shares. | Kalshi, Polymarket, and other exchanges that publish it |
+| `max_bet` | Maximum accepted stake for the current line, when exposed by the book. | Pinnacle, SBObet |
+| `exchange_token_id` | Exchange-native token or market identifier for routing orders outside SharpAPI. | Polymarket CLOB token IDs, SX Bet market hashes |
+
+These values are returned on [`/api/v1/odds`](/en/api-reference/odds/) rows only when present in the source feed. Absence means the upstream book did not expose that signal for the row; it does not imply zero liquidity or a zero limit.
+
+## What we do not surface
+
+SharpAPI does not expose a full bid/ask order book, pre-bet limit check, or sportsbook-side suspension reason on odds rows. Most traditional sportsbooks do not publish those fields in public feeds. When a market disappears, the streaming APIs can emit an `odds:removed` delta, but the upstream feed usually does not include the reason.
+
+For exchange-style books, use `volume`, `volume_24h`, and `open_interest` as practical liquidity proxies. For traditional sharp books, use `max_bet` where available; otherwise, treat limit information as unavailable rather than inferred.

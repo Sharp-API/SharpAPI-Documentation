@@ -29,6 +29,7 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 | `market` | string | all | Filter by market type(s), comma-separated (e.g., `moneyline`, `spread`, `total`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds/#market-category-aliases). |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
+| `is_main_line` | boolean | — | `true` = main-line entries only (consensus line for each `(event, market, selection)` cohort plus no-line markets like moneyline); `false` = alt-line entries only; omit = both. See the `is_main_line` response field below for the cohort semantics. |
 | `min_odds` | number | — | Minimum American odds filter |
 | `max_odds` | number | — | Maximum American odds filter |
 | `limit` | integer | 50 | Max results per page (max 200) |
@@ -201,6 +202,7 @@ X-Request-Id: req_best_789xyz
 | `market_type` | string | Market type (e.g., `moneyline`, `spread`, `total`) |
 | `selection` | string | Selection name (team name, Over/Under) |
 | `line` | number \| null | Line value (for spreads/totals) |
+| `is_main_line` | boolean | `true` for the consensus main line of this `(event, market_type, selection)` cohort and for no-line markets (moneyline, outright); `false` for alt-line entries and rows whose cohort hasn't been published yet (cold start). Filterable via `?is_main_line=true`. Mirrors the [`is_main_line` field on `/odds`](/en/api-reference/odds/#response-fields). |
 | `best_odds` | object | Best odds available across all books |
 | `best_odds.american` | number | Best American odds |
 | `best_odds.decimal` | number | Best decimal odds |

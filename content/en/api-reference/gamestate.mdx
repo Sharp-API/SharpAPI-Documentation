@@ -102,10 +102,51 @@ tennis events carry `sets_home` / `server`; hockey events carry
 | `power_play` | hockey | `"home" \| "away"` |
 | `sets_home`, `sets_away` | tennis | integer (sets won) |
 | `hits_home`, `hits_away` | baseball | integer |
-| `home_pitcher`, `away_pitcher` | baseball | string — starting pitcher display name |
+| `errors_home`, `errors_away` | baseball | integer — fielding errors |
+| `home_pitcher`, `away_pitcher` | baseball | string — **starting** pitcher display name (roster-level, not the pitcher currently on the mound — see `in_play.currentPitcher` below) |
+| `in_play` | baseball | object — at-bat state; see [Baseball `in_play` block](#baseball-in_play-block) |
 | `wickets_home`, `wickets_away` | cricket | integer |
 | `overs` | cricket | float |
 | `batting_team` | cricket | `"home" \| "away"` |
+
+### Baseball `in_play` block
+
+Per-at-bat state on live baseball events. Populated whenever the
+contributing book exposes pitch-level data (currently FanDuel, BetMGM,
+Betway, theScoreBet, and ProphetX); omitted otherwise. Inner field
+names are **camelCase** — they are not snake-cased by the API
+transform.
+
+```jsonc
+"in_play": {
+  "outs": 1,                                                 // 0, 1, or 2
+  "balls": 2,                                                // 0-3
+  "strikes": 1,                                              // 0-2
+  "runners": {"first": true, "second": false, "third": true},
+  "currentPitcher": "Zach Agnos",                            // pitcher on the mound now
+  "currentBatter": "Tyrone Taylor"                           // active hitter
+}
+```
+
+| Field | Type | Range / Notes |
+|---|---|---|
+| `outs` | integer | `0`, `1`, or `2`. **`3` is never emitted** — by the time the third out is recorded upstream, the next half-inning has already begun (`outs` returns to `0` and `game_period` advances). The third out manifests as a transition between frames, not a steady-state value. |
+| `balls` | integer | `0`-`3`. `4` is a walk; the at-bat ends and the field resets. |
+| `strikes` | integer | `0`-`2`. `3` is a strikeout; the at-bat ends and the field resets. |
+| `runners` | object | `{"first": bool, "second": bool, "third": bool}` — base-by-base occupancy. |
+| `currentPitcher` | string | Display name of the pitcher currently on the mound. Distinct from the roster-level `home_pitcher` / `away_pitcher` (starting pitchers). |
+| `currentBatter` | string | Display name of the active hitter. |
+
+<Callout type="info">
+**Detecting half-inning transitions.** No discrete `inning_end` event
+is emitted. To detect the moment a half-inning ends, watch
+`in_play.outs` and `game_period` together across consecutive frames:
+the transition surfaces as `outs` dropping (`2` → `0`, or `1` → `0`
+if a frame was skipped) **and** `game_period` flipping (e.g. `B5` →
+`T6`) — typically in the same frame, occasionally split across two
+consecutive frames. The frame's timestamp is your half-inning-end
+moment.
+</Callout>
 
 ### Freshness
 

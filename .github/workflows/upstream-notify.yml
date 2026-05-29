@@ -93,3 +93,40 @@ jobs:
             echo "**Commit**: ${{ github.event.client_payload.commit }}"
             echo "**Changed**: ${{ github.event.client_payload.changed_files }}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          PAPERCLIP_API_URL: ${{ secrets.PAPERCLIP_API_URL }}
+          PAPERCLIP_API_KEY: ${{ secrets.PAPERCLIP_API_KEY }}
+        run: |
+          echo "::error::Upstream notification run failed. Check the logs above for details."
+
+          # Extract Paperclip issue identifier from branch name or commit message
+          COMMIT_MSG=$(git log -1 --format=%s ${{ github.sha }})
+          ISSUE_ID=$(echo "$COMMIT_MSG" | grep -oP 'SHA-\d+' | head -1)
+
+          # If no issue in commit message, check the merge branch name
+          if [ -z "$ISSUE_ID" ]; then
+            ISSUE_ID=$(echo "$COMMIT_MSG" | grep -oP 'paperclip/(SHA-\d+)' | head -1 | sed 's|paperclip/||')
+          fi
+
+          if [ -n "$ISSUE_ID" ] && [ -n "$PAPERCLIP_API_URL" ] && [ -n "$PAPERCLIP_API_KEY" ]; then
+            # Comment on the existing issue
+            COMMENT="## CI Deploy Failed\n\n**Workflow**: ${{ github.workflow }}\n**Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n**Commit**: \`${{ github.sha }}\`\n\nThe deploy to prod failed. Check the CI logs and fix the issue. Do NOT mark this issue as done until a successful deploy is verified."
+            curl -sf -X PATCH "$PAPERCLIP_API_URL/issues/$ISSUE_ID" \
+              -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg status "blocked" --arg comment "$COMMENT" '{status: $status, comment: $comment}')" || true
+            echo "Commented on Paperclip issue $ISSUE_ID"
+          elif [ -n "$PAPERCLIP_API_URL" ] && [ -n "$PAPERCLIP_API_KEY" ]; then
+            # No issue found — create one assigned to Coordinator for triage
+            curl -sf -X POST "$PAPERCLIP_API_URL/companies/953ff6b0-4d1b-4007-9859-8cb0a53629f6/issues" \
+              -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n \
+                --arg title "CI Failed: docs.sharpapi.io (${{ github.ref_name }})" \
+                --arg desc "GitHub Actions workflow **${{ github.workflow }}** failed.\n\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\nCommit: \`$(git log -1 --format='%h %s' ${{ github.sha }})\`\n\nInvestigate and fix." \
+                '{title: $title, description: $desc, status: "todo", priority: "critical", assigneeAgentId: "3a976364-1186-4c30-a136-bba410c2209c"}')" || true
+            echo "Created Paperclip issue for deploy failure"
+          fi

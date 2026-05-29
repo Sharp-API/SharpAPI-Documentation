@@ -6,6 +6,191 @@
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app/ components/ content/ public/ scripts/ next.config.mjs proxy.ts mdx-components.tsx package.json vercel.json",
   "redirects": [
     {
+      "source": "/positive-ev",
+      "destination": "/en/api-reference/opportunities-ev",
+      "permanent": true
+    },
+    {
+      "source": "/positive-ev/",
+      "destination": "/en/api-reference/opportunities-ev/",
+      "permanent": true
+    },
+    {
+      "source": "/markets",
+      "destination": "/en/api-reference/markets",
+      "permanent": true
+    },
+    {
+      "source": "/markets/",
+      "destination": "/en/api-reference/markets/",
+      "permanent": true
+    },
+    {
+      "source": "/en/asyncapi.yaml",
+      "destination": "/en/streaming/overview",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-java",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-java/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-php",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-php/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-ruby",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-ruby/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-kotlin",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-kotlin/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-go",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/en/sdks/sharpapi-go/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/sdks/sharpapi-kotlin",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/sdks/sharpapi-kotlin/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/sdks/sharpapi-ruby",
+      "destination": "/en/sdks/other-languages",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/sdks/sharpapi-ruby/",
+      "destination": "/en/sdks/other-languages/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts",
+      "destination": "/en/concepts/arbitrage",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts/",
+      "destination": "/en/concepts/arbitrage/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/api-reference",
+      "destination": "/en/api-reference/overview",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/api-reference/",
+      "destination": "/en/api-reference/overview/",
+      "permanent": true
+    },
+    {
+      "source": "/es/api-reference",
+      "destination": "/en/api-reference/overview",
+      "permanent": true
+    },
+    {
+      "source": "/es/api-reference/",
+      "destination": "/en/api-reference/overview/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts/entity-reference-ids",
+      "destination": "/en/concepts/entity-reference-ids",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts/entity-reference-ids/",
+      "destination": "/en/concepts/entity-reference-ids/",
+      "permanent": true
+    },
+    {
+      "source": "/es/concepts/entity-reference-ids",
+      "destination": "/en/concepts/entity-reference-ids",
+      "permanent": true
+    },
+    {
+      "source": "/es/concepts/entity-reference-ids/",
+      "destination": "/en/concepts/entity-reference-ids/",
+      "permanent": true
+    },
+    {
+      "source": "/de/concepts/entity-reference-ids",
+      "destination": "/en/concepts/entity-reference-ids",
+      "permanent": true
+    },
+    {
+      "source": "/de/concepts/entity-reference-ids/",
+      "destination": "/en/concepts/entity-reference-ids/",
+      "permanent": true
+    },
+    {
+      "source": "/es/concepts/polymarket-resolution",
+      "destination": "/en/concepts/polymarket-resolution",
+      "permanent": true
+    },
+    {
+      "source": "/es/concepts/polymarket-resolution/",
+      "destination": "/en/concepts/polymarket-resolution/",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts/polymarket-resolution",
+      "destination": "/en/concepts/polymarket-resolution",
+      "permanent": true
+    },
+    {
+      "source": "/pt-BR/concepts/polymarket-resolution/",
+      "destination": "/en/concepts/polymarket-resolution/",
+      "permanent": true
+    },
+    {
+      "source": "/de/concepts/polymarket-resolution",
+      "destination": "/en/concepts/polymarket-resolution",
+      "permanent": true
+    },
+    {
+      "source": "/de/concepts/polymarket-resolution/",
+      "destination": "/en/concepts/polymarket-resolution/",
+      "permanent": true
+    },
+    {
       "source": "/me",
       "destination": "/en/",
       "permanent": true

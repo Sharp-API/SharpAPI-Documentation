@@ -1,0 +1,41 @@
+---
+title: "Liquidez e Limites"
+description: "Quais sinais de liquidez e limites o SharpAPI exibe nas linhas de odds, e o que as casas de apostas upstream não expõem."
+---
+
+import { Callout } from 'nextra/components'
+
+# Liquidez e Limites
+
+O SharpAPI exibe cada sinal de liquidez e limite que recebemos das casas upstream. Esses campos são opcionais nas linhas de `/api/v1/odds` porque casas de apostas tradicionais e baseadas em exchange expõem dados diferentes.
+
+## Campos nas linhas de odds
+
+| Campo | Tipo | Significado | Casas emissoras |
+|---|---|---|---|
+| `max_bet` | number | Aposta máxima que a casa aceitará neste mercado ou seleção na linha atual. | Pinnacle, SBObet |
+| `volume` | number | Volume negociado acumulado na seleção, nas unidades nativas da exchange. | Kalshi |
+| `volume_24h` | number | Volume negociado de 24 horas nas unidades nativas da exchange. | Polymarket, Kalshi |
+| `open_interest` | number | Contratos abertos pendentes na seleção. | Kalshi |
+| `exchange_token_id` | string | Token nativo da exchange ou hash de mercado para roteamento de ordens downstream. | Polymarket (`token_id`), SX Bet (`marketHash`) |
+
+Esses valores são retornados apenas quando presentes no feed de origem. A ausência significa que a casa upstream não expôs esse sinal para a linha; não implica liquidez zero ou limite zero.
+
+<Callout type="info">
+Os campos do lado da exchange (`volume`, `volume_24h`, `open_interest` e `exchange_token_id`) são proxies de liquidez, não um feed completo de profundidade de livro. Suas unidades não são diretamente comparáveis entre casas.
+</Callout>
+
+## O que não exibimos
+
+- **Profundidade do livro de ordens bid/ask.** Casas de apostas tradicionais não operam um livro de ordens visível. As baseadas em exchange podem operar um internamente, mas os feeds públicos geralmente publicam volume agregado ou interesse aberto em vez de profundidade.
+- **Verificações de limite pré-aposta.** Nenhuma casa upstream expõe uma verificação pública. `max_bet` é o teto publicado da casa para o mercado.
+- **Razões de suspensão em tempo real.** Quando uma casa retira uma linha, `/api/v1/odds/delta` pode emitir uma remoção, mas os feeds upstream geralmente não incluem uma razão estruturada.
+
+## Detectar lacunas de cobertura
+
+Se uma verificação de cobertura do lado do cliente depende de liquidez:
+
+1. Filtre `/api/v1/odds` pelas casas que você se interessa.
+2. Para casas baseadas em exchange, filtre linhas onde `volume_24h` ou `open_interest` exceda seu limite mínimo.
+3. Para casas tradicionais, use `max_bet` quando emitido como sinal de limite aproximado.
+4. Para todo o resto, recorra à presença da linha: uma linha de odds é um sinal positivo de que a casa está cotando atualmente esse mercado.

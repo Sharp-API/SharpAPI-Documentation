@@ -1,0 +1,41 @@
+---
+title: "Liquidez y Límites"
+description: "Qué señales de liquidez y límites muestra SharpAPI en las filas de cuotas, y qué no exponen los corredores de apuestas upstream."
+---
+
+import { Callout } from 'nextra/components'
+
+# Liquidez y Límites
+
+SharpAPI muestra cada señal de liquidez y límite que recibimos de los corredores upstream. Estos campos son opcionales en las filas de `/api/v1/odds` porque los corredores de apuestas tradicionales y los basados en intercambio exponen datos diferentes.
+
+## Campos en filas de cuotas
+
+| Campo | Tipo | Significado | Corredores emisores |
+|---|---|---|---|
+| `max_bet` | number | Apuesta máxima que el corredor aceptará en este mercado o selección a la línea actual. | Pinnacle, SBObet |
+| `volume` | number | Volumen negociado acumulado en la selección, en las unidades nativas del intercambio. | Kalshi |
+| `volume_24h` | number | Volumen negociado de 24 horas en las unidades nativas del intercambio. | Polymarket, Kalshi |
+| `open_interest` | number | Contratos abiertos pendientes en la selección. | Kalshi |
+| `exchange_token_id` | string | Token nativo del intercambio o hash de mercado para enrutamiento de órdenes downstream. | Polymarket (`token_id`), SX Bet (`marketHash`) |
+
+Estos valores se devuelven solo cuando están presentes en el feed de origen. La ausencia significa que el corredor upstream no expuso esa señal para la fila; no implica liquidez cero ni límite cero.
+
+<Callout type="info">
+Los campos del lado del intercambio (`volume`, `volume_24h`, `open_interest` y `exchange_token_id`) son proxies de liquidez, no un feed completo de profundidad de libro. Sus unidades no son directamente comparables entre corredores.
+</Callout>
+
+## Lo que no mostramos
+
+- **Profundidad del libro de órdenes bid/ask.** Los corredores de apuestas tradicionales no operan un libro de órdenes visible. Los basados en intercambio pueden operar uno internamente, pero los feeds públicos generalmente publican volumen agregado o interés abierto en lugar de profundidad.
+- **Verificaciones de límite pre-apuesta.** Ningún corredor upstream expone una verificación pública. `max_bet` es el techo publicado del corredor para el mercado.
+- **Razones de suspensión en tiempo real.** Cuando un corredor retira una línea, `/api/v1/odds/delta` puede emitir una eliminación, pero los feeds upstream generalmente no incluyen una razón estructurada.
+
+## Detectar brechas de cobertura
+
+Si una verificación de cobertura del lado del cliente depende de la liquidez:
+
+1. Filtre `/api/v1/odds` por los corredores que le interesan.
+2. Para corredores basados en intercambio, filtre filas donde `volume_24h` u `open_interest` supere su umbral mínimo.
+3. Para corredores tradicionales, use `max_bet` cuando se emita como señal de límite aproximada.
+4. Para todo lo demás, recurra a la presencia de fila: una fila de cuotas es una señal positiva de que el corredor está cotizando actualmente ese mercado.

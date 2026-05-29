@@ -1,0 +1,41 @@
+---
+title: "Liquidität und Limits"
+description: "Welche Liquiditäts- und Limit-Signale SharpAPI bei Quotenzeilen anzeigt und was Upstream-Buchmacher nicht bereitstellen."
+---
+
+import { Callout } from 'nextra/components'
+
+# Liquidität und Limits
+
+SharpAPI zeigt jedes Liquiditäts- und Limit-Signal an, das wir von Upstream-Buchmachern erhalten. Diese Felder sind bei `/api/v1/odds`-Zeilen optional, da traditionelle Buchmacher und börsenbasierte Buchmacher unterschiedliche Daten bereitstellen.
+
+## Felder in Quotenzeilen
+
+| Feld | Typ | Bedeutung | Ausgebende Buchmacher |
+|---|---|---|---|
+| `max_bet` | number | Maximaler Einsatz, den der Buchmacher für diesen Markt oder diese Auswahl zur aktuellen Linie akzeptiert. | Pinnacle, SBObet |
+| `volume` | number | Kumuliertes Handelsvolumen auf der Auswahl, in den nativen Einheiten der Börse. | Kalshi |
+| `volume_24h` | number | Rollendes 24-Stunden-Handelsvolumen in den nativen Einheiten der Börse. | Polymarket, Kalshi |
+| `open_interest` | number | Ausstehende offene Kontrakte auf der Auswahl. | Kalshi |
+| `exchange_token_id` | string | Börsennativer Token oder Market-Hash für Downstream-Orderrouting. | Polymarket (`token_id`), SX Bet (`marketHash`) |
+
+Diese Werte werden nur zurückgegeben, wenn sie im Quell-Feed vorhanden sind. Abwesenheit bedeutet, dass der Upstream-Buchmacher dieses Signal für die Zeile nicht bereitgestellt hat; es impliziert keine Null-Liquidität oder ein Null-Limit.
+
+<Callout type="info">
+Die börsenseitigen Felder (`volume`, `volume_24h`, `open_interest` und `exchange_token_id`) sind Liquiditätsproxys, kein vollständiger Orderbuch-Feed. Ihre Einheiten sind nicht direkt zwischen Buchmachern vergleichbar.
+</Callout>
+
+## Was wir nicht anzeigen
+
+- **Bid/Ask-Orderbuchtiefe.** Traditionelle Buchmacher betreiben kein sichtbares Orderbuch. Börsenbasierte Buchmacher können intern eines betreiben, aber die öffentlichen Feeds veröffentlichen in der Regel aggregiertes Volumen oder Open Interest statt Tiefe.
+- **Vorab-Einsatz-Limitprüfungen.** Kein Upstream-Buchmacher stellt eine öffentliche Prüfung bereit. `max_bet` ist die veröffentlichte Obergrenze des Buchmachers für den Markt.
+- **Echtzeit-Suspendierungsgründe.** Wenn ein Buchmacher eine Linie zurückzieht, kann `/api/v1/odds/delta` eine Entfernung senden, aber Upstream-Feeds enthalten normalerweise keinen strukturierten Grund.
+
+## Deckungslücken erkennen
+
+Wenn eine kundenseitige Deckungsprüfung auf Liquidität angewiesen ist:
+
+1. Filtern Sie `/api/v1/odds` nach den Buchmachern, die Sie interessieren.
+2. Für börsenbasierte Buchmacher filtern Sie Zeilen, bei denen `volume_24h` oder `open_interest` Ihren Mindestschwellenwert überschreitet.
+3. Für traditionelle Buchmacher verwenden Sie `max_bet`, wenn vorhanden, als grobes Limit-Signal.
+4. Für alles andere verlassen Sie sich auf die Zeilenpräsenz: Eine Quotenzeile ist ein positives Signal, dass der Buchmacher diesen Markt derzeit quotiert.

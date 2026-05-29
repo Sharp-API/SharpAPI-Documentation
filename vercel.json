@@ -131,66 +131,6 @@
       "permanent": true
     },
     {
-      "source": "/pt-BR/concepts/entity-reference-ids",
-      "destination": "/en/concepts/entity-reference-ids",
-      "permanent": true
-    },
-    {
-      "source": "/pt-BR/concepts/entity-reference-ids/",
-      "destination": "/en/concepts/entity-reference-ids/",
-      "permanent": true
-    },
-    {
-      "source": "/es/concepts/entity-reference-ids",
-      "destination": "/en/concepts/entity-reference-ids",
-      "permanent": true
-    },
-    {
-      "source": "/es/concepts/entity-reference-ids/",
-      "destination": "/en/concepts/entity-reference-ids/",
-      "permanent": true
-    },
-    {
-      "source": "/de/concepts/entity-reference-ids",
-      "destination": "/en/concepts/entity-reference-ids",
-      "permanent": true
-    },
-    {
-      "source": "/de/concepts/entity-reference-ids/",
-      "destination": "/en/concepts/entity-reference-ids/",
-      "permanent": true
-    },
-    {
-      "source": "/es/concepts/polymarket-resolution",
-      "destination": "/en/concepts/polymarket-resolution",
-      "permanent": true
-    },
-    {
-      "source": "/es/concepts/polymarket-resolution/",
-      "destination": "/en/concepts/polymarket-resolution/",
-      "permanent": true
-    },
-    {
-      "source": "/pt-BR/concepts/polymarket-resolution",
-      "destination": "/en/concepts/polymarket-resolution",
-      "permanent": true
-    },
-    {
-      "source": "/pt-BR/concepts/polymarket-resolution/",
-      "destination": "/en/concepts/polymarket-resolution/",
-      "permanent": true
-    },
-    {
-      "source": "/de/concepts/polymarket-resolution",
-      "destination": "/en/concepts/polymarket-resolution",
-      "permanent": true
-    },
-    {
-      "source": "/de/concepts/polymarket-resolution/",
-      "destination": "/en/concepts/polymarket-resolution/",
-      "permanent": true
-    },
-    {
       "source": "/me",
       "destination": "/en/",
       "permanent": true

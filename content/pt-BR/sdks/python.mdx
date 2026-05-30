@@ -29,21 +29,21 @@ from sharpapi import SharpAPI
 
 client = SharpAPI("sk_live_xxx")
 
-# Arbitrage opportunities
+# Oportunidades de arbitragem
 arbs = client.arbitrage.get(min_profit=1.0, league="nba")
 for arb in arbs.data:
     print(f"{arb.profit_percent:.2f}% profit — {arb.event_name}")
     for leg in arb.legs:
         print(f"  {leg.sportsbook}: {leg.selection} @ {leg.odds_american} ({leg.stake_percent:.1f}%)")
 
-# +EV opportunities
+# Oportunidades +EV
 evs = client.ev.get(min_ev=3.0, sport="basketball")
 for opp in evs.data:
     print(f"+{opp.ev_percentage:.1f}% EV on {opp.selection} @ {opp.sportsbook}")
     if opp.kelly_percent:
         print(f"  Kelly: {opp.kelly_percent:.2f}%, Confidence: {opp.confidence_score}")
 
-# Best odds across sportsbooks
+# Melhores odds entre casas de apostas
 odds = client.odds.best(league="nba", market="moneyline")
 for line in odds.data:
     print(f"{line.home_team} vs {line.away_team}: {line.selection} {line.odds_american}")
@@ -54,16 +54,16 @@ for line in odds.data:
 ### Odds
 
 ```python
-# Full snapshot with filters
+# Snapshot completo com filtros
 client.odds.get(sport="basketball", league="nba", limit=100)
 
-# Best odds per selection across books
+# Melhores odds por seleção entre casas
 client.odds.best(league="nfl", market="moneyline")
 
-# Side-by-side comparison for an event
+# Comparação lado a lado para um evento
 client.odds.comparison(event_id="evt_abc123")
 
-# Batch lookup
+# Consulta em lote
 client.odds.batch(event_ids=["evt_abc123", "evt_def456"])
 ```
 
@@ -216,7 +216,7 @@ def on_snapshot(data):
 
 @stream.on("odds:update")
 def on_update(data):
-    # DELTA — merge into local state
+    # DELTA — mesclar no estado local
     for book, odds_list in data.items():
         if isinstance(odds_list, list):
             for odds in odds_list:
@@ -238,16 +238,16 @@ stream.connect()
 ### Canais de Stream
 
 ```python
-# Odds only
+# Apenas odds
 client.stream.odds(league="nba")
 
-# Opportunities only (EV + arb + middles)
+# Apenas oportunidades (EV + arb + middles)
 client.stream.opportunities(min_ev=3.0)
 
-# Everything
+# Tudo
 client.stream.all(sport="basketball")
 
-# Single event
+# Evento único
 client.stream.event("evt_abc123")
 ```
 
@@ -258,7 +258,7 @@ Toda oportunidade inclui metadados de obsolescência:
 ```python
 arbs = client.arbitrage.get()
 for arb in arbs.data:
-    # Skip stale or suspicious opportunities
+    # Ignorar oportunidades obsoletas ou suspeitas
     if arb.possibly_stale:
         print(f"Stale ({arb.oldest_odds_age_seconds}s old)")
         continue
@@ -317,7 +317,7 @@ decimal_to_american(2.5)        # 150
 ```python
 with SharpAPI("sk_live_xxx") as client:
     arbs = client.arbitrage.get()
-    # HTTP client automatically closed on exit
+    # O cliente HTTP é fechado automaticamente ao sair
 ```
 
 ## Segurança de Tipos
@@ -327,7 +327,7 @@ Todas as respostas usam modelos Pydantic com type hints completos:
 ```python
 from sharpapi import EVOpportunity, ArbitrageOpportunity
 
-# IDE autocomplete works on all fields
+# O autocomplete da IDE funciona em todos os campos
 arbs = client.arbitrage.get()
 arb: ArbitrageOpportunity = arbs.data[0]
 arb.profit_percent   # float

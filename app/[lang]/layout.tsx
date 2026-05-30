@@ -74,7 +74,7 @@ export default async function LangLayout({ children, params }) {
             feedback={{ content: null }}
             editLink={null}
             navbar={
-              <Navbar logo={logo}>
+              <Navbar logo={logo} logoLink={false}>
                 {navbarExtra}
               </Navbar>
             }

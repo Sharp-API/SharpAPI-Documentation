@@ -133,7 +133,12 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `line` | number \| null | Updated line/spread (e.g. `-3.5`), or `null` for moneyline |
 | `is_live` | boolean | Whether the event is currently live |
 | `is_active` | boolean | `true` = market open/bettable; `false` = market suspended/closed with the price frozen. A market suspending (e.g. after a goal) emits an `odds:update` with `is_active: false` — grey out the line rather than trusting the frozen price. See also the [`odds:locked`](#odds-locked) event. |
+| `is_main_line` | boolean | `true` when this line is the consensus main line for its market; `false` for alternate lines. Can flip as the main line moves. |
+| `is_alternate_line` | boolean | Positive-polarity sibling of `is_main_line` (mutually exclusive). |
+| `is_stale_pregame_price` | boolean | `true` when a live row still carries a pre-game price that hasn't moved since kickoff. |
 | `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
+
+Exchange books additionally carry the dynamic `volume`, `volume_24h`, `open_interest`, and `max_bet` fields when present. Everything else — `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, `event_start_time`, and the nested entity refs — is **static** and comes from the initial `snapshot`; merge each delta into your local map by `id` and never read a static field off a delta.
 
 **Envelope fields:**
 

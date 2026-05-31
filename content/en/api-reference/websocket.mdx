@@ -283,6 +283,23 @@ Incremental odds update from a single sportsbook.
 }
 ```
 
+#### `odds:locked`
+
+A market was **suspended/closed** (e.g. after a goal, a line move, or a late-game lockout) — the price is **frozen** and no longer bettable. Carries the suspended subset of the delta (same payload as `odds:update`, with `is_active: false`). A 1:1 analogue of OpticOdds' `locked-odds`.
+
+Supplementary: the same rows also arrive in `odds:update` with `is_active: false`, so clients reading `is_active` need not subscribe separately. A re-open emits a normal `odds:update` with `is_active: true`; a full removal comes through `odds:removed`.
+
+```json
+{
+  "type": "odds:locked",
+  "seq": 48,
+  "source": "pinnacle",
+  "data": [ /* NormalizedOdds[] with is_active: false */ ],
+  "count": 1,
+  "timestamp": "2026-02-08T18:47:19.250Z"
+}
+```
+
 #### `odds:removed`
 
 Odds removed by a sportsbook (e.g. market taken down, event settled).

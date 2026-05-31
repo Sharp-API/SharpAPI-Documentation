@@ -44,7 +44,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Channel | Events Delivered | Use Case |
 |---------|-----------------|----------|
-| `odds` | `snapshot`, `odds:update`, `odds:removed`, `heartbeat` | Track odds movements |
+| `odds` | `snapshot`, `odds:update`, `odds:locked`, `odds:removed`, `heartbeat` | Track odds movements |
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alert on opportunities |
 | `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live scores, periods, clocks, and situational data per event. **Enterprise tier only.** See [Live Game State](/api-reference/gamestate/) for the full field catalog. |
 | `all` | All event types | Full real-time picture |
@@ -132,6 +132,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `odds_probability` | number | Updated implied probability (e.g. `0.6`) |
 | `line` | number \| null | Updated line/spread (e.g. `-3.5`), or `null` for moneyline |
 | `is_live` | boolean | Whether the event is currently live |
+| `is_active` | boolean | `true` = market open/bettable; `false` = market suspended/closed with the price frozen. A market suspending (e.g. after a goal) emits an `odds:update` with `is_active: false` — grey out the line rather than trusting the frozen price. See also the [`odds:locked`](#odds-locked) event. |
 | `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
 
 **Envelope fields:**
@@ -222,6 +223,20 @@ event: low_hold:expired
 id: evt_00050
 data: {"expired":["lowhold_abc123"]}
 ```
+
+### `odds:locked`
+
+Fired when a market is **suspended/closed** (e.g. after a goal, during a line move, or a late-game lockout) — the price is **frozen** but the selection is no longer bettable. Carries the suspended subset of the current delta, same payload shape as `odds:update`, with `is_active: false`. Only sent on `odds` or `all` channels.
+
+This is a 1:1 analogue of OpticOdds' `locked-odds` for easy migration. It is **supplementary** — the same rows also arrive in `odds:update` with `is_active: false`, so clients that already read `is_active` need not subscribe to `odds:locked` separately. Use it when you want a dedicated lock signal without parsing every `odds:update`.
+
+```
+event: odds:locked
+id: evt_00052
+data: {"odds":[{"id":"123456","odds_american":-2500,"is_live":true,"is_active":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"pinnacle","partial":false}
+```
+
+A market re-opening emits a normal `odds:update` with `is_active: true` (and a fresh price). Markets a book **removes entirely** come through [`odds:removed`](#odds-removed) instead.
 
 ### `odds:removed`
 

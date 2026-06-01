@@ -253,7 +253,7 @@ Each entry in the `books` object:
 |-------|------|-------------|
 | `odds_american` | number | American odds |
 | `odds_decimal` | number | Decimal odds |
-| `last_seen_at` | string | When our pipeline last observed this book's row — pipeline freshness signal |
+| `last_seen_at` | string | **⚠️ Deprecated** — being internalized; will be removed in a future release. Liveness heartbeat (advances every cycle even when the price is unchanged), not a price-freshness signal. Read `odds_changed_at` for freshness. |
 | `odds_changed_at` | string | When this book's price, line, or `is_live` flag last actually changed. On Pinnacle, carries forward across unchanged refreshes — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
 
 ## Understanding Hold

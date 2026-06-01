@@ -4462,15 +4462,28 @@
             "type": "boolean",
             "description": "true (default) = market open and bettable; false = market suspended/closed with the price frozen. Mirrors OpticOdds locked-odds but exposed as a queryable field. Absent is treated as true. An active->suspended transition is emitted on the odds stream (odds:update with is_active=false)."
           },
+          "odds_changed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Best-available last-price-change time for this line: the sportsbook's own source-update timestamp when provided, otherwise when SharpAPI first detected a price/line/is_live change — carried forward across unchanged refreshes. This is the freshness field to read."
+          },
           "timestamp": {
             "type": "string",
             "format": "date-time",
-            "description": "When these odds were last updated"
+            "deprecated": true,
+            "description": "DEPRECATED — not emitted on the odds response; read `odds_changed_at` for price freshness."
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "deprecated": true,
+            "description": "DEPRECATED (being internalized, will be removed in a future release): liveness heartbeat — advances every ingest cycle even when the price is unchanged, so it is NOT a price-freshness signal. Read `odds_changed_at` instead."
           },
           "wire_received_at": {
             "type": "string",
             "format": "date-time",
-            "description": "Pipeline-arrival stamp — when sharp-api-go last observed a content-hash change for this row. Distinct from `last_seen_at` (adapter observation) and `odds_changed_at` (sportsbook's own source update)."
+            "deprecated": true,
+            "description": "DEPRECATED (being internalized, will be removed in a future release): SharpAPI pipeline-arrival stamp for ingest-latency benchmarking only — not a betting/price-freshness signal. Read `odds_changed_at` for price freshness."
           },
           "event_uuid": {
             "type": "string",

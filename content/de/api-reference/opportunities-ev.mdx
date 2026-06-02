@@ -147,6 +147,7 @@ for opp in data['data']:
       "arb_profit": null,
       "is_player_prop": false,
       "player_name": null,
+      "player_id": null,
       "stat_category": null,
       "possibly_stale": false,
       "oldest_odds_age_seconds": null,
@@ -182,6 +183,7 @@ for opp in data['data']:
       "arb_profit": null,
       "is_player_prop": false,
       "player_name": null,
+      "player_id": null,
       "stat_category": null,
       "possibly_stale": false,
       "oldest_odds_age_seconds": null,
@@ -312,6 +314,7 @@ X-Request-Id: req_abc123def456
 | `arb_profit` | number\|null | Arbitrage-Gewinnprozentsatz, falls verfügbar |
 | `is_player_prop` | boolean | Ob es sich um einen Player-Prop-Markt handelt |
 | `player_name` | string\|null | Spielername (bei Player Props) |
+| `player_id` | string\|null | Kanonische buchübergreifende Spieler-ID (z. B. `baseball_mlb_corbin_carroll`), von atlas_players aufgelöst. `null` bis aufgelöst — Player Props nach `player_id` gruppieren, Fallback auf `player_name`. |
 | `stat_category` | string\|null | Statistiktyp (bei Player Props, z. B. `points`, `rebounds`) |
 | `possibly_stale` | boolean | `true`, wenn sich die zugrundeliegenden Quoten seit der Erkennung möglicherweise verändert haben |
 | `oldest_odds_age_seconds` | number\|null | Alter der ältesten in der EV-Berechnung verwendeten Quoten (in Sekunden) |

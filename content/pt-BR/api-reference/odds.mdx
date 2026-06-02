@@ -12,6 +12,10 @@ Obtenha um snapshot das odds atuais das casas de apostas.
 GET /api/v1/odds
 ```
 
+<Callout type="warning">
+Alterado na v3.0.0: a resposta de odds agora carrega um único campo `timestamp` (entrega / frescor do feed, em paridade com a OpticOdds). Os antigos campos `odds_changed_at`, `last_seen_at` e `wire_received_at` foram removidos — leia `timestamp` em vez disso. Não há mais um campo para quando o preço se moveu pela última vez.
+</Callout>
+
 ## Autenticação
 
 Requer API key. Disponível para **todos os tiers**.
@@ -195,7 +199,7 @@ Cursores são opacos — não os analise nem os construa. Eles codificam a posi�
       "odds_probability": 0.60,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "timestamp": "2026-01-26T02:10:24.125Z",
       "is_live": false
     },
     {
@@ -214,7 +218,7 @@ Cursores são opacos — não os analise nem os construa. Eles codificam a posi�
       "odds_probability": 0.4348,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "timestamp": "2026-01-26T02:10:24.125Z",
       "is_live": false
     }
   ],
@@ -314,9 +318,7 @@ X-Request-Id: req_abc123def456
 | `line` | number \| null | Valor da linha de spread ou total (`null` para moneyline) |
 | `is_alternate_line` | boolean\|undefined | `true` quando o `line` desta linha difere da linha principal canônica para seu grupo `(event, market_type, player)`. Sempre `false` para mercados sem linha (moneyline, outright). Estável em [`/opportunities/ev`](/pt-BR/api-reference/opportunities-ev/) hoje; em rollout para as linhas de `/odds`. Use para separar snapshots de linha principal e linhas alternativas. |
 | `event_start_time` | string | Hora de início do evento em ISO 8601 |
-| `last_seen_at` | string | Timestamp ISO 8601 da última observação desta linha pelo nosso adaptador. Atualiza a cada ciclo de ingestão — este é o sinal de frescor do pipeline. |
-| `odds_changed_at` | string | Timestamp ISO 8601 da atualização da própria fonte da casa de apostas para esta linha, quando disponível. Na Pinnacle, é mantido enquanto o preço/linha/flag `is_live` permanecerem inalterados (veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/)). Use `last_seen_at` para frescor do pipeline. |
-| `wire_received_at` | string\|undefined | Timestamp ISO 8601 de quando o sharp-api-go observou pela última vez uma mudança no hash de conteúdo desta linha — o carimbo de chegada ao pipeline. Distinto de `last_seen_at` (observação do adaptador) e `odds_changed_at` (atualização da própria fonte da casa de apostas). |
+| `timestamp` | string | Horário ISO 8601 em que a SharpAPI atualizou esta odd pela última vez através do seu pipeline — avança a cada ciclo de ingestão. É um sinal de frescor / liveness do feed (corresponde ao `timestamp` da OpticOdds); **não** é quando o preço mudou pela última vez. |
 | `is_live` | boolean | Se o evento está atualmente ao vivo |
 | `event_uuid` | string\|undefined | UUID canônico estável do evento do atlas do SharpAPI, quando o evento está mapeado. Enquanto `event_id` carrega o identificador primário do adaptador (frequentemente o da casa de apostas originadora), `event_uuid` é um hash estável entre feeds para joins cross-feed. Ausente para eventos não mapeados. |
 | `external_event_id` | string\|undefined | O ID de evento nativo da própria casa de apostas, quando distinto de `event_id`. Útil para vincular linhas de volta à UI ou API da casa de apostas. |
@@ -377,7 +379,7 @@ curl "https://api.sharpapi.io/api/v1/odds?sort=event_start_time" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
-Campos de ordenação válidos: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `last_seen_at`, `sportsbook`, `league`, `sport`.
+Campos de ordenação válidos: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `timestamp`, `sportsbook`, `league`, `sport`.
 
 ## Seleção de Campos
 
@@ -447,7 +449,7 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
           "odds_decimal": 1.667,
           "odds_probability": 0.60,
           "line": null,
-          "last_seen_at": "2026-01-26T02:10:24.125Z"
+          "timestamp": "2026-01-26T02:10:24.125Z"
         }
       ]
     }

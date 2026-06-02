@@ -6,6 +6,6 @@ export default {
   "entity-reference-ids": "Entity Reference IDs",
   "live-vs-prematch": "Live vs. Pre-Match",
   liquidity: "Liquidity and Limits",
-  "pinnacle-odds-changed-at": "Pinnacle `odds_changed_at`",
+  "pinnacle-odds-changed-at": "The `timestamp` Field",
   "polymarket-resolution": "Polymarket Resolution",
 }

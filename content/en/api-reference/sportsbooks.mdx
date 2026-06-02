@@ -414,7 +414,7 @@ The `requires_tier` field indicates the minimum subscription tier needed to acce
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Reading Pinnacle timestamps.** `odds_changed_at` on a Pinnacle row is their trading-desk timestamp, not our pipeline's. Pinnacle holds lines steady when the market has not moved — an idle value of 30+ minutes is common on MLB player props and NBA markets. Use `last_seen_at` for pipeline freshness. See [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/) for what "stale" actually means on their feed.
+**Reading Pinnacle timestamps.** Each odds row carries a single `timestamp` field — the time SharpAPI last refreshed that row through its pipeline (feed-freshness, matching OpticOdds), which advances every ingest cycle even when Pinnacle holds the line steady. It is *not* when the price last moved; SharpAPI no longer exposes a separate "when the price last changed" field. See [understanding the `timestamp` field](/en/concepts/pinnacle-odds-changed-at/) for what "stale" actually means on their feed.
 </Callout>
 
 ### International

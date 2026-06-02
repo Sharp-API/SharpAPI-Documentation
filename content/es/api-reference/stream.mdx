@@ -87,7 +87,7 @@ Cada objeto de cuotas en el snapshot contiene **todos los campos** — esta es l
 ```
 event: snapshot
 id: evt_00001
-data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"last_seen_at":"2026-02-08T18:47:20Z","odds_changed_at":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
+data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"timestamp":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
 ```
 
 | Campo | Tipo | Descripción |
@@ -113,13 +113,13 @@ data: {"status":"ready","books":["draftkings","fanduel"],"total_odds":3200}
 Se dispara cuando cambian las cuotas de un sportsbook. Solo se envía en los canales `odds` o `all`.
 
 <Callout type="warning">
-**Carga útil delta compacta.** Los eventos delta contienen únicamente los campos que pueden cambiar entre actualizaciones — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live` y `odds_changed_at`. Los campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` y `event_start_time` **no se incluyen** en los deltas. Fusiona cada delta en tu mapa local de cuotas por `id` usando los objetos completos recibidos en el `snapshot` inicial. Consulta [Migración: Deltas SSE compactos](#migration-compact-sse-deltas) más abajo.
+**Carga útil delta compacta.** Los eventos delta contienen únicamente los campos que pueden cambiar entre actualizaciones — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live` y `timestamp`. Los campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` y `event_start_time` **no se incluyen** en los deltas. Fusiona cada delta en tu mapa local de cuotas por `id` usando los objetos completos recibidos en el `snapshot` inicial. Consulta [Migración: Deltas SSE compactos](#migration-compact-sse-deltas) más abajo.
 </Callout>
 
 ```
 event: odds:update
 id: evt_00042
-data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
+data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"timestamp":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
 ```
 
 **Campos del objeto delta (`OddsDelta`):**
@@ -132,7 +132,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `odds_probability` | number | Probabilidad implícita actualizada (p. ej. `0.6`) |
 | `line` | number \| null | Línea/handicap actualizada (p. ej. `-3.5`), o `null` para moneyline |
 | `is_live` | boolean | Indica si el evento está actualmente en vivo |
-| `odds_changed_at` | string | Marca de tiempo ISO 8601 de la propia actualización del sportsbook para esta línea, cuando esté disponible. En Pinnacle, se mantiene mientras el precio/línea/flag `is_live` subyacentes no cambien — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | Hora ISO 8601 en que SharpAPI refrescó por última vez esta cuota a través de su pipeline — avanza en cada ciclo de ingesta. Es una señal de frescura del feed / actividad (igual que el `timestamp` de OpticOdds); NO es cuándo cambió el precio por última vez. Consulta [Entendiendo el campo `timestamp`](/es/concepts/pinnacle-odds-changed-at/). |
 
 **Campos del envoltorio:**
 
@@ -570,7 +570,7 @@ Estos cierran la conexión. Manéjalos en `onerror`:
 ## Migración: Deltas SSE compactos
 
 <Callout type="warning">
-**Cambio incompatible para los consumidores SSE de `odds:update`.** El evento `odds:update` ahora envía objetos `OddsDelta` compactos que solo contienen campos dinámicos (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `odds_changed_at`). Los campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` y `event_start_time` solo se envían en el evento `snapshot` inicial.
+**Cambio incompatible para los consumidores SSE de `odds:update`.** El evento `odds:update` ahora envía objetos `OddsDelta` compactos que solo contienen campos dinámicos (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `timestamp`). Los campos estáticos como `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link` y `event_start_time` solo se envían en el evento `snapshot` inicial.
 </Callout>
 
 **Por qué:** La carga útil anterior enviaba el objeto `Odds` completo en cada cambio, generando ~170 KB/s por conexión. El delta compacto reduce el ancho de banda en ~5x, enviando únicamente los 6-7 campos que realmente cambiaron.

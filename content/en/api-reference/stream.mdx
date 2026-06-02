@@ -87,7 +87,7 @@ Each odds object in the snapshot contains **all fields** — this is the full `O
 ```
 event: snapshot
 id: evt_00001
-data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"last_seen_at":"2026-02-08T18:47:20Z","odds_changed_at":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
+data: {"odds":[{"id":"123456","sportsbook":"draftkings","event_id":"nba_phosuns_phi76ers_2026-02-08","sport":"basketball","league":"nba","home_team":"PHI 76ers","away_team":"PHO Suns","market_type":"moneyline","selection":"PHO Suns","selection_type":"away","odds_american":-155,"odds_decimal":1.645,"odds_probability":0.608,"line":null,"event_start_time":"2026-02-08T19:00:00Z","is_live":false,"timestamp":"2026-02-08T18:47:20Z","deep_link":"https://sportsbook.draftkings.com/event/..."}],"count":1000,"total":3200,"offset":0,"has_more":true}
 ```
 
 | Field | Type | Description |
@@ -113,13 +113,13 @@ data: {"status":"ready","books":["draftkings","fanduel"],"total_odds":3200}
 Fired when odds change for a sportsbook. Only sent on `odds` or `all` channels.
 
 <Callout type="warning">
-**Compact delta payload.** Delta events contain only fields that can change between updates — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, and `odds_changed_at`. Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are **not included** in deltas. Merge each delta into your local odds map by `id` using the full objects received in the initial `snapshot`. See [Migration: Compact SSE Deltas](#migration-compact-sse-deltas) below.
+**Compact delta payload.** Delta events contain only fields that can change between updates — `id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, and `timestamp`. Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are **not included** in deltas. Merge each delta into your local odds map by `id` using the full objects received in the initial `snapshot`. See [Migration: Compact SSE Deltas](#migration-compact-sse-deltas) below.
 </Callout>
 
 ```
 event: odds:update
 id: evt_00042
-data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
+data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_probability":0.6,"line":null,"is_live":false,"timestamp":"2026-02-08T18:47:38Z"}],"count":1,"book":"draftkings","partial":false}
 ```
 
 **Delta object fields (`OddsDelta`):**
@@ -136,7 +136,7 @@ data: {"odds":[{"id":"123456","odds_american":-150,"odds_decimal":1.667,"odds_pr
 | `is_main_line` | boolean | `true` when this line is the consensus main line for its market; `false` for alternate lines. Can flip as the main line moves. |
 | `is_alternate_line` | boolean | Positive-polarity sibling of `is_main_line` (mutually exclusive). |
 | `is_stale_pregame_price` | boolean | `true` when a live row still carries a pre-game price that hasn't moved since kickoff. |
-| `odds_changed_at` | string | ISO 8601 timestamp of the sportsbook's own source update for this line, when available. On Pinnacle, carries forward while the underlying price/line/`is_live` flag are unchanged — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | ISO 8601 time SharpAPI last refreshed this odd through its pipeline — advances every ingest cycle. A feed-freshness / liveness signal (matches OpticOdds' `timestamp`); it is NOT when the price last changed. See [understanding the `timestamp` field](/en/concepts/pinnacle-odds-changed-at/). |
 
 Exchange books additionally carry the dynamic `volume`, `volume_24h`, `open_interest`, and `max_bet` fields when present. Everything else — `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, `event_start_time`, and the nested entity refs — is **static** and comes from the initial `snapshot`; merge each delta into your local map by `id` and never read a static field off a delta.
 
@@ -238,7 +238,7 @@ This is a 1:1 analogue of OpticOdds' `locked-odds` for easy migration. It is **s
 ```
 event: odds:locked
 id: evt_00052
-data: {"odds":[{"id":"123456","odds_american":-2500,"is_live":true,"is_active":false,"odds_changed_at":"2026-02-08T18:47:38Z"}],"count":1,"book":"pinnacle","partial":false}
+data: {"odds":[{"id":"123456","odds_american":-2500,"is_live":true,"is_active":false,"timestamp":"2026-02-08T18:47:38Z"}],"count":1,"book":"pinnacle","partial":false}
 ```
 
 A market re-opening emits a normal `odds:update` with `is_active: true` (and a fresh price). Markets a book **removes entirely** come through [`odds:removed`](#odds-removed) instead.
@@ -590,7 +590,7 @@ These close the connection. Handle them in `onerror`:
 ## Migration: Compact SSE Deltas
 
 <Callout type="warning">
-**Breaking change for SSE `odds:update` consumers.** The `odds:update` event now sends compact `OddsDelta` objects containing only dynamic fields (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `odds_changed_at`). Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are only sent in the initial `snapshot` event.
+**Breaking change for SSE `odds:update` consumers.** The `odds:update` event now sends compact `OddsDelta` objects containing only dynamic fields (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `timestamp`). Static fields like `sportsbook`, `sport`, `league`, `home_team`, `away_team`, `market_type`, `selection`, `deep_link`, and `event_start_time` are only sent in the initial `snapshot` event.
 </Callout>
 
 **Why:** The previous payload sent the full `Odds` object on every change, producing ~170 KB/s per connection. The compact delta reduces bandwidth by ~5x, sending only the 6-7 fields that actually changed.

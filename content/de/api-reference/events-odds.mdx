@@ -61,8 +61,7 @@ Alle Antworten enthalten Standard-Header für Rate Limit und Metadaten:
 | `odds.american` | number | American Odds (z. B. -110, +150) |
 | `odds.decimal` | number | Dezimalquoten (z. B. 1.909) |
 | `odds.probability` | number | Implizite Wahrscheinlichkeit (z. B. 0.5238) |
-| `last_seen_at` | string | ISO-8601-Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie diesen als Aktualitätssignal der Pipeline. |
-| `odds_changed_at` | string | ISO-8601-Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert hat. Vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Refreshes hinweg fortgeschrieben — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | ISO-8601-Zeitpunkt, zu dem SharpAPI diese Quote zuletzt durch seine Pipeline aktualisiert hat — wird in jedem Ingest-Zyklus weitergeschaltet. Ein Feed-Aktualitäts- / Liveness-Signal (entspricht OpticOdds' `timestamp`); es ist NICHT der Zeitpunkt, zu dem sich der Preis zuletzt geändert hat. Siehe [`timestamp` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
 
 ## Beispielanfragen
 
@@ -221,7 +220,7 @@ print(f"Fetched all {len(all_odds)} odds")
         "decimal": 1.556,
         "odds_probability": 0.643
       },
-      "last_seen_at": "2026-02-08T12:05:00Z"
+      "timestamp": "2026-02-08T12:05:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_ml_away",
@@ -236,7 +235,7 @@ print(f"Fetched all {len(all_odds)} odds")
         "decimal": 2.55,
         "odds_probability": 0.392
       },
-      "last_seen_at": "2026-02-08T12:05:00Z"
+      "timestamp": "2026-02-08T12:05:00Z"
     },
     {
       "id": "pin_evt_nba_bos_lal_20260208_ml_home",
@@ -251,7 +250,7 @@ print(f"Fetched all {len(all_odds)} odds")
         "decimal": 1.571,
         "odds_probability": 0.636
       },
-      "last_seen_at": "2026-02-08T12:03:00Z"
+      "timestamp": "2026-02-08T12:03:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_spread_home",
@@ -266,7 +265,7 @@ print(f"Fetched all {len(all_odds)} odds")
         "decimal": 1.909,
         "odds_probability": 0.524
       },
-      "last_seen_at": "2026-02-08T12:05:00Z"
+      "timestamp": "2026-02-08T12:05:00Z"
     },
     {
       "id": "dk_evt_nba_bos_lal_20260208_total_over",
@@ -281,7 +280,7 @@ print(f"Fetched all {len(all_odds)} odds")
         "decimal": 1.909,
         "odds_probability": 0.524
       },
-      "last_seen_at": "2026-02-08T12:05:00Z"
+      "timestamp": "2026-02-08T12:05:00Z"
     }
   ],
   "meta": {

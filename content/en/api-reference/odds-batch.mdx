@@ -140,7 +140,7 @@ if result['data']['missing_events']:
             "odds_american": -210,
             "odds_decimal": 1.476,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           },
           {
             "sportsbook": "draftkings",
@@ -150,7 +150,7 @@ if result['data']['missing_events']:
             "odds_american": 175,
             "odds_decimal": 2.75,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           }
         ]
       },
@@ -170,7 +170,7 @@ if result['data']['missing_events']:
             "odds_american": -130,
             "odds_decimal": 1.769,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:05.000Z"
+            "timestamp": "2026-01-26T10:15:05.000Z"
           }
         ]
       }
@@ -289,8 +289,7 @@ Each item in the `data.events` array is an event object with nested odds:
 | `odds_american` | number | American odds |
 | `odds_decimal` | number | Decimal odds |
 | `line` | number \| null | Line value |
-| `last_seen_at` | string | **⚠️ Deprecated** — being internalized; will be removed in a future release. Liveness heartbeat (advances every cycle even when the price is unchanged), not a price-freshness signal. Read `odds_changed_at` for freshness. |
-| `odds_changed_at` | string | ISO 8601 timestamp of when the price, line, or `is_live` flag last actually changed. Sportsbook-provided when available; on Pinnacle it carries forward across unchanged refreshes — see [Understanding Pinnacle's `odds_changed_at`](/en/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | ISO 8601 time SharpAPI last refreshed this odd through its pipeline — advances every ingest cycle. A feed-freshness / liveness signal (matches OpticOdds' `timestamp`); it is NOT when the price last changed. See [understanding the `timestamp` field](/en/concepts/pinnacle-odds-changed-at/). |
 
 ## Use Cases
 

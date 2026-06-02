@@ -1,24 +1,30 @@
 ---
-description: "Wie sich das Feld odds_changed_at von Pinnacle verhält — warum es der Zeitstempel des Trading-Desks ist, warum es bei MLB und NBA veraltet wirken kann und wie es zusammen mit last_seen_at als Pipeline-Aktualitätssignal zu lesen ist."
+description: "Wie sich das Feld timestamp verhält — warum es das Auslieferungs- / Feed-Aktualitätssignal ist (entspricht OpticOdds), warum es in jedem Refresh-Zyklus weitergeschaltet wird und warum SharpAPI kein separates Feld mehr dafür bereitstellt, wann sich der Preis zuletzt bewegt hat."
 ---
 
 import { Callout } from 'nextra/components'
 
-# Pinnacles `odds_changed_at` verstehen
+# Das Feld `timestamp` verstehen
 
-Sharp-Kunden, die +EV- und Arbitrage-Tools gegen Pinnacle entwickeln, stellen häufig dieselbe Frage: „Warum sieht `odds_changed_at` in dieser Pinnacle-Zeile 20 Minuten alt aus?" Die kurze Antwort lautet, dass es wie vorgesehen funktioniert — es enthält Pinnacles eigenen Trading-Desk-Zeitstempel, nicht unseren. Diese Seite erklärt, was das Feld tatsächlich erfasst, warum es lange Zeit unverändert bleiben kann und wie Sie es mit `last_seen_at` kombinieren, um eine saubere Sicht auf die Pipeline-Aktualität zu erhalten.
+Jede Quotenzeile in der SharpAPI-Antwort trägt ein einziges `timestamp`-Feld. Es beantwortet eine Frage: *Wie frisch ist dieser Wert in unserer Pipeline?* Diese Seite erklärt, was `timestamp` tatsächlich erfasst, warum es in jedem Refresh-Zyklus weitergeschaltet wird und warum SharpAPI kein separates Feld mehr dafür bereitstellt, „wann sich der Preis zuletzt geändert hat".
 
-## Was `odds_changed_at` tatsächlich bedeutet
+## Was `timestamp` tatsächlich bedeutet
 
-Bei Pinnacle-Zeilen ist `odds_changed_at` **Pinnacles eigener Trading-Desk-Zeitstempel** — wann Pinnacle diese spezifische Linie zuletzt neu bepreist hat.
+`timestamp` ist der ISO-8601-Zeitpunkt, zu dem SharpAPI diese Quote zuletzt durch seine Pipeline aktualisiert hat. Es ist ein **Auslieferungs- / Feed-Aktualitätssignal** — es wird bei jedem Ingest-Zyklus weitergeschaltet, in dem die Zeile beobachtet wurde, unabhängig davon, ob sich der zugrunde liegende Preis bewegt hat.
 
-Er wird unverändert weitergegeben, wann immer Pinnacle signalisiert, dass sich Preis, Linie und das `is_live`-Flag eines Marktes nicht verändert haben. Intern hasht SharpAPI diese drei Felder für jede Quotenzeile bei jedem Refresh; wenn der Hash mit dem vorherigen Snapshot identisch ist, behalten wir den vorherigen `odds_changed_at` bei, anstatt ihn mit dem Beobachtungszeitpunkt zu überschreiben. Dies bewahrt die Semantik „wann hat sich diese Linie zuletzt bewegt" über wiederholte Abfragen eines unveränderten Marktes hinweg.
+Dies entspricht dem `timestamp`-Feld von OpticOdds: Es ist ein Liveness-Indikator, kein Preisbewegungs-Indikator. Ein frisches `timestamp` bedeutet, dass der Feed aktiv ist und die Zeile aktuell ist; ein veraltetes `timestamp` bedeutet, dass die Pipeline diese Zeile eine Weile nicht mehr gesehen hat und eine Untersuchung wert ist.
 
 <Callout type="warning">
-`odds_changed_at` ist **nicht** der Zeitpunkt, zu dem unsere Pipeline diese Zeile zuletzt aktualisiert oder berührt hat. Für die Pipeline-Aktualität verwenden Sie `last_seen_at`.
+`timestamp` ist **nicht** der Zeitpunkt, zu dem sich der Preis zuletzt geändert hat. SharpAPI stellt kein separates Feld mehr dafür bereit, wann sich Preis, Linie oder das `is_live`-Flag zuletzt bewegt haben. Behandeln Sie `timestamp` ausschließlich als Aktualitäts- / Liveness-Signal.
 </Callout>
 
-## Warum es veraltet wirken kann
+## Warum es kein separates „Preisänderungs"-Feld mehr gibt
+
+Frühere API-Versionen stellten mehrere Zeitstempel pro Zeile bereit (`odds_changed_at`, `last_seen_at`, `wire_received_at`), die versuchten, „wann sich der Preis bewegt hat" von „wann wir die Zeile gesehen haben" zu unterscheiden. In der Praxis war diese Unterscheidung über alle Buchmacher hinweg unzuverlässig: Nur wenige Quellen liefern einen vertrauenswürdigen quelleneigenen Preisänderungs-Zeitstempel, und die Übertragung dieser Werte über unveränderte Refreshes hinweg führte zu Verwirrung — insbesondere bei Sharp-Büchern wie Pinnacle, die Linien lange Zeit konstant halten.
+
+Ab v3.0.0 konsolidiert SharpAPI auf ein einziges `timestamp`-Feld mit klarer Auslieferungs-/Aktualitätssemantik und entspricht damit dem Verhalten von OpticOdds. Wenn Sie auf eines der entfernten Felder angewiesen waren, lesen Sie stattdessen `timestamp`.
+
+## Warum ein frisches `timestamp` nicht „Preis hat sich bewegt" bedeutet
 
 Pinnacle ist ein Market-Maker. Deren Trading-Desk veröffentlicht nur dann einen neuen Preis, wenn tatsächlicher Flow eine Neubepreisung erzwingt — sie schattieren keine Linien um Retail-Action, um Marge herauszupressen, wie es Soft Books tun. Diese Disziplin ist der Grund, warum Pinnacle als Sharp-Referenz für +EV-Berechnungen verwendet wird, aber es bedeutet auch, dass Linien lange Zeit unverändert bleiben können.
 
@@ -32,22 +38,9 @@ Beobachtet über ein 24-Stunden-Fenster von Pinnacles eigenen CDN-Antworten vari
 | MLB          | ~18 %                          |
 | NBA          | ~9 %                           |
 
-NBA- und MLB-Spielerprops zeigen häufig lange Leerlaufzeiten — 30+ Minuten sind nicht ungewöhnlich — weil Pinnacles Trading-Desk die Linie nicht bewegt. Wenn Sie ein altes `odds_changed_at` bei einem NBA- oder MLB-Markt sehen, ist es fast immer Pinnacles eigener Veröffentlichungstakt und keine Lücke in unserer Pipeline.
+NBA- und MLB-Spielerprops zeigen häufig lange Zeiträume, in denen der Preis konstant bleibt — 30+ Minuten sind nicht ungewöhnlich — weil Pinnacles Trading-Desk die Linie nicht bewegt. Während dieser Phasen wird `timestamp` trotzdem in jedem Ingest-Zyklus weitergeschaltet: Der Feed ist aktiv, auch wenn sich der Preis nicht ändert. Ein frisches `timestamp` bestätigt, dass die Zeile aktuell ist, nicht dass sich der Preis gerade bewegt hat.
 
-## Wie die Felder gemeinsam zu lesen sind
-
-Jede Quotenzeile enthält zwei Zeitstempel. Sie beantworten unterschiedliche Fragen:
-
-| Feld               | Was es Ihnen sagt                                                    |
-|--------------------|----------------------------------------------------------------------|
-| `odds_changed_at`  | Wann Pinnacles Trading-Desk diese Linie zuletzt bewegt hat           |
-| `last_seen_at`     | Wann unsere Pipeline diese Zeile zuletzt beobachtet hat              |
-
-Für Pipeline-Aktualitätsprüfungen verwenden Sie `last_seen_at` — dieser wird bei jeder Aufnahme der Zeile aktualisiert, unabhängig davon, ob sich der Preis bewegt hat.
-
-Für „wann hat Pinnacle diese Linie zuletzt bewegt" verwenden Sie `odds_changed_at`.
-
-Eine große Lücke zwischen beiden (frisches `last_seen_at`, altes `odds_changed_at`) bedeutet, dass Pinnacle die Linie konstant hält. Dies ist normal und die mit Abstand häufigste Verwirrungsquelle beim Lesen von Pinnacle-Daten.
+## Wie `timestamp` zu lesen ist
 
 ```json
 {
@@ -56,24 +49,23 @@ Eine große Lücke zwischen beiden (frisches `last_seen_at`, altes `odds_changed
   "selection": "Edmundo Sosa Over",
   "line": 0.5,
   "odds_american": -129,
-  "last_seen_at":    "2026-04-21T21:35:02Z",
-  "odds_changed_at": "2026-04-21T18:49:00Z"
+  "timestamp": "2026-04-21T21:35:02Z"
 }
 ```
 
-In diesem Beispiel hat die Pipeline diese Zeile 4 Sekunden vor dem Abruf durch den Client gesehen (`last_seen_at` ist frisch). Der Preis selbst hat sich zuletzt 2h 46m früher bewegt (`odds_changed_at`), weil Pinnacles Trading-Desk Sosas Total-Bases-Linie seit Vormarkteröffnung nicht neu bepreist hat. Beide Werte sind korrekt.
+In diesem Beispiel hat die Pipeline diese Zeile wenige Sekunden vor dem Abruf durch den Client aktualisiert (`timestamp` ist frisch). Der angezeigte Preis ist aktuell — Pinnacles Trading-Desk hat Sosas Total-Bases-Linie möglicherweise seit Stunden nicht neu bepreist, aber der Feed liefert sie weiterhin aktiv aus.
 
 <Callout type="info">
-Wenn `last_seen_at` veraltet ist (mehr als eine oder zwei Minuten alt bei einem Major-League-Markt), ist das ein Pipeline-Signal, das eine Untersuchung wert ist. Wenn `odds_changed_at` veraltet ist, aber `last_seen_at` frisch, hält Pinnacle die Linie — behandeln Sie den angezeigten Preis als aktuell.
+Wenn `timestamp` veraltet ist (mehr als eine oder zwei Minuten alt bei einem Major-League-Markt), ist das ein Pipeline-Signal, das eine Untersuchung wert ist. Wenn `timestamp` frisch ist, behandeln Sie den angezeigten Preis als aktuell — auch dann, wenn Pinnacle die Linie über einen langen Zeitraum konstant gehalten hat.
 </Callout>
 
 ## Warum Pinnacle anders ist
 
-Pinnacle akzeptiert Sharp-Action und bepreist basierend auf echtem Flow neu, anstatt Linien um Retail-Wetter zu schattieren. Diese Market-Maker-Disziplin ist der Grund, warum wir sie als Devig-Referenz für +EV verwenden — ihre Linien sind dem fairen Preis am Markt am nächsten. Der Kompromiss ist, dass Pre-Match-Linien lange Zeit unverändert bleiben können, wenn sich nichts am Markt bewegt hat, was für jeden, der die ständige Mikro-Anpassung erwartet, die Soft Books vornehmen, wie Veraltetheit aussieht.
+Pinnacle akzeptiert Sharp-Action und bepreist basierend auf echtem Flow neu, anstatt Linien um Retail-Wetter zu schattieren. Diese Market-Maker-Disziplin ist der Grund, warum wir sie als Devig-Referenz für +EV verwenden — ihre Linien sind dem fairen Preis am Markt am nächsten. Der Kompromiss ist, dass Pre-Match-Linien lange Zeit unverändert bleiben können, wenn sich nichts am Markt bewegt hat. Da `timestamp` ausschließlich Feed-Aktualität misst, ist das kein Problem: Ein frisches `timestamp` bei einer seit Stunden stabilen Pinnacle-Linie ist genau das erwartete Verhalten.
 
 ## Verwandte Themen
 
-- [Odds-Snapshot](/de/api-reference/odds/) — Felder `odds_changed_at` und `last_seen_at` in der REST-Odds-Antwort
-- [Streaming](/de/api-reference/stream/) — `odds_changed_at` bei `odds:update`-Deltas
+- [Odds-Snapshot](/de/api-reference/odds/) — das Feld `timestamp` in der REST-Odds-Antwort
+- [Streaming](/de/api-reference/stream/) — `timestamp` bei `odds:update`-Deltas
 - [Live vs. Pre-Match](/de/concepts/live-vs-prematch/) — Veröffentlichungstakt und Lieferungsmechanismen der Buchmacher
 - [EV-Berechnung](/de/concepts/ev-calculation/) — warum Pinnacle die Sharp-Referenz ist

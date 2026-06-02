@@ -140,7 +140,7 @@ if result['data']['missing_events']:
             "odds_american": -210,
             "odds_decimal": 1.476,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           },
           {
             "sportsbook": "draftkings",
@@ -150,7 +150,7 @@ if result['data']['missing_events']:
             "odds_american": 175,
             "odds_decimal": 2.75,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           }
         ]
       },
@@ -170,7 +170,7 @@ if result['data']['missing_events']:
             "odds_american": -130,
             "odds_decimal": 1.769,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:05.000Z"
+            "timestamp": "2026-01-26T10:15:05.000Z"
           }
         ]
       }
@@ -289,8 +289,7 @@ Jedes Element im `data.events`-Array ist ein Event-Objekt mit verschachtelten Qu
 | `odds_american` | number | Amerikanische Quoten |
 | `odds_decimal` | number | Dezimalquoten |
 | `line` | number \| null | Linienwert |
-| `last_seen_at` | string | ISO 8601 Zeitstempel, wann unsere Pipeline diese Zeile zuletzt beobachtet hat. Verwenden Sie dies als Frische-Signal für die Pipeline. |
-| `odds_changed_at` | string | ISO 8601 Zeitstempel, wann sich der Preis, die Linie oder das `is_live`-Flag zuletzt tatsächlich geändert haben. Wird vom Sportsbook bereitgestellt, sofern verfügbar; bei Pinnacle wird er über unveränderte Aktualisierungen hinweg übertragen — siehe [Understanding Pinnacle's `odds_changed_at`](/de/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | ISO-8601-Zeitpunkt, zu dem SharpAPI diese Quote zuletzt durch seine Pipeline aktualisiert hat — wird in jedem Ingest-Zyklus weitergeschaltet. Ein Feed-Aktualitäts- / Liveness-Signal (entspricht OpticOdds' `timestamp`); es ist NICHT der Zeitpunkt, zu dem sich der Preis zuletzt geändert hat. Siehe [`timestamp` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
 
 ## Anwendungsfälle
 

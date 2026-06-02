@@ -400,7 +400,7 @@ El campo `requires_tier` indica el nivel de suscripción mínimo necesario para 
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Lectura de las marcas de tiempo de Pinnacle.** El campo `odds_changed_at` en una fila de Pinnacle es la marca de tiempo de su mesa de trading, no la de nuestro pipeline. Pinnacle mantiene las líneas estables cuando el mercado no se ha movido — un valor inactivo de más de 30 minutos es habitual en props de jugadores de MLB y mercados de la NBA. Usa `last_seen_at` para conocer la frescura del pipeline. Consulta [Entender el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/) para saber qué significa realmente "obsoleto" en su feed.
+**Lectura de las marcas de tiempo de Pinnacle.** El campo `timestamp` en una fila de cuotas indica cuándo SharpAPI refrescó por última vez esa fila a través de su pipeline — es una señal de frescura del feed que avanza en cada ciclo de ingesta, no la marca de cuándo se movió el precio por última vez. SharpAPI ya no expone un campo separado para "cuándo cambió el precio". Consulta [Entender el campo `timestamp`](/es/concepts/pinnacle-odds-changed-at/) para saber cómo interpretar la frescura en el feed de Pinnacle.
 </Callout>
 
 ### Internacionales

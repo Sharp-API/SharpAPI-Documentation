@@ -110,32 +110,28 @@ for item in result['data']:
           "book": "fanduel",
           "odds": { "american": -105, "decimal": 1.952 },
           "edge": 0.007,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:30:00.000Z"
+          "line": -6.5
         },
         {
           "book": "draftkings",
           "odds": { "american": -110, "decimal": 1.909 },
           "edge": 0.0,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:55.000Z"
+          "line": -6.5
         },
         {
           "book": "betmgm",
           "odds": { "american": -108, "decimal": 1.926 },
           "edge": 0.003,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:50.000Z"
+          "line": -6.5
         },
         {
           "book": "pinnacle",
           "odds": { "american": -108, "decimal": 1.926 },
           "edge": 0.003,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:45.000Z"
+          "line": -6.5
         }
       ],
-      "last_seen_at": "2026-01-26T10:30:00.000Z"
+      "timestamp": "2026-01-26T10:30:00.000Z"
     }
   ],
   "meta": {
@@ -211,9 +207,7 @@ X-Request-Id: req_best_789xyz
 | `all_books[].odds` | object | Objeto de cuotas (`american`, `decimal`) |
 | `all_books[].edge` | number | Margen sobre las peores cuotas disponibles (puntos porcentuales) |
 | `all_books[].line` | number \| null | Línea en esta casa de apuestas |
-| `all_books[].last_seen_at` | string | Cuándo nuestra pipeline observó por última vez la fila de esta casa — señal de frescura de la pipeline |
-| `all_books[].odds_changed_at` | string | Cuándo cambió realmente por última vez el precio, la línea o el indicador `is_live` de esta casa. En Pinnacle, se mantiene durante actualizaciones sin cambios — consulta [Entendiendo el `odds_changed_at` de Pinnacle](/es/concepts/pinnacle-odds-changed-at/). |
-| `last_seen_at` | string | Marca temporal ISO 8601 de la determinación de las mejores cuotas |
+| `timestamp` | string | Marca temporal ISO 8601 de la determinación de las mejores cuotas |
 | `player_name` | string\|undefined | Nombre del jugador (solo mercados de player props) |
 | `stat_category` | string\|undefined | Categoría estadística, p. ej. `points`, `rebounds` (solo mercados de player props) |
 

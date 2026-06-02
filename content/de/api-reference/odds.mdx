@@ -20,6 +20,10 @@ Erfordert einen API key. Verfügbar für **alle Tarife**.
 Welche Sportwettenanbieter in Ihren Ergebnissen zurückgegeben werden, hängt von Ihrem Abonnement-Tarif ab. Nutzer des Free-Tarifs erhalten ausschließlich Quoten von DraftKings und FanDuel. Siehe [Anbieterzugang nach Tarif](#book-access-by-tier) weiter unten.
 </Callout>
 
+<Callout type="warning">
+Geändert in v3.0.0: Die Quotenantwort führt jetzt ein einziges `timestamp`-Feld (Auslieferung / Feed-Aktualität, passend zu OpticOdds). Die früheren Felder `odds_changed_at`, `last_seen_at` und `wire_received_at` wurden entfernt — lesen Sie stattdessen `timestamp`. Es gibt kein Feld mehr dafür, wann sich der Preis zuletzt bewegt hat.
+</Callout>
+
 ## Query-Parameter
 
 | Parameter | Typ | Standard | Beschreibung |
@@ -195,7 +199,7 @@ Cursor sind undurchsichtig — parsen oder konstruieren Sie sie nicht. Sie kodie
       "odds_probability": 0.60,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "timestamp": "2026-01-26T02:10:24.125Z",
       "is_live": false
     },
     {
@@ -214,7 +218,7 @@ Cursor sind undurchsichtig — parsen oder konstruieren Sie sie nicht. Sie kodie
       "odds_probability": 0.4348,
       "line": null,
       "event_start_time": "2026-01-26T19:00:00Z",
-      "last_seen_at": "2026-01-26T02:10:24.125Z",
+      "timestamp": "2026-01-26T02:10:24.125Z",
       "is_live": false
     }
   ],
@@ -314,9 +318,7 @@ X-Request-Id: req_abc123def456
 | `line` | number \| null | Spread- oder Total-Linienwert (`null` bei Moneyline) |
 | `is_alternate_line` | boolean\|undefined | `true`, wenn das `line` dieser Zeile von der kanonischen Hauptlinie für ihre `(event, market_type, player)`-Gruppe abweicht. Immer `false` für Märkte ohne Linie (Moneyline, Outright). Stabil auf [`/opportunities/ev`](/de/api-reference/opportunities-ev/) heute; Rollout auf `/odds`-Zeilen läuft. Verwenden Sie es, um Haupt- und Alternativlinien-Snapshots zu trennen. |
 | `event_start_time` | string | ISO 8601 Event-Startzeit |
-| `last_seen_at` | string | ISO 8601 Zeitstempel der letzten Beobachtung dieser Zeile durch unseren Adapter. Wird in jedem Ingest-Zyklus aktualisiert — dies ist das Pipeline-Frische-Signal. |
-| `odds_changed_at` | string | ISO 8601 Zeitstempel der quelleneigenen Aktualisierung des Sportwettenanbieters für diese Linie, sofern verfügbar. Bei Pinnacle wird er fortgeführt, solange Preis/Linie/`is_live`-Flag unverändert bleiben (siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/)). Verwenden Sie `last_seen_at` für die Pipeline-Frische. |
-| `wire_received_at` | string\|undefined | ISO 8601 Zeitstempel des Zeitpunkts, an dem sharp-api-go zuletzt eine Inhaltshash-Änderung für diese Zeile beobachtet hat — der Pipeline-Eingangsstempel. Unterschiedlich von `last_seen_at` (Adapter-Beobachtung) und `odds_changed_at` (quelleneigene Aktualisierung des Sportwettenanbieters). |
+| `timestamp` | string | ISO-8601-Zeitpunkt, zu dem SharpAPI diese Quote zuletzt durch seine Pipeline aktualisiert hat — wird in jedem Ingest-Zyklus weitergeschaltet. Ein Feed-Aktualitäts- / Liveness-Signal (entspricht OpticOdds' `timestamp`); es ist NICHT der Zeitpunkt, zu dem sich der Preis zuletzt geändert hat. |
 | `is_live` | boolean | Ob das Event derzeit live läuft |
 | `event_uuid` | string\|undefined | Stabile kanonische Event-UUID aus dem SharpAPI-Atlas, sofern das Event gemappt ist. Während `event_id` die primäre Event-Kennung des Adapters trägt (oft die des ursprünglichen Sportwettenanbieters), ist `event_uuid` ein feed-stabiler Hash für Cross-Feed-Joins. Fehlt bei nicht gemappten Events. |
 | `external_event_id` | string\|undefined | Die native Event-ID des Sportwettenanbieters, sofern sie sich von `event_id` unterscheidet. Nützlich, um Zeilen in die UI oder API des Sportwettenanbieters zurückzuverknüpfen. |
@@ -377,7 +379,7 @@ curl "https://api.sharpapi.io/api/v1/odds?sort=event_start_time" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
-Gültige Sortierfelder: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `last_seen_at`, `sportsbook`, `league`, `sport`.
+Gültige Sortierfelder: `odds_american`, `odds_decimal`, `odds_probability`, `event_start_time`, `timestamp`, `sportsbook`, `league`, `sport`.
 
 ## Feldauswahl
 
@@ -447,7 +449,7 @@ curl "https://api.sharpapi.io/api/v1/odds?league=nba&group_by=event" \
           "odds_decimal": 1.667,
           "odds_probability": 0.60,
           "line": null,
-          "last_seen_at": "2026-01-26T02:10:24.125Z"
+          "timestamp": "2026-01-26T02:10:24.125Z"
         }
       ]
     }

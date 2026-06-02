@@ -5,6 +5,6 @@ export default {
   "event-matching": "Emparejamiento de Eventos",
   "entity-reference-ids": "IDs de Referencia de Entidades",
   "live-vs-prematch": "En Vivo vs. Pre-Partido",
-  "pinnacle-odds-changed-at": "Pinnacle `odds_changed_at`",
+  "pinnacle-odds-changed-at": "El campo `timestamp`",
   "polymarket-resolution": "Resolución de Polymarket",
 }

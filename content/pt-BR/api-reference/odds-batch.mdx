@@ -140,7 +140,7 @@ if result['data']['missing_events']:
             "odds_american": -210,
             "odds_decimal": 1.476,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           },
           {
             "sportsbook": "draftkings",
@@ -150,7 +150,7 @@ if result['data']['missing_events']:
             "odds_american": 175,
             "odds_decimal": 2.75,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:00.000Z"
+            "timestamp": "2026-01-26T10:15:00.000Z"
           }
         ]
       },
@@ -170,7 +170,7 @@ if result['data']['missing_events']:
             "odds_american": -130,
             "odds_decimal": 1.769,
             "line": null,
-            "last_seen_at": "2026-01-26T10:15:05.000Z"
+            "timestamp": "2026-01-26T10:15:05.000Z"
           }
         ]
       }
@@ -289,8 +289,7 @@ Cada item no array `data.events` é um objeto de evento com odds aninhadas:
 | `odds_american` | number | Odds americanas |
 | `odds_decimal` | number | Odds decimais |
 | `line` | number \| null | Valor da linha |
-| `last_seen_at` | string | Timestamp ISO 8601 de quando nosso pipeline observou esta linha pela última vez. Use isto como seu sinal de atualização do pipeline. |
-| `odds_changed_at` | string | Timestamp ISO 8601 de quando o preço, a linha ou a flag `is_live` realmente mudou pela última vez. Fornecido pela casa de apostas quando disponível; na Pinnacle, ele é mantido entre atualizações sem mudanças — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | Horário ISO 8601 em que a SharpAPI atualizou esta odd pela última vez através do seu pipeline — avança a cada ciclo de ingestão. É um sinal de frescor / liveness do feed (corresponde ao `timestamp` da OpticOdds); **não** é quando o preço mudou pela última vez. Veja [Entendendo o campo `timestamp`](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 
 ## Casos de Uso
 

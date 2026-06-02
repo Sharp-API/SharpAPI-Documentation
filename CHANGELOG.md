@@ -6,6 +6,10 @@ to bump. Every change to API paths or response schemas gets a one-line entry her
 the [OpenAPI Version Check](.github/workflows/openapi-version-check.yml) CI job
 enforces that a bump has a matching entry.
 
+## 3.0.0 — 2026-06-02
+
+- **BREAKING:** the `Odds` response now exposes a single per-odd `timestamp` field and no longer emits `odds_changed_at`, `last_seen_at`, or `wire_received_at`. `timestamp` is the **delivery / last-refreshed** stamp (advances every ingest cycle — a feed-freshness/liveness signal, matching OpticOdds' `timestamp`), **not** a price-last-changed time. **Migration:** anyone reading `odds_changed_at` / `last_seen_at` / `wire_received_at` should read `timestamp`. Note there is no longer a field for *when the price last moved* (CLV / line-movement) — full OpticOdds-parity. Supersedes the 2.3.0 deprecations. SHA-1048.
+
 ## 2.3.0 — 2026-06-01
 
 - Add `odds_changed_at` to the `Odds` schema — the canonical per-row freshness field (previously undocumented; also the only per-odd freshness timestamp OpticOdds exposes). Deprecate `last_seen_at`, `wire_received_at`, and the stale `timestamp` prop (`deprecated: true`) — being internalized; read `odds_changed_at` for freshness. Removal tracked in sharp-api-go #743.

@@ -400,7 +400,7 @@ Das Feld `requires_tier` gibt die Mindest-Abonnementstufe an, die benötigt wird
 {/* AUTO:END:sharp-books */}
 
 <Callout type="info">
-**Pinnacle-Zeitstempel lesen.** `odds_changed_at` in einer Pinnacle-Zeile ist der Zeitstempel ihres Trading-Desks, nicht der unserer Pipeline. Pinnacle hält die Linien stabil, wenn sich der Markt nicht bewegt hat — ein Leerlaufwert von 30+ Minuten ist bei MLB-Spieler-Props und NBA-Märkten üblich. Verwenden Sie `last_seen_at` für die Pipeline-Aktualität. Siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/) dafür, was "veraltet" in ihrem Feed tatsächlich bedeutet.
+**Pinnacle-Zeitstempel lesen.** `timestamp` in einer Pinnacle-Zeile ist der Auslieferungs- / Feed-Aktualitätsstempel — wann SharpAPI diese Quote zuletzt durch seine Pipeline aktualisiert hat —, nicht der Zeitpunkt, zu dem sich der Preis zuletzt bewegt hat. Pinnacle hält die Linien stabil, wenn sich der Markt nicht bewegt hat, aber `timestamp` wird trotzdem in jedem Ingest-Zyklus weitergeschaltet. Siehe [`timestamp` verstehen](/de/concepts/pinnacle-odds-changed-at/) dafür, wie SharpAPI Feed-Aktualität bereitstellt.
 </Callout>
 
 ### International

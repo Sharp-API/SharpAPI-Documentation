@@ -127,22 +127,22 @@ for market in event['markets']:
               "fanduel": {
                 "odds_american": -145,
                 "odds_decimal": 1.690,
-                "last_seen_at": "2026-01-26T02:10:20.000Z"
+                "timestamp": "2026-01-26T02:10:20.000Z"
               },
               "draftkings": {
                 "odds_american": -150,
                 "odds_decimal": 1.667,
-                "last_seen_at": "2026-01-26T02:10:24.000Z"
+                "timestamp": "2026-01-26T02:10:24.000Z"
               },
               "betmgm": {
                 "odds_american": -155,
                 "odds_decimal": 1.645,
-                "last_seen_at": "2026-01-26T02:10:18.000Z"
+                "timestamp": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
                 "odds_american": -148,
                 "odds_decimal": 1.676,
-                "last_seen_at": "2026-01-26T02:10:15.000Z"
+                "timestamp": "2026-01-26T02:10:15.000Z"
               }
             },
             "best_book": "fanduel",
@@ -159,22 +159,22 @@ for market in event['markets']:
               "draftkings": {
                 "odds_american": 130,
                 "odds_decimal": 2.300,
-                "last_seen_at": "2026-01-26T02:10:24.000Z"
+                "timestamp": "2026-01-26T02:10:24.000Z"
               },
               "fanduel": {
                 "odds_american": 125,
                 "odds_decimal": 2.250,
-                "last_seen_at": "2026-01-26T02:10:20.000Z"
+                "timestamp": "2026-01-26T02:10:20.000Z"
               },
               "betmgm": {
                 "odds_american": 128,
                 "odds_decimal": 2.280,
-                "last_seen_at": "2026-01-26T02:10:18.000Z"
+                "timestamp": "2026-01-26T02:10:18.000Z"
               },
               "pinnacle": {
                 "odds_american": 126,
                 "odds_decimal": 2.260,
-                "last_seen_at": "2026-01-26T02:10:15.000Z"
+                "timestamp": "2026-01-26T02:10:15.000Z"
               }
             },
             "best_book": "draftkings",
@@ -253,8 +253,7 @@ Cada entrada no objeto `books`:
 |-------|------|-------------|
 | `odds_american` | number | Odds americanas |
 | `odds_decimal` | number | Odds decimais |
-| `last_seen_at` | string | Quando nosso pipeline observou pela última vez a linha deste book — sinal de atualidade do pipeline |
-| `odds_changed_at` | string | Quando o preço, linha ou flag `is_live` deste book mudou efetivamente pela última vez. Na Pinnacle, é mantido em refreshes sem alteração — veja [Entendendo o `odds_changed_at` da Pinnacle](/pt-BR/concepts/pinnacle-odds-changed-at/). |
+| `timestamp` | string | Horário ISO 8601 em que a SharpAPI atualizou pela última vez a linha deste book através do seu pipeline — avança a cada ciclo de ingestão. É um sinal de frescor / liveness do feed (corresponde ao `timestamp` da OpticOdds); **não** é quando o preço mudou pela última vez. Veja [Entendendo o campo `timestamp`](/pt-BR/concepts/pinnacle-odds-changed-at/). |
 
 ## Entendendo o Hold
 
@@ -293,7 +292,7 @@ curl "https://api.sharpapi.io/api/v1/odds/comparison?event=33483153&market=sprea
 
 ### Identificando Linhas Defasadas
 
-Procure books que não foram atualizados recentemente verificando o `last_seen_at` de cada book. Um book com odds defasadas pode estar lento para se ajustar, criando valor temporário.
+Procure books que não foram atualizados recentemente verificando o `timestamp` de cada book. Um book com odds defasadas pode estar lento para se ajustar, criando valor temporário.
 
 ### Eficiência do Mercado
 

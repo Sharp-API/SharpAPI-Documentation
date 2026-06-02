@@ -188,7 +188,7 @@ for event in client.events():
 | `connected` | Stream estabelecido, retorna ID do stream, filtros ativos e canais |
 | `snapshot` / `opportunities_snapshot` | Dump completo de dados de odds/oportunidades (todos os campos) |
 | `snapshot:complete` | Todos os dados iniciais foram enviados |
-| `odds:update` | Delta compacto — apenas campos dinâmicos (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `odds_changed_at`). Faça merge por `id` no estado do snapshot. |
+| `odds:update` | Delta compacto — apenas campos dinâmicos (`id`, `odds_american`, `odds_decimal`, `odds_probability`, `line`, `is_live`, `timestamp`). Faça merge por `id` no estado do snapshot. |
 | `odds:removed` | Odds removidas por uma sportsbook |
 | `ev:detected` | Nova oportunidade +EV encontrada |
 | `ev:expired` | Oportunidade +EV não está mais disponível |

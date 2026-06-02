@@ -110,32 +110,28 @@ for item in result['data']:
           "book": "fanduel",
           "odds": { "american": -105, "decimal": 1.952 },
           "edge": 0.007,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:30:00.000Z"
+          "line": -6.5
         },
         {
           "book": "draftkings",
           "odds": { "american": -110, "decimal": 1.909 },
           "edge": 0.0,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:55.000Z"
+          "line": -6.5
         },
         {
           "book": "betmgm",
           "odds": { "american": -108, "decimal": 1.926 },
           "edge": 0.003,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:50.000Z"
+          "line": -6.5
         },
         {
           "book": "pinnacle",
           "odds": { "american": -108, "decimal": 1.926 },
           "edge": 0.003,
-          "line": -6.5,
-          "last_seen_at": "2026-01-26T10:29:45.000Z"
+          "line": -6.5
         }
       ],
-      "last_seen_at": "2026-01-26T10:30:00.000Z"
+      "timestamp": "2026-01-26T10:30:00.000Z"
     }
   ],
   "meta": {
@@ -211,9 +207,7 @@ X-Request-Id: req_best_789xyz
 | `all_books[].odds` | object | Odds-Objekt (`american`, `decimal`) |
 | `all_books[].edge` | number | Edge gegenüber den schlechtesten verfügbaren Quoten (Prozentpunkte) |
 | `all_books[].line` | number \| null | Linie bei diesem Sportwettenanbieter |
-| `all_books[].last_seen_at` | string | Wann unsere Pipeline die Zeile dieses Buches zuletzt beobachtet hat — Aktualitätssignal der Pipeline |
-| `all_books[].odds_changed_at` | string | Wann sich der Preis, die Linie oder das `is_live`-Flag dieses Buches zuletzt tatsächlich geändert hat. Bei Pinnacle wird dies über unveränderte Aktualisierungen hinweg fortgeführt — siehe [Pinnacles `odds_changed_at` verstehen](/de/concepts/pinnacle-odds-changed-at/). |
-| `last_seen_at` | string | ISO-8601-Zeitstempel der Best-Odds-Bestimmung |
+| `timestamp` | string | ISO-8601-Zeitstempel der Best-Odds-Bestimmung |
 | `player_name` | string\|undefined | Spielername (nur bei Player-Prop-Märkten) |
 | `stat_category` | string\|undefined | Statistik-Kategorie, z. B. `points`, `rebounds` (nur bei Player-Prop-Märkten) |
 

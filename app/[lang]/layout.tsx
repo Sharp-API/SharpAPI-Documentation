@@ -50,7 +50,7 @@ const footerContent = (
     <nav className="sa-footer__links" aria-label="Footer">
       <a href="https://sharpapi.io">Home</a>
       <a href="https://sharpapi.io/pricing">Pricing</a>
-      <a href="https://status.sharpapi.io/en/" target="_blank" rel="noopener noreferrer">Status</a>
+      <a href="https://status.sharpapi.io/" target="_blank" rel="noopener noreferrer">Status</a>
       <a href="https://github.com/Sharp-API/SharpAPI-Documentation" target="_blank" rel="noopener noreferrer">GitHub</a>
     </nav>
   </div>

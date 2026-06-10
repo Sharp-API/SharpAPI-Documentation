@@ -133,6 +133,13 @@ while True:
       "status": "upcoming"
     }
   ],
+  "removed": [
+    {
+      "id": "225107123583533",
+      "sportsbook": "pinnacle",
+      "removed_at": "2026-02-11T12:00:18.412Z"
+    }
+  ],
   "meta": {
     "count": 1,
     "total": 1,
@@ -200,6 +207,16 @@ X-Request-Id: req_delta_abc123
 ## Delta Response Schema
 
 The `data` array contains the same odds objects as the [`/odds`](/en/api-reference/odds/) endpoint. Only odds updated after the `since` timestamp are included.
+
+### The `removed` Array
+
+The top-level `removed` array names every odds row that left the board since your `since` timestamp — markets a book took down (suspension, a handicap/total threshold retired by a line move, event settled). Delete these `id`s from your local state; this is the explicit close signal, so you never need to diff snapshots yourself. Present only when at least one removal matched your filters. See [Market Lifecycle](/en/concepts/market-lifecycle/) for the full close/suspend signal map.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `removed[].id` | string | The odds ID that is no longer on the board |
+| `removed[].sportsbook` | string | The book that removed it |
+| `removed[].removed_at` | string | ISO 8601 timestamp of when SharpAPI observed the removal |
 
 The `meta` object includes two additional fields:
 

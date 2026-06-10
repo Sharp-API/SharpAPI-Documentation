@@ -1,0 +1,107 @@
+---
+description: "Cómo SharpAPI señala cierres, suspensiones y eliminaciones de mercados — las señales explícitas de cierre en cada superficie (REST, delta, SSE, WebSocket), cómo rotan las escaleras de umbrales y cómo mantener tu estado local libre de cuotas obsoletas."
+---
+
+import { Callout } from 'nextra/components'
+
+# Ciclo de Vida del Mercado: Suspensiones y Eliminaciones
+
+Los mercados salen del tablero constantemente — una casa suspende tras un gol, retira un umbral de hándicap o total cuando la línea se mueve, o liquida el evento. SharpAPI señala cada una de estas transiciones **explícitamente** en cada superficie de consumo. Nunca necesitas inferir que un mercado cerró esperando a que su precio parezca obsoleto.
+
+Esta página es el mapa: qué señal se dispara cuándo, en qué superficie, y cómo mantener limpio tu estado local.
+
+## Las Dos Formas en que un Mercado Sale del Tablero
+
+Las casas de apuestas retiran mercados del tablero de dos maneras distintas, y SharpAPI refleja ambas fielmente:
+
+| Modo | Qué hace la casa | Qué emite SharpAPI |
+|------|------------------|--------------------|
+| **Eliminación** | La casa retira el mercado por completo (modo dominante — p. ej. Pinnacle retirando un peldaño de hándicap/total, DK/FD suspendiendo durante una jugada de anotación, un evento liquidándose) | El `id` de la fila aparece en `removed[]` en [`/odds/delta`](/es/api-reference/odds-delta/) y en un evento `odds:removed` en el [stream SSE](/es/api-reference/stream/) y [WebSocket](/es/api-reference/websocket/). La fila está ausente del siguiente snapshot de `/odds`. |
+| **Suspensión en el sitio** | La casa mantiene el mercado publicado pero lo marca como cerrado — el precio queda congelado y no apostable | La fila permanece presente con `is_active: false`. La transición se envía como un `odds:update` con `is_active: false`, más un evento dedicado [`odds:locked`](/es/api-reference/stream/#odds-locked) en el stream. |
+
+<Callout type="info">
+SharpAPI nunca fabrica una fila que una casa no publicó. Un mercado eliminado se señala con un evento de eliminación explícito que lleva su `id` — no con una fila de precio "cerrado" sintética. Los `id`s de cuotas son deterministas — un hash estable de casa, evento, mercado, línea y selección — así que un mercado que regresa llega bajo el **mismo `id`**, y borrar-al-eliminar más upsert-al-actualizar mantiene tu estado exactamente sincronizado con el tablero.
+</Callout>
+
+## Matriz de Señales por Superficie
+
+| Superficie | Señal de eliminación | Señal de suspensión |
+|------------|----------------------|---------------------|
+| `GET /odds` (polling de snapshots) | Fila ausente de la siguiente respuesta | `is_active: false` en la fila |
+| `GET /odds/delta` | `removed[]` — objetos `{id, sportsbook, removed_at}` | `is_active: false` en filas de `data[]` |
+| SSE `/stream` | `odds:removed` — `{ids: [...], count, book}` | `odds:update` con `is_active: false`, más `odds:locked` |
+| WebSocket | Evento `odds:removed` | `odds:update` con `is_active: false`, más `odds:locked` |
+
+**Si haces polling de `/odds` plano**, la eliminación se comunica por ausencia: compara cada snapshot con el anterior y elimina las filas cuyos `id`s ya no aparecen. Funciona, pero te obliga a *ti* a calcular el diff — para avisos de eliminación explícitos, usa `/odds/delta` (su array `removed[]` nombra cada `id` retirado desde tu último poll) o el stream (push, sin polling alguno).
+
+<Callout type="warning">
+El endpoint delta retiene las eliminaciones durante **10 minutos**. Haz polling a la cadencia recomendada (encadena `since` desde `meta.server_time`) y nunca perderás ninguna; consulta [Delta de Cuotas](/es/api-reference/odds-delta/) para los flags de seguridad `removed_truncated` y `since_clamped`.
+</Callout>
+
+## Escaleras de Umbrales: Hándicaps y Totales
+
+Los mercados de hándicap (spread) y total son **escaleras** — un conjunto de peldaños en distintas líneas (`-2.5`, `-3`, `-3.5`, …; `O/U 2.25`, `2.5`, `2.75`, …). Cuando la línea principal se mueve, las casas — Pinnacle en particular — retiran los peldaños en los umbrales antiguos y publican nuevos. Cada peldaño es su propia fila de cuotas con su propio `id`, así que:
+
+- Un **peldaño retirado** (el mercado de umbral que desaparece) dispara `odds:removed` / aparece en `removed[]`, exactamente como cualquier otra eliminación.
+- El **peldaño nuevo** llega como una fila fresca vía `odds:update` (o en el siguiente snapshot/delta), con los flags `is_main_line` / `is_alternate_line` indicándote dónde se sitúa en la escalera.
+- Un peldaño que **regresa** (común en juego en vivo — las casas recentran las escaleras constantemente) vuelve a llegar bajo el mismo `id` determinista.
+
+La rotación de la escalera es intensa durante el juego en vivo: los peldaños alternativos van y vienen muchas veces por partido. Trata una eliminación como "fuera del tablero *ahora mismo*", no como un cierre terminal — solo la liquidación del evento es definitiva.
+
+```text
+total 2.5 (id …_total_over_2.5)   ── la línea se mueve a 3 ──▶  odds:removed [..._total_over_2.5]
+                                                                odds:update  [..._total_over_3]   (peldaño nuevo)
+```
+
+### Patrón de cliente recomendado
+
+Indexa tu estado local por `id` de cuota y aplica tres reglas, en orden de eventos:
+
+1. `odds:update` (o una fila en `data[]`) → upsert de la fila.
+2. `odds:removed` (o un `id` en `removed[]`) → borrar la fila.
+3. `is_active: false` → conservar la fila pero marcarla como no apostable (atenuarla); una reapertura llega como un `odds:update` normal con `is_active: true` y un precio fresco.
+
+```python
+# Delta-polling loop: explicit removals, no client-side diffing
+since = initial_timestamp
+while True:
+    r = get(f"/api/v1/odds/delta?since={since}&sportsbook=pinnacle").json()
+    for row in r["data"]:
+        local_state[row["id"]] = row          # upsert (covers is_active flips)
+    for gone in r.get("removed", []):
+        local_state.pop(gone["id"], None)     # delete — the close signal
+    since = r["meta"]["server_time"]
+    sleep(5)
+```
+
+```javascript
+// SSE: push-based, the same three rules
+es.addEventListener('odds:update', (e) => {
+  for (const row of JSON.parse(e.data).odds) localState.set(row.id, row);
+});
+es.addEventListener('odds:removed', (e) => {
+  for (const id of JSON.parse(e.data).ids) localState.delete(id);
+});
+```
+
+## Precios Congelados y Protecciones contra Precios Obsoletos
+
+Dos flags a nivel de fila te protegen de actuar sobre un precio que la casa ya no honra:
+
+| Campo | Significado |
+|-------|-------------|
+| `is_active` | `false` = el mercado está suspendido/cerrado con el precio **congelado** en su último valor. Atenúalo; no lo apuestes, no lo alimentes a cálculos de EV. Ausente se trata como `true`. |
+| `is_stale_pregame_price` | `true` en una fila en vivo que aún lleva un precio pre-partido que no se ha movido desde el inicio — filtra con `?is_stale_pregame_price=false` si solo quieres precios reajustados en vivo. |
+
+Los propios motores de EV y arbitraje de SharpAPI excluyen las patas con `is_active: false`, de modo que los [endpoints de oportunidades](/es/api-reference/opportunities-ev/) nunca muestran una ventaja contra un precio congelado y no apostable.
+
+<Callout type="info">
+Pinnacle mayormente **elimina** los mercados suspendidos (→ `odds:removed`) y marca un subconjunto menor como cerrado en el sitio (→ `is_active: false` / `odds:locked`). Las casas minoristas de EE. UU. como DraftKings y FanDuel retiran los mercados por completo durante las jugadas de anotación — verás eliminaciones, no cambios de `is_active`. Maneja ambos modos y estarás cubierto para todas las casas.
+</Callout>
+
+## Relacionado
+
+- [Delta de Cuotas](/es/api-reference/odds-delta/) — referencia de `removed[]`, ventana de retención, patrón de polling
+- [Stream SSE](/es/api-reference/stream/) — `odds:removed`, `odds:locked`, `is_active` en `odds:update`
+- [WebSocket](/es/api-reference/websocket/) — los mismos eventos sobre WS
+- [En Vivo vs. Pre-Partido](/es/concepts/live-vs-prematch/) — comportamiento de suspensión de las casas en juego en vivo

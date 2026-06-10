@@ -133,6 +133,13 @@ while True:
       "status": "upcoming"
     }
   ],
+  "removed": [
+    {
+      "id": "225107123583533",
+      "sportsbook": "pinnacle",
+      "removed_at": "2026-02-11T12:00:18.412Z"
+    }
+  ],
   "meta": {
     "count": 1,
     "total": 1,
@@ -200,6 +207,16 @@ X-Request-Id: req_delta_abc123
 ## Schema da Resposta de Delta
 
 O array `data` contém os mesmos objetos de odds que o endpoint [`/odds`](/pt-BR/api-reference/odds/). Apenas odds atualizadas após o timestamp `since` são incluídas.
+
+### O Array `removed`
+
+O array `removed` de nível superior nomeia cada linha de odds que saiu do quadro desde o seu timestamp `since` — mercados que uma casa retirou (suspensão, um limiar de handicap/total retirado por um movimento de linha, evento liquidado). Delete esses `id`s do seu estado local; este é o sinal de fechamento explícito, então você nunca precisa comparar snapshots por conta própria. Presente apenas quando ao menos uma remoção correspondeu aos seus filtros. Veja [Ciclo de Vida do Mercado](/pt-BR/concepts/market-lifecycle/) para o mapa completo de sinais de fechamento/suspensão.
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `removed[].id` | string | O ID da odd que não está mais no quadro |
+| `removed[].sportsbook` | string | A casa que a removeu |
+| `removed[].removed_at` | string | Timestamp ISO 8601 de quando a SharpAPI observou a remoção |
 
 O objeto `meta` inclui dois campos adicionais:
 

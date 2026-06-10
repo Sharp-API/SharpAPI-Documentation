@@ -100,7 +100,7 @@ Las casas reguladas estadounidenses tienen apuestas en vivo, pero con limitacion
 **La suspensión es el problema clave.** Cuando un equipo de la NBA anota, DraftKings y FanDuel típicamente retiran sus moneylines, hándicaps y totales en vivo del tablero mientras revalorizan. Durante la acción más intensa (cuarto cuarto de un partido reñido), estas casas pueden estar suspendidas con más frecuencia de la que están abiertas. Este es un patrón regulatorio de gestión de riesgos, no una limitación de la API.
 
 <Callout type="info">
-Cuando un mercado de DK o FD está suspendido, simplemente desaparece de la API: no existe un campo `status: suspended`. Si llamas a `GET /api/v1/odds?live=true&sportsbook=draftkings` durante una jugada de anotación, puedes obtener cero resultados para ese evento aunque el partido esté en curso.
+Cuando un mercado de DK o FD está suspendido, simplemente desaparece de la API: estas casas retiran el mercado en lugar de marcarlo. La eliminación en sí se señala explícitamente: el `id` de la fila aparece en `removed[]` en [`/odds/delta`](/es/api-reference/odds-delta/) y en un evento `odds:removed` en el stream — consulta [Ciclo de Vida del Mercado](/es/concepts/market-lifecycle/). Si llamas a `GET /api/v1/odds?live=true&sportsbook=draftkings` durante una jugada de anotación, puedes obtener cero resultados para ese evento aunque el partido esté en curso.
 </Callout>
 
 ### Qué Significa Esto en la Práctica

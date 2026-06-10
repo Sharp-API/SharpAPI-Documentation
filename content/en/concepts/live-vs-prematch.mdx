@@ -100,7 +100,7 @@ US regulated books have live betting, but with important limitations:
 **Suspension is the key issue.** When an NBA team scores, DraftKings and FanDuel typically pull their live moneylines, spreads, and totals off the board while they reprice. During peak action (4th quarter of a close game), these books may be suspended more often than they are open. This is a regulatory risk-management pattern, not an API limitation.
 
 <Callout type="info">
-When a DK or FD market is suspended, it simply disappears from the API — there is no `status: suspended` field. If you call `GET /api/v1/odds?live=true&sportsbook=draftkings` during a scoring drive, you may get zero results for that event even though the game is in progress.
+When a DK or FD market is suspended, it simply disappears from the API — these books pull the market rather than flagging it. The removal itself is signaled explicitly: the row's `id` appears in `removed[]` on [`/odds/delta`](/en/api-reference/odds-delta/) and in an `odds:removed` event on the stream — see [Market Lifecycle](/en/concepts/market-lifecycle/). If you call `GET /api/v1/odds?live=true&sportsbook=draftkings` during a scoring drive, you may get zero results for that event even though the game is in progress.
 </Callout>
 
 ### What This Means in Practice

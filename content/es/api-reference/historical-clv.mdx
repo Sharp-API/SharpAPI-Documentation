@@ -1,55 +1,60 @@
 ---
-description: "GET /api/v1/historical/clv — Análisis del Valor de la Línea de Cierre (Closing Line Value) entre casas de apuestas. Compara tus precios de cierre con la probabilidad sin margen de Pinnacle para medir tu ventaja. Requiere nivel Sharp."
+description: "GET /api/v1/historical/clv — Análisis del Valor de la Línea de Cierre (Closing Line Value) de las predicciones +EV calificadas de SharpAPI, agrupado por casa de apuestas, deporte, liga, mercado, día o referencia sharp (devig_book). Nivel Enterprise."
 ---
 
 import { Callout, Tabs } from 'nextra/components'
 
 # Valor de la Línea de Cierre (CLV)
 
-Analiza cómo se comparan las cuotas de cierre de una casa de apuestas con la probabilidad sin margen (devigged) de Pinnacle. Un CLV positivo significa que la casa cerró con precios más laxos que Pinnacle — un indicador histórico de ventaja.
+Estadísticas agregadas de Valor de la Línea de Cierre para las predicciones +EV calificadas de SharpAPI. Para cada oportunidad +EV que el motor detecta, el sistema captura posteriormente la línea de cierre de la referencia sharp y califica la selección contra ella — este endpoint sirve esas calificaciones, agregadas según la dimensión que elijas (`group_by`), junto con los resultados realizados de victoria/derrota cuando se conoce el resultado del partido.
 
 ```
 GET /api/v1/historical/clv
 ```
 
 <Callout type="warning">
-**Se requiere nivel Sharp o superior.** Los niveles Pro e inferiores reciben un error `403 tier_restricted`. Este endpoint está restringido por la funcionalidad `closing_lines`.
+**Se requiere nivel Enterprise.** Los endpoints agregados `/api/v1/historical/*` están restringidos por la funcionalidad `history`. Los niveles inferiores reciben `403 tier_restricted`. Si estás en **Pro o Sharp** y quieres datos de líneas de cierre, usa [Cuotas de cierre](/es/api-reference/odds-closing/) — precios de cierre brutos por evento, disponibles en tu nivel.
 </Callout>
 
-<Callout type="info">
-**Ventana de datos de la Fase 1:** Las líneas de cierre se capturan en tiempo real cuando los partidos pasan a estar en directo. El almacén Valkey conserva los datos durante **30 días**. Los datos históricos anteriores a 30 días aún no están disponibles.
-</Callout>
+## Cómo se calcula el CLV
 
-## Cómo se capturan las líneas de cierre
-
-Cuando un partido pasa de pre-match a en directo, el servidor captura las últimas cuotas pre-match de cada casa como la línea de cierre de ese evento. El precio de cierre se devigea utilizando el **método Power** (el mismo que en el cálculo de EV) para producir una probabilidad sin margen por selección.
-
-El CLV se calcula entonces como:
+Cuando un evento pasa de pre-match a en directo, la plataforma captura el último precio pre-match de cada casa como la línea de cierre de ese evento. El precio de cierre de la **referencia sharp** (`devig_book` — normalmente Pinnacle) se devigea con el método Power para obtener una probabilidad de cierre sin margen (no-vig), y cada predicción calificada se puntúa como:
 
 ```
-CLV% = (pin_no_vig_prob - book_no_vig_prob) / book_no_vig_prob × 100
+CLV% = (closing_no_vig_prob × entry_decimal_odds − 1) × 100
 ```
 
-Donde `pin_no_vig_prob` es la probabilidad devigeada de Pinnacle (la referencia sharp) y `book_no_vig_prob` es la probabilidad devigeada de la casa soft. Un CLV% positivo significa que la casa soft cerró a un precio más favorable que la línea justa de Pinnacle.
+donde `entry_decimal_odds` es el precio en el momento en que SharpAPI detectó la oportunidad. **Un CLV positivo significa que el precio detectado batió al cierre** — podrías haber apostado a mejores cuotas que las que implicaba el valor justo final del mercado.
 
-## Autenticación
-
-Requiere API key. **Se requiere nivel Sharp o superior** (funcionalidad `closing_lines`).
+Los datos se sirven desde el almacén histórico ClickHouse. Los agregados se calculan sobre **predicciones lógicas** — los snapshots de precio repetidos de la misma selección (mismo evento, mercado, selección, casa, línea) se colapsan en una sola fila antes de contar, de modo que una selección re-observada a varios precios no se cuenta varias veces.
 
 ## Parámetros de consulta
 
 | Parámetro | Tipo | Por defecto | Descripción |
 |-----------|------|---------|-------------|
-| `from` | string | hace 7 días | Fecha de inicio (`YYYY-MM-DD` o ISO 8601). Limitada a una ventana de 30 días. |
+| `from` | string | hace 7 días | Fecha de inicio (`YYYY-MM-DD` o ISO 8601). Limitada a la ventana de histórico de tu nivel. |
 | `to` | string | hoy | Fecha de fin (`YYYY-MM-DD` o ISO 8601). |
-| `group_by` | string | `sportsbook` | Dimensión de agregación. Una de: `sportsbook`, `sport`, `league`, `market`, `day`. |
-| `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball,football`). |
-| `league` | string | todas | Filtrar por liga(s), separadas por comas (p. ej. `nba,nfl`). |
+| `group_by` | string | `sportsbook` | Dimensión de agregación. Una de: `sportsbook`, `sport`, `league`, `market`, `day`, `devig_book`. |
+| `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball,baseball`). |
+| `league` | string | todas | Filtrar por liga(s), separadas por comas (p. ej. `nba,mlb`). |
 | `sportsbook` | string | todas | Filtrar por casa(s) de apuestas, separadas por comas. |
+| `devig_book` | string | todas | Filtrar por la referencia sharp contra la que se valoró la selección (p. ej. `pinnacle`). |
 
-### Ventana de fechas
+### Ventana de histórico por nivel
 
-El nivel Sharp permite hasta **30 días** de histórico (la ventana de retención actual para los datos de líneas de cierre). Las fechas solicitadas fuera de esta ventana se limitan silenciosamente a la fecha más antigua disponible.
+Los rangos de fechas se limitan a la ventana de retroceso de tu nivel (reflejada en `meta.tier_window_days`):
+
+| Nivel | Ventana |
+|------|--------|
+| Free | 7 días |
+| Hobby | 30 días |
+| Pro | 90 días |
+| Sharp | 365 días |
+| Enterprise | Ilimitada |
+
+<Callout type="info">
+**Filtra por `devig_book=pinnacle` para obtener la señal significativa.** La validez del CLV está dominada por la referencia sharp contra la que se valoró la selección. El CLV referenciado a Pinnacle es la serie predictiva; las selecciones valoradas contra referencias de respaldo (p. ej. `bookmaker`) presentan un CLV estructuralmente negativo y no deben interpretarse como ventaja. Agrupa por `devig_book` para ver la diferencia.
+</Callout>
 
 ## Ejemplos de solicitudes
 
@@ -57,32 +62,39 @@ El nivel Sharp permite hasta **30 días** de histórico (la ventana de retenció
   <Tabs.Tab>
 ```bash
 # CLV por casa de apuestas durante los últimos 7 días
-curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?from=2026-04-10&to=2026-04-17&group_by=sportsbook" \
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?group_by=sportsbook" \
   -H "X-API-Key: YOUR_API_KEY"
 
-# CLV agrupado por deporte, solo NBA
-curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?league=nba&group_by=sport" \
+# Solo CLV referenciado a Pinnacle, agrupado por deporte
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?devig_book=pinnacle&group_by=sport" \
   -H "X-API-Key: YOUR_API_KEY"
 
-# CLV agrupado por día para DraftKings
-curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?sportsbook=draftkings&group_by=day" \
+# CLV día a día para las selecciones de DraftKings en un rango de fechas
+curl -X GET "https://api.sharpapi.io/api/v1/historical/clv?sportsbook=draftkings&group_by=day&from=2026-06-01&to=2026-06-08" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```javascript
 const params = new URLSearchParams({
-  from: '2026-04-10',
-  to: '2026-04-17',
+  devig_book: 'pinnacle',
   group_by: 'sportsbook',
 });
 const response = await fetch(
   `https://api.sharpapi.io/api/v1/historical/clv?${params}`,
   { headers: { 'X-API-Key': 'YOUR_API_KEY' } }
 );
-const { data, meta } = await response.json();
+const { data } = await response.json();
 for (const group of data.groups) {
-  console.log(`${group.group_key}: avg CLV ${group.avg_clv_percent.toFixed(2)}% (${group.samples} samples)`);
+  // avg_clv_percent, avg_ev_percent y win_rate son null cuando un grupo
+  // no tiene filas calificadas / liquidadas — comprueba antes de formatear.
+  const clv = group.avg_clv_percent !== null
+    ? `${group.avg_clv_percent.toFixed(2)}%`
+    : 'n/a';
+  const wr = group.win_rate !== null
+    ? `${(group.win_rate * 100).toFixed(1)}% over ${group.wins + group.losses} settled`
+    : 'no settled bets';
+  console.log(`${group.group_key}: avg CLV ${clv} (${group.total_graded} graded), win rate ${wr}`);
 }
 ```
   </Tabs.Tab>
@@ -92,20 +104,24 @@ import requests
 
 response = requests.get(
     'https://api.sharpapi.io/api/v1/historical/clv',
-    params={
-        'from': '2026-04-10',
-        'to': '2026-04-17',
-        'group_by': 'sportsbook',
-    },
-    headers={'X-API-Key': 'YOUR_API_KEY'}
+    params={'devig_book': 'pinnacle', 'group_by': 'sportsbook'},
+    headers={'X-API-Key': 'YOUR_API_KEY'},
 )
-data = response.json()
-for group in data['data']['groups']:
-    print(
-        f"{group['group_key']}: "
-        f"avg CLV {group['avg_clv_percent']:.2f}% "
-        f"({group['samples']} samples)"
+payload = response.json()
+for group in payload['data']['groups']:
+    # avg_clv_percent / avg_ev_percent / win_rate son None cuando un grupo
+    # no tiene filas calificadas / liquidadas — comprueba antes de formatear.
+    clv = (
+        f"{group['avg_clv_percent']:.2f}%"
+        if group['avg_clv_percent'] is not None else 'n/a'
     )
+    settled = group['wins'] + group['losses']
+    wr = (
+        f"{group['win_rate'] * 100:.1f}% over {settled} settled"
+        if group['win_rate'] is not None else 'no settled bets'
+    )
+    print(f"{group['group_key']}: avg CLV {clv} "
+          f"({group['total_graded']} graded), win rate {wr}")
 ```
   </Tabs.Tab>
 </Tabs>
@@ -118,74 +134,54 @@ for group in data['data']['groups']:
 {
   "success": true,
   "data": {
+    "date_range": {
+      "from": "2026-06-03T14:12:30.437",
+      "to": "2026-06-10T14:12:30.437"
+    },
     "group_by": "sportsbook",
     "groups": [
       {
-        "group_key": "draftkings",
-        "samples": 312,
-        "avg_clv_percent": 1.42,
-        "avg_abs_clv_percent": 2.18,
-        "distinct_books": 1,
-        "distinct_sports": 4
+        "group_key": "novig",
+        "total_graded": 1294,
+        "wins": 262,
+        "losses": 200,
+        "win_rate": 0.5670995670995671,
+        "avg_clv_percent": 0.673342797764432,
+        "avg_ev_percent": 1.613983921390446,
+        "total_predictions": 1555
       },
       {
-        "group_key": "fanduel",
-        "samples": 289,
-        "avg_clv_percent": 0.87,
-        "avg_abs_clv_percent": 1.95,
-        "distinct_books": 1,
-        "distinct_sports": 4
-      },
-      {
-        "group_key": "betmgm",
-        "samples": 201,
-        "avg_clv_percent": -0.21,
-        "avg_abs_clv_percent": 1.74,
-        "distinct_books": 1,
-        "distinct_sports": 3
+        "group_key": "prophetx",
+        "total_graded": 964,
+        "wins": 191,
+        "losses": 214,
+        "win_rate": 0.47160493827160493,
+        "avg_clv_percent": 0.07641414602522267,
+        "avg_ev_percent": 1.4343012769214647,
+        "total_predictions": 1331
       }
-    ],
-    "date_range": {
-      "from": "2026-04-10T00:00:00.000",
-      "to": "2026-04-17T00:00:00.000"
-    },
-    "total_events": 58,
-    "comparable_events": 51,
-    "sharp_reference": "pinnacle"
+    ]
   },
   "meta": {
-    "source": "valkey:closing_line",
-    "tier_window_days": 30,
-    "phase": "1",
     "filters": {
-      "sport": null,
+      "devig_book": null,
+      "group_by": "sportsbook",
       "league": null,
-      "sportsbook": null,
-      "group_by": "sportsbook"
+      "sport": null,
+      "sportsbook": null
     },
-    "updated_at": "2026-04-17T20:00:00.000000000Z"
+    "source": "clickhouse",
+    "tier_window_days": "unlimited",
+    "updated_at": "2026-06-10T14:12:58.75061216Z"
   }
 }
 ```
 
-**Resultado vacío (sin datos de línea de cierre todavía):**
+Un array `groups` vacío es una respuesta válida cuando no existen predicciones calificadas para los filtros y el rango de fechas solicitados — no es un error.
 
-```json
-{
-  "success": true,
-  "data": {
-    "group_by": "sportsbook",
-    "groups": [],
-    "date_range": { "from": "...", "to": "..." },
-    "total_events": 0,
-    "comparable_events": 0,
-    "sharp_reference": "pinnacle"
-  },
-  "meta": { "source": "valkey:closing_line", "phase": "1", ... }
-}
-```
-
-Un array `groups` vacío es una respuesta válida cuando no se han capturado datos de línea de cierre para el rango de fechas solicitado — no es un error.
+<Callout type="warning">
+**Tres recuentos distintos — no mezcles denominadores.** `total_predictions` cuenta todas las selecciones rastreadas (incluidas las que nunca se calificaron). `total_graded` cuenta las selecciones con una **calificación de CLV** (se capturó y comparó una línea de cierre). `wins + losses` cuenta el subconjunto, normalmente más pequeño, cuyo **resultado del partido** también está liquidado — y `win_rate` se calcula solo sobre ese subconjunto. Un grupo puede mostrar legítimamente `total_graded: 1294` junto a `wins + losses: 462`. `win_rate` es `null` cuando un grupo no tiene apuestas liquidadas.
+</Callout>
 
 ### Respuestas de error
 
@@ -194,9 +190,10 @@ Un array `groups` vacío es una respuesta válida cuando no se han capturado dat
 {
   "error": {
     "code": "tier_restricted",
-    "message": "The 'closing_lines' feature requires Sharp or higher.",
-    "required_tier": "sharp",
-    "docs": "https://docs.sharpapi.io/en/pricing"
+    "message": "This endpoint requires Enterprise tier or higher",
+    "docs": "https://sharpapi.io/pricing",
+    "tier": "pro",
+    "required_tier": "enterprise"
   }
 }
 ```
@@ -206,7 +203,7 @@ Un array `groups` vacío es una respuesta válida cuando no se han capturado dat
 {
   "error": {
     "code": "validation_error",
-    "message": "Invalid group_by. Must be one of: day, league, market, sport, sportsbook"
+    "message": "Invalid group_by. Must be one of: day, devig_book, league, market, sport, sportsbook"
   }
 }
 ```
@@ -217,31 +214,30 @@ Un array `groups` vacío es una respuesta válida cuando no se han capturado dat
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `group_by` | string | La dimensión utilizada para la agregación |
-| `groups` | array | Array de filas de grupo, ordenadas por `samples` de forma descendente |
 | `date_range` | object | `from`/`to` reales utilizados tras la limitación por nivel |
-| `total_events` | integer | Total de eventos encontrados en el rango de fechas (antes del filtro de Pinnacle) |
-| `comparable_events` | integer | Eventos con una línea de cierre de Pinnacle disponible para comparación |
-| `sharp_reference` | string | Casa sharp utilizada como referencia de cuotas justas (`"pinnacle"`) |
+| `group_by` | string | La dimensión utilizada para la agregación |
+| `groups` | array | Array de filas de grupo |
 
 ### Campos de la fila de grupo
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `group_key` | string | El identificador del grupo (nombre de la casa de apuestas, deporte, liga, tipo de mercado o fecha YYYY-MM-DD) |
-| `samples` | integer | Número de comparaciones de líneas de cierre en este grupo |
-| `avg_clv_percent` | number | CLV% medio de todas las muestras. Positivo = la casa cerró más laxa que Pinnacle. |
-| `avg_abs_clv_percent` | number | CLV% absoluto medio (medida de eficiencia de mercado independiente de la dirección) |
-| `distinct_books` | integer | Número de casas de apuestas distintas en este grupo |
-| `distinct_sports` | integer | Número de deportes distintos en este grupo |
+| `group_key` | string | El identificador del grupo (nombre de la casa de apuestas, deporte, liga, tipo de mercado, fecha `YYYY-MM-DD` o devig book) |
+| `total_graded` | integer | Predicciones lógicas con una calificación de CLV (línea de cierre capturada y comparada) |
+| `wins` | integer | Predicciones calificadas cuyo resultado del partido se liquidó como victoria |
+| `losses` | integer | Predicciones calificadas cuyo resultado del partido se liquidó como derrota |
+| `win_rate` | number \| null | `wins / (wins + losses)`. Calculado solo sobre el subconjunto liquidado; `null` cuando no existen apuestas liquidadas en el grupo |
+| `avg_clv_percent` | number \| null | CLV% medio de las predicciones calificadas. Positivo = los precios detectados batieron al cierre en promedio. `null` cuando no es calculable |
+| `avg_ev_percent` | number \| null | Valor esperado % medio en el momento de la detección para las predicciones del grupo. `null` cuando no es calculable |
+| `total_predictions` | integer | Todas las predicciones rastreadas en el grupo, incluidas las que (todavía) no han sido calificadas |
 
 ### Objeto `meta`
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `source` | string | Siempre `"valkey:closing_line"` (backend de la Fase 1) |
-| `tier_window_days` | integer | Días máximos de retroceso para tu nivel (Sharp = 30) |
-| `phase` | string | `"1"` — captura en tiempo real desde las transiciones a en directo. Backfill desde ClickHouse previsto para la Fase 2. |
+| `filters` | object | Eco de los filtros aplicados (`sport`, `league`, `sportsbook`, `devig_book`, `group_by`); `null` para los filtros no utilizados |
+| `source` | string | `"clickhouse"` — el almacén de analítica histórica |
+| `tier_window_days` | integer \| string | Retroceso máximo para tu nivel (p. ej. `90`), o `"unlimited"` |
 | `updated_at` | string | Marca de tiempo de la respuesta en formato ISO 8601 |
 
 ---
@@ -250,15 +246,23 @@ Un array `groups` vacío es una respuesta válida cuando no se han capturado dat
 
 | CLV% | Interpretación |
 |------|----------------|
-| **> +2%** | La casa cerró sistemáticamente con precios significativamente más laxos que las líneas sharp — alto valor capturado |
-| **+0,5% a +2%** | La casa cerró ligeramente laxa — típico de las casas recreativas |
-| **-0,5% a +0,5%** | Cierre próximo al mercado — eficiente o mixto |
-| **< -0,5%** | La casa se ajustó hacia el cierre — puede indicar persecución de steam o acción del lado sharp |
+| **> +2%** | Los precios detectados batieron sistemáticamente al cierre por un margen amplio — alto valor capturado |
+| **+0,5% a +2%** | Los precios batieron modestamente al cierre — típico de las casas soft frente a una referencia sharp |
+| **-0,5% a +0,5%** | Próximo al mercado — precios eficientes o resultados mixtos |
+| **< -0,5%** | Los precios se ajustaron hacia el cierre — steam tardío o acción del lado sharp |
 
-Un CLV medio positivo en tus apuestas es el indicador más sólido de que estás apostando a precios ineficientes. Sobre una muestra grande, un CLV positivo predice fuertemente un ROI positivo.
+<Callout type="info">
+**El CLV no es ROI — léelo con las salvedades adecuadas.**
+
+- **La eficiencia del mercado varía.** En los mercados más sharp y líquidos (por ejemplo los spreads y totales de la NBA, y los props de jugador de las grandes ligas), batir al cierre **no** se convierte de forma fiable en beneficio realizado — allí, batir la línea de cierre suele reflejar ruido en un mercado eficiente más que ventaja. En mercados más soft, un CLV positivo sigue siendo el mejor indicador adelantado de rentabilidad a largo plazo.
+- **Usa `win_rate` junto con `avg_clv_percent`.** El endpoint devuelve resultados realizados exactamente por esta razón: un grupo con CLV positivo pero con un historial liquidado por debajo del punto de equilibrio sobre una muestra grande te está diciendo que el CLV ahí no se está convirtiendo.
+- **Cuidado con el tamaño de la muestra.** Los grupos con un `total_graded` pequeño o pocas apuestas liquidadas (`wins + losses`) son ruido — compara grupos solo con un volumen significativo.
+- **La referencia sharp importa.** Solo el CLV referenciado a una casa sharp (filtra `devig_book=pinnacle`) tiene este significado; las filas referenciadas a respaldos no.
+</Callout>
 
 ## Endpoints relacionados
 
-- [Cuotas de cierre por fecha](/es/api-reference/historical-odds-closing/) — Precios de cierre brutos por evento para una fecha determinada
+- [Cuotas de cierre](/es/api-reference/odds-closing/) — Precios de cierre brutos por evento (nivel Pro y superiores)
+- [Cuotas de cierre por fecha](/es/api-reference/historical-odds-closing/) — Precios de cierre históricos por evento para una fecha determinada
 - [Oportunidades +EV](/es/api-reference/opportunities-ev/) — Apuestas de valor esperado positivo en tiempo real
 - [Snapshot de cuotas](/es/api-reference/odds/) — Cuotas pre-match y en directo actuales

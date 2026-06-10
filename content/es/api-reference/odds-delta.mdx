@@ -133,6 +133,13 @@ while True:
       "status": "upcoming"
     }
   ],
+  "removed": [
+    {
+      "id": "225107123583533",
+      "sportsbook": "pinnacle",
+      "removed_at": "2026-02-11T12:00:18.412Z"
+    }
+  ],
   "meta": {
     "count": 1,
     "total": 1,
@@ -200,6 +207,16 @@ X-Request-Id: req_delta_abc123
 ## Esquema de Respuesta del Delta
 
 El array `data` contiene los mismos objetos de cuotas que el endpoint [`/odds`](/es/api-reference/odds/). Solo se incluyen las cuotas actualizadas después de la marca de tiempo `since`.
+
+### El Array `removed`
+
+El array `removed` de nivel superior nombra cada fila de cuotas que salió del tablero desde tu marca de tiempo `since` — mercados que una casa retiró (suspensión, un umbral de hándicap/total retirado por un movimiento de línea, evento liquidado). Borra estos `id`s de tu estado local; esta es la señal de cierre explícita, así que nunca necesitas comparar snapshots tú mismo. Presente solo cuando al menos una eliminación coincidió con tus filtros. Consulta [Ciclo de Vida del Mercado](/es/concepts/market-lifecycle/) para el mapa completo de señales de cierre/suspensión.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `removed[].id` | string | El ID de la cuota que ya no está en el tablero |
+| `removed[].sportsbook` | string | La casa que la eliminó |
+| `removed[].removed_at` | string | Marca de tiempo ISO 8601 de cuándo SharpAPI observó la eliminación |
 
 El objeto `meta` incluye dos campos adicionales:
 

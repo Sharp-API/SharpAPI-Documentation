@@ -100,7 +100,7 @@ US-regulierte Buchmacher bieten Live-Wetten an, jedoch mit wichtigen Einschränk
 **Aussetzungen sind das Hauptproblem.** Wenn ein NBA-Team punktet, ziehen DraftKings und FanDuel typischerweise ihre Live-Moneylines, Spreads und Totals vom Brett, während sie neu bepreisen. In Hochphasen (4. Viertel eines knappen Spiels) können diese Buchmacher häufiger ausgesetzt als geöffnet sein. Dies ist ein regulatorisches Risikomanagement-Muster, keine API-Einschränkung.
 
 <Callout type="info">
-Wenn ein DK- oder FD-Markt ausgesetzt ist, verschwindet er einfach aus der API — es gibt kein `status: suspended`-Feld. Wenn Sie `GET /api/v1/odds?live=true&sportsbook=draftkings` während eines Punktezugs aufrufen, erhalten Sie möglicherweise keine Ergebnisse für dieses Event, obwohl das Spiel läuft.
+Wenn ein DK- oder FD-Markt ausgesetzt ist, verschwindet er einfach aus der API — diese Buchmacher ziehen den Markt zurück, statt ihn zu markieren. Die Entfernung selbst wird explizit signalisiert: Die `id` der Zeile erscheint in `removed[]` bei [`/odds/delta`](/de/api-reference/odds-delta/) und in einem `odds:removed`-Event auf dem Stream — siehe [Markt-Lebenszyklus](/de/concepts/market-lifecycle/). Wenn Sie `GET /api/v1/odds?live=true&sportsbook=draftkings` während eines Punktezugs aufrufen, erhalten Sie möglicherweise keine Ergebnisse für dieses Event, obwohl das Spiel läuft.
 </Callout>
 
 ### Was das in der Praxis bedeutet

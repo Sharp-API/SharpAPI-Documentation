@@ -1,0 +1,107 @@
+---
+description: "Wie SharpAPI Marktschließungen, Aussetzungen und Entfernungen signalisiert — die expliziten Schlusssignale auf jeder Oberfläche (REST, Delta, SSE, WebSocket), wie Threshold-Leitern rotieren und wie Sie Ihren lokalen Zustand frei von veralteten Quoten halten."
+---
+
+import { Callout } from 'nextra/components'
+
+# Markt-Lebenszyklus: Aussetzungen und Entfernungen
+
+Märkte verschwinden ständig vom Board — ein Buchmacher setzt nach einem Tor aus, zieht eine Handicap- oder Total-Linie zurück, wenn sich die Hauptlinie bewegt, oder rechnet das Event ab. SharpAPI signalisiert jeden dieser Übergänge **explizit** auf jeder Konsumoberfläche. Sie müssen nie daraus schließen, dass ein Markt geschlossen wurde, indem Sie warten, bis sein Preis veraltet aussieht.
+
+Diese Seite ist die Übersicht: welches Signal wann ausgelöst wird, auf welcher Oberfläche, und wie Sie Ihren lokalen Zustand sauber halten.
+
+## Die zwei Arten, wie ein Markt das Board verlässt
+
+Sportwettenanbieter nehmen Märkte auf zwei unterschiedliche Arten vom Board, und SharpAPI spiegelt beide originalgetreu wider:
+
+| Modus | Was der Buchmacher tut | Was SharpAPI sendet |
+|-------|------------------------|---------------------|
+| **Entfernung** | Der Buchmacher nimmt den Markt vollständig herunter (dominanter Modus — z. B. Pinnacle zieht eine Handicap-/Total-Sprosse zurück, DK/FD setzen während eines Punktezugs aus, ein Event wird abgerechnet) | Die `id` der Zeile erscheint in `removed[]` bei [`/odds/delta`](/de/api-reference/odds-delta/) und in einem `odds:removed`-Event auf dem [SSE-Stream](/de/api-reference/stream/) und [WebSocket](/de/api-reference/websocket/). Die Zeile fehlt im nächsten `/odds`-Snapshot. |
+| **Aussetzung an Ort und Stelle** | Der Buchmacher lässt den Markt gelistet, markiert ihn aber als geschlossen — der Preis ist eingefroren und nicht wettbar | Die Zeile bleibt vorhanden mit `is_active: false`. Der Übergang wird als `odds:update` mit `is_active: false` gepusht, plus ein dediziertes [`odds:locked`](/de/api-reference/stream/#odds-locked)-Event auf dem Stream. |
+
+<Callout type="info">
+SharpAPI erfindet nie eine Zeile, die ein Buchmacher nicht veröffentlicht hat. Ein entfernter Markt wird durch ein explizites Entfernungs-Event mit seiner `id` signalisiert — nicht durch eine synthetische "geschlossen"-Preiszeile. Quoten-`id`s sind deterministisch — ein stabiler Hash aus Buchmacher, Event, Markt, Linie und Auswahl — sodass ein zurückkehrender Markt unter der **gleichen `id`** wieder eintrifft, und Löschen-bei-Entfernung plus Upsert-bei-Update hält Ihren Zustand exakt synchron mit dem Board.
+</Callout>
+
+## Signal-Matrix nach Oberfläche
+
+| Oberfläche | Entfernungssignal | Aussetzungssignal |
+|------------|-------------------|-------------------|
+| `GET /odds` (Snapshot-Polling) | Zeile fehlt in der nächsten Antwort | `is_active: false` auf der Zeile |
+| `GET /odds/delta` | `removed[]` — `{id, sportsbook, removed_at}`-Objekte | `is_active: false` auf Zeilen in `data[]` |
+| SSE `/stream` | `odds:removed` — `{ids: [...], count, book}` | `odds:update` mit `is_active: false`, plus `odds:locked` |
+| WebSocket | `odds:removed`-Event | `odds:update` mit `is_active: false`, plus `odds:locked` |
+
+**Wenn Sie nur `/odds` pollen**, wird die Entfernung durch Abwesenheit kommuniziert: Vergleichen Sie jeden Snapshot mit dem vorherigen und entfernen Sie Zeilen, deren `id`s nicht mehr erscheinen. Das funktioniert, aber *Sie* müssen den Diff selbst berechnen — für explizite Entfernungsmeldungen nutzen Sie `/odds/delta` (dessen `removed[]`-Array jede seit Ihrem letzten Poll entfernte `id` benennt) oder den Stream (Push, gar kein Polling).
+
+<Callout type="warning">
+Der Delta-Endpunkt hält Entfernungen **10 Minuten** vor. Pollen Sie in der empfohlenen Kadenz (verketten Sie `since` aus `meta.server_time`), und Sie verpassen keine einzige; siehe [Quoten-Delta](/de/api-reference/odds-delta/) zu den Sicherheits-Flags `removed_truncated` und `since_clamped`.
+</Callout>
+
+## Threshold-Leitern: Handicaps und Totals
+
+Handicap- (Spread-) und Total-Märkte sind **Leitern** — eine Menge von Sprossen auf verschiedenen Linien (`-2.5`, `-3`, `-3.5`, …; `O/U 2.25`, `2.5`, `2.75`, …). Wenn sich die Hauptlinie bewegt, ziehen Buchmacher — insbesondere Pinnacle — Sprossen an den alten Schwellenwerten zurück und veröffentlichen neue. Jede Sprosse ist eine eigene Quotenzeile mit eigener `id`, daher:
+
+- Eine **zurückgezogene Sprosse** (der verschwindende Threshold-Markt) löst `odds:removed` aus / erscheint in `removed[]`, genau wie jede andere Entfernung.
+- Die **neue Sprosse** trifft als frische Zeile via `odds:update` ein (oder im nächsten Snapshot/Delta), mit den Flags `is_main_line` / `is_alternate_line`, die Ihnen sagen, wo sie in der Leiter sitzt.
+- Eine **zurückkehrende** Sprosse (häufig im Live-Spiel — Buchmacher zentrieren Leitern ständig neu) trifft unter der gleichen deterministischen `id` wieder ein.
+
+Die Leiterrotation ist während des Live-Spiels intensiv: alternative Sprossen kommen und gehen viele Male pro Spiel. Behandeln Sie eine Entfernung als "gerade *jetzt* nicht auf dem Board", nicht als endgültige Schließung — nur die Event-Abrechnung ist final.
+
+```text
+total 2.5 (id …_total_over_2.5)   ── Linie bewegt sich auf 3 ──▶  odds:removed [..._total_over_2.5]
+                                                                  odds:update  [..._total_over_3]   (neue Sprosse)
+```
+
+### Empfohlenes Client-Muster
+
+Indizieren Sie Ihren lokalen Zustand nach Quoten-`id` und wenden Sie drei Regeln in Event-Reihenfolge an:
+
+1. `odds:update` (oder eine Zeile in `data[]`) → Zeile upserten.
+2. `odds:removed` (oder eine `id` in `removed[]`) → Zeile löschen.
+3. `is_active: false` → Zeile behalten, aber als nicht wettbar markieren (ausgrauen); eine Wiedereröffnung trifft als normales `odds:update` mit `is_active: true` und einem frischen Preis ein.
+
+```python
+# Delta-polling loop: explicit removals, no client-side diffing
+since = initial_timestamp
+while True:
+    r = get(f"/api/v1/odds/delta?since={since}&sportsbook=pinnacle").json()
+    for row in r["data"]:
+        local_state[row["id"]] = row          # upsert (covers is_active flips)
+    for gone in r.get("removed", []):
+        local_state.pop(gone["id"], None)     # delete — the close signal
+    since = r["meta"]["server_time"]
+    sleep(5)
+```
+
+```javascript
+// SSE: push-based, the same three rules
+es.addEventListener('odds:update', (e) => {
+  for (const row of JSON.parse(e.data).odds) localState.set(row.id, row);
+});
+es.addEventListener('odds:removed', (e) => {
+  for (const id of JSON.parse(e.data).ids) localState.delete(id);
+});
+```
+
+## Eingefrorene Preise und Schutz vor veralteten Preisen
+
+Zwei Flags auf Zeilenebene schützen Sie davor, auf einen Preis zu reagieren, den der Buchmacher nicht mehr anbietet:
+
+| Feld | Bedeutung |
+|------|-----------|
+| `is_active` | `false` = der Markt ist ausgesetzt/geschlossen, der Preis ist auf seinem letzten Wert **eingefroren**. Ausgrauen; nicht wetten, nicht in EV-Berechnungen einspeisen. Fehlend bedeutet `true`. |
+| `is_stale_pregame_price` | `true` auf einer Live-Zeile, die noch einen Pre-Game-Preis trägt, der sich seit Anpfiff nicht bewegt hat — filtern Sie mit `?is_stale_pregame_price=false`, wenn Sie nur in-play neu bepreiste Quoten wollen. |
+
+SharpAPIs eigene EV- und Arbitrage-Engines schließen `is_active: false`-Legs aus, sodass die [Opportunity-Endpunkte](/de/api-reference/opportunities-ev/) nie eine Edge gegen einen eingefrorenen, nicht wettbaren Preis ausweisen.
+
+<Callout type="info">
+Pinnacle **entfernt** ausgesetzte Märkte überwiegend (→ `odds:removed`) und markiert eine kleinere Teilmenge als an Ort und Stelle geschlossen (→ `is_active: false` / `odds:locked`). US-Retail-Buchmacher wie DraftKings und FanDuel ziehen Märkte während Punktezügen vollständig zurück — Sie sehen Entfernungen, keine `is_active`-Wechsel. Behandeln Sie beide Modi, und Sie sind für jeden Buchmacher abgedeckt.
+</Callout>
+
+## Verwandte Themen
+
+- [Quoten-Delta](/de/api-reference/odds-delta/) — `removed[]`-Referenz, Aufbewahrungsfenster, Polling-Muster
+- [SSE-Stream](/de/api-reference/stream/) — `odds:removed`, `odds:locked`, `is_active` auf `odds:update`
+- [WebSocket](/de/api-reference/websocket/) — dieselben Events über WS
+- [Live vs. Pre-Match](/de/concepts/live-vs-prematch/) — Aussetzungsverhalten der Buchmacher im Live-Spiel

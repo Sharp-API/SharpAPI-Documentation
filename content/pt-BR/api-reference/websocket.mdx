@@ -244,7 +244,7 @@ Snapshot de odds por sportsbook. Enviado uma vez por sportsbook quando o canal `
 ```
 
 <Callout type="info">
-As odds são divididas em chunks por sportsbook — você receberá uma mensagem `initial` por book. Books grandes podem ser divididos em múltiplas mensagens (até 1000 odds cada). Se você não precisa de odds brutas, omita o canal `odds` para pular isso inteiramente.
+As odds são divididas em chunks por sportsbook — você receberá uma mensagem `initial` por book. Books grandes podem ser divididos em múltiplas mensagens (cada frame é limitado a 256KB serializados). Se você não precisa de odds brutas, omita o canal `odds` para pular isso inteiramente.
 </Callout>
 
 #### `snapshot:complete`
@@ -591,6 +591,7 @@ Os frames WebSocket também podem carregar os códigos no estilo HTTP `invalid_a
 |--------|-------------|-----------|
 | `1000` | Fechamento normal | Fechamento limpo iniciado pelo cliente ou servidor |
 | `1006` | Fechamento anormal (lado do cliente) | Queda de rede ou kill do processo — sempre reconecte |
+| `1009` | Mensagem grande demais (lado do cliente) | O limite de mensagem recebida da sua biblioteca está abaixo dos 256KB do frame de snapshot — aumente-o (ex.: `max_size` do `websockets` do Python) para pelo menos 512KB |
 | `4001` | Falha de autenticação | Verifique sua API key |
 | `4003` | Sem acesso a streaming | Adicione o add-on de WebSocket ($99/mês) ou faça upgrade para Enterprise |
 | `4029` | Limite de streams excedido | Feche conexões não utilizadas (padrão: 1 por chave; conexão mais nova vence) |

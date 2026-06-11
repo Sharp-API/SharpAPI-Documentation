@@ -106,7 +106,7 @@ Beim Verbindungsaufbau erhalten Sie Nachrichten in folgender Reihenfolge:
 5. **`snapshot:complete`** -- Signalisiert, dass alle initialen Daten gesendet wurden
 
 <Callout type="info">
-**Snapshot-Chunking:** Große Snapshots werden auf mehrere Frames aufgeteilt, um Backpressure zu vermeiden. Quoten-Snapshots werden in Chunks von 1.000 Elementen pro Frame und Opportunitäts-Snapshots in Chunks von 300 Elementen pro Frame aufgeteilt. Warten Sie auf `snapshot:complete`, bevor Sie die initialen Daten als vollständig geladen betrachten.
+**Snapshot-Chunking & Frame-Größe:** Große Snapshots werden auf mehrere Frames aufgeteilt, um Backpressure zu vermeiden. Jeder Snapshot-Frame ist auf 256KB (serialisiert) begrenzt; Quoten-Snapshots werden zusätzlich pro Sportsbook aufgeteilt, Opportunitäts-Snapshots in bis zu 300 Elemente pro Frame. Warten Sie auf `snapshot:complete`, bevor Sie die initialen Daten als vollständig geladen betrachten. Falls Ihre Client-Bibliothek eine maximale Größe für eingehende Nachrichten erzwingt, belassen Sie diese bei mindestens 512KB — der 1MB-Standard von Python `websockets` (`max_size=2**20`) ist ausreichend. Ein Client mit einem Limit unter 256KB schließt mitten im Snapshot mit `1009 (message too big)` und gerät in eine Reconnect-Schleife, ohne jemals Daten zu empfangen.
 </Callout>
 
 Danach erhalten Sie inkrementelle Updates für Ihre abonnierten Kanäle:

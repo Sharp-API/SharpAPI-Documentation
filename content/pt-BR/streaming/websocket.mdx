@@ -106,7 +106,7 @@ Ao conectar, você recebe mensagens nesta ordem:
 5. **`snapshot:complete`** -- Sinaliza que todos os dados iniciais foram enviados
 
 <Callout type="info">
-**Fragmentação de snapshot:** Snapshots grandes são divididos em múltiplos frames para evitar backpressure. Snapshots de odds são fragmentados em 1.000 itens por frame, e snapshots de oportunidades em 300 itens por frame. Aguarde `snapshot:complete` antes de tratar os dados iniciais como totalmente carregados.
+**Fragmentação de snapshot e tamanho de frame:** Snapshots grandes são divididos em múltiplos frames para evitar backpressure. Cada frame de snapshot é limitado a 256KB serializados; snapshots de odds são divididos adicionalmente por sportsbook, e snapshots de oportunidades em até 300 itens por frame. Aguarde `snapshot:complete` antes de tratar os dados iniciais como totalmente carregados. Se a sua biblioteca cliente impõe um tamanho máximo de mensagem recebida, mantenha-o em 512KB ou mais — o padrão de 1MB do `websockets` do Python (`max_size=2**20`) é suficiente. Um cliente com limite abaixo de 256KB fecha com `1009 (message too big)` no meio do snapshot e entrará em um loop de reconexão sem nunca receber dados.
 </Callout>
 
 Depois disso, você recebe atualizações incrementais para os canais inscritos:

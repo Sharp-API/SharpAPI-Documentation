@@ -244,7 +244,7 @@ Snapshot de cuotas por sportsbook. Se envía una vez por sportsbook cuando el ca
 ```
 
 <Callout type="info">
-Las cuotas se fragmentan por sportsbook — recibirás un mensaje `initial` por book. Los books grandes pueden dividirse en varios mensajes (hasta 1000 cuotas cada uno). Si no necesitas las cuotas brutas, omite el canal `odds` para saltarlas por completo.
+Las cuotas se fragmentan por sportsbook — recibirás un mensaje `initial` por book. Los books grandes pueden dividirse en varios mensajes (cada frame está limitado a 256KB serializados). Si no necesitas las cuotas brutas, omite el canal `odds` para saltarlas por completo.
 </Callout>
 
 #### `snapshot:complete`
@@ -591,6 +591,7 @@ Los frames WebSocket también pueden transportar los códigos al estilo HTTP `in
 |------|---------|------------|
 | `1000` | Cierre normal | Cierre limpio iniciado por el cliente o el servidor |
 | `1006` | Cierre anormal (lado cliente) | Caída de red o terminación del proceso — reconectar siempre |
+| `1009` | Mensaje demasiado grande (lado cliente) | El límite de tamaño de mensaje entrante de tu librería está por debajo de los 256KB del frame de snapshot — súbelo (p. ej. `max_size` de Python `websockets`) a 512KB como mínimo |
 | `4001` | Fallo de autenticación | Comprueba tu API key |
 | `4003` | Sin acceso al streaming | Añade el complemento WebSocket (99 $/mes) o actualiza a Enterprise |
 | `4029` | Límite de streams superado | Cierra las conexiones no utilizadas (por defecto: 1 por clave; gana la conexión más reciente) |

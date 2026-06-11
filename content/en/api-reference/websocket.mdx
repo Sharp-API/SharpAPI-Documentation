@@ -244,7 +244,7 @@ Per-sportsbook odds snapshot. Sent once per sportsbook when the `odds` channel i
 ```
 
 <Callout type="info">
-Odds are chunked by sportsbook — you will receive one `initial` message per book. Large books may be split across multiple messages (up to 1000 odds each). If you don't need raw odds, omit the `odds` channel to skip this entirely.
+Odds are chunked by sportsbook — you will receive one `initial` message per book. Large books may be split across multiple messages (each frame is capped at 256KB serialized). If you don't need raw odds, omit the `odds` channel to skip this entirely.
 </Callout>
 
 #### `snapshot:complete`
@@ -608,6 +608,7 @@ WebSocket frames may also carry the HTTP-style `invalid_api_key`, `tier_restrict
 |------|---------|------------|
 | `1000` | Normal close | Client or server initiated clean close |
 | `1006` | Abnormal closure (client-side) | Network drop or process kill — always reconnect |
+| `1009` | Message too big (client-side) | Your library's incoming-message cap is below the 256KB snapshot frame size — raise it (e.g. Python `websockets` `max_size`) to at least 512KB |
 | `4001` | Authentication failure | Check your API key |
 | `4003` | No streaming access | Add WebSocket add-on ($99/mo) or upgrade to Enterprise |
 | `4029` | Stream limit exceeded | Close unused connections (default: 1 per key; newer connection wins) |

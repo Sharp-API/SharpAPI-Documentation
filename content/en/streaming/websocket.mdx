@@ -106,7 +106,7 @@ On connect you receive messages in order:
 5. **`snapshot:complete`** -- Signals all initial data has been sent
 
 <Callout type="info">
-**Snapshot chunking:** Large snapshots are split across multiple frames to prevent backpressure. Odds snapshots are chunked at 1,000 items per frame, and opportunity snapshots at 300 items per frame. Wait for `snapshot:complete` before treating the initial data as fully loaded.
+**Snapshot chunking & frame size:** Large snapshots are split across multiple frames to prevent backpressure. Every snapshot frame is capped at 256KB serialized; odds snapshots are additionally split per sportsbook, and opportunity snapshots at up to 300 items per frame. Wait for `snapshot:complete` before treating the initial data as fully loaded. If your client library enforces a maximum incoming-message size, leave it at 512KB or higher — Python `websockets`' 1MB default (`max_size=2**20`) is fine. A client capped below 256KB closes with `1009 (message too big)` mid-snapshot and will reconnect-loop without ever receiving data.
 </Callout>
 
 After that, you receive incremental updates for your subscribed channels:

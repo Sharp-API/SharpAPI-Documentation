@@ -244,7 +244,7 @@ Quoten-Snapshot pro Sportsbook. Wird einmal pro Sportsbook gesendet, wenn der `o
 ```
 
 <Callout type="info">
-Quoten werden nach Sportsbook in Chunks aufgeteilt — Sie erhalten eine `initial`-Nachricht pro Buch. Große Bücher können auf mehrere Nachrichten aufgeteilt werden (bis zu 1000 Quoten pro Nachricht). Wenn Sie keine Rohquoten benötigen, lassen Sie den `odds`-Channel weg, um diesen Schritt vollständig zu überspringen.
+Quoten werden nach Sportsbook in Chunks aufgeteilt — Sie erhalten eine `initial`-Nachricht pro Buch. Große Bücher können auf mehrere Nachrichten aufgeteilt werden (jeder Frame ist auf 256KB serialisiert begrenzt). Wenn Sie keine Rohquoten benötigen, lassen Sie den `odds`-Channel weg, um diesen Schritt vollständig zu überspringen.
 </Callout>
 
 #### `snapshot:complete`
@@ -591,6 +591,7 @@ WebSocket-Frames können auch die HTTP-ähnlichen Codes `invalid_api_key`, `tier
 |------|---------|------------|
 | `1000` | Normales Schließen | Vom Client oder Server initiiertes sauberes Schließen |
 | `1006` | Abnormales Schließen (clientseitig) | Netzwerkabbruch oder Prozesstermination — immer neu verbinden |
+| `1009` | Nachricht zu groß (clientseitig) | Das Limit Ihrer Bibliothek für eingehende Nachrichten liegt unter der Snapshot-Frame-Größe von 256KB — erhöhen Sie es (z. B. Python `websockets` `max_size`) auf mindestens 512KB |
 | `4001` | Authentifizierungsfehler | API key prüfen |
 | `4003` | Kein Streaming-Zugang | WebSocket Add-on (99 $/Monat) hinzufügen oder auf Enterprise upgraden |
 | `4029` | Stream-Limit überschritten | Ungenutzte Verbindungen schließen (Standard: 1 pro Schlüssel; neuere Verbindung gewinnt) |

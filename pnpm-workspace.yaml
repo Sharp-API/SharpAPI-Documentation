@@ -1,3 +1,8 @@
+overrides:
+  protobufjs: ^7.5.8  # GHSA-xq3m-2v4x-88gg (critical ACE, <7.5.5) + 4 HIGH; transitive via posthog-js → @opentelemetry
+  lodash-es: ^4.17.24  # GHSA-r5fr-rjxr-66jc (_.template code injection); exact-pinned 4.17.23 by chevrotain under nextra→mermaid
+  "@xmldom/xmldom": ^0.9.10  # 5 HIGH (XML injection ×4 + recursion DoS); exact-pinned 0.9.8 by speech-rule-engine under nextra→mathjax
+
 allowBuilds:
   core-js: false      # postinstall only prints a funding/donate banner — no build needed
   protobufjs: false   # postinstall is benign — no build needed

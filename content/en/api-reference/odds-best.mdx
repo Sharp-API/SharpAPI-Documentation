@@ -29,7 +29,7 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 | `market` | string | all | Filter by market type(s), comma-separated (e.g., `moneyline`, `spread`, `total`). Supports category aliases — see [Odds: Market Category Aliases](/en/api-reference/odds/#market-category-aliases). |
 | `event` | string | — | Filter by event ID(s), comma-separated |
 | `live` | boolean | — | `true` = live only, `false` = prematch only, omit = both |
-| `is_main_line` | boolean | — | `true` = main-line entries only (consensus line for each `(event, market, selection)` cohort plus no-line markets like moneyline); `false` = alt-line entries only; omit = both. See the `is_main_line` response field below for the cohort semantics. |
+| `is_main_line` | boolean | — | `true` = main-line entries only (consensus line for each `(event, market, selection)` cohort plus no-line markets like moneyline); `false` = alt-line entries only; omit = both. This is scoped **per market**, so period/prop markets keep their own main line — for full-game lines only, use `?market=main` (see note below). See the `is_main_line` response field below for the cohort semantics. |
 | `min_odds` | number | — | Minimum American odds filter |
 | `max_odds` | number | — | Maximum American odds filter |
 | `limit` | integer | 50 | Max results per page (max 200) |
@@ -37,6 +37,10 @@ Best Odds is available on all tiers, including Free. The sportsbooks compared de
 
 <Callout type="info">
 Stale odds (older than 5 minutes for pre-game, 1 minute for live) are automatically excluded from best-odds comparisons to prevent misleading results.
+</Callout>
+
+<Callout type="info">
+**`is_main_line` vs `market=main`.** `is_main_line` is evaluated per `(event, market_type, selection)` cohort — it marks the main line *within each market's own ladder*. Period and player-prop markets therefore legitimately return `is_main_line=true` rows (e.g. the consensus first-half total), so `?is_main_line=true` is **not** a "main game lines only" filter. To restrict results to **full-game core lines** (moneyline, full-game spread, full-game total), use the [`?market=main`](/en/api-reference/odds/#market-category-aliases) category alias instead — optionally combined with `?is_main_line=true` to also drop alt lines within those markets.
 </Callout>
 
 ## Example Requests

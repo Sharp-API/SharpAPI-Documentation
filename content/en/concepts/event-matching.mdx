@@ -89,6 +89,32 @@ Without the bucket, both fixtures would collide on one ID and odds would be mixe
 
 **What this means for cross-book matching.** Inside one fixture, every book that reports a start time within the same 6-hour window converges on the same `_b{N}`. Across a bucket boundary — for example, one book stamps a soccer kick-off at 17:55 UTC (`_b2`) and another at 18:10 UTC (`_b3`) — books can fragment across two canonical IDs. This is a known limitation. If you observe this, file a ticket with the event details.
 
+### Doubleheader suffix (`_g{N}`)
+
+When one book reports both games of a same-day doubleheader in a single update, the two fixtures are disambiguated with a trailing `_g{N}` suffix placed *after* the bucket — e.g. `mlb_athletics_mariners_2026-05-02_b0` and `mlb_athletics_mariners_2026-05-02_b0_g1`. Books that see only one of the two games emit the bare bucketed ID. The residual cross-book mismatch for doubleheaders is therefore: same `_b{N}` base, one side carrying a `_g{N}` suffix and the other not.
+
+### Grouping one matchup across IDs
+
+To collapse the rows that belong to a single physical fixture but landed on different canonical IDs, pick the level that matches your tolerance for merging:
+
+1. **Same-fixture collapse (recommended).** Strip a trailing `_g{N}` suffix and compare the remainder, keeping the `_b{N}` bucket intact:
+
+   ```
+   key = event_id with a trailing _g{N} removed     # ..._b0_g1 → ..._b0
+   group events whose stripped key is identical
+   ```
+
+   This reunites the doubleheader-suffix mismatch above without merging distinct games. It mirrors the server-side same-event predicate.
+
+2. **Loose matchup grouping (display).** To gather *every* price for a matchup on a date regardless of bucket — e.g. to render one card per game in a UI and absorb the cross-bucket-boundary fragmentation described above — strip **both** the `_g{N}` and `_b{N}` suffixes and group by `{league}_{teamA}_{teamB}_{date}`, tolerating ±1 day for starts that cross UTC midnight:
+
+   ```
+   key = "{league}_{teamA}_{teamB}_{date}"           # teams are already alpha-sorted; _b{N}/_g{N} dropped
+   group keys that share league + teams and whose dates are within 1 day of each other
+   ```
+
+   **Tradeoff:** because this discards the bucket, a genuine same-day doubleheader collapses into one group. Use level 1 when the two games must stay apart.
+
 ## Live vs Pre-Match Share The Same Event ID
 
 A given fixture has **one canonical event ID** that covers both pre-match and live (in-play) odds. The `is_live` field on each odds row tells you which state the price was collected in:

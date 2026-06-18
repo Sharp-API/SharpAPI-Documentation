@@ -38,6 +38,10 @@ Best Odds está disponible en todos los planes, incluido el Free. Las casas de a
 Las cuotas obsoletas (con más de 5 minutos para prepartido, 1 minuto para en vivo) se excluyen automáticamente de las comparaciones de mejores cuotas para evitar resultados engañosos.
 </Callout>
 
+<Callout type="info">
+**`is_main_line` frente a `market=main`.** `is_main_line` se evalúa por cohorte `(event, market_type, selection)`: marca la línea principal *dentro del propio escalado de cada mercado*. Por eso los mercados de periodo y de props devuelven legítimamente filas con `is_main_line=true` (p. ej. el total consensuado de la primera mitad), de modo que `?is_main_line=true` **no** es un filtro de "solo líneas principales del partido completo". Para limitar los resultados a las **líneas principales del partido completo** (moneyline, hándicap de partido completo, total de partido completo), usa el alias de categoría [`?market=main`](/es/api-reference/odds/#market-category-aliases), opcionalmente combinado con `?is_main_line=true` para descartar además las líneas alternativas dentro de esos mercados.
+</Callout>
+
 ## Ejemplos de Solicitudes
 
 <Tabs items={['cURL', 'JavaScript', 'Python']}>

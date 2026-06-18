@@ -38,6 +38,10 @@ Best Odds ist in allen Tarifen verfügbar, einschließlich Free. Die verglichene
 Veraltete Quoten (älter als 5 Minuten für Pre-Game, 1 Minute für Live) werden automatisch von Best-Odds-Vergleichen ausgeschlossen, um irreführende Ergebnisse zu vermeiden.
 </Callout>
 
+<Callout type="info">
+**`is_main_line` vs. `market=main`.** `is_main_line` wird pro `(event, market_type, selection)`-Kohorte ausgewertet: Es markiert die Hauptlinie *innerhalb der eigenen Linienstaffel jedes Markts*. Perioden- und Prop-Märkte liefern daher zu Recht Zeilen mit `is_main_line=true` (z. B. die Konsens-Halbzeit-Gesamtlinie); `?is_main_line=true` ist somit **kein** Filter, der nur die Hauptlinien des gesamten Spiels liefert. Um die Ergebnisse auf die **Hauptlinien des gesamten Spiels** zu beschränken (Moneyline, Spiel-Handicap, Spiel-Gesamtlinie), verwende stattdessen den Kategorie-Alias [`?market=main`](/de/api-reference/odds/#market-category-aliases), optional kombiniert mit `?is_main_line=true`, um zusätzlich die Alt-Linien innerhalb dieser Märkte auszuschließen.
+</Callout>
+
 ## Beispielanfragen
 
 <Tabs items={['cURL', 'JavaScript', 'Python']}>

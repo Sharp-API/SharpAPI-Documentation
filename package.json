@@ -11,7 +11,7 @@
     "check-links": "./scripts/check-links.sh"
   },
   "dependencies": {
-    "next": "^16.1.6",
+    "next": "^16.2.9",
     "nextra": "^4.6.1",
     "nextra-theme-docs": "^4.6.1",
     "posthog-js": "^1.360.0",

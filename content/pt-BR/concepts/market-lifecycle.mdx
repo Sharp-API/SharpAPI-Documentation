@@ -1,0 +1,107 @@
+---
+description: "Como a SharpAPI sinaliza fechamentos, suspensões e remoções de mercados — os sinais explícitos de fechamento em cada superfície (REST, delta, SSE, WebSocket), como as escadas de linhas alternativas giram e como manter seu estado local livre de odds obsoletas."
+---
+
+import { Callout } from 'nextra/components'
+
+# Ciclo de Vida do Mercado: Suspensões e Remoções
+
+Mercados saem do quadro o tempo todo — uma casa suspende após um gol, retira uma linha de handicap ou total quando a linha principal se move, ou liquida o evento. A SharpAPI sinaliza cada uma dessas transições **explicitamente** em todas as superfícies de consumo. Você nunca precisa inferir que um mercado fechou esperando o preço parecer obsoleto.
+
+Esta página é o mapa: qual sinal dispara quando, em qual superfície, e como manter seu estado local limpo.
+
+## As Duas Formas de um Mercado Sair do Quadro
+
+As casas de apostas retiram mercados do quadro de duas maneiras distintas, e a SharpAPI espelha ambas fielmente:
+
+| Modo | O que a casa faz | O que a SharpAPI emite |
+|------|------------------|------------------------|
+| **Remoção** | A casa retira o mercado por completo (modo dominante — p. ex. a Pinnacle retirando um degrau de handicap/total, DK/FD suspendendo durante uma jogada de pontuação, um evento sendo liquidado) | O `id` da linha aparece em `removed[]` no [`/odds/delta`](/pt-BR/api-reference/odds-delta/) e em um evento `odds:removed` no [stream SSE](/pt-BR/api-reference/stream/) e [WebSocket](/pt-BR/api-reference/websocket/). A linha fica ausente do próximo snapshot de `/odds`. |
+| **Suspensão no lugar** | A casa mantém o mercado publicado mas o marca como fechado — o preço fica congelado e não apostável | A linha permanece presente com `is_active: false`. A transição é enviada como um `odds:update` com `is_active: false`, mais um evento dedicado [`odds:locked`](/pt-BR/api-reference/stream/#odds-locked) no stream. |
+
+<Callout type="info">
+A SharpAPI nunca fabrica uma linha que a casa não publicou. Um mercado removido é sinalizado por um evento de remoção explícito com seu `id` — não por uma linha de preço "fechado" sintética. Os `id`s das odds são determinísticos — um hash estável de casa, evento, mercado, linha e seleção — então um mercado que retorna chega sob o **mesmo `id`**, e deletar-na-remoção mais upsert-na-atualização mantém seu estado exatamente em sincronia com o quadro.
+</Callout>
+
+## Matriz de Sinais por Superfície
+
+| Superfície | Sinal de remoção | Sinal de suspensão |
+|------------|------------------|--------------------|
+| `GET /odds` (polling de snapshots) | Linha ausente da próxima resposta | `is_active: false` na linha |
+| `GET /odds/delta` | `removed[]` — objetos `{id, sportsbook, removed_at}` | `is_active: false` nas linhas de `data[]` |
+| SSE `/stream` | `odds:removed` — `{ids: [...], count, book}` | `odds:update` com `is_active: false`, mais `odds:locked` |
+| WebSocket | Evento `odds:removed` | `odds:update` com `is_active: false`, mais `odds:locked` |
+
+**Se você faz polling do `/odds` simples**, a remoção é comunicada por ausência: compare cada snapshot com o anterior e remova as linhas cujos `id`s não aparecem mais. Funciona, mas obriga *você* a calcular o diff — para avisos de remoção explícitos, use o `/odds/delta` (seu array `removed[]` nomeia cada `id` retirado desde o seu último poll) ou o stream (push, sem polling algum).
+
+<Callout type="warning">
+O endpoint delta retém remoções por **10 minutos**. Faça polling na cadência recomendada (encadeie `since` a partir de `meta.server_time`) e você nunca perderá nenhuma; consulte [Delta de Odds](/pt-BR/api-reference/odds-delta/) para os flags de segurança `removed_truncated` e `since_clamped`.
+</Callout>
+
+## Escadas de Linhas: Handicaps e Totais
+
+Mercados de handicap (spread) e total são **escadas** — um conjunto de degraus em linhas diferentes (`-2.5`, `-3`, `-3.5`, …; `O/U 2.25`, `2.5`, `2.75`, …). Quando a linha principal se move, as casas — a Pinnacle em particular — retiram os degraus nos limiares antigos e publicam novos. Cada degrau é sua própria linha de odds com seu próprio `id`, então:
+
+- Um **degrau retirado** (o mercado de limiar que desaparece) dispara `odds:removed` / aparece em `removed[]`, exatamente como qualquer outra remoção.
+- O **degrau novo** chega como uma linha nova via `odds:update` (ou no próximo snapshot/delta), com os flags `is_main_line` / `is_alternate_line` indicando onde ele se posiciona na escada.
+- Um degrau que **retorna** (comum no jogo ao vivo — as casas recentralizam as escadas constantemente) chega novamente sob o mesmo `id` determinístico.
+
+O giro da escada é intenso durante o jogo ao vivo: degraus alternativos vêm e vão muitas vezes por partida. Trate uma remoção como "fora do quadro *agora*", não como um fechamento terminal — somente a liquidação do evento é definitiva.
+
+```text
+total 2.5 (id …_total_over_2.5)   ── a linha se move para 3 ──▶  odds:removed [..._total_over_2.5]
+                                                                 odds:update  [..._total_over_3]   (degrau novo)
+```
+
+### Padrão de cliente recomendado
+
+Indexe seu estado local pelo `id` da odd e aplique três regras, em ordem de eventos:
+
+1. `odds:update` (ou uma linha em `data[]`) → upsert da linha.
+2. `odds:removed` (ou um `id` em `removed[]`) → deletar a linha.
+3. `is_active: false` → manter a linha mas marcá-la como não apostável (esmaecê-la); uma reabertura chega como um `odds:update` normal com `is_active: true` e um preço novo.
+
+```python
+# Delta-polling loop: explicit removals, no client-side diffing
+since = initial_timestamp
+while True:
+    r = get(f"/api/v1/odds/delta?since={since}&sportsbook=pinnacle").json()
+    for row in r["data"]:
+        local_state[row["id"]] = row          # upsert (covers is_active flips)
+    for gone in r.get("removed", []):
+        local_state.pop(gone["id"], None)     # delete — the close signal
+    since = r["meta"]["server_time"]
+    sleep(5)
+```
+
+```javascript
+// SSE: push-based, the same three rules
+es.addEventListener('odds:update', (e) => {
+  for (const row of JSON.parse(e.data).odds) localState.set(row.id, row);
+});
+es.addEventListener('odds:removed', (e) => {
+  for (const id of JSON.parse(e.data).ids) localState.delete(id);
+});
+```
+
+## Preços Congelados e Proteções contra Preços Obsoletos
+
+Dois flags no nível da linha protegem você de agir sobre um preço que a casa não está mais honrando:
+
+| Campo | Significado |
+|-------|-------------|
+| `is_active` | `false` = o mercado está suspenso/fechado com o preço **congelado** no último valor. Esmaeça-o; não aposte, não alimente cálculos de EV com ele. Ausente é tratado como `true`. |
+| `is_stale_pregame_price` | `true` em uma linha ao vivo que ainda carrega um preço pré-jogo que não se moveu desde o início — filtre com `?is_stale_pregame_price=false` se você só quer preços reprecificados ao vivo. |
+
+Os próprios motores de EV e arbitragem da SharpAPI excluem pernas com `is_active: false`, então os [endpoints de oportunidades](/pt-BR/api-reference/opportunities-ev/) nunca mostram uma vantagem contra um preço congelado e não apostável.
+
+<Callout type="info">
+A Pinnacle majoritariamente **remove** mercados suspensos (→ `odds:removed`) e marca um subconjunto menor como fechado no lugar (→ `is_active: false` / `odds:locked`). Casas de varejo dos EUA como DraftKings e FanDuel retiram os mercados por completo durante jogadas de pontuação — você verá remoções, não mudanças de `is_active`. Trate os dois modos e você estará coberto para todas as casas.
+</Callout>
+
+## Relacionado
+
+- [Delta de Odds](/pt-BR/api-reference/odds-delta/) — referência de `removed[]`, janela de retenção, padrão de polling
+- [Stream SSE](/pt-BR/api-reference/stream/) — `odds:removed`, `odds:locked`, `is_active` no `odds:update`
+- [WebSocket](/pt-BR/api-reference/websocket/) — os mesmos eventos via WS
+- [Ao Vivo vs. Pré-Jogo](/pt-BR/concepts/live-vs-prematch/) — comportamento de suspensão das casas no jogo ao vivo

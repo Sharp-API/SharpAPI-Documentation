@@ -133,6 +133,13 @@ while True:
       "status": "upcoming"
     }
   ],
+  "removed": [
+    {
+      "id": "225107123583533",
+      "sportsbook": "pinnacle",
+      "removed_at": "2026-02-11T12:00:18.412Z"
+    }
+  ],
   "meta": {
     "count": 1,
     "total": 1,
@@ -200,6 +207,16 @@ X-Request-Id: req_delta_abc123
 ## Delta-Antwort-Schema
 
 Das `data`-Array enthält dieselben Quotenobjekte wie der [`/odds`](/de/api-reference/odds/)-Endpoint. Es werden nur Quoten einbezogen, die nach dem `since`-Zeitstempel aktualisiert wurden.
+
+### Das `removed`-Array
+
+Das `removed`-Array auf oberster Ebene benennt jede Quotenzeile, die seit Ihrem `since`-Zeitstempel das Board verlassen hat — Märkte, die ein Buchmacher heruntergenommen hat (Aussetzung, ein durch eine Linienbewegung zurückgezogener Handicap-/Total-Schwellenwert, abgerechnetes Event). Löschen Sie diese `id`s aus Ihrem lokalen Zustand; dies ist das explizite Schlusssignal, Sie müssen also nie selbst Snapshots vergleichen. Nur vorhanden, wenn mindestens eine Entfernung Ihren Filtern entsprach. Siehe [Markt-Lebenszyklus](/de/concepts/market-lifecycle/) für die vollständige Übersicht der Schluss-/Aussetzungssignale.
+
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| `removed[].id` | string | Die Quoten-ID, die nicht mehr auf dem Board ist |
+| `removed[].sportsbook` | string | Der Buchmacher, der sie entfernt hat |
+| `removed[].removed_at` | string | ISO-8601-Zeitstempel, wann SharpAPI die Entfernung beobachtet hat |
 
 Das `meta`-Objekt enthält zwei zusätzliche Felder:
 

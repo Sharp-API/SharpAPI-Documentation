@@ -29,7 +29,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|---------|-------------|
-| `channel` | string | `opportunities` | O que transmitir: `odds`, `opportunities`, `gamestate` (apenas Enterprise) ou `all` |
+| `channel` | string | `opportunities` | O que transmitir: `odds`, `opportunities`, `gamestate` (apenas Enterprise) ou `all`. Também aceita o alias plural `channels`. Uma lista separada por vírgulas com mais de um canal colapsa para `all` — veja a nota abaixo. |
 | `sport` | string | todos | Filtrar por esporte(s), separados por vírgula (ex.: `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | permitidos pelo plano | Filtrar por sportsbook(s), separados por vírgula |
 | `league` | string | todas | Filtrar por liga(s), separadas por vírgula |
@@ -48,6 +48,10 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alertar sobre oportunidades |
 | `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Placares ao vivo, períodos, cronômetros e dados situacionais por evento. **Apenas plano Enterprise.** Veja [Live Game State](/api-reference/gamestate/) para o catálogo completo de campos. |
 | `all` | Todos os tipos de evento | Visão completa em tempo real |
+
+<Callout type="info">
+**Uma assinatura por stream SSE.** Para manter paridade com a API WebSocket, o endpoint aceita tanto `channel` quanto o plural `channels`, e ambos toleram um valor separado por vírgulas. Mas uma conexão SSE mantém uma **única** assinatura: se você passar mais de um canal válido (ex.: `?channels=odds,opportunities`), a requisição **colapsa para `channel=all`** em vez de retornar um erro. Um único valor (`?channel=odds`) transmite apenas aquele canal. Para assinar de forma seletiva um *subconjunto* específico de canais, use a [API WebSocket](/streaming/websocket/), que oferece filtragem multicanal real com `channels=` em uma única conexão.
+</Callout>
 
 ### Rotas de Conveniência
 

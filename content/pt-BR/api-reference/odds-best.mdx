@@ -38,6 +38,10 @@ Best Odds está disponível em todos os planos, incluindo o Free. As casas de ap
 Odds desatualizadas (mais de 5 minutos para pré-jogo, 1 minuto para ao vivo) são excluídas automaticamente das comparações de melhores odds para evitar resultados enganosos.
 </Callout>
 
+<Callout type="info">
+**`is_main_line` vs. `market=main`.** `is_main_line` é avaliado por coorte `(event, market_type, selection)`: marca a linha principal *dentro do próprio leque de cada mercado*. Por isso mercados de período e de props retornam legitimamente linhas com `is_main_line=true` (ex.: o total de consenso do primeiro tempo), de forma que `?is_main_line=true` **não** é um filtro de "apenas linhas principais do jogo completo". Para restringir os resultados às **linhas principais do jogo completo** (moneyline, handicap de jogo completo, total de jogo completo), use o alias de categoria [`?market=main`](/pt-BR/api-reference/odds/#market-category-aliases), opcionalmente combinado com `?is_main_line=true` para também descartar as linhas alternativas dentro desses mercados.
+</Callout>
+
 ## Exemplos de Requisição
 
 <Tabs items={['cURL', 'JavaScript', 'Python']}>

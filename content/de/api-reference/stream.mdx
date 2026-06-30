@@ -29,7 +29,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parameter | Typ | Standard | Beschreibung |
 |-----------|------|---------|-------------|
-| `channel` | string | `opportunities` | Was gestreamt werden soll: `odds`, `opportunities`, `gamestate` (nur Enterprise) oder `all` |
+| `channel` | string | `opportunities` | Was gestreamt werden soll: `odds`, `opportunities`, `gamestate` (nur Enterprise) oder `all`. Akzeptiert auch den Plural-Alias `channels`. Eine kommagetrennte Liste mit mehr als einem Kanal wird auf `all` reduziert — siehe Hinweis unten. |
 | `sport` | string | alle | Filter nach Sportart(en), kommagetrennt (z. B. `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | tariferlaubt | Filter nach Sportsbook(s), kommagetrennt |
 | `league` | string | alle | Filter nach Liga(en), kommagetrennt |
@@ -48,6 +48,10 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Bei Opportunities benachrichtigen |
 | `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live-Spielstände, Perioden, Uhren und situative Daten pro Event. **Nur Enterprise-Tarif.** Siehe [Live Game State](/api-reference/gamestate/) für den vollständigen Feldkatalog. |
 | `all` | Alle Event-Typen | Vollständiges Echtzeitbild |
+
+<Callout type="info">
+**Ein Abonnement pro SSE-Stream.** Aus Gründen der Parität mit der WebSocket-API akzeptiert der Endpoint sowohl `channel` als auch den Plural `channels`, und beide tolerieren einen kommagetrennten Wert. Eine SSE-Verbindung trägt jedoch ein **einziges** Abonnement: Wenn du mehr als einen gültigen Kanal übergibst (z. B. `?channels=odds,opportunities`), wird die Anfrage **auf `channel=all` reduziert**, statt einen Fehler zurückzugeben. Ein einzelner Wert (`?channel=odds`) streamt nur diesen Kanal. Um gezielt eine bestimmte *Teilmenge* von Kanälen zu abonnieren, verwende die [WebSocket-API](/streaming/websocket/), die echtes Multi-Channel-Filtern via `channels=` über eine einzige Verbindung unterstützt.
+</Callout>
 
 ### Komfort-Routen
 

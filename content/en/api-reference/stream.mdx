@@ -29,7 +29,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `channel` | string | `opportunities` | What to stream: `odds`, `opportunities`, `gamestate` (Enterprise only), or `all` |
+| `channel` | string | `opportunities` | What to stream: `odds`, `opportunities`, `gamestate` (Enterprise only), or `all`. Also accepts the plural alias `channels`. A comma-separated list of more than one channel collapses to `all` — see the note below. |
 | `sport` | string | all | Filter by sport(s), comma-separated (e.g. `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | tier-allowed | Filter by sportsbook(s), comma-separated |
 | `league` | string | all | Filter by league(s), comma-separated |
@@ -48,6 +48,10 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alert on opportunities |
 | `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Live scores, periods, clocks, and situational data per event. **Enterprise tier only.** See [Live Game State](/api-reference/gamestate/) for the full field catalog. |
 | `all` | All event types | Full real-time picture |
+
+<Callout type="info">
+**One subscription per SSE stream.** For parity with the WebSocket API, the endpoint accepts both `channel` and the plural `channels`, and either one tolerates a comma-separated value. But an SSE connection carries a **single** subscription: if you pass more than one valid channel (e.g. `?channels=odds,opportunities`), the request **collapses to `channel=all`** instead of returning an error. A single value (`?channel=odds`) streams just that channel. To subscribe to a specific *subset* of channels selectively, use the [WebSocket API](/streaming/websocket/), which supports true multi-channel `channels=` filtering on one connection.
+</Callout>
 
 ### Convenience Routes
 

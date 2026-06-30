@@ -29,7 +29,7 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 
 | Parámetro | Tipo | Predeterminado | Descripción |
 |-----------|------|----------------|-------------|
-| `channel` | string | `opportunities` | Qué transmitir: `odds`, `opportunities`, `gamestate` (solo Enterprise) o `all` |
+| `channel` | string | `opportunities` | Qué transmitir: `odds`, `opportunities`, `gamestate` (solo Enterprise) o `all`. También acepta el alias plural `channels`. Una lista separada por comas con más de un canal colapsa a `all` — consulta la nota a continuación. |
 | `sport` | string | todos | Filtrar por deporte(s), separados por comas (p. ej. `basketball`, `football`, `ice_hockey`) |
 | `sportsbook` | string | permitidos por el plan | Filtrar por sportsbook(s), separados por comas |
 | `league` | string | todas | Filtrar por liga(s), separadas por comas |
@@ -48,6 +48,10 @@ https://api.sharpapi.io/api/v1/stream?api_key=sk_live_your_key
 | `opportunities` | `snapshot`, `ev:detected/expired`, `arb:detected/expired`, `middles:detected/expired`, `low_hold:detected/expired`, `heartbeat` | Alertas sobre oportunidades |
 | `gamestate` | `gamestate:snapshot`, `gamestate:update`, `gamestate:removed`, `heartbeat` | Marcadores en vivo, periodos, relojes y datos situacionales por evento. **Solo plan Enterprise.** Consulta [Estado del juego en vivo](/api-reference/gamestate/) para el catálogo completo de campos. |
 | `all` | Todos los tipos de eventos | Imagen completa en tiempo real |
+
+<Callout type="info">
+**Una suscripción por stream SSE.** Por paridad con la API WebSocket, el endpoint acepta tanto `channel` como el plural `channels`, y ambos toleran un valor separado por comas. Pero una conexión SSE mantiene una **única** suscripción: si pasas más de un canal válido (p. ej. `?channels=odds,opportunities`), la solicitud **colapsa a `channel=all`** en lugar de devolver un error. Un único valor (`?channel=odds`) transmite solo ese canal. Para suscribirte de forma selectiva a un *subconjunto* concreto de canales, usa la [API WebSocket](/streaming/websocket/), que admite el filtrado multicanal real con `channels=` en una sola conexión.
+</Callout>
 
 ### Rutas de conveniencia
 
